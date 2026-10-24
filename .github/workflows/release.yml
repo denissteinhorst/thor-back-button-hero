@@ -11,6 +11,11 @@ on:
 jobs:
   build-sign-release:
     runs-on: ubuntu-latest
+    # The repository default for GITHUB_TOKEN is read-only, which makes creating a
+    # release fail with "Resource not accessible by integration". Grant the write scope
+    # here rather than repo-wide, so every other workflow keeps the read-only default.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
