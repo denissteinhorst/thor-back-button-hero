@@ -153,6 +153,15 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
                 minimum = "0.60".toBigDecimal()
             }
         }
+        rule {
+            element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.UpdateChecker")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.41".toBigDecimal()
+            }
+        }
     }
 }
 

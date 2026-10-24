@@ -66,7 +66,7 @@ object UpdateChecker {
         Handler(Looper.getMainLooper()).post { callback(result) }
     }
 
-    private data class Release(val tagName: String, val htmlUrl: String, val versionCode: Int)
+    internal data class Release(val tagName: String, val htmlUrl: String, val versionCode: Int)
 
     /** CI tags releases "v<versionCode>" (see release workflow) so no extra version parsing is needed. */
     private fun fetchLatestRelease(): Release? {
@@ -78,13 +78,17 @@ object UpdateChecker {
         return try {
             if (connection.responseCode != HttpURLConnection.HTTP_OK) return null
             val body = connection.inputStream.bufferedReader().use { it.readText() }
-            val json = JSONObject(body)
-            val tagName = json.getString("tag_name")
-            val versionCode = tagName.removePrefix("v").toIntOrNull() ?: return null
-            Release(tagName, json.getString("html_url"), versionCode)
+            parseRelease(body)
         } finally {
             connection.disconnect()
         }
+    }
+
+    internal fun parseRelease(body: String): Release? {
+        val json = JSONObject(body)
+        val tagName = json.getString("tag_name")
+        val versionCode = tagName.removePrefix("v").toIntOrNull() ?: return null
+        return Release(tagName, json.getString("html_url"), versionCode)
     }
 
     private fun notify(context: Context, release: Release) {
