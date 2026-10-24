@@ -42,7 +42,18 @@ object ViewTree {
             parts += "margin=[${lp.marginStart},${lp.topMargin},${lp.marginEnd},${lp.bottomMargin}]"
         }
         view.contentDescription?.let { parts += "contentDescription=\"$it\"" }
+        // CompoundButton (Switch, CheckBox, ...) is itself a TextView subclass in the Android
+        // widget hierarchy, so this more specific branch must be checked first - otherwise
+        // `is TextView` always wins and `checked=...` is never emitted for any Switch.
         when (view) {
+            is CompoundButton -> {
+                parts += "text=\"${view.text}\""
+                parts += "textSizePx=${view.textSize}"
+                parts += "textColor=${String.format("#%08X", view.currentTextColor)}"
+                parts += "maxLines=${view.maxLines}"
+                parts += "bold=${view.typeface?.isBold == true}"
+                parts += "checked=${view.isChecked}"
+            }
             is TextView -> {
                 parts += "text=\"${view.text}\""
                 parts += "textSizePx=${view.textSize}"
@@ -50,7 +61,6 @@ object ViewTree {
                 parts += "maxLines=${view.maxLines}"
                 parts += "bold=${view.typeface?.isBold == true}"
             }
-            is CompoundButton -> parts += "checked=${view.isChecked}"
             is SeekBar -> {
                 parts += "max=${view.max}"
                 parts += "progress=${view.progress}"
