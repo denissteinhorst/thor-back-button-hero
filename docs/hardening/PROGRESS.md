@@ -28,7 +28,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 - [x] 12 — Snapshot: Shoulder-Rows
 - [x] 13 — Snapshot: Dialoge
 - [x] 14 — A11y-Inventar (Report, kein Fix)
-- [ ] 15 — Device: Golden-Logcat-Trace + manuelle Checkliste schreiben
+- [x] 15 — Device: Golden-Logcat-Trace + manuelle Checkliste schreiben
 - [ ] 16 — Seam: `BackGestureMachine`-Extraktion
 - [ ] 17 — Characterization: `BackGestureMachine`
 - [ ] 18 — Device: Espresso-Smoke auf `SettingsActivity`
@@ -95,6 +95,18 @@ Switches, minHeightDp=0-Messartefakt) — bewusst **nicht** behoben.
 zeigen als lokal modifiziert (nicht von mir angefasst, nicht committet) — offenbar eigene
 Arbeit des Nutzers am Gesture-Explainer parallel zu dieser Session. Unangetastet gelassen.
 
+**Schritt 15 — Device-Session erfolgreich:** AYN Thor war per `adb` verbunden
+(`c4c5bc62`), Accessibility-Service bereits aktiviert, kein manueller Permission-Schritt
+nötig. `DEBUG_GESTURES` temporär auf `true`, Nutzer hat live Einzeltipp, Doppeltipp,
+Tippen-dann-Halten (×2) und Halten ausgeführt. Trace enthält alle 7 geforderten
+Entscheidungstypen. `DEBUG_GESTURES` zurück auf `false`, `SwitcherService.kt` danach
+byte-identisch zum committeten Zustand (`git diff` leer), Gerät neu installiert.
+
+**Nebenbefund, weiterhin nicht mein Zutun:** `README.md` zeigt jetzt zusätzlich zu
+`docs/gesture-explainer.html`/`docs/gestures.gif` als lokal modifiziert — konsistent mit
+deiner parallelen Arbeit am Gesture-Explainer. Weiterhin unangetastet gelassen.
+
 **Noch offen für spätere Schritte:**
-- Schritt 16/17: `BackGestureMachine`-Seam — komplexester verbleibender Schritt vor Phase 2.
-- Schritt 15: Geräteschritt, braucht `adb devices` + Nutzer-Interaktion auf dem Thor.
+- Schritt 16/17: `BackGestureMachine`-Seam — komplexester verbleibender Schritt des
+  gesamten Plans, braucht nach der Extraktion eine zweite Device-Session (Trace-Diff +
+  volle manuelle Checkliste inkl. Shoulder-Buttons).
