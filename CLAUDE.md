@@ -146,19 +146,108 @@ explicitly approved UI change.
 **Version tag convention**: release tags are `v<versionCode>` (e.g. `v2`), matching
 `defaultConfig.versionCode` in `app/build.gradle.kts`. `UpdateChecker.parseRelease`
 parses that tag format (`"v1".removePrefix("v").toIntOrNull()`) to detect new releases —
-bump `versionCode` before tagging and keep the two in sync. Currently `versionCode = 1`,
-`versionName = "0.1.0"`, and **no tag exists yet**, so the first release is `v1`.
+bump `versionCode` before tagging and keep the two in sync. Currently `versionCode = 1`
+and `versionName = "1.0.0"`, so the first release is tag `v1`. The release workflow
+fails fast if the tag does not match `versionCode`, because a mismatch would make every
+installed app miss the release permanently.
 
 `.github/workflows/release.yml` fires on `v*` tags: it decodes
 `RELEASE_KEYSTORE_BASE64`, builds a signed release APK from the
 `RELEASE_KEYSTORE_PATH`/`_PASSWORD`/`RELEASE_KEY_ALIAS`/`RELEASE_KEY_PASSWORD` env vars,
-publishes it to GitHub Releases, then deletes the keystore. Signing is env-only by
-design — no keystore is or should ever be committed (`*.keystore`/`*.jks` are
-gitignored).
+publishes it as `thor-back-button-hero-v<versionName>.apk`, then deletes the keystore.
+Signing is env-only by design — no keystore is or should ever be committed
+(`*.keystore`/`*.jks` are gitignored).
 
 Before tagging: `./tools/verify.sh` green locally, CI green on `main`, `versionCode`
 bumped, tag name exactly `v<versionCode>`, `RELEASE_KEYSTORE_*` secrets present, and a
 device pass over the gestures and the switcher overlay (the part no test covers).
+
+## The signing key — backup and disaster recovery
+
+Android refuses to install an unsigned APK at all, and it refuses to *update* an
+installed app unless the new APK carries the **same** signature. That makes the signing
+key the one genuinely irreplaceable artifact in this project: lose it and no future
+version can ever replace an installed copy — every user would have to uninstall first
+and lose their settings. There is no recovery path, and GitHub secrets are write-only,
+so they cannot be read back out.
+
+**The two things that must exist in a backup** (password manager or encrypted backup —
+never in the repo, never in plaintext cloud storage):
+
+| Artifact | Detail |
+|---|---|
+| `release.keystore` | created 2026-10-24, 4374 bytes, format **PKCS12** |
+| its password | one password, used for **both** store and key (PKCS12) |
+| alias | `thor-back-button-hero` |
+
+The working copy lives at the repo root (`release.keystore`), ignored via `.gitignore`.
+That location is a convenience, not a requirement: **nothing reads the file from a fixed
+path.** CI gets the key from the `RELEASE_KEYSTORE_BASE64` secret, and a local signed
+build takes the path from an environment variable. The file can sit anywhere.
+
+### After reinstalling the machine
+
+Releasing does **not** need the keystore on disk. CI signs from the GitHub secrets, so
+as long as those four secrets still exist, tagging keeps producing signed releases and
+the keystore backup stays untouched insurance for the cases below.
+
+To get the project building again on a fresh machine:
+
+```sh
+brew install openjdk@17                   # keg-only; verify.sh finds it on its own
+brew install --cask android-commandlinetools
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+git clone git@github.com:denissteinhorst/thor-back-button-hero.git
+cd thor-back-button-hero
+echo "sdk.dir=$(brew --prefix)/share/android-commandlinetools" > local.properties
+./tools/verify.sh                         # also installs the git hooks (preBuild → installGitHooks)
+```
+
+`local.properties` is gitignored and therefore never part of a clone — without it (and
+without `ANDROID_HOME`) AGP cannot find the SDK. Expect the first run to be slow while
+Gradle downloads its dependencies; after that the numbers under "Expected results"
+apply.
+
+**If the GitHub secrets are gone** (repo recreated, secrets deleted, moved to another
+account) — restore them from the backup. This is the only step that genuinely requires
+the backed-up file and password:
+
+```sh
+base64 -i /path/to/your/backup/release.keystore | gh secret set RELEASE_KEYSTORE_BASE64
+gh secret set RELEASE_KEY_ALIAS -b "thor-back-button-hero"
+gh secret set RELEASE_KEYSTORE_PASSWORD   # prompts; same password for both
+gh secret set RELEASE_KEY_PASSWORD
+gh secret list                            # expect all four
+```
+
+**To build a signed release APK locally** (rarely needed; CI normally does this) — point
+the four environment variables at the restored file:
+
+```sh
+RELEASE_KEYSTORE_PATH=/absolute/path/to/release.keystore \
+RELEASE_KEYSTORE_PASSWORD='…' \
+RELEASE_KEY_ALIAS=thor-back-button-hero \
+RELEASE_KEY_PASSWORD='…' \
+./gradlew assembleRelease --console=plain
+```
+
+Without `RELEASE_KEYSTORE_PATH` the signing config is skipped entirely and the build
+produces `app-release-unsigned.apk`, which Android will not install
+(`INSTALL_PARSE_FAILED_NO_CERTIFICATES`) — that is expected, not a misconfiguration.
+
+**To confirm a restored key is the right one**, compare the certificate fingerprint of a
+published APK against a freshly signed one (`ANDROID_HOME` is not set on this machine;
+the SDK path comes from `local.properties`):
+
+```sh
+/opt/homebrew/share/android-commandlinetools/build-tools/34.0.0/apksigner \
+  verify --print-certs some-release.apk
+```
+
+The SHA-256 digest must be identical to the one in earlier releases. A different digest
+means the wrong key — publishing with it would break updates for everyone who installed
+a previous version.
 
 ### Release-readiness notes
 
