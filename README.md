@@ -88,6 +88,16 @@ hobby project and may contain bugs. I'm happy to look at issues and fix
 things when I can, but — see the license below — I'm not taking on any
 obligation to do so.
 
+## Third-party licenses
+
+The app itself ships with zero runtime dependencies beyond the Kotlin standard library
+(Apache-2.0), which the Kotlin Gradle plugin adds automatically. The test suite under
+`app/src/test` and `app/src/androidTest` depends on JUnit (EPL-1.0), Robolectric (MIT),
+AndroidX Test / Espresso / UiAutomator (Apache-2.0), and JaCoCo (EPL-2.0) — none of these
+are included in the release APK; see `docs/hardening/37-license-audit.md` for the
+mechanical proof. LeakCanary (Apache-2.0) is `debugImplementation`-only and ships in
+debug builds alone, never in release.
+
 ## License
 
 0BSD — see [LICENSE](LICENSE).

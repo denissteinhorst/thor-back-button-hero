@@ -8,8 +8,8 @@ An Android `AccessibilityService` that overloads the hardware **Back** button on
 dual-screen handhelds (built for the AYN Thor) with extra gestures — double-tap
 app switcher, hold-to-swap-screens, tap-then-hold recents, and four
 reassignable shoulder-button (L1/L2/R1/R2) shortcuts. No root, no companion
-app. Single-module Kotlin app, no tests, no DI framework, no build variants
-beyond debug/release.
+app. Single-module Kotlin app with JVM and instrumented tests, no DI framework,
+and no build variants beyond debug/release.
 
 ## Build & CI commands
 
@@ -19,14 +19,26 @@ beyond debug/release.
 ./gradlew lintDebug          # Android lint — CI gate, run after any change
 ```
 
-There is no test suite (`./gradlew test` has nothing to run). Verifying a
-change means building, installing, and exercising gestures on-device or
-checking `adb logcat` with `DEBUG_GESTURES` flipped on (see below) — there's
-no way to unit-test key-event timing logic in this repo currently.
+```sh
+./tools/verify.sh          # the one gate: lint, unit tests, coverage, both builds
+```
+
+`./tools/verify.sh` resolves JDK 17 itself (JAVA_HOME is not on PATH on this machine —
+see `docs/hardening/00-OVERVIEW.md`) and is the required check after every change.
+Git hooks (`.githooks/`) run a subset on commit and the full gate on push; CI
+(`.github/workflows/ci.yml`) runs the same `verify` task. See `docs/hardening/` for the
+full test-suite and hardening plan.
+
+Most automated checks are Robolectric unit tests, including deterministic
+View-tree snapshots of the settings UI. `BackGestureMachine` is the testable
+seam for key-event timing and gesture decisions. One Espresso smoke test covers
+the real-device activity startup; remaining accessibility-service,
+multi-display, overlay, and physical-key behavior follows the manual checks
+listed in `docs/hardening/TEST-GAPS.md`.
 
 JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 1.9.24, AGP
-8.5.2. CI (`.github/workflows/ci.yml`) runs `assembleDebug` + `lintDebug` on
-every push/PR to `main`. Release (`.github/workflows/release.yml`) fires on
+8.5.2. CI (`.github/workflows/ci.yml`) runs the full `verify` gate on every
+push/PR to `main`. Release (`.github/workflows/release.yml`) fires on
 `v*` tags, signs with secrets, and publishes the APK to GitHub Releases.
 
 **Version tag convention**: release tags are `v<versionCode>` (e.g. `v2`),
