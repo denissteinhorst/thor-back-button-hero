@@ -15,7 +15,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ## Phase 1 — Test-Suite (Safety Net)
 
-- [ ] 02 — Test-Infrastruktur (Dependencies, Robolectric-Config, Smoke-Test)
+- [x] 02 — Test-Infrastruktur (Dependencies, Robolectric-Config, Smoke-Test)
 - [ ] 03 — Gate-Befehl (`verify`-Task + `tools/verify.sh`)
 - [ ] 04 — Characterization: `Prefs` Defaults + Accessoren
 - [ ] 05 — Characterization: `Prefs`-Migrationen + `resetToDefaults()`
@@ -67,6 +67,13 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 01: `assembleDebug` + `assembleRelease` +
-`lintDebug` grün (BUILD SUCCESSFUL, 0 errors/15 warnings, exakt wie erwartet, keine
-Abweichung). Baseline-Commit `b0f4d55`.
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 02: `testDebugUnitTest` grün (1 Test,
+0 Fehler), `assembleDebug` + `lintDebug` weiterhin grün. Lint zeigt 20 statt 15 Warnungen
+(5× neues `GradleDependency` durch die gepinnten Testbibliotheks-Versionen — erwartet, keine
+Regression). Commit `6d95f8b`.
+
+**Hinweis für Schritt 09:** der dort vorgesehene `diff` gegen
+`docs/hardening/baseline/lint-baseline-report.txt` wird wegen dieser 5 Warnungen nicht leer
+sein. Das ist keine neue Produktivcode-Warnung, sondern eine Folge der in Schritt 02
+vorgeschriebenen exakten Dependency-Versionen — bei Erreichen von Schritt 09 entsprechend
+bewerten, nicht blind als Fehler behandeln.
