@@ -13,7 +13,7 @@
 
 <br />
 
-<img src="docs/assets/launcher-icon.png" alt="Back Button Hero app icon" width="160" />
+<img src="docs/assets/launcher-icon.png" alt="Back Button Hero app icon" width="80" />
 
 </div>
 
