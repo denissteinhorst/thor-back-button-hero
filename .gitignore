@@ -9,3 +9,6 @@ captures/
 .cxx/
 *.keystore
 *.jks
+
+# Local-only release-hardening working docs (purged from history)
+docs/hardening/
