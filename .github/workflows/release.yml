@@ -35,7 +35,7 @@ jobs:
         run: rm -f release.keystore
 
       - name: Create GitHub release with APK
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: app/build/outputs/apk/release/app-release.apk
           generate_release_notes: true
