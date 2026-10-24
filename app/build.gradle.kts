@@ -162,6 +162,15 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
                 minimum = "0.41".toBigDecimal()
             }
         }
+        rule {
+            element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.CardTouch")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.90".toBigDecimal()
+            }
+        }
     }
 }
 
