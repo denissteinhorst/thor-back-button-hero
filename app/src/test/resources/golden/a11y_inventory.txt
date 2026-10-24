@@ -1,4 +1,5 @@
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
@@ -17,7 +18,6 @@ clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=R2 action: Not set. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
