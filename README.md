@@ -33,22 +33,15 @@
 
 ## Compatibility
 
-Back Button Hero has been tested on an **AYN Thor Max 16GB/1TB (Rainbow),
-1st Batch**, running Android 13, firmware
-`Thor_V1.0.0.377_20260206_165408_user`. That said, nothing in the app depends
-on that particular configuration, so it should run just as well on any other
-AYN Thor — Base, Pro, or Max512 — since they share the same dual-screen layout
-and button hardware. The app asks very little of the device it runs on, which
-is what makes the lower-specced variants a non-issue; see
-[Small footprint](#small-footprint) for the measured numbers.
+Tested on an **AYN Thor Max 16GB/1TB (Rainbow), 1st Batch** — Android 13,
+firmware `Thor_V1.0.0.377_20260206_165408_user`. Nothing in the app depends on
+that configuration, so it should run on any Thor, Base and Pro and Max512
+alike.
 
-The app is a regular Android app (`minSdk` 30 / Android 11) and should install
-and launch on Android 11 or later. Its screen-swapping and bottom-screen
-switcher features need a compatible second display, and its shortcuts need
-the expected Back and shoulder-button inputs. Other devices have not been
-tested, so full feature compatibility is not guaranteed.
+Other devices, Android versions, and what the app needs from the hardware:
+see the [FAQ](docs/FAQ.md#compatibility).
 
-## What the Back button does
+## What one Back button can do for you
 
 <div align="center">
 
@@ -229,6 +222,8 @@ Requires JDK 17. `minSdk` is 30 (Android 11).
 The app can be used without reading these, but the repository includes more
 detail for people who want to understand or work on it:
 
+- [FAQ](docs/FAQ.md) — device compatibility, how updating works, and the
+  privacy and trust questions an accessibility service ought to answer.
 - [Interactive gesture explainer](docs/gesture-explainer.html) — a clickable
   device diagram showing what each Back-button gesture does. To run it
   interactively, open the HTML file in a browser from a clone of the repo so
