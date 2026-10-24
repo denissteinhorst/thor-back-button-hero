@@ -29,10 +29,10 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 - [x] 13 — Snapshot: Dialoge
 - [x] 14 — A11y-Inventar (Report, kein Fix)
 - [x] 15 — Device: Golden-Logcat-Trace + manuelle Checkliste schreiben
-- [ ] 16 — Seam: `BackGestureMachine`-Extraktion
-- [ ] 17 — Characterization: `BackGestureMachine`
-- [ ] 18 — Device: Espresso-Smoke auf `SettingsActivity`
-- [ ] 19 — Coverage-Ratchet (JaCoCo Pro-Klassen-Minima)
+- [x] 16 — Seam: `BackGestureMachine`-Extraktion
+- [x] 17 — Characterization: `BackGestureMachine`
+- [x] 18 — Device: Espresso-Smoke auf `SettingsActivity`
+- [x] 19 — Coverage-Ratchet (JaCoCo Pro-Klassen-Minima)
 - [ ] 20 — Suite-Stabilität (5× Lauf, Flake-Report)
 - [ ] 21 — Optional: Roborazzi-Pixel-Goldens (nur Linux-CI)
 
@@ -67,8 +67,8 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 14: `./tools/verify.sh` grün. Commits
-11–14: `a5bcb71`, `c7c32ad` (Infra-Fix), `dc022df`, `5e9a6ca`, `46120cf`.
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 19: `./tools/verify.sh` grün, inklusive
+`jacocoCoverageVerification`.
 
 **Wichtiger Fund in Schritt 12 — behoben:** `ViewTree.kt`s `when`-Block prüfte `is TextView`
 vor `is CompoundButton`. Da `Switch` in Android eine `TextView`-Unterklasse ist, gewann immer
@@ -106,7 +106,14 @@ byte-identisch zum committeten Zustand (`git diff` leer), Gerät neu installiert
 `docs/gesture-explainer.html`/`docs/gestures.gif` als lokal modifiziert — konsistent mit
 deiner parallelen Arbeit am Gesture-Explainer. Weiterhin unangetastet gelassen.
 
-**Noch offen für spätere Schritte:**
-- Schritt 16/17: `BackGestureMachine`-Seam — komplexester verbleibender Schritt des
-  gesamten Plans, braucht nach der Extraktion eine zweite Device-Session (Trace-Diff +
-  volle manuelle Checkliste inkl. Shoulder-Buttons).
+**Schritte 16–18:** `BackGestureMachine` wurde verhaltensneutral extrahiert und mit acht
+deterministischen Unit-Tests charakterisiert. Trace-Gegenprobe und vollständige manuelle
+Checkliste waren ohne Entscheidungsabweichung; der Espresso-Smoke lief nach Entfernen des
+doppelten ADB-Transports mit 1 Test und 0 Fehlern durch.
+
+**Schritt 19:** JaCoCo benötigt für die von Robolectric geladenen App-Klassen
+`includeNoLocationClasses`; ohne diese Einstellung enthielt die `.exec`-Datei eine Session,
+der Report zeigte aber für alle Klassen 0 %. Gemessene Line-Coverage: BackGestureMachine
+90,77 %, Prefs 100 %, DoubleTapDetector 100 %, AccessibilityAppSource 60 %, SettingsUiKitKt
+100 %, UpdateChecker 34,62 %. Der Ratchet schützt die vier in Schritt 19 vorgesehenen Klassen;
+UpdateChecker kommt nach dem Parse-Seam in Schritt 26 hinzu.
