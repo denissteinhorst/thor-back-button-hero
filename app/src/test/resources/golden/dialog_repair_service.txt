@@ -1,0 +1,24 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false
+  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      AlertDialogLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[72,54,72,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+            DialogTitle visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Repair accessibility service?" textSizePx=60.0 textColor=#FF191C1E maxLines=1 bold=false
+          Space visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[72,0,72,0] clickable=false focusable=false margin=[0,0,0,0] text="Android does not allow apps to reactivate their own accessibility service. On the next screen, select Back Button Hero, switch it off, then switch it on again. This safely clears a stopped or crashed service without changing your assignments." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=GONE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          ButtonBarLayout visibility=VISIBLE minHeight=0 padding=[36,12,36,12] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Space visibility=INVISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Cancel" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Open accessibility settings" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
