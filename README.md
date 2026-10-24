@@ -10,7 +10,7 @@ No root or companion app required.
 
 ## What the Back button does
 
-![Single tap, double tap and hold shown on a simplified diagram of the device](docs/gestures.gif)
+![All six Back Button Hero features shown on a simplified diagram of the device](docs/gestures.gif)
 
 | Gesture | Action |
 |---|---|
