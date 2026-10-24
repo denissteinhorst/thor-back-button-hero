@@ -2,7 +2,7 @@
 
 ## 1. Ziel
 
-Die 15 bestehenden Lint-Warnungen per Baseline-Datei einfrieren (nicht beheben — das wäre
+Die 20 bestehenden Lint-Warnungen per Baseline-Datei einfrieren (nicht beheben — das wäre
 eine optische Änderung) und jede **neue** Warnung ab jetzt als Build-Fehler behandeln.
 
 ## 2. Voraussetzungen
@@ -31,9 +31,11 @@ richtige Reaktion ist dann, die Warnung in der Testdatei zu beheben, nicht
    ergänzen, dann `JAVA_HOME=... ./gradlew lintDebug --console=plain` einmal laufen lassen —
    AGP erzeugt `app/lint-baseline.xml` beim ersten Lauf automatisch, wenn die Datei noch
    nicht existiert und `baseline` konfiguriert ist.
-2. Öffnen `app/lint-baseline.xml` und zählen: muss exakt die 15 aus Schritt 01 bekannten
-   Warnungs-Fundstellen enthalten (`DataExtractionRules`, `ObsoleteSdkInt`,
-   2× `UnusedResources`, 5× `IconColors`, 5× `IconLauncherShape`, `MonochromeLauncherIcon`).
+2. Öffnen `app/lint-baseline.xml` und zählen: muss exakt die 20 bis Schritt 09 bekannten
+   Warnungs-Fundstellen enthalten (5× `GradleDependency`, `DataExtractionRules`,
+   `ObsoleteSdkInt`, 2× `UnusedResources`, 5× `IconColors`, 5× `IconLauncherShape`,
+   `MonochromeLauncherIcon`). Die fünf `GradleDependency`-Funde kamen mit den in Schritt 02
+   ergänzten Test-Abhängigkeiten hinzu und sind im Inventar aus Schritt 09 dokumentiert.
    Enthält die Datei mehr oder weniger: **stoppen und melden**, nicht blind committen —
    eine abweichende Zahl bedeutet, dass sich seit Schritt 01 etwas am Lint-Ergebnis geändert
    hat, das zuerst verstanden werden muss.
@@ -46,7 +48,7 @@ richtige Reaktion ist dann, die Warnung in der Testdatei zu beheben, nicht
    }
    ```
 4. Erneuten Lauf bestätigen: `JAVA_HOME=... ./gradlew lintDebug --console=plain` muss mit
-   der Baseline weiterhin grün sein (die 15 bekannten Warnungen sind durch die Baseline
+   der Baseline weiterhin grün sein (die 20 bekannten Warnungen sind durch die Baseline
    unterdrückt, `warningsAsErrors` greift nur für neue, nicht in der Baseline enthaltene
    Funde).
 5. Testfall für die Ratchet-Wirkung (nur lokal, **nicht committen**): temporär eine
@@ -65,7 +67,7 @@ richtige Reaktion ist dann, die Warnung in der Testdatei zu beheben, nicht
 ## 5. Akzeptanzkriterien
 
 - `./tools/verify.sh` grün.
-- `app/lint-baseline.xml` existiert, committet, enthält exakt 15 Fundstellen.
+- `app/lint-baseline.xml` existiert, committet, enthält exakt 20 Fundstellen.
 - Der in Aufgabe 5 beschriebene manuelle Ratchet-Test bestätigt: eine neue Warnung lässt den
   Build fehlschlagen.
 
@@ -80,6 +82,6 @@ Entscheidung warten, bevor committet wird.
 ```
 build: freeze existing lint warnings via baseline, ratchet new ones
 
-app/lint-baseline.xml locks in the 15 known warnings from the Phase 0
+app/lint-baseline.xml locks in the 20 known warnings through Step 09
 baseline. warningsAsErrors now fails the build on anything new.
 ```

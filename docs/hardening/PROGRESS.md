@@ -40,7 +40,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 - [x] 22 — Self-installing Git-Hooks
 - [x] 23 — CI: `verify`-Job + Caching + Reports
-- [ ] 24 — Lint-Ratchet (Baseline-Datei + `warningsAsErrors`)
+- [x] 24 — Lint-Ratchet (Baseline-Datei + `warningsAsErrors`)
 - [ ] 25 — Branch-Protection-Doku + Dependabot
 
 ## Phase 3 — Best-Practice & Architektur (verhaltensneutral)
@@ -67,7 +67,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 23: `./tools/verify.sh` grün, inklusive
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 24: `./tools/verify.sh` grün, inklusive
 `jacocoCoverageVerification`; fünf unabhängige Unit-Test-Läufe waren 5/5 grün.
 
 **Wichtiger Fund in Schritt 12 — behoben:** `ViewTree.kt`s `when`-Block prüfte `is TextView`
@@ -122,3 +122,10 @@ UpdateChecker kommt nach dem Parse-Seam in Schritt 26 hinzu.
 dauerte 3:37 min und speicherte den Gradle-Cache; der zweite identische Lauf traf denselben
 Cache-Key und dauerte 2:46 min. `lint-report`, `unit-test-report` und `coverage-report` waren
 jeweils als Artefakte vorhanden.
+
+**Schritt 24:** Die generierte Lint-Baseline enthält 20 statt der ursprünglich im Schritt
+genannten 15 Fundstellen. Die fünf zusätzlichen `GradleDependency`-Warnungen stammen von den
+in Schritt 02 ergänzten Test-Abhängigkeiten und waren bereits im Inventar aus Schritt 09
+dokumentiert; Schritt 24 wurde entsprechend korrigiert. Eine temporäre neue
+`MissingTranslation`-Warnung ließ `lintDebug` mit Exit-Code 1 fehlschlagen und bestätigt den
+Ratchet.

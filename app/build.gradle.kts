@@ -40,6 +40,11 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    lint {
+        baseline = file("lint-baseline.xml")
+        warningsAsErrors = true
+        abortOnError = true
+    }
 
     if (releaseKeystorePath != null) {
         signingConfigs {
