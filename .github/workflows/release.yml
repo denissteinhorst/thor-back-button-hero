@@ -22,6 +22,19 @@ jobs:
       - name: Decode release keystore
         run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
 
+      # UpdateChecker.parseRelease does "v1".removePrefix("v").toIntOrNull(), so a tag that
+      # is not exactly v<versionCode> makes every installed app miss this release for good.
+      # Fail before publishing rather than shipping an undetectable release.
+      - name: Verify tag matches versionCode
+        run: |
+          code="$(grep -oE 'versionCode = [0-9]+' app/build.gradle.kts | head -1 | grep -oE '[0-9]+$')"
+          if [ "$GITHUB_REF_NAME" != "v$code" ]; then
+            echo "Tag '$GITHUB_REF_NAME' does not match versionCode $code (expected 'v$code')." >&2
+            echo "UpdateChecker would never detect this release. Fix the tag or versionCode." >&2
+            exit 1
+          fi
+          echo "Tag '$GITHUB_REF_NAME' matches versionCode $code."
+
       - name: Build signed release APK
         env:
           RELEASE_KEYSTORE_PATH: ${{ github.workspace }}/release.keystore
@@ -34,8 +47,19 @@ jobs:
         if: always()
         run: rm -f release.keystore
 
+      # Ship a self-describing filename instead of the generic app-release.apk, so a
+      # downloaded or side-loaded file still says which version it is.
+      - name: Name the APK after the app and its version
+        id: apk
+        run: |
+          version="$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)"/\1/')"
+          asset="thor-back-button-hero-v${version}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$asset"
+          echo "asset=$asset" >> "$GITHUB_OUTPUT"
+          echo "Release asset: $asset"
+
       - name: Create GitHub release with APK
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/release/app-release.apk
+          files: ${{ steps.apk.outputs.asset }}
           generate_release_notes: true
