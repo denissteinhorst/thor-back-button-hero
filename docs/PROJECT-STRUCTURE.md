@@ -132,6 +132,7 @@ first build, so they work right after a clone without a manual step.
 
 | File | Purpose |
 |---|---|
+| `FAQ.md` | Reader-facing answers: device compatibility beyond the tested Thor, how the update check behaves, and the privacy and trust questions an accessibility service invites. Linked from the README's Compatibility section. |
 | `ARCHITECTURE.md` | Components, their responsibilities, how a gesture flows through them, and the display-targeting model. |
 | `TESTING.md` | The test concept and every quality gate, plus what is deliberately not automated. |
 | `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
