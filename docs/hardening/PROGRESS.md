@@ -11,7 +11,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ## Phase 0 — Baseline
 
-- [ ] 01 — Baseline-Commit + Build-/Lint-Baseline-Dump
+- [x] 01 — Baseline-Commit + Build-/Lint-Baseline-Dump
 
 ## Phase 1 — Test-Suite (Safety Net)
 
@@ -67,4 +67,6 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** _(hier Datum + Kurzbefund nach jedem Schritt eintragen)_
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 01: `assembleDebug` + `assembleRelease` +
+`lintDebug` grün (BUILD SUCCESSFUL, 0 errors/15 warnings, exakt wie erwartet, keine
+Abweichung). Baseline-Commit `b0f4d55`.
