@@ -19,21 +19,17 @@
 
 # Thor Back Button Hero
 
-> [!TIP]
-> **tl;dr** — Back Button Hero turns the AYN Thor's Back button into an app
-> switcher, a screen swapper, and up to four shoulder-button shortcuts. It needs
-> no root and no companion app, and Back still works as Back.
+> [!NOTE]
+> A tiny Android accessibility service that gives the **Back button** on
+> dual-screen handhelds (built for the [AYN Thor](https://www.ayntec.com/products/ayn-thor)) a lot
+> more jobs: app switching, screen swapping, task switching, and up to four
+> fully customizable shoulder-button shortcuts — on top of what Back already
+> does.
+>
+> No root or companion app required.
 >
 > **Install:** grab the APK from [Releases][release-url], install it, then switch
 > on its accessibility service when the app asks.
-
-A tiny Android accessibility service that gives the **Back button** on
-dual-screen handhelds (built for the [AYN Thor](https://www.ayntec.com/products/ayn-thor)) a lot
-more jobs: app switching, screen swapping, task switching, and up to four
-fully customizable shoulder-button shortcuts — on top of what Back already
-does.
-
-No root or companion app required.
 
 ## Compatibility
 
