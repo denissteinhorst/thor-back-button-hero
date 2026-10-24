@@ -11,6 +11,11 @@ reassignable shoulder-button (L1/L2/R1/R2) shortcuts. No root, no companion
 app. Single-module Kotlin app with JVM and instrumented tests, no DI framework,
 and no build variants beyond debug/release.
 
+**Features, layout, styling, and texts are final and validated.** The test suite,
+goldens, and gates described below exist to freeze exactly that state. Changes to
+behavior, visuals, or wording are out of scope unless explicitly requested — if a test
+goes red after a production change, the change is wrong, not the test.
+
 ## Build & CI commands
 
 ```sh
@@ -23,28 +28,163 @@ and no build variants beyond debug/release.
 ./tools/verify.sh          # the one gate: lint, unit tests, coverage, both builds
 ```
 
-`./tools/verify.sh` resolves JDK 17 itself (JAVA_HOME is not on PATH on this machine —
-see `docs/hardening/00-OVERVIEW.md`) and is the required check after every change.
-Git hooks (`.githooks/`) run a subset on commit and the full gate on push; CI
-(`.github/workflows/ci.yml`) runs the same `verify` task. See `docs/hardening/` for the
-full test-suite and hardening plan.
+`./tools/verify.sh` is the required check after every change — never call bare
+`./gradlew` as the gate. It resolves JDK 17 itself, because **JAVA_HOME is not on
+PATH on this machine**: a bare `java -version` fails, and the keg-only JDK lives at
+`/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`. For one-off Gradle
+calls outside the gate, pass it explicitly:
 
-Most automated checks are Robolectric unit tests, including deterministic
-View-tree snapshots of the settings UI. `BackGestureMachine` is the testable
-seam for key-event timing and gesture decisions. One Espresso smoke test covers
-the real-device activity startup; remaining accessibility-service,
-multi-display, overlay, and physical-key behavior follows the manual checks
-listed in `docs/hardening/TEST-GAPS.md`.
+```sh
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ./gradlew <task> --console=plain
+```
 
-JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 1.9.24, AGP
-8.5.2. CI (`.github/workflows/ci.yml`) runs the full `verify` gate on every
-push/PR to `main`. Release (`.github/workflows/release.yml`) fires on
-`v*` tags, signs with secrets, and publishes the APK to GitHub Releases.
+Git hooks (`.githooks/`, wired via `core.hooksPath` and self-installing through the
+`installGitHooks` task) run compile + unit tests on commit and the full gate on push.
+CI (`.github/workflows/ci.yml`) runs the same `verify` task on every push/PR to `main`.
+Never bypass hooks with `--no-verify`.
 
-**Version tag convention**: release tags are `v<versionCode>` (e.g. `v2`),
-matching `defaultConfig.versionCode` in `app/build.gradle.kts`.
-`UpdateChecker.kt` parses that tag format to detect new releases — bump
-`versionCode` before tagging, and keep the two in sync.
+JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 1.9.24, AGP 8.5.2,
+Gradle 8.7. Android SDK has only `platforms/android-34` + `build-tools/34.0.0` and
+**no emulator image** — every `androidTest`/`connectedDebugAndroidTest` needs the
+physical AYN Thor attached via `adb` (device id changes; re-check with `adb devices`).
+
+## Expected results — what green looks like
+
+Treat a deviation from these numbers as a regression to investigate, not a new baseline
+to record:
+
+- **81 JVM tests, 0 failures, 0 skipped** across 15 test classes.
+- **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
+  (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
+  `MonochromeLauncherIcon`, 5× `GradleDependency`). `warningsAsErrors = true` and
+  `abortOnError = true`, so any *new* warning fails the gate. Those 18 are deliberately
+  **not fixed** — each fix would be a visible change (new icon, etc.).
+- **JaCoCo per-class line-coverage ratchets** (in `app/build.gradle.kts`, enforced by
+  `jacocoCoverageVerification`) and their measured headroom:
+
+  | Class | Minimum | Measured |
+  |---|---|---|
+  | `Prefs` | 1.00 | 1.0000 |
+  | `DoubleTapDetector` | 1.00 | 1.0000 |
+  | `CardTouch` | 0.90 | 1.0000 |
+  | `BackGestureMachine` | 0.90 | 0.9077 |
+  | `AccessibilityAppSource` | 0.60 | 0.6000 |
+  | `UpdateChecker` | 0.41 | 0.4151 |
+
+  Several minima sit exactly at the measured value, so coverage must not drop at all.
+  The ratchet may only ever rise.
+- **Release APK ~2.52 MB** (`app-release-unsigned.apk`). Debug is much larger
+  (~6.8 MB) because LeakCanary is bundled there.
+- **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
+  transitively `org.jetbrains:annotations`. Verify with:
+  ```sh
+  ./gradlew :app:dependencies --configuration releaseRuntimeClasspath | \
+    grep -iE "junit|robolectric|espresso|uiautomator|leakcanary|jacoco"   # must print nothing
+  ```
+
+## Testing: what is protected, and what is not
+
+Automated coverage is deliberately uneven. Know which side of the line you are on
+before trusting the suite:
+
+**Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
+`DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
+settings UI via **deterministic View-tree text snapshots** (golden files in
+`app/src/test/resources/golden/`) covering the main page across theme and locale,
+every shoulder-row state, three dialogs, and an accessibility inventory. These goldens
+genuinely bite: changing a single visible string turns 7 tests red.
+
+**Barely protected — manual device testing is the only real net.**
+`SwitcherOverlay` is at **0 %** line coverage (0/147) and `SwitcherService` at **5.8 %**
+(10/172). The entire switcher overlay UI, multi-display targeting, thumbnail capture,
+and physical key-event handling are unverified by any automated test. `BackGestureMachine`
+exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
+the extraction moved the *decisions* under test but left the Android side effects out.
+One Espresso smoke test (`SettingsActivitySmokeTest`, device-only, **not** part of the
+gate) covers activity startup against manifest/resource failures.
+
+After touching `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, or
+anything key-event related, a green gate proves little — exercise the gestures on the
+device. Scale that effort to the change: docs, build config, or test-only edits need no
+device pass.
+
+**Golden-file rule:** never re-record a golden to turn a red test green. A red snapshot
+after a production change means the change is wrong. Re-record only for an intentional,
+explicitly approved UI change.
+
+## Toolchain gotchas that will otherwise cost an hour
+
+- **Unit tests run with `app/` as the working directory**, not the repo root. Paths in
+  tests (`Golden`, `ResourceIntegrityTest`) are relative to `app/`.
+- **Lint also analyzes test sources** (`lintAnalyzeDebugAndroidTest`/`-UnitTest`). With
+  `warningsAsErrors`, a warning in *new test code* fails the gate. Fix the test code —
+  do not disable the flag or add the finding to the baseline.
+- **`DoubleTapDetector` uses `0L` as a "no previous press" sentinel.** With a test clock
+  at 0, a double tap is never detected. Start fake clocks above 0. This is a fixture
+  requirement, not a bug to fix.
+- **`SettingsActivity.onCreate` starts a real network thread** (`UpdateChecker`), so
+  every Robolectric activity test actually hits `api.github.com` and can wait out a 5 s
+  timeout. Failures are swallowed, tests stay green — leave it alone. Only report it if
+  an activity test becomes *flaky* with `UpdateChecker`/`HttpURLConnection` in the trace.
+- **`service.windowsOnAllDisplays` is unavailable under Robolectric** (may return empty,
+  null, or throw). Don't restructure `AccessibilityAppSource` to make it testable.
+- **Robolectric qualifier order matters**: `en-night-xxhdpi`, not `en-xxhdpi-night`.
+- **A locally built release APK is unsigned** (`app-release-unsigned.apk`) and
+  `adb install` rejects it. Measure on the **debug** build; `isMinifyEnabled = false`
+  in release, so code shape is practically identical. Read APK *size* off the release
+  artifact without installing.
+- **`adb shell am force-stop` cannot kill this app while its accessibility service is
+  enabled** — the binding keeps the process alive, and `am start -W` reports
+  `HOT`/`WARM` instead of `COLD`. A true cold-start measurement requires the user to
+  disable the service in Android settings first (the app cannot do it itself).
+- Performance snapshots are only meaningful with **2–3 real apps open** so the switcher
+  holds actual cards and thumbnails; measuring with an empty switcher understates
+  memory badly and yields too few frames for `gfxinfo` to mean anything.
+
+## Release process
+
+**Version tag convention**: release tags are `v<versionCode>` (e.g. `v2`), matching
+`defaultConfig.versionCode` in `app/build.gradle.kts`. `UpdateChecker.parseRelease`
+parses that tag format (`"v1".removePrefix("v").toIntOrNull()`) to detect new releases —
+bump `versionCode` before tagging and keep the two in sync. Currently `versionCode = 1`,
+`versionName = "0.1.0"`, and **no tag exists yet**, so the first release is `v1`.
+
+`.github/workflows/release.yml` fires on `v*` tags: it decodes
+`RELEASE_KEYSTORE_BASE64`, builds a signed release APK from the
+`RELEASE_KEYSTORE_PATH`/`_PASSWORD`/`RELEASE_KEY_ALIAS`/`RELEASE_KEY_PASSWORD` env vars,
+publishes it to GitHub Releases, then deletes the keystore. Signing is env-only by
+design — no keystore is or should ever be committed (`*.keystore`/`*.jks` are
+gitignored).
+
+Before tagging: `./tools/verify.sh` green locally, CI green on `main`, `versionCode`
+bumped, tag name exactly `v<versionCode>`, `RELEASE_KEYSTORE_*` secrets present, and a
+device pass over the gestures and the switcher overlay (the part no test covers).
+
+### Release-readiness notes
+
+- **The repo is public**, which is a hard requirement for the shipped feature set:
+  `UpdateChecker` calls the releases API unauthenticated and by design carries no token,
+  so a private repo would answer 404 and the update check would fail permanently for
+  every user (the app sends no credentials, so even the owner would never get a
+  notification). The in-app repository link and the published APK assets depend on
+  public visibility too. **Do not flip this repo back to private** without accepting
+  that the update feature and side-load distribution die with it.
+- **Until the first release is tagged, `releases/latest` legitimately returns 404**, so
+  the app shows "Couldn't check for updates". That is expected pre-`v1` and resolves
+  itself once the release workflow has published once. Verified unauthenticated, exactly
+  as the app calls it.
+- **Branch protection is available but not yet configured** (`GET .../branches/main/protection`
+  answers `404 Branch not protected`). Until it is set up to require the `verify` check,
+  CI is advisory only and nothing mechanically stops a direct push to `main`.
+- Note when debugging the update path: unauthenticated GitHub API calls are limited to
+  **60/hour per IP**, and a local `curl` loop exhausts that quickly. A `403` with
+  `rate_limit.core.remaining == 0` is throttling, not a visibility or code problem —
+  check `https://api.github.com/rate_limit` before concluding anything.
+
+Dependabot is configured (weekly, Gradle + GitHub Actions). Pending update PRs include
+major toolchain jumps (AGP 9.x, Kotlin 2.x, Gradle 9.x, Robolectric 4.17) that would
+move the deliberately frozen toolchain — do not merge those alongside a release; take
+them one at a time behind a green gate afterwards.
 
 ## Architecture
 

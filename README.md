@@ -94,9 +94,15 @@ The app itself ships with zero runtime dependencies beyond the Kotlin standard l
 (Apache-2.0), which the Kotlin Gradle plugin adds automatically. The test suite under
 `app/src/test` and `app/src/androidTest` depends on JUnit (EPL-1.0), Robolectric (MIT),
 AndroidX Test / Espresso / UiAutomator (Apache-2.0), and JaCoCo (EPL-2.0) — none of these
-are included in the release APK; see `docs/hardening/37-license-audit.md` for the
-mechanical proof. LeakCanary (Apache-2.0) is `debugImplementation`-only and ships in
-debug builds alone, never in release.
+are included in the release APK. You can verify that mechanically — the release runtime
+classpath resolves to nothing but the Kotlin standard library:
+
+```sh
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath
+```
+
+LeakCanary (Apache-2.0) is `debugImplementation`-only and ships in debug builds alone,
+never in release.
 
 ## License
 
