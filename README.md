@@ -11,6 +11,10 @@
 ![Min SDK][minsdk-shield]
 ![Runtime dependencies][deps-shield]
 
+<br />
+
+<img src="docs/assets/launcher-icon.png" alt="Back Button Hero app icon" width="160" />
+
 </div>
 
 # Thor Back Button Hero
