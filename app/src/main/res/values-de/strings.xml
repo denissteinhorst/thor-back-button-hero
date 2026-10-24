@@ -7,6 +7,7 @@
     <string name="status_on">Bedienungshilfen-Dienst ist aktiv</string>
     <string name="status_unresponsive">Bedienungshilfen-Dienst ist aktiviert, reagiert aber nicht.</string>
     <string name="status_off">Bedienungshilfen-Dienst ist aus. %1$s braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen.</string>
+    <string name="enable_service">Bedienungshilfen-Dienst einschalten</string>
     <string name="open_a11y">Bedienungshilfen öffnen</string>
     <string name="repair_service">Dienst reparieren</string>
     <string name="repair_service_hint">Falls die Tastengesten nicht mehr reagieren, „Dienst reparieren“ wählen und Back Button Hero einmal aus- und wieder einschalten.</string>

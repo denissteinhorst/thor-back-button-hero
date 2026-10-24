@@ -64,6 +64,9 @@ class SettingsActivity : Activity() {
 
         page.card {
             warning = warningRow(serviceStatusText(currentServiceStatus()))
+            openA11yHandle = actionRow(R.string.enable_service) {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
         }
 
         page.sectionHeader(R.string.single_section_title)
@@ -99,7 +102,6 @@ class SettingsActivity : Activity() {
         page.sectionHeader(R.string.help_debug_title)
         page.card {
             statusLabel = textRow(serviceStatusText(currentServiceStatus()))
-            openA11yHandle = actionRow(R.string.open_a11y) { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
             repairHandle = actionRow(R.string.repair_service, R.string.repair_service_hint) { explainServiceRepair() }
         }
         page.card {

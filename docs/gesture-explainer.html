@@ -301,11 +301,30 @@
   }
   button:active { background: #e3e9f6; }
   button.current { background: #2f6fed; color: #ffffff; border-color: #2f6fed; }
+
+  .featureIntro {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #ffffff;
+    background: rgba(8, 11, 18, 0.78);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease-in-out;
+  }
+  .featureIntro.shown { opacity: 1; }
+  .featureName { font-size: 30px; font-weight: 750; letter-spacing: 0.1px; }
+  .featureCount { font-size: 16px; font-weight: 600; color: #c9d7ef; letter-spacing: 0.4px; }
 </style>
 </head>
 <body>
   <div class="stage">
-    <div class="caption" id="caption">Back button, three ways</div>
+    <div class="caption" id="caption">Back button, six ways</div>
     <div class="sub" id="sub">tap a gesture below</div>
 
     <div class="device">
@@ -414,6 +433,11 @@
     </div>
   </div>
 
+  <div class="featureIntro" id="featureIntro">
+    <div class="featureName" id="featureName"></div>
+    <div class="featureCount" id="featureCount"></div>
+  </div>
+
 <script>
   const caption = document.getElementById('caption');
   const sub = document.getElementById('sub');
@@ -438,6 +462,9 @@
   const tagL2 = document.getElementById('tagL2');
   const tagR1 = document.getElementById('tagR1');
   const tagR2 = document.getElementById('tagR2');
+  const featureIntro = document.getElementById('featureIntro');
+  const featureName = document.getElementById('featureName');
+  const featureCount = document.getElementById('featureCount');
   const buttons = {
     single: document.getElementById('btnSingle'), double: document.getElementById('btnDouble'),
     hold: document.getElementById('btnHold'), tapHold: document.getElementById('btnTapHold'),
@@ -705,6 +732,45 @@
         sub.textContent = 'every shoulder: app-swiping or app hotkey • top/bottom';
       }, t + 150);
     }, PRE_DELAY);
+  }
+
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function showFeatureIntro(name, index) {
+    markCurrent(null);
+    featureName.textContent = name;
+    featureCount.textContent = `Feature-Preview ${index}/6`;
+    featureIntro.classList.add('shown');
+    await wait(1150);
+    featureIntro.classList.remove('shown');
+    await wait(500);
+  }
+
+  async function autoplayAllFeatures() {
+    const features = [
+      { name: 'Single tap', play: playSingle, duration: 2800 },
+      { name: 'Double tap', play: playDouble, duration: 3100 },
+      { name: 'Tap, then hold', play: playTapHold, duration: 3450 },
+      { name: 'Hold', play: playHold, duration: 2350, repeats: 2 },
+      { name: 'Hold + L1/R1', play: playShoulderOne, duration: 3650 },
+      { name: 'Hold + L2/R2', play: playShoulderTwo, duration: 3050 },
+    ];
+
+    await wait(400);
+    for (let index = 0; index < features.length; index++) {
+      const feature = features[index];
+      await showFeatureIntro(feature.name, index + 1);
+      for (let repeat = 0; repeat < (feature.repeats || 1); repeat++) {
+        feature.play();
+        await wait(feature.duration);
+      }
+    }
+    await wait(700);
+    window.__previewDone = true;
+  }
+
+  if (new URLSearchParams(location.search).has('autoplay')) {
+    autoplayAllFeatures();
   }
 </script>
 </body>

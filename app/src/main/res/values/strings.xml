@@ -8,6 +8,7 @@
     <string name="status_on">Accessibility service is on</string>
     <string name="status_unresponsive">Accessibility service is enabled, but is not responding.</string>
     <string name="status_off">Accessibility service is off. %1$s needs it to read the Back button and show the switcher.</string>
+    <string name="enable_service">Turn on accessibility service</string>
     <string name="open_a11y">Open accessibility settings</string>
     <string name="repair_service">Repair service</string>
     <string name="repair_service_hint">If button gestures stop responding, use Repair service and switch Back Button Hero off and on again.</string>
