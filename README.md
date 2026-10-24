@@ -28,6 +28,9 @@
 >
 > No root or companion app required.
 >
+> **Try it:** [the interactive explainer][explainer-url] downloads one
+> self-contained HTML file — no APK and no permissions involved.
+>
 > **Install:** grab the APK from [Releases][release-url], install it, then switch
 > on its accessibility service when the app asks.
 
@@ -46,9 +49,6 @@ see the [FAQ](docs/FAQ.md#compatibility).
 <div align="center">
 
 ![All six Back Button Hero features shown on a simplified diagram of the device](docs/assets/gestures.gif)
-
-**[Try the gestures yourself][explainer-url]** — downloads one self-contained
-HTML file, no APK and no permissions involved.
 
 </div>
 
