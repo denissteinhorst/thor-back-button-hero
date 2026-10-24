@@ -137,13 +137,17 @@ first build, so they work right after a clone without a manual step.
 | `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
 | `PROJECT-STRUCTURE.md` | This file. |
 | `MAINTENANCE.md` | Setup, building, releasing, dependency policy, and recipes for common changes. |
-| `gesture-explainer.html` | Standalone page that illustrates the gestures. |
-| `gestures.gif` | The animation embedded in `README.md`. |
-| `thor-base.png` | Device artwork used by the explainer and the animation. |
+| `gesture-explainer.html` | Standalone page that illustrates the gestures. Loads its artwork from `assets/`, so open it from a clone rather than in isolation. |
 
-## `artwork/`
+### `docs/assets/`
+
+Every image the documentation and the app identity are built from. The shipped app icons
+live in `app/src/main/res/` and are generated from the masters here — these files are not
+read at build time.
 
 | File | Purpose |
 |---|---|
+| `gestures.gif` | The animation embedded in `README.md`. |
+| `thor-base.png` | Device outline used by the explainer and the animation. |
+| `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
-| `launcher-icon.png` | The working export the density variants were produced from. |

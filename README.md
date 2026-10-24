@@ -1,3 +1,18 @@
+<a id="readme-top"></a>
+
+<!-- SHIELDS -->
+<div align="center">
+
+[![CI][ci-shield]][ci-url]
+[![Latest release][release-shield]][release-url]
+[![License][license-shield]][license-url]
+
+![Platform][platform-shield]
+![Min SDK][minsdk-shield]
+![Runtime dependencies][deps-shield]
+
+</div>
+
 # Thor Back Button Hero
 
 A tiny Android accessibility service that gives the **Back button** on
@@ -12,7 +27,12 @@ No root or companion app required.
 
 Back Button Hero has been tested on an **AYN Thor Max 16GB/1TB (Rainbow),
 1st Batch**, running Android 13, firmware
-`Thor_V1.0.0.377_20260206_165408_user`.
+`Thor_V1.0.0.377_20260206_165408_user`. That said, nothing in the app depends
+on that particular configuration, so it should run just as well on any other
+AYN Thor — Base, Pro, or Max512 — since they share the same dual-screen layout
+and button hardware. The app asks very little of the device it runs on, which
+is what makes the lower-specced variants a non-issue; see
+[Small footprint](#small-footprint) for the measured numbers.
 
 The app is a regular Android app (`minSdk` 30 / Android 11) and should install
 and launch on Android 11 or later. Its screen-swapping and bottom-screen
@@ -22,7 +42,11 @@ tested, so full feature compatibility is not guaranteed.
 
 ## What the Back button does
 
-![All six Back Button Hero features shown on a simplified diagram of the device](docs/gestures.gif)
+<div align="center">
+
+![All six Back Button Hero features shown on a simplified diagram of the device](docs/assets/gestures.gif)
+
+</div>
 
 | Gesture | Action |
 |---|---|
@@ -200,7 +224,7 @@ detail for people who want to understand or work on it:
 - [Interactive gesture explainer](docs/gesture-explainer.html) — a clickable
   device diagram showing what each Back-button gesture does. To run it
   interactively, open the HTML file in a browser from a clone of the repo so
-  it can load `thor-base.png` beside it.
+  it can load its artwork from `docs/assets/`.
 - [Architecture](docs/ARCHITECTURE.md) — the main components, how a gesture
   flows through the app, and how it targets the two displays.
 - [Testing and quality gates](docs/TESTING.md) — the automated verification
@@ -219,7 +243,9 @@ detail for people who want to understand or work on it:
 
 This app was built with AI assistance: I directed, reviewed, and tested
 every part of it myself, using OpenAI's Codex (GPT-5.6-sol) and Anthropic's
-Claude Code (Sonnet 5.5) as the coding tools. As an application developer
+Claude Code (Sonnet 5.5) as the coding tools. The visual assets — the app
+icon and the illustrations and animation in this README — were likewise
+created with AI assistance, using OpenAI's ChatGPT. As an application developer
 with several years of professional experience, I built it to the best of
 my knowledge and have used it extensively on my own AYN Thor. It is a
 hobby project and may contain bugs; see [Troubleshooting & support](#troubleshooting--support)
@@ -244,3 +270,14 @@ never in release.
 ## License
 
 0BSD — see [LICENSE](LICENSE).
+
+<!-- SHIELD DEFINITIONS -->
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/denissteinhorst/thor-back-button-hero/ci.yml?branch=main&style=for-the-badge&label=CI
+[ci-url]: https://github.com/denissteinhorst/thor-back-button-hero/actions/workflows/ci.yml
+[release-shield]: https://img.shields.io/github/v/release/denissteinhorst/thor-back-button-hero?style=for-the-badge
+[release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
+[license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
+[license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
+[platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white
+[minsdk-shield]: https://img.shields.io/badge/min%20SDK-30%20(Android%2011)-3DDC84?style=for-the-badge
+[deps-shield]: https://img.shields.io/badge/runtime%20dependencies-none-success?style=for-the-badge
