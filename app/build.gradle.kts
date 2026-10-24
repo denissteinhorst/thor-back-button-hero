@@ -44,6 +44,12 @@ android {
         baseline = file("lint-baseline.xml")
         warningsAsErrors = true
         abortOnError = true
+        // OldTargetApi only fires where a platform newer than targetSdk is installed, so it
+        // stays invisible on a machine with just android-34 and turns the CI runner red - and
+        // with warningsAsErrors it cannot be left as a warning. targetSdk is pinned at 34 on
+        // purpose; a baseline entry would be wrong here because the finding does not exist in
+        // every environment. Re-enable when deliberately moving targetSdk forward.
+        disable += "OldTargetApi"
     }
 
     if (releaseKeystorePath != null) {
