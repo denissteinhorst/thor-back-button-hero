@@ -4,6 +4,10 @@ plugins {
     id("jacoco")
 }
 
+tasks.named("preBuild") {
+    dependsOn(":installGitHooks")
+}
+
 // Release signing comes from the environment (CI secrets), never from a committed
 // keystore. Locally, these are unset and release builds stay unsigned - that's fine,
 // only CI needs to produce an installable release APK. See .github/workflows/release.yml.
