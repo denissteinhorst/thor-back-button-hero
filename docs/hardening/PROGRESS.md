@@ -39,7 +39,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 ## Phase 2 — Pre-Commit-Hooks & CI
 
 - [x] 22 — Self-installing Git-Hooks
-- [ ] 23 — CI: `verify`-Job + Caching + Reports
+- [x] 23 — CI: `verify`-Job + Caching + Reports
 - [ ] 24 — Lint-Ratchet (Baseline-Datei + `warningsAsErrors`)
 - [ ] 25 — Branch-Protection-Doku + Dependabot
 
@@ -67,7 +67,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 22: `./tools/verify.sh` grün, inklusive
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 23: `./tools/verify.sh` grün, inklusive
 `jacocoCoverageVerification`; fünf unabhängige Unit-Test-Läufe waren 5/5 grün.
 
 **Wichtiger Fund in Schritt 12 — behoben:** `ViewTree.kt`s `when`-Block prüfte `is TextView`
@@ -117,3 +117,8 @@ der Report zeigte aber für alle Klassen 0 %. Gemessene Line-Coverage: BackGestu
 90,77 %, Prefs 100 %, DoubleTapDetector 100 %, AccessibilityAppSource 60 %, SettingsUiKitKt
 100 %, UpdateChecker 34,62 %. Der Ratchet schützt die vier in Schritt 19 vorgesehenen Klassen;
 UpdateChecker kommt nach dem Parse-Seam in Schritt 26 hinzu.
+
+**Schritt 23:** GitHub Actions Run `40125187014` war auf Linux zweimal grün. Der erste Lauf
+dauerte 3:37 min und speicherte den Gradle-Cache; der zweite identische Lauf traf denselben
+Cache-Key und dauerte 2:46 min. `lint-report`, `unit-test-report` und `coverage-report` waren
+jeweils als Artefakte vorhanden.
