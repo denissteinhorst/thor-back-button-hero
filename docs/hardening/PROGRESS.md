@@ -34,7 +34,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 - [x] 18 — Device: Espresso-Smoke auf `SettingsActivity`
 - [x] 19 — Coverage-Ratchet (JaCoCo Pro-Klassen-Minima)
 - [x] 20 — Suite-Stabilität (5× Lauf, Flake-Report)
-- [ ] 21 — Optional: Roborazzi-Pixel-Goldens (nur Linux-CI)
+- [x] 21 — übersprungen (Standardentscheidung, siehe 21-optional-roborazzi.md)
 
 ## Phase 2 — Pre-Commit-Hooks & CI
 
