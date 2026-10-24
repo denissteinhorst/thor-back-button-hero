@@ -288,10 +288,6 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             addRow(row)
         }
 
-        fun setVisible(row: View, visible: Boolean) {
-            row.visibility = if (visible) View.VISIBLE else View.GONE
-        }
-
         private fun textBlock(titleRes: Int, summaryRes: Int?): LinearLayout = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             addView(TextView(activity).apply { setText(titleRes); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f) })

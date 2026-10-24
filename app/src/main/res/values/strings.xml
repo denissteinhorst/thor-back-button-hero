@@ -4,7 +4,6 @@
     <string name="close_all">Close all</string>
     <string name="no_recent_apps">No recent apps</string>
     <string name="both_screens">Both screens</string>
-    <string name="status_title">Service</string>
     <string name="status_on">Accessibility service is on</string>
     <string name="status_unresponsive">Accessibility service is enabled, but is not responding.</string>
     <string name="status_off">Accessibility service is off. %1$s needs it to read the Back button and show the switcher.</string>
@@ -14,7 +13,6 @@
     <string name="repair_service_hint">If button gestures stop responding, use Repair service and switch Back Button Hero off and on again.</string>
     <string name="repair_service_title">Repair accessibility service?</string>
     <string name="repair_service_message">Android does not allow apps to reactivate their own accessibility service. On the next screen, select Back Button Hero, switch it off, then switch it on again. This safely clears a stopped or crashed service without changing your assignments.</string>
-    <string name="features_title">Back button</string>
     <string name="double_title">Double-tap opens the app switcher</string>
     <string name="double_speed">Double-tap speed: %d ms</string>
     <string name="single_section_title">Single button press</string>

@@ -8,7 +8,7 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="160"
+            line="180"
             column="24"/>
     </issue>
 
@@ -19,7 +19,7 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="161"
+            line="181"
             column="24"/>
     </issue>
 
@@ -30,7 +30,7 @@
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="162"
+            line="182"
             column="31"/>
     </issue>
 
@@ -41,7 +41,7 @@
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="163"
+            line="183"
             column="31"/>
     </issue>
 
@@ -52,7 +52,7 @@
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="164"
+            line="184"
             column="31"/>
     </issue>
 
@@ -75,35 +75,13 @@
     </issue>
 
     <issue
-        id="UnusedResources"
-        message="The resource `R.string.status_title` appears to be unused"
-        errorLine1="    &lt;string name=&quot;status_title&quot;>Service&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="7"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.features_title` appears to be unused"
-        errorLine1="    &lt;string name=&quot;features_title&quot;>Back button&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="17"
-            column="13"/>
-    </issue>
-
-    <issue
         id="IconColors"
         message="Notification icons must be entirely white">
         <location
             file="src/main/res/drawable-hdpi/ic_launcher_foreground.png"/>
         <location
             file="src/main/java/dev/steinhorst/backbuttonhero/UpdateChecker.kt"
-            line="102"
+            line="106"
             column="27"
             message="Icon used in notification here"/>
     </issue>
@@ -115,7 +93,7 @@
             file="src/main/res/drawable-mdpi/ic_launcher_foreground.png"/>
         <location
             file="src/main/java/dev/steinhorst/backbuttonhero/UpdateChecker.kt"
-            line="102"
+            line="106"
             column="27"
             message="Icon used in notification here"/>
     </issue>
@@ -127,7 +105,7 @@
             file="src/main/res/drawable-xhdpi/ic_launcher_foreground.png"/>
         <location
             file="src/main/java/dev/steinhorst/backbuttonhero/UpdateChecker.kt"
-            line="102"
+            line="106"
             column="27"
             message="Icon used in notification here"/>
     </issue>
@@ -139,7 +117,7 @@
             file="src/main/res/drawable-xxhdpi/ic_launcher_foreground.png"/>
         <location
             file="src/main/java/dev/steinhorst/backbuttonhero/UpdateChecker.kt"
-            line="102"
+            line="106"
             column="27"
             message="Icon used in notification here"/>
     </issue>
@@ -151,7 +129,7 @@
             file="src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png"/>
         <location
             file="src/main/java/dev/steinhorst/backbuttonhero/UpdateChecker.kt"
-            line="102"
+            line="106"
             column="27"
             message="Icon used in notification here"/>
     </issue>
