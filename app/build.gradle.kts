@@ -26,8 +26,8 @@ android {
         applicationId = "dev.steinhorst.backbuttonhero"
         minSdk = 30
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -165,7 +165,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.41".toBigDecimal()
+                minimum = "0.46".toBigDecimal()
             }
         }
         rule {

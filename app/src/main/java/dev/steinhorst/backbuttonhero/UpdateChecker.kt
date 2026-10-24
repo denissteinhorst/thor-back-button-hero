@@ -45,14 +45,14 @@ object UpdateChecker {
                 deliver(callback, CheckResult(Status.ERROR))
                 return@Thread
             }
-            val currentVersionCode = runCatching {
-                appContext.packageManager.getPackageInfo(appContext.packageName, 0).longVersionCode.toInt()
-            }.getOrNull()
-            if (currentVersionCode == null) {
+            val current = runCatching {
+                appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
+            }.getOrNull()?.let { parseVersion(it) }
+            if (current == null) {
                 deliver(callback, CheckResult(Status.ERROR))
                 return@Thread
             }
-            if (release.versionCode > currentVersionCode) {
+            if (release.version > current) {
                 notify(appContext, release)
                 deliver(callback, CheckResult(Status.UPDATE_AVAILABLE, release.tagName, release.htmlUrl))
             } else {
@@ -66,9 +66,36 @@ object UpdateChecker {
         Handler(Looper.getMainLooper()).post { callback(result) }
     }
 
-    internal data class Release(val tagName: String, val htmlUrl: String, val versionCode: Int)
+    internal data class Release(val tagName: String, val htmlUrl: String, val version: Version)
 
-    /** CI tags releases "v<versionCode>" (see release workflow) so no extra version parsing is needed. */
+    /**
+     * Semantic version, compared field by field. Only the release-relevant core is kept:
+     * a prerelease or build suffix is dropped by [parseVersion] rather than ordered, which
+     * is enough because this project never tags prereleases.
+     */
+    internal data class Version(val major: Int, val minor: Int, val patch: Int) : Comparable<Version> {
+        override fun compareTo(other: Version): Int =
+            compareValuesBy(this, other, Version::major, Version::minor, Version::patch)
+
+        override fun toString() = "$major.$minor.$patch"
+    }
+
+    /**
+     * Accepts "v1.2.3" and every shorter form ("v1.2", "v1"), so the legacy
+     * "v<versionCode>" tags of the 1.0.0/1.0.1 releases still resolve: "v2" becomes 2.0.0.
+     * That keeps a build installed before the switch to semver tags comparable instead of
+     * silently failing every future update check.
+     */
+    internal fun parseVersion(raw: String): Version? {
+        // Cutting at '-' also removes any sign, so no component can come back negative.
+        val core = raw.trim().removePrefix("v").substringBefore('-').substringBefore('+')
+        val parts = core.split('.')
+        if (parts.size > 3) return null
+        val numbers = parts.map { it.toIntOrNull() ?: return null }
+        return Version(numbers[0], numbers.getOrElse(1) { 0 }, numbers.getOrElse(2) { 0 })
+    }
+
+    /** CI tags releases "v<versionName>" (see release workflow), e.g. "v1.1.0". */
     private fun fetchLatestRelease(): Release? {
         val connection = URL("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest")
             .openConnection() as HttpURLConnection
@@ -87,8 +114,8 @@ object UpdateChecker {
     internal fun parseRelease(body: String): Release? {
         val json = JSONObject(body)
         val tagName = json.getString("tag_name")
-        val versionCode = tagName.removePrefix("v").toIntOrNull() ?: return null
-        return Release(tagName, json.getString("html_url"), versionCode)
+        val version = parseVersion(tagName) ?: return null
+        return Release(tagName, json.getString("html_url"), version)
     }
 
     private fun notify(context: Context, release: Release) {

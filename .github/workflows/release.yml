@@ -27,18 +27,23 @@ jobs:
       - name: Decode release keystore
         run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
 
-      # UpdateChecker.parseRelease does "v1".removePrefix("v").toIntOrNull(), so a tag that
-      # is not exactly v<versionCode> makes every installed app miss this release for good.
+      # UpdateChecker compares the tag against the installed versionName, so a tag that is
+      # not exactly v<versionName> makes every installed app miss this release for good.
+      # versionCode must still rise independently - Android uses it to order upgrades.
       # Fail before publishing rather than shipping an undetectable release.
-      - name: Verify tag matches versionCode
+      - name: Verify tag matches versionName
         run: |
-          code="$(grep -oE 'versionCode = [0-9]+' app/build.gradle.kts | head -1 | grep -oE '[0-9]+$')"
-          if [ "$GITHUB_REF_NAME" != "v$code" ]; then
-            echo "Tag '$GITHUB_REF_NAME' does not match versionCode $code (expected 'v$code')." >&2
-            echo "UpdateChecker would never detect this release. Fix the tag or versionCode." >&2
+          version="$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)"/\1/')"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "Tag '$GITHUB_REF_NAME' does not match versionName $version (expected 'v$version')." >&2
+            echo "UpdateChecker would never detect this release. Fix the tag or versionName." >&2
             exit 1
           fi
-          echo "Tag '$GITHUB_REF_NAME' matches versionCode $code."
+          if ! printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "versionName '$version' is not semver (major.minor.patch)." >&2
+            exit 1
+          fi
+          echo "Tag '$GITHUB_REF_NAME' matches versionName $version."
 
       - name: Build signed release APK
         env:

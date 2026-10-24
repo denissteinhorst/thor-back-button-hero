@@ -53,7 +53,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **81 JVM tests, 0 failures, 0 skipped** across 15 test classes.
+- **87 JVM tests, 0 failures, 0 skipped** across 15 test classes.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency`). `warningsAsErrors = true` and
@@ -69,10 +69,14 @@ to record:
   | `CardTouch` | 0.90 | 1.0000 |
   | `BackGestureMachine` | 0.90 | 0.9077 |
   | `AccessibilityAppSource` | 0.60 | 0.6000 |
-  | `UpdateChecker` | 0.41 | 0.4151 |
+  | `UpdateChecker` | 0.46 | 0.4655 |
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
+
+  Read these numbers per JaCoCo **class**, which counts nested classes separately:
+  `UpdateChecker` is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a
+  class with its nested types overstates the figure the rule actually enforces.
 - **Release APK ~2.52 MB** (`app-release-unsigned.apk`). Debug is much larger
   (~6.8 MB) because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
@@ -143,18 +147,29 @@ explicitly approved UI change.
 
 ## Release process
 
-**Version tag convention**: release tags are `v<versionCode>` (e.g. `v2`), matching
-`defaultConfig.versionCode` in `app/build.gradle.kts`. `UpdateChecker.parseRelease`
-parses that tag format (`"v1".removePrefix("v").toIntOrNull()`) to detect new releases —
-bump `versionCode` before tagging and keep the two in sync. Currently `versionCode = 1`
-and `versionName = "1.0.0"`, so the first release is tag `v1`. The release workflow
-fails fast if the tag does not match `versionCode`, because a mismatch would make every
-installed app miss the release permanently.
+**Version tag convention**: release tags are `v<versionName>` in semver form, e.g.
+`v1.1.0`, matching `defaultConfig.versionName`. `UpdateChecker.parseVersion` parses the
+tag and compares it against the installed `versionName` field by field, so **the tag and
+`versionName` must agree exactly** — the release workflow fails fast otherwise, because a
+mismatch would make every installed app miss the release permanently.
+
+`versionCode` is separate and must **also** rise on every release: Android itself uses it
+to order upgrades and refuses to install a lower one. It no longer appears in the tag.
+
+So a release means: bump `versionName` (semver) **and** `versionCode`, then tag
+`v<versionName>`.
+
+The first two releases predate this and were tagged `v1` (1.0.0) and `v2` (1.0.1) under
+an older `v<versionCode>` scheme. `parseVersion` still accepts short forms, so `v1`
+resolves to `1.0.0` and stays comparable — but note that a build installed *before* the
+switch carries the old integer-only parser and cannot read a semver tag at all. Such an
+install needs one manual APK update before automatic checks work again. Only the author's
+own device was ever affected.
 
 `.github/workflows/release.yml` fires on `v*` tags: it decodes
 `RELEASE_KEYSTORE_BASE64`, builds a signed release APK from the
 `RELEASE_KEYSTORE_PATH`/`_PASSWORD`/`RELEASE_KEY_ALIAS`/`RELEASE_KEY_PASSWORD` env vars,
-publishes it as `thor-back-button-hero-v<versionName>.apk`, then deletes the keystore.
+publishes it as `thor-back-button-hero-v<versionName>.apk` (e.g. `thor-back-button-hero-v1.1.0.apk`), then deletes the keystore.
 Signing is env-only by design — no keystore is or should ever be committed
 (`*.keystore`/`*.jks` are gitignored).
 
