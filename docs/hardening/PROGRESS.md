@@ -16,7 +16,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 ## Phase 1 — Test-Suite (Safety Net)
 
 - [x] 02 — Test-Infrastruktur (Dependencies, Robolectric-Config, Smoke-Test)
-- [ ] 03 — Gate-Befehl (`verify`-Task + `tools/verify.sh`)
+- [x] 03 — Gate-Befehl (`verify`-Task + `tools/verify.sh`)
 - [ ] 04 — Characterization: `Prefs` Defaults + Accessoren
 - [ ] 05 — Characterization: `Prefs`-Migrationen + `resetToDefaults()`
 - [ ] 06 — Characterization: `DoubleTapDetector`
@@ -67,10 +67,9 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 02: `testDebugUnitTest` grün (1 Test,
-0 Fehler), `assembleDebug` + `lintDebug` weiterhin grün. Lint zeigt 20 statt 15 Warnungen
-(5× neues `GradleDependency` durch die gepinnten Testbibliotheks-Versionen — erwartet, keine
-Regression). Commit `6d95f8b`.
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 03: `unset JAVA_HOME; ./tools/verify.sh`
+→ BUILD SUCCESSFUL ohne manuelle JDK-Angabe. `./tools/verify.sh` ist ab jetzt der Gate-Befehl
+für alle folgenden Schritte. Commit `28fea2c`.
 
 **Hinweis für Schritt 09:** der dort vorgesehene `diff` gegen
 `docs/hardening/baseline/lint-baseline-report.txt` wird wegen dieser 5 Warnungen nicht leer
