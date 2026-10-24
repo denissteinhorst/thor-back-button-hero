@@ -71,3 +71,19 @@ bleibt ungetestet und bewusst so (manuelles „Check for updates" in der
 Das ist **kein Bug** — `app_name` ist in `values/strings.xml` als `translatable="false"`
 markiert und hat deshalb bewusst kein DE-Pendant. Schritt 09 (`ResourceIntegrityTest`) prüft
 das explizit mit, damit kein späterer Schritt das versehentlich als Lücke "korrigiert".
+
+## 6. Update-Check-Dialoge (3 Varianten) sind nicht per Snapshot gesichert
+
+`SettingsActivity.checkForUpdates()` zeigt die Ergebnisdialoge (gefunden / aktuell / Fehler)
+ausschließlich innerhalb des `callback`-Lambdas von `UpdateChecker.checkInBackground`. Dieser
+Callback wird von einem rohen `Thread` aus über `Handler(Looper.getMainLooper()).post { ... }`
+zugestellt (siehe Punkt 4 oben und `PITFALLS.md` P2) — ein JVM-Unit-Test unter Robolectric
+kann diesen Thread nicht deterministisch synchron abwarten, ohne selbst einen Netzwerkaufruf
+auszuführen oder eine Produktivcode-Änderung vorzunehmen.
+
+**Konsequenz:** Schritt 13 snapshotet nur die drei direkt per Klick erreichbaren Dialoge
+(Single-Action-Chooser, Reset-Confirm, Repair-Service) — nicht die drei
+Update-Check-Ergebnisdialoge.
+
+**Ersatz:** `MANUAL-GESTURE-CHECKLIST.md` → Abschnitt „Settings-Bildschirm" deckt „Check for
+new version" sowohl mit als auch ohne Internetverbindung ab.
