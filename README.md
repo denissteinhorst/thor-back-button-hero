@@ -1,4 +1,4 @@
-# Back Button Hero
+# Thor Back Button Hero
 
 A tiny Android accessibility service that gives the **Back button** on
 dual-screen handhelds (built for the [AYN Thor](https://www.ayntec.com/products/ayn-thor)) a lot
@@ -7,6 +7,18 @@ fully customizable shoulder-button shortcuts — on top of what Back already
 does.
 
 No root or companion app required.
+
+## Compatibility
+
+Back Button Hero has been tested on an **AYN Thor Max 16GB/1TB (Rainbow),
+1st Batch**, running Android 13, firmware
+`Thor_V1.0.0.377_20260206_165408_user`.
+
+The app is a regular Android app (`minSdk` 30 / Android 11) and should install
+and launch on Android 11 or later. Its screen-swapping and bottom-screen
+switcher features need a compatible second display, and its shortcuts need
+the expected Back and shoulder-button inputs. Other devices have not been
+tested, so full feature compatibility is not guaranteed.
 
 ## What the Back button does
 
@@ -59,15 +71,118 @@ service, so this walks you straight to the right toggle instead.
   build, on top of the automatic background check — useful right after
   install, when there's nothing to compare against yet.
 
+## Small footprint
+
+With the accessibility service enabled and idle in the background, Back
+Button Hero used **7.8 MiB PSS** and `top` rounded its CPU use to **0.0%** in
+five consecutive one-second samples. This is a small footprint for a service
+that stays ready to handle button input.
+
+Measured live over ADB on 25 October 2026 on an AYN Thor Max 16GB/1TB
+(Rainbow), 1st Batch, Android 13, firmware
+`Thor_V1.0.0.377_20260206_165408_user`. At the time of measurement, the app
+had no open activities. `dumpsys meminfo` reported
+7,998 KiB PSS and 96,204 KiB RSS; RSS includes shared resident pages, while
+PSS apportions shared pages and is the more useful estimate of memory
+attributable to this process. CPU was sampled with `top -b -d 1 -n 5 -p <pid>`.
+These are idle-state readings, not a peak-use benchmark; actual usage varies
+with device state and activity, and opening the switcher briefly captures a
+screen preview.
+
 ## Installing
 
 This isn't on the Play Store. Grab the latest APK from
 [Releases](../../releases), install it, then:
 
-1. Open the app once and grant it the Accessibility permission it asks for.
+1. Open Back Button Hero once and tap **Turn on accessibility service**.
+2. In Android's Accessibility settings, select Back Button Hero and switch on
+   its service. Android requires you to enable this yourself; the app cannot
+   turn it on for you.
+3. Return to Back Button Hero and check that the service status shows as on.
+4. On Android 13 and later, allow notifications if you want update alerts.
 
 The app checks GitHub Releases for updates and notifies you when a newer one
 is available — no auto-install, it just links to the release page.
+
+## Accessibility, permissions & privacy
+
+The accessibility service is what lets Back Button Hero recognize Back and
+shoulder-button input, find which apps are open on each screen, and show the
+app switcher. Because Android grants it broad capabilities, here is exactly
+what the app uses them for:
+
+<details>
+<summary>What does the Accessibility Service access?</summary>
+
+It receives Back and shoulder-button events and window-change events. It uses
+app window/package information to build the recent-app list for each screen,
+and takes a screenshot of the bottom screen to make the switcher's preview
+cards. Screenshots and the recent-app history are kept in memory for the
+switcher; they are not saved as files. The service also uses Android
+accessibility actions to perform configured gestures and shortcuts.
+
+</details>
+
+<details>
+<summary>What is stored on the device?</summary>
+
+Gesture timings, enabled actions, shoulder-button assignments, and related
+settings are stored in the app's private preferences. Recent-app history and
+preview images are held in memory while the service is running. The app does
+not send this information to its developer.
+
+</details>
+
+<details>
+<summary>What network connections does the app make?</summary>
+
+The app makes an HTTPS request to the GitHub Releases API to check for the
+latest version. It retrieves the release version and link, then opens the
+release page if you choose to update. The request does not include your app
+settings, app list, or screenshots. GitHub receives the usual connection
+metadata for an HTTPS request, such as your IP address. Back Button Hero has
+no analytics or telemetry.
+
+</details>
+
+<details>
+<summary>Why does it need the other Android permissions?</summary>
+
+- **Package visibility:** lets the app find installed apps so it can list and
+  launch them in the switcher and shortcut settings.
+- **Background process management:** lets the switcher's close actions ask
+  Android to stop an app's background process. Android controls what can
+  actually be stopped.
+- **Internet:** used for the GitHub update check described above.
+- **Notifications:** used to alert you when an update is available. On Android
+  13 and later, notification permission can be declined; update checks remain
+  available from the settings screen.
+
+</details>
+
+You can turn the accessibility service off at any time in Android's
+Accessibility settings. The app's **Reset settings** action clears its saved
+gesture and button preferences, but does not change Android permissions or
+the service state.
+
+## Troubleshooting & support
+
+- **Gestures stop responding:** open Back Button Hero and check the service
+  status. Use **Repair service** to jump to Android's Accessibility settings,
+  switch the service off, then on again.
+- **Update notifications do not appear:** check Android's notification
+  permission for Back Button Hero. You can always check manually from the app's
+  settings.
+- **An app is missing from the switcher:** the list is built from apps seen
+  since the accessibility service started; reopen the app on that screen and
+  open the switcher again.
+
+For bugs or feature requests, open a
+[GitHub Issue](https://github.com/denissteinhorst/thor-back-button-hero/issues).
+Include your Thor model, Android/firmware version, app version, and steps to
+reproduce the problem. Back Button Hero is a hobby project maintained as time
+allows; there is no guaranteed response time or commitment to implement every
+request.
 
 ## Building from source
 
@@ -77,16 +192,38 @@ is available — no auto-install, it just links to the release page.
 
 Requires JDK 17. `minSdk` is 30 (Android 11).
 
+## Project documentation
+
+The app can be used without reading these, but the repository includes more
+detail for people who want to understand or work on it:
+
+- [Interactive gesture explainer](docs/gesture-explainer.html) — a clickable
+  device diagram showing what each Back-button gesture does. To run it
+  interactively, open the HTML file in a browser from a clone of the repo so
+  it can load `thor-base.png` beside it.
+- [Architecture](docs/ARCHITECTURE.md) — the main components, how a gesture
+  flows through the app, and how it targets the two displays.
+- [Testing and quality gates](docs/TESTING.md) — the automated verification
+  command, CI checks, coverage boundaries, and what the tests are intended to
+  protect.
+- [Manual testing procedures](docs/MANUAL-TESTING.md) — when a real Thor test
+  is needed and the repeatable steps for checking settings, gestures, the
+  switcher, shoulder buttons, and releases.
+- [Project structure](docs/PROJECT-STRUCTURE.md) — a file-by-file guide to
+  the source tree, resources, tests, and automation.
+- [Build and maintenance guide](docs/MAINTENANCE.md) — developer setup,
+  everyday commands, safe change recipes, dependency updates, and release
+  procedures.
+
 ## About this project
 
 This app was built with AI assistance: I directed, reviewed, and tested
 every part of it myself, using OpenAI's Codex (GPT-5.6-sol) and Anthropic's
 Claude Code (Sonnet 5.5) as the coding tools. As an application developer
 with several years of professional experience, I built it to the best of
-my knowledge and have used it extensively on my own AYN Thor. Still, it's a
-hobby project and may contain bugs. I'm happy to look at issues and fix
-things when I can, but — see the license below — I'm not taking on any
-obligation to do so.
+my knowledge and have used it extensively on my own AYN Thor. It is a
+hobby project and may contain bugs; see [Troubleshooting & support](#troubleshooting--support)
+for how to report one and what support to expect.
 
 ## Third-party licenses
 
