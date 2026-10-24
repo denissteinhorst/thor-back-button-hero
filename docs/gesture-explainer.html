@@ -1,0 +1,711 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Back button gestures</title>
+<style>
+  html, body {
+    margin: 0;
+    width: 640px;
+    height: 640px;
+    background: #ffffff;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 10px;
+  }
+
+  .device {
+    position: relative;
+    width: 440px;
+    height: 493px;
+  }
+  .device img { position: absolute; top: 0; left: 0; width: 440px; height: 493px; }
+
+  .screen-hit {
+    position: absolute;
+    border-radius: 6px;
+    transition: background 0.25s, box-shadow 0.25s;
+  }
+  .screen-hit.lit { background: rgba(47,111,237,0.08); box-shadow: inset 0 0 0 1.5px #2f6fed; }
+
+  .chip {
+    position: absolute;
+    z-index: 2;
+    border-radius: 10px;
+    background: #e8f0fe;
+    border: 1.5px solid #2f6fed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #1b4bb8;
+    --s: 1;
+    --x: 0px;
+    --y: 0px;
+    transform: translate(var(--x), var(--y)) scaleY(var(--s));
+    transition: opacity 0.25s, background 0.25s, transform 0.35s;
+  }
+  .chip.flash { background: #cfe0ff; }
+  .chipTag {
+    display: none;
+    font-size: 11px; font-weight: 600; color: #5b7bc7; margin-bottom: 2px;
+  }
+  /* subtle app branding, tucked in the corner of every app screen - not meant
+     to compete with the big "App X" label. */
+  .watermark {
+    position: absolute; right: 8px; bottom: 6px;
+    font-size: 8px; font-weight: 700; letter-spacing: 0.3px;
+    color: #2f6fed; opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* -- shoulder buttons: not visible from the front, so a tag marks each one
+     right where it sits on the hinge edge (measured from the artwork's hinge
+     tabs), tilted back like the hinge surface itself, lighting up when
+     "pressed". The rear triggers (L2/R2) sit taller than the front bumpers
+     (L1/R1) in front of them. -- */
+  .shoulderTag {
+    position: absolute; width: 44px;
+    border-radius: 4px; background: #e8f0fe; border: 1.3px solid #2f6fed;
+    color: #1b4bb8; font-size: 7px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transform: perspective(70px) rotateX(28deg);
+    transform-origin: center bottom;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+  }
+  .shoulderTag.rear { height: 15px; }
+  .shoulderTag.front { height: 11px; }
+  .shoulderTag.active {
+    background: #2f6fed; color: #fff;
+    transform: perspective(70px) rotateX(28deg) scale(1.15);
+  }
+
+  /* both the drawer and the switcher are clipped to the exact bottom-screen
+     rect, matching the real device: the switcher's next card visibly peeks
+     and gets cut off at the screen edge instead of floating free. */
+  .overlay {
+    position: absolute; left: 112px; top: 274px; width: 216px; height: 170px;
+    overflow: hidden; border-radius: 6px;
+    background: rgba(8,11,18,0.93);
+    opacity: 0;
+    z-index: 1; /* below .chip's z-index:2 - the drawer sits behind the app it's revealed from under */
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .overlay.shown { opacity: 1; }
+  /* the switcher opens fast, almost instantly, right over the running app -
+     unlike the drawer it doesn't wait on anything sliding out of the way, so
+     it needs to paint in FRONT of the (still fully visible) app chip. */
+  #switcher { z-index: 3; transition: opacity 0.12s; }
+
+  /* -- app drawer: search bar + 5-column icon grid, spanning the full screen
+     like the real one (measured: 5 cols, icons edge-to-edge, 4th row clipped) -- */
+  .searchbar {
+    position: absolute; left: 6px; top: 5px; width: 204px; height: 14px;
+    border-radius: 7px; background: #1c2333; border: 1px solid #3a4560;
+  }
+  .searchbar::before {
+    content: ''; position: absolute; left: 6px; top: 3.5px; width: 7px; height: 7px;
+    border: 1.2px solid #8aa0c8; border-radius: 50%;
+  }
+  .drawIcon {
+    position: absolute; width: 34px; height: 34px;
+    border-radius: 9px; background: #273049; border: 1px solid #3f4c6e;
+    color: #cfe0ff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: transform 0.25s, background 0.25s, color 0.25s;
+  }
+  .drawIcon .tag { font-size: 6px; font-weight: 600; opacity: 0.75; line-height: 1; }
+  .drawIcon .ltr { font-size: 14px; font-weight: 700; line-height: 1.25; }
+  .drawIcon.picked { background: #2f6fed; border-color: #2f6fed; color: #fff; transform: scale(1.22); }
+
+  /* -- app switcher: matches SwitcherOverlay.kt exactly - cardW = 40% of
+     screen width, thumbH keeps the screen's own aspect ratio, 20dp gap
+     between cards, the row starts with a (100%-cardW)/2 leading margin so
+     the current card sits centered rather than flush left, and the
+     "Both screens" / "Close all" row sits BELOW the cards (64dp gap), the
+     whole column centered vertically - not overlaid on top of the cards. -- */
+  .switchCard {
+    position: absolute; top: 20px; width: 86px;
+    transition: transform 0.3s, background 0.2s, border-color 0.2s;
+  }
+  .switchCard .head {
+    display: flex; align-items: center; gap: 5px; height: 17px; padding-left: 2px;
+  }
+  .switchCard .head .ic {
+    width: 13px; height: 13px; border-radius: 50%; background: #2f6fed;
+    color: #fff; font-size: 8px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .switchCard .head .nm {
+    font-size: 9px; font-weight: 700; color: #e4eaf7; white-space: nowrap;
+  }
+  .switchCard .body {
+    width: 86px; height: 68px;
+    border-radius: 8px; background: #24355a; border: 1.3px solid #3f4c6e;
+  }
+  .switchCard.picked { transform: scale(1.06); }
+  .switchCard.picked .body { background: #5a8cf0; border-color: #2f6fed; }
+  .switchbar {
+    position: absolute; left: 50%; top: 128px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .switchbar .grp { display: flex; align-items: center; gap: 2px; }
+  .switchbar .lbl { font-size: 8px; font-weight: 600; color: #e4eaf7; white-space: nowrap; }
+  .toggle {
+    width: 16px; height: 8px; border-radius: 4px; background: #5b6b8a; position: relative; flex: none;
+  }
+  .toggle::after {
+    content: ''; position: absolute; left: 1px; top: 1px; width: 6px; height: 6px;
+    border-radius: 50%; background: #e4eaf7;
+  }
+  .closeicon {
+    width: 9px; height: 9px; border: 1.2px solid #e4eaf7;
+    border-radius: 2px; transform: rotate(45deg); flex: none;
+  }
+
+  /* -- system Recents (task switcher) on the TOP screen - measured from a real
+     screenshot of Android's own Overview: focused card ~58% of screen width/
+     height (same aspect as the screen), a second card peeks and clips at the
+     edge, a small split-screen+lock icon pair sits above each card, and
+     "Screenshot" / "Close all" sit side by side near the bottom - this is
+     the stock Android UI, not our own code, so these are measured, not exact. -- */
+  .topOverlay {
+    position: absolute; left: 31px; top: 18px; width: 378px; height: 198px;
+    overflow: hidden; border-radius: 6px;
+    background: rgba(60,64,72,0.92);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .topOverlay.shown { opacity: 1; }
+  .recentsCard {
+    position: absolute; top: 37px; width: 220px; height: 115px;
+    border-radius: 8px; background: #1c2333; border: 1.3px solid #3a4560;
+    display: flex; align-items: center; justify-content: center;
+    color: #cfe0ff; font-weight: 700; font-size: 20px;
+  }
+  .recentsIcons {
+    position: absolute; top: 28px; width: 16px; height: 9px;
+    display: flex; gap: 3px;
+  }
+  .recentsIcons .stack {
+    width: 7px; height: 9px; border: 1.1px solid #e4eaf7; border-radius: 1.5px;
+  }
+  .recentsIcons .lock {
+    width: 6px; height: 9px; border: 1.1px solid #e4eaf7; border-radius: 1.5px;
+  }
+  .recentsBar {
+    position: absolute; left: 50%; top: 178px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .recentsBar .grp { display: flex; align-items: center; gap: 3px; }
+  .recentsBar .lbl { font-size: 9px; font-weight: 600; color: #e4eaf7; white-space: nowrap; }
+  .shoticon {
+    width: 10px; height: 10px; border: 1.2px solid #e4eaf7; border-radius: 2px; flex: none;
+  }
+
+  .backbtn {
+    position: absolute;
+    width: 14px; height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 0 0 0 rgba(47,111,237,0);
+    transform: scale(1);
+    transition: background 0.22s, box-shadow 0.22s, transform 0.22s;
+  }
+  .backbtn.active {
+    background: #2f6fed;
+    box-shadow: 0 0 0 7px rgba(47,111,237,0.35);
+    transform: scale(1.35);
+  }
+
+  .ring {
+    position: absolute;
+    width: 26px; height: 26px;
+    margin: -13px 0 0 -13px;
+    pointer-events: none;
+  }
+  .ring circle {
+    fill: none; stroke: #2f6fed; stroke-width: 2.4;
+    stroke-dasharray: 69; stroke-dashoffset: 69;
+    opacity: 0;
+    transform: rotate(-90deg); transform-origin: 13px 13px;
+  }
+  .ring.holding circle { opacity: 1; transition: stroke-dashoffset 0.9s linear; stroke-dashoffset: 0; }
+  /* for holds that stay down the whole time (shoulder combo) - no fill animation, just full right away */
+  .ring.full circle { opacity: 1; transition: none; stroke-dashoffset: 0; }
+
+  .swaparrow {
+    position: absolute;
+    z-index: 5;
+    width: 26px;
+    height: 58px;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 4px rgba(47,111,237,0.3));
+  }
+  .swaparrow::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    width: 14px;
+    height: 40px;
+    border-radius: 7px;
+    background: #2f6fed;
+  }
+  .swaparrow::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+  }
+  .swaparrow.down::before { top: 0; }
+  .swaparrow.down::after { bottom: 0; border-top: 19px solid #2f6fed; }
+  .swaparrow.up::before { bottom: 0; }
+  .swaparrow.up::after { top: 0; border-bottom: 19px solid #2f6fed; }
+  .swaparrow.down.shown { animation: arrowDown 0.46s ease-in-out forwards; }
+  .swaparrow.up.shown { animation: arrowUp 0.46s ease-in-out forwards; }
+  @keyframes arrowDown {
+    0%   { opacity: 0.18; transform: translate(-50%, -50%) translateY(0); }
+    20%  { opacity: 0.7; }
+    70%  { opacity: 0.12; }
+    100% { opacity: 0; transform: translate(-50%, -50%) translateY(100px); }
+  }
+  @keyframes arrowUp {
+    0%   { opacity: 0.18; transform: translate(-50%, -50%) translateY(0); }
+    20%  { opacity: 0.7; }
+    70%  { opacity: 0.12; }
+    100% { opacity: 0; transform: translate(-50%, -50%) translateY(-100px); }
+  }
+
+  .caption { color: #1b2430; font-size: 19px; font-weight: 700; height: 26px; letter-spacing: 0.1px; }
+  .sub { color: #5b6b82; font-size: 14px; height: 18px; margin-top: -10px; }
+
+  .controls { display: flex; gap: 10px; margin-top: 2px; }
+  button {
+    background: #f2f5fb; color: #1b2430; border: 1.5px solid #c9d3e6; border-radius: 8px;
+    padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  button:active { background: #e3e9f6; }
+  button.current { background: #2f6fed; color: #ffffff; border-color: #2f6fed; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="caption" id="caption">Back button, three ways</div>
+    <div class="sub" id="sub">tap a gesture below</div>
+
+    <div class="device">
+      <img src="thor-base.png" alt="AYN Thor outline">
+
+      <!-- top screen (6") -->
+      <div class="screen-hit" id="topScreen" style="left:31px; top:18px; width:378px; height:198px;"></div>
+      <div class="chip" id="topChip" style="left:38px; top:25px; width:364px; height:184px; font-size:23px;">
+        <div class="chipTag" id="topTag"></div>
+        <span id="topLabel">App A</span>
+        <div class="watermark">BACK BUTTON HERO</div>
+      </div>
+
+      <!-- system Recents on the top screen: tap, then hold opens this -->
+      <div class="topOverlay" id="topRecents">
+        <div class="recentsCard" id="recentsFocused" style="left:79px;">A</div>
+        <div class="recentsCard" id="recentsPeek" style="left:-149px;">E</div>
+        <div class="recentsIcons" style="left:45px;"><div class="stack"></div><div class="lock"></div></div>
+        <div class="recentsIcons" style="left:272px;"><div class="stack"></div><div class="lock"></div></div>
+        <div class="recentsBar">
+          <div class="grp"><div class="shoticon"></div><div class="lbl">Screenshot</div></div>
+          <div class="grp"><div class="closeicon"></div><div class="lbl">Close all</div></div>
+        </div>
+      </div>
+
+      <!-- two separate app-flow arrows pass beside each other across the hinge -->
+      <div class="swaparrow down" id="swapArrowDown" style="left:135px; top:190px;"></div>
+      <div class="swaparrow up" id="swapArrowUp" style="left:305px; top:300px;"></div>
+
+      <!-- shoulder buttons sit on the hinge edge, out of view from the front -
+           tag them at the real hinge-tab position (measured from thor-base.png) -->
+      <div class="shoulderTag rear" id="tagL2" style="left:23px; top:225px;">L2</div>
+      <div class="shoulderTag front" id="tagL1" style="left:23px; top:242px;">L1</div>
+      <div class="shoulderTag rear" id="tagR2" style="left:375px; top:225px;">R2</div>
+      <div class="shoulderTag front" id="tagR1" style="left:375px; top:242px;">R1</div>
+
+      <!-- bottom screen (3.92") -->
+      <div class="screen-hit" id="bottomScreen" style="left:112px; top:274px; width:216px; height:170px;"></div>
+      <div class="chip" id="bottomChip" style="left:118px; top:280px; width:204px; height:158px; font-size:19px;">
+        <div class="chipTag" id="bottomTag"></div>
+        <span id="bottomLabel">App B</span>
+        <div class="watermark">BACK BUTTON HERO</div>
+      </div>
+      <!-- app drawer: single tap opens this over the bottom screen. 5 columns
+           spanning the full width, 3 full rows + a clipped 4th row - matches
+           the real drawer, which also scrolls past a partial last row. -->
+      <div class="overlay" id="drawer">
+        <div class="searchbar"></div>
+        <div class="drawIcon" style="left:3px; top:26px;"><span class="tag">App</span><span class="ltr">D</span></div>
+        <div class="drawIcon" style="left:46px; top:26px;"><span class="tag">App</span><span class="ltr">E</span></div>
+        <div class="drawIcon" style="left:89px; top:26px;"><span class="tag">App</span><span class="ltr">F</span></div>
+        <div class="drawIcon" style="left:132px; top:26px;"><span class="tag">App</span><span class="ltr">G</span></div>
+        <div class="drawIcon" style="left:175px; top:26px;"><span class="tag">App</span><span class="ltr">H</span></div>
+        <div class="drawIcon" style="left:3px; top:69px;"><span class="tag">App</span><span class="ltr">I</span></div>
+        <div class="drawIcon" id="drawPick" style="left:46px; top:69px;"><span class="tag">App</span><span class="ltr">C</span></div>
+        <div class="drawIcon" style="left:89px; top:69px;"><span class="tag">App</span><span class="ltr">J</span></div>
+        <div class="drawIcon" style="left:132px; top:69px;"><span class="tag">App</span><span class="ltr">K</span></div>
+        <div class="drawIcon" style="left:175px; top:69px;"><span class="tag">App</span><span class="ltr">L</span></div>
+        <div class="drawIcon" style="left:3px; top:112px;"><span class="tag">App</span><span class="ltr">M</span></div>
+        <div class="drawIcon" style="left:46px; top:112px;"><span class="tag">App</span><span class="ltr">N</span></div>
+        <div class="drawIcon" style="left:89px; top:112px;"><span class="tag">App</span><span class="ltr">O</span></div>
+        <div class="drawIcon" style="left:132px; top:112px;"><span class="tag">App</span><span class="ltr">P</span></div>
+        <div class="drawIcon" style="left:175px; top:112px;"><span class="tag">App</span><span class="ltr">Q</span></div>
+        <div class="drawIcon" style="left:3px; top:155px;"><span class="tag">App</span><span class="ltr">R</span></div>
+        <div class="drawIcon" style="left:46px; top:155px;"><span class="tag">App</span><span class="ltr">S</span></div>
+        <div class="drawIcon" style="left:89px; top:155px;"><span class="tag">App</span><span class="ltr">T</span></div>
+        <div class="drawIcon" style="left:132px; top:155px;"><span class="tag">App</span><span class="ltr">U</span></div>
+        <div class="drawIcon" style="left:175px; top:155px;"><span class="tag">App</span><span class="ltr">V</span></div>
+      </div>
+
+      <!-- app switcher, matching SwitcherOverlay.kt: cardW=40% width, 20dp gap,
+           leading margin (100%-cardW)/2 so the current card sits centered
+           (not flush left), button row below the cards, whole column
+           centered vertically. -->
+      <div class="overlay" id="switcher">
+        <div class="switchCard" id="cardB" style="left:65px;">
+          <div class="head"><div class="ic">B</div><div class="nm">App B</div></div>
+          <div class="body"></div>
+        </div>
+        <div class="switchCard" id="cardD" style="left:159px;">
+          <div class="head"><div class="ic">D</div><div class="nm">App D</div></div>
+          <div class="body"></div>
+        </div>
+        <div class="switchbar">
+          <div class="grp"><div class="toggle"></div><div class="lbl">Both screens</div></div>
+          <div class="grp"><div class="closeicon"></div><div class="lbl">Close all</div></div>
+        </div>
+      </div>
+
+      <!-- back button: below the right stick, left of the volume line -->
+      <div class="backbtn" id="backBtn" style="left:355px; top:449px;"></div>
+      <svg class="ring" id="holdRing" style="left:355px; top:449px;" viewBox="0 0 26 26">
+        <circle cx="13" cy="13" r="11"/>
+      </svg>
+    </div>
+
+    <div class="controls">
+      <button id="btnSingle" onclick="playSingle()">Single tap</button>
+      <button id="btnDouble" onclick="playDouble()">Double tap</button>
+      <button id="btnTapHold" onclick="playTapHold()">Tap, hold</button>
+      <button id="btnHold" onclick="playHold()">Hold</button>
+    </div>
+    <div class="controls">
+      <button id="btnShoulderOne" onclick="playShoulderOne()">Hold + L1/R1</button>
+      <button id="btnShoulderTwo" onclick="playShoulderTwo()">Hold + L2/R2</button>
+    </div>
+  </div>
+
+<script>
+  const caption = document.getElementById('caption');
+  const sub = document.getElementById('sub');
+  const backBtn = document.getElementById('backBtn');
+  const holdRing = document.getElementById('holdRing');
+  const bottomScreen = document.getElementById('bottomScreen');
+  const switcher = document.getElementById('switcher');
+  const cardB = document.getElementById('cardB');
+  const drawer = document.getElementById('drawer');
+  const drawPick = document.getElementById('drawPick');
+  const topChip = document.getElementById('topChip');
+  const bottomChip = document.getElementById('bottomChip');
+  const topLabel = document.getElementById('topLabel');
+  const bottomLabel = document.getElementById('bottomLabel');
+  const swapArrowDown = document.getElementById('swapArrowDown');
+  const swapArrowUp = document.getElementById('swapArrowUp');
+  let holdSwapReversed = false;
+  const topRecents = document.getElementById('topRecents');
+  const topTag = document.getElementById('topTag');
+  const bottomTag = document.getElementById('bottomTag');
+  const tagL1 = document.getElementById('tagL1');
+  const tagL2 = document.getElementById('tagL2');
+  const tagR1 = document.getElementById('tagR1');
+  const tagR2 = document.getElementById('tagR2');
+  const buttons = {
+    single: document.getElementById('btnSingle'), double: document.getElementById('btnDouble'),
+    hold: document.getElementById('btnHold'), tapHold: document.getElementById('btnTapHold'),
+    shoulderOne: document.getElementById('btnShoulderOne'),
+    shoulderTwo: document.getElementById('btnShoulderTwo'),
+  };
+
+  function markCurrent(name) {
+    Object.values(buttons).forEach(b => b.classList.remove('current'));
+    if (name) buttons[name].classList.add('current');
+  }
+
+  function pulse(times, cb, pressMs = 220, gapMs = 220) {
+    let n = 0;
+    function tick() {
+      backBtn.classList.add('active');
+      setTimeout(() => {
+        backBtn.classList.remove('active');
+        n++;
+        if (n < times) setTimeout(tick, gapMs);
+        else if (cb) setTimeout(cb, 200);
+      }, pressMs);
+    }
+    tick();
+  }
+
+  // A beat after the demo button is clicked, before the simulated gesture starts -
+  // otherwise the button press and the animation blur into one event.
+  const PRE_DELAY = 450;
+
+  // A card "closing" shrinks toward the bottom edge (reads as sliding down,
+  // without ever actually leaving the screen area it's clipped to). A newly
+  // opened app instead grows symmetrically from a centered full-width line,
+  // top and bottom moving apart evenly - closing and opening use different
+  // anchors on purpose.
+  function chipShrinkToBottom(chip) {
+    chip.style.transformOrigin = 'bottom';
+    chip.style.setProperty('--s', '0');
+    chip.style.opacity = '0'; // fully gone, not just a sliver at scaleY near 0
+  }
+  function chipGrowFromCenter(chip, label, text) {
+    chip.style.transformOrigin = 'center'; // instant - transform-origin isn't transitioned
+    label.textContent = text;
+    requestAnimationFrame(() => {
+      chip.style.setProperty('--s', '1');
+      chip.style.opacity = '1';
+    });
+  }
+
+  function playSingle() {
+    markCurrent('single');
+    caption.textContent = 'Single tap';
+    sub.textContent = 'opens the app drawer';
+    setTimeout(() => pulse(1, () => {
+      // the drawer is already there, just hidden behind App B - shrinking the
+      // card down out of the way reveals it instead of a cross-fade.
+      drawer.classList.add('shown');
+      chipShrinkToBottom(bottomChip);
+      setTimeout(() => {
+        sub.textContent = 'pick an app — App C opens';
+        drawPick.classList.add('picked');
+      }, 900);
+      setTimeout(() => {
+        drawPick.classList.remove('picked');
+        drawer.classList.remove('shown');
+        chipGrowFromCenter(bottomChip, bottomLabel, 'App C');
+      }, 1300);
+    }), PRE_DELAY);
+  }
+
+  function playDouble() {
+    markCurrent('double');
+    caption.textContent = 'Double tap';
+    sub.textContent = 'opens the app switcher';
+    setTimeout(() => pulse(2, () => {
+      // unlike the drawer, the switcher doesn't slide the app out of the way -
+      // it just opens on top of whatever's running, fast, almost no fade at all.
+      switcher.classList.add('shown');
+      setTimeout(() => {
+        sub.textContent = 'pick App B — it’s back on screen';
+        cardB.classList.add('picked');
+      }, 1300);
+      setTimeout(() => {
+        cardB.classList.remove('picked');
+        bottomLabel.textContent = 'App B';
+        switcher.classList.remove('shown');
+      }, 1900);
+    }, 110, 90), PRE_DELAY);
+  }
+
+  function playHold() {
+    markCurrent('hold');
+    caption.textContent = 'Hold';
+    sub.textContent = 'swaps top and bottom screens';
+    const reverse = holdSwapReversed;
+    holdSwapReversed = !holdSwapReversed;
+    // On every second run, show the return trip: the left lane goes up and
+    // the right lane goes down instead of repeating the first direction.
+    swapArrowDown.classList.toggle('down', !reverse);
+    swapArrowDown.classList.toggle('up', reverse);
+    swapArrowDown.style.left = '135px';
+    swapArrowDown.style.top = reverse ? '300px' : '190px';
+    swapArrowUp.classList.toggle('up', !reverse);
+    swapArrowUp.classList.toggle('down', reverse);
+    swapArrowUp.style.left = '305px';
+    swapArrowUp.style.top = reverse ? '190px' : '300px';
+    setTimeout(() => {
+      holdRing.classList.add('holding');
+      backBtn.classList.add('active');
+      setTimeout(() => {
+        backBtn.classList.remove('active');
+        holdRing.classList.remove('holding');
+        swapArrowDown.classList.add('shown');
+        swapArrowUp.classList.add('shown');
+        topChip.classList.add('flash');
+        bottomChip.classList.add('flash');
+        topChip.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in, background 0.22s';
+        bottomChip.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in, background 0.22s';
+        topChip.style.setProperty('--y', '16px');
+        bottomChip.style.setProperty('--y', '-16px');
+        topChip.style.opacity = '0.28';
+        bottomChip.style.opacity = '0.28';
+        setTimeout(() => {
+          const topText = topLabel.textContent;
+          const bottomText = bottomLabel.textContent;
+          topLabel.textContent = bottomText;
+          bottomLabel.textContent = topText;
+          topChip.style.transition = 'transform 0.24s ease-out, opacity 0.24s ease-out, background 0.22s';
+          bottomChip.style.transition = 'transform 0.24s ease-out, opacity 0.24s ease-out, background 0.22s';
+          topChip.style.setProperty('--y', '0px');
+          bottomChip.style.setProperty('--y', '0px');
+          topChip.style.opacity = 1;
+          bottomChip.style.opacity = 1;
+        }, 220);
+        setTimeout(() => {
+          topChip.classList.remove('flash');
+          bottomChip.classList.remove('flash');
+          swapArrowDown.classList.remove('shown');
+          swapArrowUp.classList.remove('shown');
+          topChip.style.transition = '';
+          bottomChip.style.transition = '';
+        }, 700);
+      }, 950);
+    }, PRE_DELAY);
+  }
+
+  function playTapHold() {
+    markCurrent('tapHold');
+    caption.textContent = 'Tap, then hold';
+    sub.textContent = 'opens Recents on the top screen';
+    setTimeout(() => {
+      // the first, quick tap
+      backBtn.classList.add('active');
+      setTimeout(() => {
+        backBtn.classList.remove('active');
+        // a beat later, the second press starts and is held
+        setTimeout(() => {
+          holdRing.classList.add('holding');
+          backBtn.classList.add('active');
+          setTimeout(() => {
+            backBtn.classList.remove('active');
+            holdRing.classList.remove('holding');
+            topChip.style.opacity = 0;
+            topRecents.classList.add('shown');
+            setTimeout(() => {
+              topRecents.classList.remove('shown');
+              topChip.style.opacity = 1;
+            }, 1400);
+          }, 950);
+        }, 220);
+      }, 150);
+    }, PRE_DELAY);
+  }
+
+  function swipeApp(chip, label, text, direction) {
+    const distance = direction === 'right' ? 74 : -74;
+    chip.style.transition = 'transform 0.13s ease-in, opacity 0.13s ease-in';
+    chip.style.setProperty('--x', `${distance}px`);
+    chip.style.opacity = '0';
+    setTimeout(() => {
+      chip.style.transition = 'none';
+      label.textContent = text;
+      chip.style.setProperty('--x', `${-distance}px`);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        chip.style.transition = 'transform 0.13s ease-out, opacity 0.13s ease-out';
+        chip.style.setProperty('--x', '0px');
+        chip.style.opacity = '1';
+        setTimeout(() => { chip.style.transition = ''; }, 140);
+      }));
+    }, 130);
+  }
+
+  function fadeApp(chip, label, text) {
+    chip.style.transition = 'opacity 0.12s ease-out';
+    chip.style.opacity = '0.25';
+    setTimeout(() => {
+      label.textContent = text;
+      chip.style.transition = 'opacity 0.12s ease-in';
+      chip.style.opacity = '1';
+      setTimeout(() => { chip.style.transition = ''; }, 130);
+    }, 120);
+  }
+
+  function playShoulderOne() {
+    markCurrent('shoulderOne');
+    caption.textContent = 'Hold + L1/R1';
+    sub.textContent = 'app-swiping or app hotkeys • choose top/bottom screen';
+    const STEP = 620;
+    const steps = [
+      { tag: tagR1, text: 'App A2', direction: 'left' },
+      { tag: tagR1, text: 'App A3', direction: 'left' },
+      { tag: tagL1, text: 'App A2', direction: 'right' },
+      { tag: tagL1, text: 'App A1', direction: 'right' },
+    ];
+    setTimeout(() => {
+      topLabel.textContent = 'App A1';
+      topTag.textContent = 'app-swiping • hotkey optional';
+      topTag.style.display = 'block';
+      backBtn.classList.add('active');
+      holdRing.classList.add('full');
+      let t = 300;
+      steps.forEach(step => {
+        setTimeout(() => {
+          step.tag.classList.add('active');
+          swipeApp(topChip, topLabel, step.text, step.direction);
+        }, t);
+        setTimeout(() => step.tag.classList.remove('active'), t + 300);
+        t += STEP;
+      });
+      setTimeout(() => {
+        backBtn.classList.remove('active');
+        holdRing.classList.remove('full');
+        topTag.style.display = 'none';
+      }, t + 150);
+    }, PRE_DELAY);
+  }
+
+  function playShoulderTwo() {
+    markCurrent('shoulderTwo');
+    caption.textContent = 'Hold + L2/R2';
+    sub.textContent = 'app hotkeys or app-swiping • choose top/bottom screen';
+    const steps = [
+      { tag: tagL2, chip: topChip, tagEl: topTag, label: topLabel, text: 'Hotkey App L2', note: 'app hotkey • top screen' },
+      { tag: tagR2, chip: bottomChip, tagEl: bottomTag, label: bottomLabel, text: 'Hotkey App R2', note: 'app hotkey • bottom screen' },
+    ];
+    setTimeout(() => {
+      backBtn.classList.add('active');
+      holdRing.classList.add('full');
+      let t = 300;
+      steps.forEach(step => {
+        setTimeout(() => {
+          step.tag.classList.add('active');
+          step.tagEl.textContent = step.note;
+          step.tagEl.style.display = 'block';
+          fadeApp(step.chip, step.label, step.text);
+        }, t);
+        setTimeout(() => step.tag.classList.remove('active'), t + 700);
+        t += 850;
+      });
+      setTimeout(() => {
+        backBtn.classList.remove('active');
+        holdRing.classList.remove('full');
+        topTag.style.display = 'none';
+        bottomTag.style.display = 'none';
+        sub.textContent = 'every shoulder: app-swiping or app hotkey • top/bottom';
+      }, t + 150);
+    }, PRE_DELAY);
+  }
+</script>
+</body>
+</html>
