@@ -41,7 +41,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 - [x] 22 — Self-installing Git-Hooks
 - [x] 23 — CI: `verify`-Job + Caching + Reports
 - [x] 24 — Lint-Ratchet (Baseline-Datei + `warningsAsErrors`)
-- [ ] 25 — Branch-Protection-Doku + Dependabot
+- [x] 25 — Branch-Protection-Doku + Dependabot
 
 ## Phase 3 — Best-Practice & Architektur (verhaltensneutral)
 
@@ -67,7 +67,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 24: `./tools/verify.sh` grün, inklusive
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 25: `./tools/verify.sh` grün, inklusive
 `jacocoCoverageVerification`; fünf unabhängige Unit-Test-Läufe waren 5/5 grün.
 
 **Wichtiger Fund in Schritt 12 — behoben:** `ViewTree.kt`s `when`-Block prüfte `is TextView`
