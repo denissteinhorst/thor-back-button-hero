@@ -9,6 +9,7 @@ tasks.register("verify") {
     dependsOn(
         ":app:lintDebug",
         ":app:testDebugUnitTest",
+        ":app:jacocoCoverageVerification",
         ":app:assembleDebug",
         ":app:assembleRelease",
     )
