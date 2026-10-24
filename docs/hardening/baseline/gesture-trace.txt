@@ -1,0 +1,21 @@
+BackButtonHero: DOWN   t=35405733 (+-1ms since previous DOWN)  afterTap=false tapHoldEnabled=true -> scheduled holdRunnable in 1000ms
+BackButtonHero: UP     t=35405928 held=196ms  pressFollowsTap=false -> scheduled singleTap in 600ms
+BackButtonHero: RUNNABLE singleTap fired -> onSingleTap()
+BackButtonHero: ACTION onSingleTap: singleAction=launcher
+BackButtonHero: DOWN   t=35412022 (+6289ms since previous DOWN)  afterTap=false tapHoldEnabled=true -> scheduled holdRunnable in 1000ms
+BackButtonHero: UP     t=35412141 held=120ms  pressFollowsTap=false -> scheduled singleTap in 600ms
+BackButtonHero: DOWN   t=35412205 (+183ms since previous DOWN)  afterTap=true tapHoldEnabled=true -> scheduled tapHoldRunnable in 1000ms
+BackButtonHero: DETECTOR double-tap recognized -> showSwitcher()
+BackButtonHero: UP     t=35412325 held=120ms  pressFollowsTap=true -> detector.onPress() only (this was the 2nd press of a tap combo)
+BackButtonHero: DOWN   t=35417728 (+5523ms since previous DOWN)  afterTap=false tapHoldEnabled=true -> scheduled holdRunnable in 1000ms
+BackButtonHero: UP     t=35417792 held=66ms  pressFollowsTap=false -> scheduled singleTap in 600ms
+BackButtonHero: DOWN   t=35418013 (+285ms since previous DOWN)  afterTap=true tapHoldEnabled=true -> scheduled tapHoldRunnable in 1000ms
+BackButtonHero: RUNNABLE tapHoldRunnable fired -> openTopRecents()
+BackButtonHero: UP     t=35419300 held=1288ms  holdFired=false tapHoldFired=true comboFired=false -> consumed, no tap logic
+BackButtonHero: DOWN   t=35432428 (+14415ms since previous DOWN)  afterTap=false tapHoldEnabled=true -> scheduled holdRunnable in 1000ms
+BackButtonHero: UP     t=35432532 held=105ms  pressFollowsTap=false -> scheduled singleTap in 600ms
+BackButtonHero: DOWN   t=35433068 (+640ms since previous DOWN)  afterTap=true tapHoldEnabled=true -> scheduled tapHoldRunnable in 1000ms
+BackButtonHero: UP     t=35433663 held=596ms  pressFollowsTap=true -> detector.onPress() only (this was the 2nd press of a tap combo)
+BackButtonHero: DOWN   t=35435035 (+1967ms since previous DOWN)  afterTap=false tapHoldEnabled=true -> scheduled holdRunnable in 1000ms
+BackButtonHero: RUNNABLE holdRunnable fired -> swapScreens()
+BackButtonHero: UP     t=35438434 held=3401ms  holdFired=true tapHoldFired=false comboFired=false -> consumed, no tap logic
