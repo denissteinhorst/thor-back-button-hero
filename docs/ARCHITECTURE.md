@@ -1,54 +1,212 @@
 # Architecture
 
-This document describes how the implementation is divided and how those boundaries are
-tested. For the development workflow, the gate command, expected test results, and the
-toolchain gotchas, see [`../CLAUDE.md`](../CLAUDE.md).
+How the implementation is divided, how a gesture travels through it, and which
+constraints shaped it. For a file-by-file inventory see
+[`PROJECT-STRUCTURE.md`](PROJECT-STRUCTURE.md); for the safety net around all of it,
+[`TESTING.md`](TESTING.md).
+
+## What the app has to work around
+
+Three constraints explain most design decisions here.
+
+**A normal Android app cannot read other apps' tasks.** There is no public API for "what
+is running on which screen". The app therefore runs as an `AccessibilityService` and
+reconstructs that knowledge from the windows it observes. Everything about the recent-app
+model follows from this.
+
+**The hardware Back button must keep working as Back.** The app overloads it, so it has
+to decide — within a few hundred milliseconds, from a stream of key events — whether a
+press is a plain Back, a double tap, a hold, or a tap-then-hold. The decision cannot be
+deferred, and getting it wrong breaks the device's most-used button.
+
+**The second screen is not addressable by a constant.** Display IDs are assigned at
+runtime, so every piece of display-targeting logic has to resolve the bottom screen
+dynamically.
+
+On top of that, two self-imposed rules: **no third-party runtime dependencies** (the
+release APK resolves to nothing but the Kotlin stdlib) and **no layout XML or Compose** —
+every view is built in Kotlin. New code should stay consistent with both.
+
+## Entry points
+
+Two, both declared in the manifest:
+
+- **`SettingsActivity`** — the launcher icon. Configuration UI only; it performs no
+  gestures.
+- **`SwitcherService`** — the `AccessibilityService`. Everything the app actually *does*
+  happens here. It is also what keeps the process alive, which is why the process
+  survives swiping the app away.
+
+They share no state in memory. `Prefs` is the only channel between them: the activity
+writes, the service reads on demand.
 
 ## Components
 
-`SettingsActivity` is the launcher UI. It reads and writes all user configuration through
-`Prefs`, reports accessibility-service health, and invokes `UpdateChecker` for automatic and
-manual GitHub release checks. `Prefs` owns the SharedPreferences schema, defaults, and
-one-time migrations; both the activity and the service use the same wrapper.
+### `SwitcherService` — runtime coordinator
 
-`SwitcherService` is the runtime coordinator. As an `AccessibilityService`, it receives
-hardware key events and performs Android side effects such as global actions, display-aware
-activity launches, screenshots, and screen swaps. It delegates Back-key timing decisions to
-`BackGestureMachine`, maintains the recent-app model through `AccessibilityAppSource`, and
-creates `SwitcherOverlay` to render and operate the bottom-screen app switcher.
+Receives key events and window-change events, and owns every Android side effect:
+global actions (Back, Home, Recents), display-aware activity launches, screenshots,
+and the screen swap. It holds the `AccessibilityAppSource`, creates the
+`SwitcherOverlay`, and opportunistically captures thumbnails of the front app.
 
-`BackGestureMachine` contains the gesture state and timing decisions but none of the Android
-side effects. Clock, scheduling, and completed actions enter through small interfaces, while
-`SwitcherService` supplies their Android implementations. The seam exists because Handler-
-and SystemClock-driven key timing cannot otherwise be exercised deterministically on the
-JVM. It was extracted verbatim: the decision logic, including the `pressFollowsTap`
-latching quirk, moved across unchanged, so the machine reproduces the original behavior
-rather than a cleaned-up version of it.
+What it deliberately does **not** own is the Back-press decision — that moved into
+`BackGestureMachine`. Shoulder buttons are handled here directly: they act only while
+Back is held, and an unassigned button's event is left unconsumed so games and apps see
+normal input.
 
-`AccessibilityAppSource` derives a per-display recent-app history from accessibility windows
-and supplies labels, icons, and captured thumbnails. `SwitcherOverlay` consumes that model and
-builds its accessibility-overlay UI using framework Views; the extracted `CardTouch` class
-owns the independently testable tap-versus-swipe calculation. `UpdateChecker` remains separate
-from both UI paths: it talks to the GitHub Releases API and exposes results to
-`SettingsActivity`, while its JSON parser is isolated as a JVM-testable seam.
+### `BackGestureMachine` — the timing decisions, without Android
 
-## Test pyramid
+The state machine over a single Back press's DOWN/UP sequence. It contains the gesture
+state and the timing rules but no Android calls. Clock, scheduling and completed actions
+enter through three small interfaces (`GestureClock`, `GestureScheduler`,
+`GestureActions`) that `SwitcherService` implements with `SystemClock` and a `Handler`.
 
-The broad base is the Robolectric/JUnit suite: it covers preferences and migrations, resource
-integrity, UI helpers, release parsing, `CardTouch`, accessibility-window bookkeeping, and all
-branches of `BackGestureMachine`. Deterministic View-tree snapshots protect the settings page,
-row states, dialogs, and accessibility inventory without depending on pixel rendering.
+The seam exists for one reason: `Handler`- and `SystemClock`-driven key timing cannot be
+exercised deterministically on the JVM, which left the app's most critical code
+untestable. The extraction was verbatim — the decision logic, including the
+`pressFollowsTap` latching quirk described below, moved across unchanged, so the machine
+reproduces the original behavior rather than a tidied-up version of it.
 
-One Espresso instrumented smoke test runs `SettingsActivity` on a real Android device to catch
-manifest, resource, and framework-integration failures that a JVM model cannot reproduce.
+### `DoubleTapDetector` — press-interval tracking
 
-The automation boundary is deliberate and worth stating plainly: `SwitcherOverlay` has no
-automated coverage at all and `SwitcherService` has almost none, because accessibility-service
-windows, multi-display targeting, and physical key events are not reachable from Robolectric
-and there is no emulator image for a dual-screen device. Manual testing on the AYN Thor is
-the only net under those paths — see [`../CLAUDE.md`](../CLAUDE.md) for which changes warrant
-a device pass.
+A deliberately separate, tiny tracker consulted independently of the single/hold timers.
+Note that it uses `0L` as its "no previous press" sentinel; with a test clock sitting at
+zero no double tap is ever detected. That is a test-fixture consideration, not a defect.
 
-`./tools/verify.sh` is the shared local, hook, and CI gate. It runs lint, JVM tests, the JaCoCo
-per-class ratchets, and both debug and release builds; the device smoke and manual checklist
-remain explicit release activities.
+### `AccessibilityAppSource` — the recent-app model
+
+Implements `AppSource`. Builds a most-recently-used list **per display** purely from
+`windowsOnAllDisplays`, filters a fixed ignore-set (launcher, SystemUI, OEM dual-screen
+packages) so they never surface in the switcher, and supplies labels and icons from
+`PackageManager`.
+
+Two consequences worth internalising:
+
+- **Only apps seen since the service started are known.** There is no history before
+  that, and no way to obtain one.
+- **Thumbnails are a separate in-memory cache**, filled opportunistically by
+  `captureFrontApp` in the service — not derived from window state. A card can therefore
+  exist without a preview image.
+
+### `SwitcherOverlay` — the bottom-screen switcher
+
+Draws the switcher as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to one display, via
+`createDisplayContext(...).createWindowContext(...)`. That binding is what pins it to the
+bottom screen; it is not a full-screen window that happens to be positioned low.
+
+Contents: a horizontal scroll row of cards (icon, label, thumbnail), a "Close all" button
+with a both-screens toggle, and an empty state. `CardTouch` arbitrates each card's
+touches — tap opens, upward swipe past a threshold closes, horizontal drags go to the
+scroller — and is extracted so that arbitration is testable without a real window.
+
+### `Prefs` — storage and migrations
+
+Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time
+**migrations** in its `init` block. Shoulder actions are stored either as a bare package
+name (launch that app) or as an `@`-prefixed sentinel (`SHOULDER_HOME`,
+`SHOULDER_FLICK_LEFT`, …); `isShoulderApp()` distinguishes the two.
+
+When changing a default or renaming a stored key, add a guarded migration here rather
+than silently changing behavior for existing installs — follow the established pattern of
+a versioned boolean flag guarding a one-time rewrite. See
+[`MAINTENANCE.md`](MAINTENANCE.md) for the recipe.
+
+### `SettingsActivity` + `SettingsUiKit`
+
+A single hand-built screen: no `PreferenceFragment`, no XML. `SettingsUiKit` provides the
+vocabulary (`dp()`, `ServiceStatus`, `SettingsPage` with its cards, rows, sliders and
+choosers) and `SettingsActivity` assembles the page from it.
+
+It also surfaces accessibility-service health in three states (on / unresponsive / off)
+and offers a "repair service" flow, because Android does not permit an app to re-enable
+its own accessibility service — the best it can do is walk the user to the right toggle.
+
+### `UpdateChecker`
+
+Talks to the GitHub Releases API directly with `HttpURLConnection` and manual JSON
+parsing — consistent with the no-dependency rule. It parses the release tag as semver and
+compares it against the installed `versionName`, then posts a notification linking to the
+release page. There is deliberately no in-app download or install, which would require
+`REQUEST_INSTALL_PACKAGES` and a download manager.
+
+Two behavioral facts that regularly surprise people:
+
+- **The check runs only on `SettingsActivity.onCreate` and on the manual button.** There
+  is no `WorkManager` job, no boot receiver, no interval. A notification can therefore
+  only appear shortly after the app is opened.
+- **It is a single attempt with no retry** and a 5 s timeout. If it fails — no network
+  yet after a reboot, or GitHub's 60-requests-per-hour unauthenticated limit — the
+  failure is swallowed and nothing happens until the next app open.
+
+## How a Back press flows
+
+```
+hardware Back
+      │
+      ▼
+SwitcherService.onKeyEvent ──────────────► shoulder button held with Back?
+      │                                          │
+      │ no                                       ▼
+      ▼                                   run its configured action
+BackGestureMachine.handleBack(event)      (or leave unconsumed if unassigned)
+      │
+      ├─ DOWN: latch pressFollowsTap, schedule hold / tap-hold runnables
+      └─ UP:   cancel or fire, consult DoubleTapDetector
+                     │
+                     ▼
+            GestureActions (implemented by SwitcherService)
+                     │
+        ┌────────────┼─────────────┬──────────────────┐
+        ▼            ▼             ▼                  ▼
+   GLOBAL_ACTION  swapScreens  openTopRecents    showSwitcher
+      _BACK                                           │
+   or bottom                                           ▼
+   launcher                                      SwitcherOverlay
+                                                       │
+                                                       ▼
+                                            AccessibilityAppSource
+                                            (MRU list + thumbnails)
+```
+
+The five outcomes and their triggers:
+
+| Gesture | Outcome |
+|---|---|
+| Single tap | `GLOBAL_ACTION_BACK`, or the bottom screen's launcher — user's choice |
+| Double tap within the window | Switcher overlay on the bottom screen |
+| Hold for the configured duration | Swap the apps on the top and bottom screens |
+| Tap, then hold again within the tap-hold window | System Recents on the **top** screen instead of a swap |
+| Hold + L1/L2/R1/R2 | That button's configured action, on its configured screen |
+
+### Why `pressFollowsTap` is latched at DOWN
+
+`pressFollowsTap` is captured when the key goes down, not recomputed on the way up. A
+pending single-tap callback can fire on its own mid-hold, before the UP event arrives —
+recomputing later would read state the earlier callback already changed, and the
+tap-then-hold gesture would intermittently behave like a plain hold. The comment at its
+declaration records this; it survived the extraction into `BackGestureMachine`
+deliberately and should not be "simplified".
+
+## Display targeting
+
+All display logic distinguishes `Display.DEFAULT_DISPLAY` (the top screen) from the
+dynamically detected bottom display — `bottomDisplay()` returns the non-default display
+with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
+target a screen, the overlay's window binding, and the swap all route through this.
+
+`AccessibilityAppSource` additionally tracks whether a display is *covered*, so the
+switcher can warn when opening a card would land behind another window.
+
+## Testability seams, and where they stop
+
+Three extractions exist purely so that logic became reachable from the JVM:
+`BackGestureMachine` (key timing), `CardTouch` (touch arbitration) and
+`UpdateChecker.parseVersion`/`parseRelease` (release parsing).
+
+Everything that needs a real accessibility connection, a second display, or a real
+window remains outside automated reach: `SwitcherOverlay` has no automated coverage and
+`SwitcherService` has almost none. Robolectric cannot provide
+`windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
+testing on the AYN Thor is the only net under those paths — see
+[`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and
+[`TESTING.md`](TESTING.md) for how they fit into the gates.

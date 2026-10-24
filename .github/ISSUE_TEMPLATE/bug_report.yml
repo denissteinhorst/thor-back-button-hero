@@ -1,0 +1,198 @@
+name: Bug report
+description: Something does not work as expected. The screen-state questions matter — most gesture bugs depend on which app was where.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Back Button Hero reacts to **which app is on which
+        screen** and to **timing**, so a report without that context usually cannot be
+        reproduced. The questions below exist to capture it — please fill in what you can,
+        and write "don't know" rather than leaving a required field guessed.
+
+        Before filing, the [troubleshooting section](https://github.com/denissteinhorst/thor-back-button-hero#troubleshooting--support)
+        covers the three most common cases (gestures stopped responding, no update
+        notification, an app missing from the switcher).
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Shown at the bottom of the app's settings screen, e.g. "Version 1.1.1".
+      placeholder: "1.1.1"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android/firmware version
+      description: >
+        The app is built for the AYN Thor. If you are on something else, say so — that is
+        useful information, not a disqualifier. Android version is under
+        Settings → About phone.
+      placeholder: "AYN Thor, Android 13, firmware 20240xxx"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part is affected?
+      options:
+        - Back button — single tap
+        - Back button — double tap (app switcher)
+        - Back button — hold (swap screens)
+        - Back button — tap, then hold (Recents on top screen)
+        - Shoulder button — L1
+        - Shoulder button — L2
+        - Shoulder button — R1
+        - Shoulder button — R2
+        - Switcher overlay (cards, close, scroll)
+        - Settings screen
+        - Update check / notification
+        - Accessibility service status or "Repair service"
+        - Something else / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What did you try to do?
+      description: The action you intended, in your own words.
+      placeholder: "Held Back for about a second to swap the two screens."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: >
+        Include the exact text of any error message, toast or dialog. If nothing happened
+        at all, say that explicitly.
+      placeholder: "Nothing happened. The screens stayed as they were and Back did not go back either."
+    validations:
+      required: true
+
+  - type: input
+    id: screen-top
+    attributes:
+      label: Which app was on the TOP screen?
+      description: >
+        The top screen is the main display. If it was the launcher or a blank screen, say
+        so.
+      placeholder: "Chrome"
+    validations:
+      required: true
+
+  - type: input
+    id: screen-bottom
+    attributes:
+      label: Which app was on the BOTTOM screen?
+      description: >
+        The bottom screen is where the app switcher appears. If it was empty or showing the
+        launcher, say so.
+      placeholder: "Launcher (empty)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: open-apps
+    attributes:
+      label: Which apps were open at the time?
+      description: >
+        Everything you had running, not just the two in the foreground. The switcher only
+        knows apps that have been opened since the accessibility service started, so this
+        often explains a missing card.
+      placeholder: |
+        - Chrome (top)
+        - YouTube (bottom, opened earlier)
+        - A game, closed shortly before
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reproducible
+    attributes:
+      label: How often does it happen?
+      options:
+        - Every time
+        - Often, but not always
+        - Happened once, could not repeat it
+        - Only after a specific sequence (described below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: >
+        Numbered, starting from a known state — ideally right after opening the app or
+        rebooting. Include roughly how long you held buttons, since timing decides which
+        gesture the app sees.
+      placeholder: |
+        1. Reboot the device
+        2. Open Chrome on the top screen, YouTube on the bottom screen
+        3. Hold Back for about one second
+        4. Screens do not swap
+    validations:
+      required: true
+
+  - type: dropdown
+    id: service-status
+    attributes:
+      label: What does the app's settings screen say about the service?
+      description: The status line near the top of the settings screen.
+      options:
+        - "on"
+        - "unresponsive"
+        - "off"
+        - Did not check
+    validations:
+      required: true
+
+  - type: textarea
+    id: settings
+    attributes:
+      label: Relevant settings
+      description: >
+        Anything you changed from the defaults — the single-tap action, the double-tap or
+        hold timings, which gestures are switched off, and the four shoulder-button
+        assignments with their target screens. "All defaults" is a perfectly good answer.
+      placeholder: |
+        - Single tap: Open bottom screen launcher
+        - Hold: 1200 ms
+        - Double tap: disabled
+        - L1: navigation flick left, R1: launch YouTube on bottom screen
+    validations:
+      required: true
+
+  - type: textarea
+    id: logcat
+    attributes:
+      label: Logcat (optional, very helpful for crashes)
+      description: >
+        With the device connected over USB and USB debugging enabled, run:
+        `adb logcat -d > log.txt`, then attach the file or paste the part mentioning
+        `backbuttonhero` or `AndroidRuntime`. Note that release builds do not log gesture
+        decisions, so expect this to be useful mainly for crashes rather than for a gesture
+        that simply did not fire.
+      render: text
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am on the latest release, or I have stated which version I am on above.
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: >
+            I understand this is a hobby project with no guaranteed response time, and that
+            the accessibility service must be enabled by me in Android's settings for any
+            gesture to work.
+          required: true
