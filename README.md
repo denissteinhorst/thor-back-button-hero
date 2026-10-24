@@ -47,16 +47,10 @@ see the [FAQ](docs/FAQ.md#compatibility).
 
 ![All six Back Button Hero features shown on a simplified diagram of the device](docs/assets/gestures.gif)
 
-**Want to try the gestures before installing anything?**
-[Download the interactive explainer](docs/gesture-explainer.html) — a clickable
-device diagram, no APK and no permissions involved.
+**[Try the gestures yourself][explainer-url]** — downloads one self-contained
+HTML file, no APK and no permissions involved.
 
 </div>
-
-Open that page on GitHub and use its **Download raw file** button, then
-double-click the downloaded file to open it in your browser. It is a single
-self-contained file and works offline. (GitHub never renders repository HTML
-directly, so a link straight to the file would only show you its source.)
 
 | Gesture | Action |
 |---|---|
@@ -233,9 +227,9 @@ detail for people who want to understand or work on it:
 
 - [FAQ](docs/FAQ.md) — device compatibility, how updating works, and the
   privacy and trust questions an accessibility service ought to answer.
-- [Interactive gesture explainer](docs/gesture-explainer.html) — a clickable
-  device diagram showing what each Back-button gesture does. Download the file
-  and open it in any browser; it is self-contained and needs no clone.
+- [Interactive gesture explainer][explainer-url] — a clickable device diagram
+  showing what each Back-button gesture does. Self-contained; open the
+  downloaded file in any browser.
 - [Architecture](docs/ARCHITECTURE.md) — the main components, how a gesture
   flows through the app, and how it targets the two displays.
 - [Testing and quality gates](docs/TESTING.md) — the automated verification
@@ -287,6 +281,7 @@ never in release.
 [ci-url]: https://github.com/denissteinhorst/thor-back-button-hero/actions/workflows/ci.yml
 [release-shield]: https://img.shields.io/github/v/release/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
+[explainer-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest/download/gesture-explainer.html
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
 [platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white

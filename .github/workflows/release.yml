@@ -68,8 +68,14 @@ jobs:
           echo "asset=$asset" >> "$GITHUB_OUTPUT"
           echo "Release asset: $asset"
 
-      - name: Create GitHub release with APK
+      # The explainer ships as a release asset because raw.githubusercontent serves
+      # repository HTML as text/plain with nosniff, so a link to it shows source instead
+      # of the page. Release assets carry Content-Disposition: attachment and download
+      # properly, which keeps releases/latest/download/gesture-explainer.html working.
+      - name: Create GitHub release with APK and gesture explainer
         uses: softprops/action-gh-release@v3
         with:
-          files: ${{ steps.apk.outputs.asset }}
+          files: |
+            ${{ steps.apk.outputs.asset }}
+            docs/gesture-explainer.html
           generate_release_notes: true
