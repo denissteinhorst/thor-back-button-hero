@@ -33,7 +33,7 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 - [x] 17 — Characterization: `BackGestureMachine`
 - [x] 18 — Device: Espresso-Smoke auf `SettingsActivity`
 - [x] 19 — Coverage-Ratchet (JaCoCo Pro-Klassen-Minima)
-- [ ] 20 — Suite-Stabilität (5× Lauf, Flake-Report)
+- [x] 20 — Suite-Stabilität (5× Lauf, Flake-Report)
 - [ ] 21 — Optional: Roborazzi-Pixel-Goldens (nur Linux-CI)
 
 ## Phase 2 — Pre-Commit-Hooks & CI
@@ -67,8 +67,8 @@ Lint auf Testquellen), die sonst zu rotem Gate mit nicht offensichtlicher Ursach
 
 ---
 
-**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 19: `./tools/verify.sh` grün, inklusive
-`jacocoCoverageVerification`.
+**Letzter grüner Gate-Lauf:** 2026-10-24 — Schritt 20: `./tools/verify.sh` grün, inklusive
+`jacocoCoverageVerification`; fünf unabhängige Unit-Test-Läufe waren 5/5 grün.
 
 **Wichtiger Fund in Schritt 12 — behoben:** `ViewTree.kt`s `when`-Block prüfte `is TextView`
 vor `is CompoundButton`. Da `Switch` in Android eine `TextView`-Unterklasse ist, gewann immer
