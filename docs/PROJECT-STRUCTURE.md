@@ -16,7 +16,7 @@ gitignored and therefore absent here.
 | `build.gradle.kts` | Root build file. Declares the AGP/Kotlin plugin versions, the **`verify`** aggregate task (the one quality gate), and the `installGitHooks` task. |
 | `gradle.properties` | JVM and Gradle flags for the build (heap, AndroidX, caching). |
 | `gradlew`, `gradlew.bat` | Gradle wrapper launchers. Always build through these, never a system Gradle. |
-| `gradle/wrapper/gradle-wrapper.properties` | Pins the Gradle version (8.7). |
+| `gradle/wrapper/gradle-wrapper.properties` | Pins the Gradle version (9.8.2). |
 | `gradle/wrapper/gradle-wrapper.jar` | The wrapper bootstrap jar. |
 
 ## `app/` — the single module

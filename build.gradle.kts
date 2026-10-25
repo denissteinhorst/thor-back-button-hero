@@ -1,6 +1,12 @@
+buildscript {
+    dependencies {
+        // AGP 9 bundles Kotlin support but defaults to an older KGP; pin the version we build with.
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21")
+    }
+}
+
 plugins {
-    id("com.android.application") version "8.5.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    id("com.android.application") version "9.4.1" apply false
 }
 
 tasks.register<Exec>("installGitHooks") {
@@ -11,12 +17,13 @@ tasks.register<Exec>("installGitHooks") {
 
 tasks.register("verify") {
     group = "verification"
-    description = "Single gate: lint, unit tests, debug+release build."
+    description = "Single gate: lint, unit tests, debug+release build, androidTest compile."
     dependsOn(
         ":app:lintDebug",
         ":app:testDebugUnitTest",
         ":app:jacocoCoverageVerification",
         ":app:assembleDebug",
+        ":app:assembleDebugAndroidTest",
         ":app:assembleRelease",
     )
 }

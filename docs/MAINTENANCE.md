@@ -10,7 +10,7 @@ for what each file is.
 ```sh
 brew install openjdk@17                        # keg-only; the gate finds it itself
 brew install --cask android-commandlinetools
-sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "build-tools;36.0.0" "platform-tools"
 
 git clone git@github.com:denissteinhorst/thor-back-button-hero.git
 cd thor-back-button-hero
@@ -37,7 +37,7 @@ attached over `adb` (the device id changes — check with `adb devices`).
 ## Everyday commands
 
 ```sh
-./tools/verify.sh                 # THE gate: lint, tests, coverage, both builds
+./tools/verify.sh                 # THE gate: lint, tests, coverage, both builds, androidTest compile
 ./gradlew assembleDebug           # debug APK
 ./gradlew installDebug            # build + install on the attached device
 ./gradlew assembleRelease         # release APK (unsigned locally - see below)

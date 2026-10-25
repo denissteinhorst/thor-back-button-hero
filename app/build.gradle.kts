@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("jacoco")
 }
 
@@ -15,6 +14,10 @@ val releaseKeystorePath: String? = System.getenv("RELEASE_KEYSTORE_PATH")
 val releaseKeystorePassword: String? = System.getenv("RELEASE_KEYSTORE_PASSWORD")
 val releaseKeyAlias: String? = System.getenv("RELEASE_KEY_ALIAS")
 val releaseKeyPassword: String? = System.getenv("RELEASE_KEY_PASSWORD")
+
+kotlin {
+    compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+}
 
 android {
     namespace = "dev.steinhorst.backbuttonhero"
@@ -34,7 +37,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -98,7 +100,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     }
     sourceDirectories.setFrom(files("src/main/java"))
     classDirectories.setFrom(
-        fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
+        fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
             exclude(coverageClassFilter)
         }
     )
@@ -111,7 +113,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     dependsOn("jacocoTestReport")
     sourceDirectories.setFrom(files("src/main/java"))
     classDirectories.setFrom(
-        fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
+        fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
             exclude(coverageClassFilter)
         }
     )
@@ -129,7 +131,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.90".toBigDecimal()
+                minimum = "0.91".toBigDecimal()
             }
         }
         rule {
@@ -182,12 +184,12 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }
 
