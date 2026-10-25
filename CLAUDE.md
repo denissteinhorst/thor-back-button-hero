@@ -53,7 +53,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **87 JVM tests, 0 failures, 0 skipped** across 15 test classes.
+- **91 JVM tests, 0 failures, 0 skipped** across 16 test classes.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency`). `warningsAsErrors = true` and
@@ -322,6 +322,15 @@ reconstructs a most-recently-used list per display purely from
 - Thumbnails are cached separately in-memory (`thumbnails` map) and captured
   opportunistically (see `captureFrontApp` in `SwitcherService`), not derived
   from window state.
+
+**`PService`** talks to AYN's own root daemon ("pservice", binder service `PServerBinder`,
+the backend of Settings → Thor → "Run Script as Root"). Swiping a card away uses it for
+`am force-stop` plus `TaskRemover`, a root `app_process` entry point that calls
+`removeTask` like Recents' "Clear all". It only works while the Thor's SELinux is
+permissive (AYN's default); otherwise `PService.cachedAvailable()` stays false and
+`SwitcherService.killOnly` silently falls back to `killBackgroundProcesses`. Every
+package name reaching it must pass `Shell.isPkg` (names come from other apps).
+Like `SwitcherService`, it is device-only territory: no automated coverage.
 
 **`SwitcherOverlay`** draws the switcher UI as an `AccessibilityOverlay`
 window bound to a specific display's `Display` via

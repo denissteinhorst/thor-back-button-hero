@@ -53,6 +53,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onServiceConnected() {
         isConnected = true
+        PService.probeAsync()
         source = AccessibilityAppSource(this)
         overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::beforeLaunch)
     }
@@ -213,13 +214,28 @@ class SwitcherService : AccessibilityService(), GestureActions {
         Toast.makeText(this, getString(R.string.covered_hint), Toast.LENGTH_LONG).show()
     }
 
-    /** A normal app can only kill background processes, so leave the app first. */
+    /** A normal app can only kill background processes, so leave the app first. With AYN's root
+     *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
+     *  if that fails, the unprivileged kill below still runs. */
     private fun killOnly(packages: List<String>, displays: Set<Int>) {
         val activityManager = getSystemService(ActivityManager::class.java)
         packages.forEach { pkg ->
             displays.forEach { d -> if (source.topApp(d) == pkg) goHome(d, dismissSwitcher = false) }
         }
-        handler.postDelayed({ packages.forEach { activityManager.killBackgroundProcesses(it) } }, 500)
+        val rootable = if (PService.cachedAvailable()) packages.filter(Shell::isPkg) else emptyList()
+        handler.postDelayed({
+            if (rootable.isEmpty()) {
+                packages.forEach { activityManager.killBackgroundProcesses(it) }
+                return@postDelayed
+            }
+            Thread {
+                val removed = PService.runEntryPoint(this, "TaskRemover", rootable.joinToString(","))
+                val stopped = rootable.map { PService.forceStop(it) }
+                if (removed?.startsWith("OK") != true || !stopped.all { it }) {
+                    handler.post { packages.forEach { activityManager.killBackgroundProcesses(it) } }
+                }
+            }.start()
+        }, 500)
     }
 
     /** Moves the front app of each screen to the other one by relaunching it there. */
