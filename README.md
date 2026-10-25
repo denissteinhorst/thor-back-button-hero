@@ -87,6 +87,28 @@ freely reassigned to whatever action you want from the list below:
 An unassigned button is left alone, so games and apps still see its normal
 input.
 
+## Screenshots of the app's settings
+
+These are the app's own settings screens. Everything you see here is
+adjustable — change whatever you like, or leave the defaults and use it
+out of the box.
+
+<table>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-single-double.png" alt="Single tap and double button press settings"><br><sub><b>Single &amp; double press</b> — tap action and double-tap speed</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-tap-hold.png" alt="Tap and hold settings"><br><sub><b>Tap and hold</b> — Recents on the top screen</sub></td></tr>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-hold-swap.png" alt="Hold to swap screens settings"><br><sub><b>Hold to swap screens</b> — and its hold time</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-shoulder-buttons.png" alt="Shoulder button assignments"><br><sub><b>Shoulder buttons</b> — L1, L2, R1, R2</sub></td></tr>
+</table>
+
+<details>
+<summary><b>More screenshots</b> (4)</summary>
+<br>
+
+<table>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker.png" alt="Action picker for a shoulder button"><br><sub><b>Pick an action</b> — Home, Recents, screenshot, flicks</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-system.png" alt="Action picker with system shortcuts"><br><sub><b>System shortcuts</b> — Quick Settings, notifications, Wi-Fi</sub></td></tr>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-settings.png" alt="Action picker with settings pages"><br><sub><b>Settings pages</b> — display, sound, location and more</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-help-debug.png" alt="Help and debug section"><br><sub><b>Help and debug</b> — repair, reset, update check</sub></td></tr>
+</table>
+
+</details>
+
 ## Settings & service health
 
 The settings screen shows whether the accessibility service is on, and has
