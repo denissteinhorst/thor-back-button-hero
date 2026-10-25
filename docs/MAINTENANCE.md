@@ -10,7 +10,7 @@ for what each file is.
 ```sh
 brew install openjdk@17                        # keg-only; the gate finds it itself
 brew install --cask android-commandlinetools
-sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "build-tools;36.0.0" "platform-tools"
 
 git clone git@github.com:denissteinhorst/thor-back-button-hero.git
 cd thor-back-button-hero

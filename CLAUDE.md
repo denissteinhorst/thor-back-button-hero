@@ -43,8 +43,8 @@ Git hooks (`.githooks/`, wired via `core.hooksPath` and self-installing through 
 CI (`.github/workflows/ci.yml`) runs the same `verify` task on every push/PR to `main`.
 Never bypass hooks with `--no-verify`.
 
-JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 1.9.24, AGP 8.5.2,
-Gradle 8.7. Android SDK has only `platforms/android-34` + `build-tools/34.0.0` and
+JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 2.4.21, AGP 9.4.1,
+Gradle 9.8.2. Android SDK has `platforms/android-34` + `build-tools/34.0.0` (plus `36.0.0`, which AGP 9 installs on its own) and
 **no emulator image** — every `androidTest`/`connectedDebugAndroidTest` needs the
 physical AYN Thor attached via `adb` (device id changes; re-check with `adb devices`).
 
@@ -56,7 +56,8 @@ to record:
 - **91 JVM tests, 0 failures, 0 skipped** across 16 test classes.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
-  `MonochromeLauncherIcon`, 5× `GradleDependency`). `warningsAsErrors = true` and
+  `MonochromeLauncherIcon`, 5× `GradleDependency` — four androidTest/test libraries plus
+  the pinned `compileSdk = 34`). `warningsAsErrors = true` and
   `abortOnError = true`, so any *new* warning fails the gate. Those 18 are deliberately
   **not fixed** — each fix would be a visible change (new icon, etc.).
 - **JaCoCo per-class line-coverage ratchets** (in `app/build.gradle.kts`, enforced by
@@ -67,17 +68,21 @@ to record:
   | `Prefs` | 1.00 | 1.0000 |
   | `DoubleTapDetector` | 1.00 | 1.0000 |
   | `CardTouch` | 0.90 | 1.0000 |
-  | `BackGestureMachine` | 0.90 | 0.9077 |
+  | `BackGestureMachine` | 0.91 | 0.9130 |
   | `AccessibilityAppSource` | 0.60 | 0.6000 |
   | `UpdateChecker` | 0.46 | 0.4655 |
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
 
+  `UpdateChecker`'s measured value is not stable: the activity tests start its real
+  network thread, so coverage swings between ~0.46 and ~0.60 depending on how far the
+  thread gets. The 0.46 floor is the deterministic part — never raise it on one lucky run.
+
   Read these numbers per JaCoCo **class**, which counts nested classes separately:
   `UpdateChecker` is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a
   class with its nested types overstates the figure the rule actually enforces.
-- **Release APK ~2.52 MB** (`app-release-unsigned.apk`). Debug is much larger
+- **Release APK ~2.81 MB** (`app-release-unsigned.apk`). Debug is much larger
   (~6.8 MB) because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -211,7 +216,7 @@ To get the project building again on a fresh machine:
 ```sh
 brew install openjdk@17                   # keg-only; verify.sh finds it on its own
 brew install --cask android-commandlinetools
-sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "build-tools;36.0.0" "platform-tools"
 
 git clone git@github.com:denissteinhorst/thor-back-button-hero.git
 cd thor-back-button-hero
@@ -285,10 +290,11 @@ a previous version.
   `rate_limit.core.remaining == 0` is throttling, not a visibility or code problem —
   check `https://api.github.com/rate_limit` before concluding anything.
 
-Dependabot is configured (weekly, Gradle + GitHub Actions). Pending update PRs include
-major toolchain jumps (AGP 9.x, Kotlin 2.x, Gradle 9.x, Robolectric 4.17) that would
-move the deliberately frozen toolchain — do not merge those alongside a release; take
-them one at a time behind a green gate afterwards.
+Dependabot is configured (weekly, Gradle + GitHub Actions). The toolchain was moved to
+AGP 9.4.1 / Kotlin 2.4.21 / Gradle 9.8.2 / Robolectric 4.17 in one verified step (golden
+files untouched). Take future major jumps one at a time behind a green gate, never
+alongside a release. Dependabot compares against the default branch, so it can propose
+versions already in use after a local bump — check the workflow files before merging.
 
 ## Architecture
 
