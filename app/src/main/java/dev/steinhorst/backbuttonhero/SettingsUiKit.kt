@@ -178,6 +178,36 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             return ChooserHandle(row, valueView)
         }
 
+        /** A secondary, single-line chooser for an option that belongs to the row above it: smaller
+         *  muted text, label on the left and current value on the right. */
+        fun subChooserRow(titleRes: Int, value: String, onClick: () -> Unit): ChooserHandle {
+            lateinit var valueView: TextView
+            val row = rowContainer(minHeightDp = 48) {
+                addView(
+                    TextView(activity).apply {
+                        setText(titleRes)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    },
+                    LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+                )
+                valueView = TextView(activity).apply {
+                    text = value
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                }
+                addView(valueView)
+                addView(chevron())
+            }
+            // Tucked up against the row it belongs to; the rest of the touch target extends below.
+            row.gravity = Gravity.TOP
+            row.setPadding(dp(16), 0, dp(16), dp(8))
+            row.isClickable = true
+            row.isFocusable = true
+            row.background = selectableBackground()
+            row.setOnClickListener { onClick() }
+            addRow(row)
+            return ChooserHandle(row, valueView)
+        }
+
         /** A tappable action line, optionally with supporting text below the title. */
         fun actionRow(titleRes: Int, summaryRes: Int? = null, onClick: () -> Unit): ActionHandle {
             lateinit var title: TextView

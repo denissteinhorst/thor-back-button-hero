@@ -26,14 +26,17 @@ import android.view.accessibility.AccessibilityEvent
  * launcher (app drawer) once the double-tap window has passed. Holding Back for a second swaps the apps
  * on the two screens - unless that hold follows a tap, in which case it opens the system's Recents
  * (task switcher) on the top screen instead (see [BackGestureMachine]). Holding Back and pressing a
- * shoulder button (see [ShoulderButton]) launches whatever app is configured for that button instead,
- * on whichever screen is configured for it. The AYN button is left alone so its quick-settings panel
- * and hold-to-sleep keep working.
+ * shoulder button (see [ShoulderButton]) or a D-pad direction (see [DpadDirection]) runs whatever is
+ * configured for it instead. The AYN button is left alone so its quick-settings panel and
+ * hold-to-sleep keep working.
  */
 class SwitcherService : AccessibilityService(), GestureActions {
 
     private lateinit var overlay: SwitcherOverlay
     private lateinit var source: AccessibilityAppSource
+    private lateinit var padHelper: PadHelper
+    private lateinit var dpadOverlay: DpadOverlay
+    private lateinit var levels: LevelControl
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -56,12 +59,40 @@ class SwitcherService : AccessibilityService(), GestureActions {
         PService.probeAsync()
         source = AccessibilityAppSource(this)
         overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::beforeLaunch)
+        levels = LevelControl(this) { bottomDisplay()?.displayId }
+        padHelper = PadHelper(this, ::handleDpad)
+        dpadOverlay = DpadOverlay(this, ::handleDpad)
+        prefs.registerListener(prefsListener)
+        updatePadHelper()
+    }
+
+    // The helper hides the pad from Android while it runs, so only run it while the D-pad has a job.
+    private val prefsListener = { updatePadHelper() }
+
+    private fun updatePadHelper() {
+        if (prefs.hasDpadAction()) padHelper.start() else padHelper.stop()
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode == KeyEvent.KEYCODE_BACK) return backGesture.handleBack(event)
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active && prefs.hasDpadAction()) {
+                dpadOverlay.attach()
+            }
+            if (event.action == KeyEvent.ACTION_UP) dpadOverlay.detach()
+            return backGesture.handleBack(event)
+        }
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
         return false
+    }
+
+    /** Back + D-pad, from [PadHelper] or [DpadOverlay]; both only report presses made while Back is held. */
+    private fun handleDpad(direction: DpadDirection) {
+        if (!backGesture.backDown) return
+        val action = prefs.shoulderAction(direction)
+        if (action.isEmpty()) return
+        backGesture.markComboFired()
+        runComboAction(direction, action)
     }
 
     /** Holding Back and pressing a shoulder button runs that button's configured action
@@ -75,38 +106,87 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (action.isEmpty()) return false
         if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
             backGesture.markComboFired()
-            when (action) {
-                Prefs.SHOULDER_FLICK_LEFT -> navigationFlick(left = true)
-                Prefs.SHOULDER_FLICK_RIGHT -> navigationFlick(left = false)
-                Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
-                Prefs.SHOULDER_RECENTS -> openTopRecents()
-                Prefs.SHOULDER_SCREENSHOT -> performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
-                Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
-                Prefs.SHOULDER_NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-                Prefs.SHOULDER_INTERNET -> openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
-                Prefs.SHOULDER_BLUETOOTH -> openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
-                Prefs.SHOULDER_NIGHT_LIGHT -> openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
-                Prefs.SHOULDER_EXTRA_DIM -> openSystemSettings(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ACTION_EXTRA_DIM_SETTINGS else Settings.ACTION_DISPLAY_SETTINGS,
-                    Settings.ACTION_DISPLAY_SETTINGS,
-                )
-                Prefs.SHOULDER_DISPLAY_SETTINGS -> openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
-                Prefs.SHOULDER_SOUND_SETTINGS -> openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
-                Prefs.SHOULDER_LOCATION_SETTINGS -> openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                Prefs.SHOULDER_CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
-                Prefs.SHOULDER_DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
-                Prefs.SHOULDER_BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
-                else -> {
-                    val displayId = shoulderDisplayId(button)
-                    dlog("SHOULDER ${button.name} + Back -> launching $action on display $displayId")
-                    launchOn(action, displayId)
-                }
-            }
+            runComboAction(button, action)
         }
         return true
     }
 
-    private fun shoulderDisplayId(button: ShoulderButton): Int =
+    private fun runComboAction(button: ComboButton, action: String) {
+        when (action) {
+            Prefs.SHOULDER_FLICK_LEFT -> navigationFlick(left = true)
+            Prefs.SHOULDER_FLICK_RIGHT -> navigationFlick(left = false)
+            Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
+            Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
+            Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
+            Prefs.SHOULDER_RECENTS -> openTopRecents()
+            Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
+            Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+            Prefs.SHOULDER_NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+            Prefs.SHOULDER_INTERNET -> openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
+            Prefs.SHOULDER_BLUETOOTH -> openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
+            Prefs.SHOULDER_NIGHT_LIGHT -> openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
+            Prefs.SHOULDER_EXTRA_DIM -> openSystemSettings(
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ACTION_EXTRA_DIM_SETTINGS else Settings.ACTION_DISPLAY_SETTINGS,
+                Settings.ACTION_DISPLAY_SETTINGS,
+            )
+            Prefs.SHOULDER_DISPLAY_SETTINGS -> openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
+            Prefs.SHOULDER_SOUND_SETTINGS -> openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
+            Prefs.SHOULDER_LOCATION_SETTINGS -> openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            Prefs.SHOULDER_CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
+            Prefs.SHOULDER_DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
+            Prefs.SHOULDER_BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
+            else -> {
+                val displayId = shoulderDisplayId(button)
+                dlog("COMBO ${button.name} + Back -> launching $action on display $displayId")
+                launchOn(action, displayId)
+            }
+        }
+    }
+
+    /**
+     * The top screen goes through the system's own screenshot (preview, sound and all), as it always
+     * has. The system action cannot reach the bottom screen, so that one is captured here and saved
+     * by [ScreenshotSaver]; with "both" the two simply happen one after the other.
+     */
+    private fun screenshot(target: String) {
+        if (target != Prefs.DISPLAY_BOTTOM) performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+        if (target == Prefs.DISPLAY_TOP) return
+        val bottom = bottomDisplay()?.displayId ?: return toastUnavailable()
+        saveScreenshot(bottom, "bottom", retry = true)
+    }
+
+    private fun saveScreenshot(displayId: Int, suffix: String, retry: Boolean) {
+        takeScreenshot(displayId, mainExecutor, object : TakeScreenshotCallback {
+            override fun onSuccess(result: ScreenshotResult) {
+                val buffer = result.hardwareBuffer
+                val bitmap = Bitmap.wrapHardwareBuffer(buffer, result.colorSpace)
+                // Encoding a PNG is slow; keep it off the main thread, and release the buffer after.
+                Thread {
+                    val saved = bitmap != null && ScreenshotSaver.save(this@SwitcherService, bitmap, suffix)
+                    buffer.close()
+                    handler.post {
+                        if (saved) Toast.makeText(this@SwitcherService, R.string.screenshot_saved, Toast.LENGTH_SHORT).show()
+                        else toastUnavailable()
+                    }
+                }.start()
+            }
+
+            override fun onFailure(errorCode: Int) {
+                // Android refuses two screenshots from one service within about a second.
+                if (retry && errorCode == ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT) {
+                    handler.postDelayed({ saveScreenshot(displayId, suffix, retry = false) }, MIN_CAPTURE_GAP_MS)
+                } else {
+                    Log.d(TAG, "screenshot failed: $errorCode")
+                    toastUnavailable()
+                }
+            }
+        })
+    }
+
+    private fun toastUnavailable() =
+        Toast.makeText(this, R.string.shoulder_action_unavailable, Toast.LENGTH_SHORT).show()
+
+    private fun shoulderDisplayId(button: ComboButton): Int =
         if (prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) Display.DEFAULT_DISPLAY
         else bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY
 
@@ -143,6 +223,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onDestroy() {
         isConnected = false
+        stopDpad()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         super.onDestroy()
@@ -150,7 +231,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onUnbind(intent: Intent?): Boolean {
         isConnected = false
+        stopDpad()
         return super.onUnbind(intent)
+    }
+
+    /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
+    private fun stopDpad() {
+        if (!::padHelper.isInitialized) return
+        prefs.unregisterListener(prefsListener)
+        padHelper.stop()
+        dpadOverlay.detach()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {

@@ -24,6 +24,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # Compiles the root input helper (app/src/main/cpp); keep in sync with ndkVersion in app/build.gradle.kts.
+      - name: Install NDK
+        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;29.0.14206865" > /dev/null
+
       - name: Decode release keystore
         run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
 

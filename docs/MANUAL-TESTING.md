@@ -131,11 +131,30 @@ Each is pressed **while holding Back**.
 | C13 | One button set to *Home* | Launcher on the configured screen |
 | C14 | One button set to *Recents* | System Recents opens |
 | C15 | One button set to *Take screenshot* | A screenshot is taken |
+| C15a | One button set to *Take screenshot*, screen **Top** (the default) | The system screenshot of the top screen, with its preview |
+| C15b | Same, screen **Bottom** | A "Screenshot saved" toast; `Pictures/Screenshots` has a new `…_bottom.png` showing the bottom screen |
+| C15c | Same, screen **Both** | The top screenshot as in C15a plus the new `…_bottom.png` |
 | C16 | Three different system panels (e.g. Bluetooth, Display, Battery Saver) | Each panel opens; a missing OEM panel falls back instead of failing |
 | C17 | An **unassigned** button during a game | The game receives the input normally — nothing is swallowed |
 
 C17 protects the promise that the app stays out of the way. It is easy to break by
 consuming a key event unconditionally, and no test can catch it.
+
+### D-pad shortcuts and the root helper
+
+Run these in a game or emulator that is already set up for the pad. See
+[`HELPER.md`](HELPER.md) for what the helper does.
+
+| # | Step | Expected |
+|---|---|---|
+| C17a | Play without touching Back | D-pad, sticks, triggers and all buttons behave exactly as before; Android lists one pad, on controller number 1 (`dumpsys input`) |
+| C17b | Back + up / down, at the defaults | Brightness of both screens steps up / down; the game does not pause and does not see the press |
+| C17c | Back + left / right, at the defaults | Volume of both screens steps down / up; the system volume panel appears; no pause |
+| C17d | Set one direction's screen to *Top screen*, then to *Bottom screen* | Only that screen changes |
+| C17e | Switch the controller style: Xbox → Standard → Ban on Use → Xbox, testing C17a and C17b after each | Every style keeps working; with Ban on Use the pad is off, as in AYN's own behavior |
+| C17f | Hold Home + Back for 5 s | The pad is handed back to Android; the helper stays off until the service restarts, and the shortcuts fall back to the overlay |
+| C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
+| C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
 
 ### Service health and localisation
 
@@ -144,7 +163,7 @@ consuming a key event unconditionally, and no test can catch it.
 | C18 | Turn the accessibility service off in Android settings | Warning row appears, status switches to **off** |
 | C19 | Tap "Repair service" → "Open accessibility settings" | Lands on the correct system screen |
 | C20 | Turn it back on | Status returns to **on**, gestures work again |
-| C21 | "Reset settings", confirm | Every timing, switch and shoulder assignment back to default; confirmation toast appears |
+| C21 | "Reset settings", confirm | Every timing, switch, shoulder and D-pad assignment back to default; confirmation toast appears |
 | C22 | Switch the system language to German, reopen the app | All sections, dialogs and toasts in German; no English remnants, no clipped labels |
 
 ## Procedure D — Release acceptance

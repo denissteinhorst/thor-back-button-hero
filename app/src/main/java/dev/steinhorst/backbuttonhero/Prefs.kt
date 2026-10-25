@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.SharedPreferences
 
 class Prefs(context: Context) {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
@@ -81,14 +82,40 @@ class Prefs(context: Context) {
         get() = ComponentName.unflattenFromString(singleAction)
 
     /** Holding Back and pressing [button] runs this action. Plain values are app package names. */
-    fun shoulderAction(button: ShoulderButton): String = sp.getString("${button.prefKey}_package", "") ?: ""
-    fun setShoulderAction(button: ShoulderButton, action: String) {
+    fun shoulderAction(button: ComboButton): String =
+        sp.getString("${button.prefKey}_package", button.defaultAction) ?: button.defaultAction
+    fun setShoulderAction(button: ComboButton, action: String) {
         sp.edit().putString("${button.prefKey}_package", action).apply()
     }
 
     /** [DISPLAY_TOP] or [DISPLAY_BOTTOM] - which screen [button]'s app opens on. */
-    fun shoulderDisplay(button: ShoulderButton): String = sp.getString("${button.prefKey}_display", DISPLAY_BOTTOM) ?: DISPLAY_BOTTOM
-    fun setShoulderDisplay(button: ShoulderButton, display: String) { sp.edit().putString("${button.prefKey}_display", display).apply() }
+    fun shoulderDisplay(button: ComboButton): String = sp.getString("${button.prefKey}_display", DISPLAY_BOTTOM) ?: DISPLAY_BOTTOM
+    fun setShoulderDisplay(button: ComboButton, display: String) { sp.edit().putString("${button.prefKey}_display", display).apply() }
+
+    /** [TARGET_BOTH], [DISPLAY_TOP] or [DISPLAY_BOTTOM] - which screens [button]'s volume, brightness or
+     *  screenshot action applies to. Until chosen: both screens, except for the screenshot, which has
+     *  always been the system's top-screen screenshot and stays that way. */
+    fun levelTarget(button: ComboButton): String =
+        sp.getString("${button.prefKey}_target", null)
+            ?: if (shoulderAction(button) == SHOULDER_SCREENSHOT) DISPLAY_TOP else TARGET_BOTH
+    fun setLevelTarget(button: ComboButton, target: String) { sp.edit().putString("${button.prefKey}_target", target).apply() }
+
+    /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
+    fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
+
+    // SharedPreferences keeps its listeners only weakly, so hold the wrappers here.
+    private val listeners = mutableMapOf<() -> Unit, SharedPreferences.OnSharedPreferenceChangeListener>()
+
+    /** Calls [listener] after any setting changes, from any [Prefs] instance in this process. */
+    fun registerListener(listener: () -> Unit) {
+        val wrapper = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> listener() }
+        listeners[listener] = wrapper
+        sp.registerOnSharedPreferenceChangeListener(wrapper)
+    }
+
+    fun unregisterListener(listener: () -> Unit) {
+        listeners.remove(listener)?.let { sp.unregisterOnSharedPreferenceChangeListener(it) }
+    }
 
     /** Restores app configuration only; Android permissions and service state are untouched. */
     fun resetToDefaults() {
@@ -118,6 +145,7 @@ class Prefs(context: Context) {
         const val SINGLE_LAUNCHER = "launcher"
         const val DISPLAY_TOP = "top"
         const val DISPLAY_BOTTOM = "bottom"
+        const val TARGET_BOTH = "both"
         const val SHOULDER_FLICK_LEFT = "@navigation_flick_left"
         const val SHOULDER_FLICK_RIGHT = "@navigation_flick_right"
         const val SHOULDER_HOME = "@home"
@@ -135,7 +163,19 @@ class Prefs(context: Context) {
         const val SHOULDER_CAST_SETTINGS = "@cast_settings"
         const val SHOULDER_DND_SETTINGS = "@dnd_settings"
         const val SHOULDER_BATTERY_SAVER = "@battery_saver"
+        const val SHOULDER_VOLUME_UP = "@volume_up"
+        const val SHOULDER_VOLUME_DOWN = "@volume_down"
+        const val SHOULDER_BRIGHTNESS_UP = "@brightness_up"
+        const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
+
+        /** Volume and brightness actions, which apply to [levelTarget] rather than one launch screen. */
+        fun isLevelAction(action: String): Boolean = action in setOf(
+            SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
+        )
+
+        /** Actions that offer the "Screen" choice: the level actions and the screenshot. */
+        fun hasScreenTarget(action: String): Boolean = isLevelAction(action) || action == SHOULDER_SCREENSHOT
     }
 }

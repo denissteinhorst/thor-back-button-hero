@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 87 JVM tests pass |
+| `testDebugUnitTest` | All 113 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 15 classes, 87 tests
+### Base — JVM tests (Robolectric + JUnit), 18 classes, 113 tests
 
 Everything the gate can verify without hardware.
 
@@ -63,6 +63,8 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, reset | `PrefsMigrationTest` |
+| D-pad defaults, level targets, change listener | `DpadPrefsTest` |
+| Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
 | Card touch arbitration | `CardTouchTest` |
@@ -144,8 +146,10 @@ measures instructions instead, which is not what these numbers mean.
 |---|---|---|
 | `Prefs` | 1.00 | 1.0000 |
 | `DoubleTapDetector` | 1.00 | 1.0000 |
+| `LevelSteps` | 1.00 | 1.0000 |
+| `DpadDirection` (and its companion) | 1.00 | 1.0000 |
 | `CardTouch` | 0.90 | 1.0000 |
-| `BackGestureMachine` | 0.90 | 0.9077 |
+| `BackGestureMachine` | 0.91 | 0.9130 |
 | `AccessibilityAppSource` | 0.60 | 0.6000 |
 | `UpdateChecker` | 0.46 | 0.4655 |
 
@@ -172,6 +176,7 @@ Known and accepted, because the alternatives are worse than the gap.
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
+| Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.
 

@@ -1,3 +1,5 @@
+import javax.inject.Inject
+
 plugins {
     id("com.android.application")
     id("jacoco")
@@ -15,6 +17,51 @@ val releaseKeystorePassword: String? = System.getenv("RELEASE_KEYSTORE_PASSWORD"
 val releaseKeyAlias: String? = System.getenv("RELEASE_KEY_ALIAS")
 val releaseKeyPassword: String? = System.getenv("RELEASE_KEY_PASSWORD")
 
+/**
+ * Compiles the root input helper (src/main/cpp/padhelper.c, see docs/HELPER.md) into an arm64
+ * executable named like a native library, so it ships inside the APK. Plain NDK clang against libc
+ * and the kernel UAPI - no CMake, no third-party code.
+ */
+abstract class BuildPadHelper : DefaultTask() {
+    @get:InputFile abstract val source: RegularFileProperty
+    @get:Input abstract val clang: Property<String>
+    @get:OutputDirectory abstract val outputDir: DirectoryProperty
+    @get:Inject abstract val execOps: ExecOperations
+
+    @TaskAction
+    fun compile() {
+        val abiDir = outputDir.get().dir("arm64-v8a").asFile.apply { mkdirs() }
+        execOps.exec {
+            commandLine(
+                clang.get(), "--target=aarch64-linux-android30", "-O2", "-Wall", "-Wextra", "-Werror", "-s",
+                "-o", File(abiDir, "libpadhelper.so").path, source.get().asFile.path,
+            )
+        }
+    }
+}
+
+val ndkHostTag = System.getProperty("os.name").lowercase().let {
+    when {
+        it.contains("mac") -> "darwin-x86_64"
+        it.contains("win") -> "windows-x86_64"
+        else -> "linux-x86_64"
+    }
+}
+
+val buildPadHelper = tasks.register<BuildPadHelper>("buildPadHelper") {
+    source.set(layout.projectDirectory.file("src/main/cpp/padhelper.c"))
+    clang.set(androidComponents.sdkComponents.ndkDirectory.map {
+        it.file("toolchains/llvm/prebuilt/$ndkHostTag/bin/clang" + if (ndkHostTag.startsWith("windows")) ".exe" else "").asFile.path
+    })
+    outputDir.set(layout.buildDirectory.dir("generated/padhelper/jniLibs"))
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.jniLibs?.addGeneratedSourceDirectory(buildPadHelper, BuildPadHelper::outputDir)
+    }
+}
+
 kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
@@ -22,6 +69,8 @@ kotlin {
 android {
     namespace = "dev.steinhorst.backbuttonhero"
     compileSdk = 34
+    // Only used to compile the root input helper (src/main/cpp); the app itself has no JNI.
+    ndkVersion = "29.0.14206865"
 
     defaultConfig {
         // The one place to change on a rebrand (Android's actual "package name").
@@ -36,6 +85,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    packaging {
+        // The helper is an executable shipped as lib*.so; pservice runs it from nativeLibraryDir,
+        // which only exists when native libraries are extracted at install time.
+        jniLibs.useLegacyPackaging = true
     }
     testOptions {
         unitTests {
@@ -137,6 +191,24 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         rule {
             element = "CLASS"
             includes = listOf("dev.steinhorst.backbuttonhero.Prefs")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "1.00".toBigDecimal()
+            }
+        }
+        rule {
+            element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.LevelSteps")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "1.00".toBigDecimal()
+            }
+        }
+        rule {
+            element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.DpadDirection*")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"

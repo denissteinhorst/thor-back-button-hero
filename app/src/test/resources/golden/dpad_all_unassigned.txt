@@ -1,0 +1,211 @@
+FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,168,0,0]
+  ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,96] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Turn on accessibility service" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Single button press" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Single tap" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Open bottom screen launcher (system default)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Double button press" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Open the app switcher" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Double-tap opens the app switcher" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Double-tap speed: 300 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=9 progress=3
+          TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximum time between two taps. Higher is easier, but a single tap waits this long before it acts. Default: 300 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Tap and hold" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Open Recents on the top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap, then hold opens the top screen's recents (task switcher)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap-and-hold time: 1000 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=15 progress=5
+          TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Press Back once, then press and hold it again to open the system's Recents on the top screen. A plain single tap waits a bit longer while this is on. Default: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Hold to swap screens" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Swap the apps on both screens" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold swaps both screens" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold time: 1000 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=15 progress=5
+          TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Moves the app on the top screen to the bottom and the other way round. Default: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Shoulder buttons" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,12,12,48] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a shoulder button to run its assigned action. Screen selection is shown only for actions that support it. An unassigned button is left alone." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L1 action: Navigation-Flick Left. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L1" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Navigation-Flick Left" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L1 screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R1 action: Navigation-Flick Right. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R1" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Navigation-Flick Right" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R1 screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L2 action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L2 screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R2 action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R2 screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="D-pad" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,12,12,48] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a D-pad direction to run its assigned action. The game keeps running and does not see the press." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad up" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad down" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right action: Not set. Double-tap to change."
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad right" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right screen: Both screens. Double-tap to change."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Help and debug" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Repair service" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="If button gestures stop responding, use Repair service and switch Back Button Hero off and on again." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Reset settings" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Check for new version" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Version 1.2.0" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Open GitHub repository"
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="GitHub repository" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false

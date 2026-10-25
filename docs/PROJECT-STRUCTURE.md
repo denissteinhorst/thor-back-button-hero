@@ -40,24 +40,39 @@ collaborate.
 
 | File | Lines | Purpose |
 |---|---|---|
-| `SwitcherService.kt` | 306 | The accessibility service and runtime coordinator. Intercepts Back and the four shoulder keycodes, owns the Android side effects (global actions, display-aware launches, screenshots, screen swap), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
+| `SwitcherService.kt` | 412 | The accessibility service and runtime coordinator. Intercepts Back and the four shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, screen swap), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
 | `BackGestureMachine.kt` | 136 | The Back-press state machine, free of Android side effects: single tap vs. double tap vs. hold vs. tap-then-hold. Clock, scheduling and actions enter through small interfaces so the timing logic is unit-testable on the JVM. |
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
 | `AccessibilityAppSource.kt` | 89 | The only source of "which apps are running". A normal app cannot read other apps' tasks, so it reconstructs a most-recently-used list per display from the windows the accessibility service observes, filters a fixed ignore-set of launcher/system/OEM packages, and caches thumbnails in memory. |
 | `RunningApp.kt` | 12 | The `RunningApp` data class (package, label, icon, thumbnail) and the `AppSource` interface that `AccessibilityAppSource` implements. |
 | `SwitcherOverlay.kt` | 207 | The bottom-screen app switcher, drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to a specific display. Scroll row of cards, "Close all" with a both-screens toggle, and the empty state. Built from framework Views in code. |
 | `CardTouch.kt` | 45 | Touch arbitration for a switcher card: tap opens, upward swipe past a threshold closes, horizontal drags are handed to the scroller. Extracted so the gesture maths is testable without a window. |
-| `SettingsActivity.kt` | 339 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, and triggers the update check. |
+| `SettingsActivity.kt` | 412 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, and triggers the update check. |
 | `SettingsUiKit.kt` | 319 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), and the `SettingsPage` builder that produces cards, rows, sliders and choosers. |
-| `Prefs.kt` | 141 | `SharedPreferences` wrapper: schema, defaults, typed accessors, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
-| `ShoulderButton.kt` | 11 | Enum of the four shoulder buttons, mapping each to its preference key and Android keycode. |
+| `Prefs.kt` | 181 | `SharedPreferences` wrapper: schema, defaults, typed accessors, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
+| `ShoulderButton.kt` | 42 | The `ComboButton` interface and its two enums: the four shoulder buttons (preference key, Android keycode) and the four D-pad directions (preference key, default action, hat-axis mapping). |
+| `PadHelper.kt` | 116 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses. See [`HELPER.md`](HELPER.md). |
+| `DpadOverlay.kt` | 71 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
+| `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
+| `ScreenshotSaver.kt` | 40 | Saves a screenshot of one display to `Pictures/Screenshots` through MediaStore (no storage permission). The system action only reaches the top screen, so the bottom one is captured by the service and saved here. |
+| `LevelSteps.kt` | 17 | Pure step arithmetic for volume and brightness (15 equal brightness steps). |
+| `BrightnessControl.kt` | 55 | Root `app_process` entry point: steps the brightness of one or more displays via `IDisplayManager`. |
+| `PService.kt` | 120 | Bridge to AYN's root daemon `pservice` (`PServerBinder`), and `runEntryPoint` for root `app_process` entry points. |
+| `TaskRemover.kt` | 67 | Root entry point: removes recent tasks like Recents' "Clear all". |
+| `Shell.kt` | 15 | Validation and quoting for everything that reaches a root shell. |
+
+#### Native helper — `app/src/main/cpp/`
+
+| File | Lines | Purpose |
+|---|---|---|
+| `padhelper.c` | 319 | The root input helper: hides AYN's pad behind an identical uinput clone and withholds D-pad presses made while Back is held. Kernel UAPI and libc only; compiled by the Gradle task `buildPadHelper` with the NDK's clang and shipped as `lib/arm64-v8a/libpadhelper.so`. See [`HELPER.md`](HELPER.md). |
 | `UpdateChecker.kt` | 141 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, and posts a notification. No in-app APK install by design. |
 
 #### Resources — `app/src/main/res/`
 
 | Path | Purpose |
 |---|---|
-| `values/strings.xml` | English strings (**87**, source of truth). |
+| `values/strings.xml` | English strings (**105**, source of truth). |
 | `values-de/strings.xml` | German translations (**86**; the difference is `app_name`, which is `translatable="false"` — this gap is correct and asserted by a test). |
 | `values/colors.xml` | The few named colors used by the hand-built UI. |
 | `xml/accessibility_config.xml` | The accessibility-service declaration: requested event types and the capability flags the app depends on — key-event filtering, interactive-window retrieval, gesture performing and screenshot taking. |
@@ -70,12 +85,14 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 15 test classes, **87 tests**. Run by the gate.
+The automated safety net. 18 test classes, **113 tests**. Run by the gate.
 
 | File | Purpose |
 |---|---|
 | `SmokeTest.kt` | Minimal proof the test infrastructure itself works. |
 | `PrefsDefaultsTest.kt` | Every default value and typed accessor in `Prefs`. |
+| `DpadPrefsTest.kt` | D-pad defaults, level and screenshot targets, `hasDpadAction`, the change listener. |
+| `LevelStepsTest.kt` | Volume and brightness step arithmetic and the hat-to-direction mapping. |
 | `PrefsMigrationTest.kt` | The one-time preference migrations and `resetToDefaults()` — the highest-risk code for existing installs. |
 | `DoubleTapDetectorTest.kt` | Press-interval behavior, including the clock-at-zero sentinel. |
 | `BackGestureMachineTest.kt` | Every branch of the Back decision logic with a controlled clock and scheduler. |
@@ -85,7 +102,7 @@ The automated safety net. 15 test classes, **87 tests**. Run by the gate.
 | `UpdateCheckerParseTest.kt` | Release-payload parsing, semver ordering, the legacy tag forms, and the inputs that must be rejected. |
 | `ResourceIntegrityTest.kt` | EN/DE string parity and resource consistency. |
 | `SettingsActivitySnapshotTest.kt` | View-tree snapshots of the settings page across locale and theme. |
-| `ShoulderRowSnapshotTest.kt` | View-tree snapshots of every shoulder-row state. |
+| `ShoulderRowSnapshotTest.kt` | View-tree snapshots of every shoulder-row state, a level action with its screen row, and all D-pad directions unassigned. |
 | `SettingsDialogSnapshotTest.kt` | View-tree snapshots of three dialogs. |
 | `AccessibilityInventoryTest.kt` | Freezes an inventory of every clickable row's accessibility properties. |
 | `support/ViewTree.kt` | Renders a View hierarchy to deterministic text — the snapshot format. Platform-independent, unlike pixel screenshots. |
@@ -95,7 +112,7 @@ The automated safety net. 15 test classes, **87 tests**. Run by the gate.
 | Path | Purpose |
 |---|---|
 | `resources/robolectric.properties` | Pins Robolectric to `sdk=34`, matching `compileSdk`. |
-| `resources/golden/*.txt` | The **12** golden snapshots: 3 settings pages, 5 shoulder-row states, 3 dialogs, 1 accessibility inventory. |
+| `resources/golden/*.txt` | The **14** golden snapshots: 3 settings pages, 7 shoulder/D-pad row states, 3 dialogs, 1 accessibility inventory. |
 
 ### `app/src/androidTest/` — instrumented test
 
