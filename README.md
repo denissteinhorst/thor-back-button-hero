@@ -48,9 +48,7 @@ see the [FAQ](docs/FAQ.md#compatibility).
 
 <div align="center">
 
-<video src="docs/assets/gestures.mp4" width="640" controls autoplay loop muted playsinline>
-  All six Back Button Hero features shown on a simplified diagram of the device
-</video>
+https://github.com/user-attachments/assets/abf15b18-f2d3-4f9c-a555-ed4a0f8ec7d1
 
 </div>
 
