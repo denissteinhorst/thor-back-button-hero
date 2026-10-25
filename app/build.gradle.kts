@@ -199,6 +199,24 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.LevelSteps")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "1.00".toBigDecimal()
+            }
+        }
+        rule {
+            element = "CLASS"
+            includes = listOf("dev.steinhorst.backbuttonhero.DpadDirection*")
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "1.00".toBigDecimal()
+            }
+        }
+        rule {
+            element = "CLASS"
             includes = listOf("dev.steinhorst.backbuttonhero.DoubleTapDetector")
             limit {
                 counter = "LINE"

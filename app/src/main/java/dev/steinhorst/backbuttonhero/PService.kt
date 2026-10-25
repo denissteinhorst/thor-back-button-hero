@@ -36,9 +36,10 @@ object PService {
     /** Non-blocking: true once a probe succeeded. */
     fun cachedAvailable(): Boolean = checked
 
-    fun probeAsync() {
-        if (checked) return
-        Thread { isAvailable() }.apply { isDaemon = true }.start()
+    /** Probes off the main thread; [then] runs on that thread afterwards, whatever the outcome. */
+    fun probeAsync(then: (() -> Unit)? = null) {
+        if (checked) { then?.invoke(); return }
+        Thread { isAvailable(); then?.invoke() }.apply { isDaemon = true }.start()
     }
 
     /** True when pservice answers and runs our commands as uid 0. Only a success is cached: pservice

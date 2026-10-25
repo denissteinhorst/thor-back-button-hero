@@ -111,6 +111,28 @@ than silently changing behavior for existing installs — follow the established
 a versioned boolean flag guarding a one-time rewrite. See
 [`MAINTENANCE.md`](MAINTENANCE.md) for the recipe.
 
+### Back + D-pad: `PadHelper`, `DpadOverlay`, `LevelControl`
+
+The D-pad reports a hat axis, which `onKeyEvent` never sees, so D-pad combos take a different
+path from the shoulder buttons. Both end in the same `runComboAction`:
+
+- **`PadHelper`** starts the native root helper (`app/src/main/cpp/padhelper.c`) through
+  `PService` and listens on an abstract socket that only accepts uid 0. The helper hides AYN's pad
+  from Android behind an identical uinput clone and withholds D-pad presses made while Back is held,
+  so the game keeps focus. It runs only while some D-pad direction has an action, and it follows
+  AYN's controller-style switches. The full design and its safety nets are in
+  [`HELPER.md`](HELPER.md).
+- **`DpadOverlay`** is the fallback when the helper is not active. A focusable 1×1 overlay exists
+  only while Back is held and catches the hat events, at the cost of the foreground app's window
+  focus.
+- **`LevelControl`** runs the volume and brightness actions for both screens, the top one or the
+  bottom one. Top volume is `STREAM_MUSIC`. Bottom volume (AYN's `secondary_screen_volume_level`)
+  and per-display brightness (the `BrightnessControl` root entry point) need pservice. The step
+  arithmetic is the pure, unit-tested `LevelSteps`.
+
+`ShoulderButton` and `DpadDirection` both implement `ComboButton`, so `Prefs` stores every combo
+button's action, launch screen and level target the same way.
+
 ### `SettingsActivity` + `SettingsUiKit`
 
 A single hand-built screen: no `PreferenceFragment`, no XML. `SettingsUiKit` provides the

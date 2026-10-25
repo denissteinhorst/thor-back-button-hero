@@ -33,7 +33,7 @@ class ShoulderRowSnapshotTest {
         }
 
     @Test
-    fun `R1 assigned to a non-screen action hides the top-screen toggle`() =
+    fun `R1 assigned to the screenshot hides the top-screen toggle and shows the screen row, top by default`() =
         snapshotWith("shoulder_r1_screenshot_no_toggle") {
             setShoulderAction(ShoulderButton.R1, Prefs.SHOULDER_SCREENSHOT)
         }
@@ -42,6 +42,19 @@ class ShoulderRowSnapshotTest {
     fun `L2 assigned to launch an app shows the top-screen toggle`() =
         snapshotWith("shoulder_l2_app_with_toggle") {
             setShoulderAction(ShoulderButton.L2, "com.android.chrome")
+        }
+
+    @Test
+    fun `L2 assigned to a volume action shows the screen row instead of the top-screen toggle`() =
+        snapshotWith("shoulder_l2_volume_with_target") {
+            setShoulderAction(ShoulderButton.L2, Prefs.SHOULDER_VOLUME_UP)
+            setLevelTarget(ShoulderButton.L2, Prefs.DISPLAY_TOP)
+        }
+
+    @Test
+    fun `all D-pad directions unassigned hides the screen rows and the root-service warning`() =
+        snapshotWith("dpad_all_unassigned") {
+            DpadDirection.entries.forEach { setShoulderAction(it, "") }
         }
 
     @Test

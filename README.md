@@ -76,14 +76,32 @@ freely reassigned to whatever action you want from the list below:
 
 - Launch a chosen app, on the top or bottom screen
 - A navigation flick (quick previous/next-app swipe)
-- Home, Recents, or a screenshot
+- Home, Recents, or a screenshot — of the top screen (the default), the bottom
+  screen, or both (the bottom screen is saved to `Pictures/Screenshots` as its
+  own file)
 - Open Quick Settings or the notification shade
 - Jump straight to a system settings panel: Wi-Fi & internet, Bluetooth,
   Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb, or
   Battery Saver
 
+- Volume up/down or brightness up/down — on both screens, or only the top or
+  bottom one
+
 An unassigned button is left alone, so games and apps still see its normal
 input.
+
+## D-pad shortcuts
+
+Hold Back and press a D-pad direction. Out of the box, up and down change the
+brightness and left and right change the volume, on both screens at once. Each
+direction can be reassigned to any action from the list above, and volume and
+brightness can target both screens, only the top, or only the bottom one.
+
+The game keeps running and never sees the press. That needs a small root
+helper that AYN's own firmware makes possible without rooting the device —
+[`docs/HELPER.md`](docs/HELPER.md) explains exactly what it does and why. If
+AYN's root service is unavailable, the shortcuts still work, but games may
+pause while Back is held; the settings screen then shows a warning.
 
 ## Screenshots of the app's settings
 

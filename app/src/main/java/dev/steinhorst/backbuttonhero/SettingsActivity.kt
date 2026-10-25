@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -24,6 +25,7 @@ class SettingsActivity : Activity() {
     private lateinit var prefs: Prefs
     private lateinit var content: LinearLayout
     private lateinit var warning: SettingsPage.WarningHandle
+    private lateinit var rootWarning: SettingsPage.WarningHandle
     private lateinit var singleValue: TextView
     private lateinit var statusLabel: TextView
     private lateinit var openA11yHandle: SettingsPage.ActionHandle
@@ -57,6 +59,7 @@ class SettingsActivity : Activity() {
         refresh()
         // A service rebind can finish just after the activity resumes.
         content.postDelayed({ if (!isFinishing && !isDestroyed) refresh() }, 600)
+        PService.probeAsync { runOnUiThread { if (!isFinishing && !isDestroyed) refresh() } }
     }
 
     private fun build() {
@@ -64,6 +67,7 @@ class SettingsActivity : Activity() {
 
         page.card {
             warning = warningRow(serviceStatusText(currentServiceStatus()))
+            rootWarning = warningRow(getString(R.string.dpad_root_missing))
             openA11yHandle = actionRow(R.string.enable_service) {
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             }
@@ -99,6 +103,16 @@ class SettingsActivity : Activity() {
         buildShoulderRow(page, ShoulderButton.L2, R.string.shoulder_l2)
         buildShoulderRow(page, ShoulderButton.R2, R.string.shoulder_r2)
 
+        page.sectionHeader(R.string.dpad_title)
+        page.hintText(R.string.dpad_hint)
+        // One card for all four directions: a hairline then separates each direction from the next,
+        // while a direction's screen row hangs directly under its action.
+        val dpadCard = page.card {}
+        buildShoulderRow(page, DpadDirection.UP, R.string.dpad_up, dpadCard)
+        buildShoulderRow(page, DpadDirection.DOWN, R.string.dpad_down, dpadCard)
+        buildShoulderRow(page, DpadDirection.LEFT, R.string.dpad_left, dpadCard)
+        buildShoulderRow(page, DpadDirection.RIGHT, R.string.dpad_right, dpadCard)
+
         page.sectionHeader(R.string.help_debug_title)
         page.card {
             statusLabel = textRow(serviceStatusText(currentServiceStatus()))
@@ -118,6 +132,8 @@ class SettingsActivity : Activity() {
         val status = currentServiceStatus()
         warning.label.text = serviceStatusText(status)
         warning.row.visibility = if (status == ServiceStatus.ON) View.GONE else View.VISIBLE
+        // Without pservice, Back + D-pad has to take window focus (DpadOverlay) and games may pause.
+        rootWarning.row.visibility = if (prefs.hasDpadAction() && !PService.cachedAvailable()) View.VISIBLE else View.GONE
         singleValue.text = describeSingleAction()
         statusLabel.text = serviceStatusText(status)
         val enabled = isAccessibilityServiceEnabled()
@@ -174,6 +190,10 @@ class SettingsActivity : Activity() {
         Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
         Choice(Prefs.SHOULDER_FLICK_LEFT, getString(R.string.shoulder_flick_left)),
         Choice(Prefs.SHOULDER_FLICK_RIGHT, getString(R.string.shoulder_flick_right)),
+        Choice(Prefs.SHOULDER_VOLUME_UP, getString(R.string.shoulder_volume_up)),
+        Choice(Prefs.SHOULDER_VOLUME_DOWN, getString(R.string.shoulder_volume_down)),
+        Choice(Prefs.SHOULDER_BRIGHTNESS_UP, getString(R.string.shoulder_brightness_up)),
+        Choice(Prefs.SHOULDER_BRIGHTNESS_DOWN, getString(R.string.shoulder_brightness_down)),
         Choice(Prefs.SHOULDER_QUICK_SETTINGS, getString(R.string.shoulder_quick_settings)),
         Choice(Prefs.SHOULDER_NOTIFICATIONS, getString(R.string.shoulder_notifications)),
         Choice(Prefs.SHOULDER_INTERNET, getString(R.string.shoulder_internet)),
@@ -188,7 +208,7 @@ class SettingsActivity : Activity() {
         Choice(Prefs.SHOULDER_BATTERY_SAVER, getString(R.string.shoulder_battery_saver)),
     )
 
-    private fun describeShoulderAction(button: ShoulderButton): String {
+    private fun describeShoulderAction(button: ComboButton): String {
         val action = prefs.shoulderAction(button)
         return when (action) {
             "" -> getString(R.string.shoulder_none)
@@ -202,12 +222,33 @@ class SettingsActivity : Activity() {
         }
     }
 
-    private fun chooseShoulderAction(button: ShoulderButton, handle: SettingsPage.ChooserHandle, displayRow: View) {
+    private fun levelTargets(): List<Choice> = listOf(
+        Choice(Prefs.TARGET_BOTH, getString(R.string.level_target_both)),
+        Choice(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
+        Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
+    )
+
+    private fun describeLevelTarget(button: ComboButton): String = levelTargets().let { targets ->
+        (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.first()).label
+    }
+
+    /** The views of one button's card that change with its action. */
+    private class ComboRow(
+        /** True when several buttons share one card, so a hidden row must not leave its hairline behind. */
+        val grouped: Boolean,
+        val button: ComboButton,
+        val label: String,
+        val action: SettingsPage.ChooserHandle,
+        val display: View,
+        val target: SettingsPage.ChooserHandle,
+    )
+
+    private fun chooseShoulderAction(row: ComboRow) {
         val choices = shoulderActions()
-        val stored = prefs.shoulderAction(button)
+        val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else stored
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.shoulder_choose_action_title, button.name))
+            .setTitle(getString(R.string.shoulder_choose_action_title, row.label))
             .setSingleChoiceItems(
                 choices.map { it.label }.toTypedArray(),
                 choices.indexOfFirst { it.value == current }.coerceAtLeast(0),
@@ -215,56 +256,88 @@ class SettingsActivity : Activity() {
                 dialog.dismiss()
                 val action = choices[which].value
                 if (action == ACTION_APP) {
-                    chooseShoulderApp(button, handle, displayRow)
+                    chooseShoulderApp(row)
                 } else {
-                    prefs.setShoulderAction(button, action)
-                    updateShoulderRow(button, handle, displayRow)
+                    prefs.setShoulderAction(row.button, action)
+                    updateShoulderRow(row)
+                    refresh()
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
-    private fun chooseShoulderApp(button: ShoulderButton, handle: SettingsPage.ChooserHandle, displayRow: View) {
+    private fun chooseShoulderApp(row: ComboRow) {
         val apps = allApps()
-        val current = prefs.shoulderAction(button)
+        val current = prefs.shoulderAction(row.button)
         AlertDialog.Builder(this)
             .setTitle(R.string.shoulder_choose_app_title)
             .setSingleChoiceItems(
                 apps.map { it.label }.toTypedArray(),
                 apps.indexOfFirst { it.value == current },
             ) { dialog, which ->
-                prefs.setShoulderAction(button, apps[which].value)
+                prefs.setShoulderAction(row.button, apps[which].value)
                 dialog.dismiss()
-                updateShoulderRow(button, handle, displayRow)
+                updateShoulderRow(row)
+                refresh()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
-    private fun buildShoulderRow(page: SettingsPage, button: ShoulderButton, titleRes: Int) {
-        val card = page.card {}
-        lateinit var handle: SettingsPage.ChooserHandle
-        lateinit var displayHandle: SettingsPage.ToggleHandle
-        handle = card.chooserRow(titleRes, describeShoulderAction(button)) {
-            chooseShoulderAction(button, handle, displayHandle.row)
-        }
-        displayHandle = card.toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) {
-            prefs.setShoulderDisplay(button, if (it) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM)
-        }
-        updateShoulderRow(button, handle, displayHandle.row)
+    private fun chooseLevelTarget(row: ComboRow) {
+        val targets = levelTargets()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.level_target_dialog_title)
+            .setSingleChoiceItems(
+                targets.map { it.label }.toTypedArray(),
+                targets.indexOfFirst { it.value == prefs.levelTarget(row.button) }.coerceAtLeast(0),
+            ) { dialog, which ->
+                prefs.setLevelTarget(row.button, targets[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
-    private fun updateShoulderRow(button: ShoulderButton, handle: SettingsPage.ChooserHandle, displayRow: View) {
-        handle.value.text = describeShoulderAction(button)
-        val action = prefs.shoulderAction(button)
-        displayRow.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
-        handle.row.contentDescription = getString(
-            R.string.shoulder_action_accessibility,
-            button.name,
-            handle.value.text,
-        )
+    private fun buildShoulderRow(
+        page: SettingsPage,
+        button: ComboButton,
+        titleRes: Int,
+        sharedCard: SettingsPage.Card? = null,
+    ) {
+        val card = sharedCard ?: page.card {}
+        lateinit var row: ComboRow
+        val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
+        val display = card.toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) {
+            prefs.setShoulderDisplay(button, if (it) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM)
+        }
+        val target = card.subChooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseLevelTarget(row) }
+        row = ComboRow(sharedCard != null, button, getString(titleRes), action, display.row, target)
+        updateShoulderRow(row)
     }
+
+    private fun updateShoulderRow(row: ComboRow) {
+        row.action.value.text = describeShoulderAction(row.button)
+        val action = prefs.shoulderAction(row.button)
+        row.display.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
+        val hasTarget = Prefs.hasScreenTarget(action)
+        row.target.row.visibility = if (hasTarget) View.VISIBLE else View.GONE
+        // The card draws a hairline before every row. The screen row hangs directly under its action,
+        // so it never gets one; the hidden top-screen row's hairline would end up between the two.
+        dividerBefore(row.target.row)?.visibility = View.GONE
+        dividerBefore(row.display)?.visibility =
+            if (row.grouped) row.display.visibility else if (hasTarget) View.GONE else View.VISIBLE
+        // The screen row hangs close under its action: take back most of the action row's bottom padding.
+        row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight, dp(if (hasTarget) 0 else 10))
+        row.target.value.text = describeLevelTarget(row.button)
+        row.action.row.contentDescription = getString(R.string.shoulder_action_accessibility, row.label, row.action.value.text)
+        row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
+    }
+
+    private fun dividerBefore(row: View): View? =
+        (row.parent as? ViewGroup)?.let { card -> card.getChildAt(card.indexOfChild(row) - 1) }
 
     private fun explainServiceRepair() {
         AlertDialog.Builder(this)

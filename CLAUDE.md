@@ -44,7 +44,8 @@ CI (`.github/workflows/ci.yml`) runs the same `verify` task on every push/PR to 
 Never bypass hooks with `--no-verify`.
 
 JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 2.4.21, AGP 9.4.1,
-Gradle 9.8.2. Android SDK has `platforms/android-34` + `build-tools/34.0.0` (plus `36.0.0`, which AGP 9 installs on its own) and
+Gradle 9.8.2. Android SDK has `platforms/android-34` + `build-tools/34.0.0` (plus `36.0.0`, which AGP 9 installs on its own),
+**NDK `29.0.14206865`** (only to compile the root input helper `app/src/main/cpp/padhelper.c`; the gate fails without it) and
 **no emulator image** — every `androidTest`/`connectedDebugAndroidTest` needs the
 physical AYN Thor attached via `adb` (device id changes; re-check with `adb devices`).
 
@@ -53,7 +54,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **91 JVM tests, 0 failures, 0 skipped** across 16 test classes.
+- **113 JVM tests, 0 failures, 0 skipped** across 18 test classes.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency` — four androidTest/test libraries plus
@@ -67,6 +68,8 @@ to record:
   |---|---|---|
   | `Prefs` | 1.00 | 1.0000 |
   | `DoubleTapDetector` | 1.00 | 1.0000 |
+  | `LevelSteps` | 1.00 | 1.0000 |
+  | `DpadDirection*` | 1.00 | 1.0000 |
   | `CardTouch` | 0.90 | 1.0000 |
   | `BackGestureMachine` | 0.91 | 0.9130 |
   | `AccessibilityAppSource` | 0.60 | 0.6000 |
@@ -82,7 +85,8 @@ to record:
   Read these numbers per JaCoCo **class**, which counts nested classes separately:
   `UpdateChecker` is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a
   class with its nested types overstates the figure the rule actually enforces.
-- **Release APK ~2.81 MB** (`app-release-unsigned.apk`). Debug is much larger
+- **Release APK ~2.84 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
+  `lib/arm64-v8a/libpadhelper.so`. Debug is much larger
   (~6.8 MB) because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -112,8 +116,9 @@ the extraction moved the *decisions* under test but left the Android side effect
 One Espresso smoke test (`SettingsActivitySmokeTest`, device-only, **not** part of the
 gate) covers activity startup against manifest/resource failures.
 
-After touching `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, or
-anything key-event related, a green gate proves little — exercise the gestures on the
+After touching `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, the
+D-pad path (`padhelper.c`, `PadHelper`, `DpadOverlay`, `LevelControl`,
+`BrightnessControl`), or anything key-event related, a green gate proves little — exercise the gestures on the
 device. Scale that effort to the change: docs, build config, or test-only edits need no
 device pass.
 
@@ -216,7 +221,7 @@ To get the project building again on a fresh machine:
 ```sh
 brew install openjdk@17                   # keg-only; verify.sh finds it on its own
 brew install --cask android-commandlinetools
-sdkmanager "platforms;android-34" "build-tools;34.0.0" "build-tools;36.0.0" "platform-tools"
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "build-tools;36.0.0" "platform-tools" "ndk;29.0.14206865"
 
 git clone git@github.com:denissteinhorst/thor-back-button-hero.git
 cd thor-back-button-hero
@@ -337,6 +342,15 @@ permissive (AYN's default); otherwise `PService.cachedAvailable()` stays false a
 `SwitcherService.killOnly` silently falls back to `killBackgroundProcesses`. Every
 package name reaching it must pass `Shell.isPkg` (names come from other apps).
 Like `SwitcherService`, it is device-only territory: no automated coverage.
+
+**Back + D-pad** (`PadHelper`, `DpadOverlay`, `LevelControl`, native `padhelper.c`): the
+D-pad is a hat axis, invisible to `onKeyEvent`. With pservice, a native root helper hides
+AYN's pad behind an identical uinput clone (same descriptor, controller number 1) and
+withholds D-pad presses made while Back is held, so the game keeps focus; it follows
+controller-style switches and restores the pad on every exit path. Without pservice,
+`DpadOverlay` takes window focus while Back is held (games may pause) and the settings
+show a warning. Full design: `docs/HELPER.md` — read it before touching any of this.
+Device-only territory as well.
 
 **`SwitcherOverlay`** draws the switcher UI as an `AccessibilityOverlay`
 window bound to a specific display's `Display` via
