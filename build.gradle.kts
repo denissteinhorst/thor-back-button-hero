@@ -11,12 +11,13 @@ tasks.register<Exec>("installGitHooks") {
 
 tasks.register("verify") {
     group = "verification"
-    description = "Single gate: lint, unit tests, debug+release build."
+    description = "Single gate: lint, unit tests, debug+release build, androidTest compile."
     dependsOn(
         ":app:lintDebug",
         ":app:testDebugUnitTest",
         ":app:jacocoCoverageVerification",
         ":app:assembleDebug",
+        ":app:assembleDebugAndroidTest",
         ":app:assembleRelease",
     )
 }
