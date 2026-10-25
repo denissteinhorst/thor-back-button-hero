@@ -54,7 +54,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **113 JVM tests, 0 failures, 0 skipped** across 18 test classes.
+- **138 JVM tests, 0 failures, 0 skipped** across 22 test classes.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency` — four androidTest/test libraries plus
@@ -85,7 +85,7 @@ to record:
   Read these numbers per JaCoCo **class**, which counts nested classes separately:
   `UpdateChecker` is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a
   class with its nested types overstates the figure the rule actually enforces.
-- **Release APK ~2.84 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
+- **Release APK ~2.79 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
   `lib/arm64-v8a/libpadhelper.so`. Debug is much larger
   (~6.8 MB) because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
@@ -108,8 +108,8 @@ every shoulder-row state, three dialogs, and an accessibility inventory. These g
 genuinely bite: changing a single visible string turns 7 tests red.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at **0 %** line coverage (0/147) and `SwitcherService` at **5.8 %**
-(10/172). The entire switcher overlay UI, multi-display targeting, thumbnail capture,
+`SwitcherOverlay` is at **0 %** line coverage (0/145), `SwitcherService` at **4.7 %**
+(11/233) and `FocusIndicatorOverlay` at **0 %** (0/79). The entire switcher overlay UI, multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
 the extraction moved the *decisions* under test but left the Android side effects out.
@@ -118,7 +118,7 @@ gate) covers activity startup against manifest/resource failures.
 
 After touching `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, the
 D-pad path (`padhelper.c`, `PadHelper`, `DpadOverlay`, `LevelControl`,
-`BrightnessControl`), or anything key-event related, a green gate proves little — exercise the gestures on the
+`BrightnessControl`), the controller-focus path (`ControllerFocus`, `FocusIndicatorOverlay`), or anything key-event related, a green gate proves little — exercise the gestures on the
 device. Scale that effort to the change: docs, build config, or test-only edits need no
 device pass.
 
@@ -147,6 +147,13 @@ explicitly approved UI change.
   `adb install` rejects it. Measure on the **debug** build; `isMinifyEnabled = false`
   in release, so code shape is practically identical. Read APK *size* off the release
   artifact without installing.
+- **Every `adb install` recreates the pad clone.** The service restart restarts `libpadhelper.so`,
+  and the pad reappears with a new device id. RetroArch then ignores the controller until its
+  activity is paused and resumed — open `SettingsActivity` over the game and return to it
+  (`am start --display 0 …`). Avoid needless reinstalls during a game.
+- **AYN's assistant permanently covers the bottom display** (display id 4). Anything that must be
+  seen — an activity, a screenshot target for inspection — goes on the top display (id 0).
+  Physical display ids for `screencap -d`: top `4630946441858561667`, bottom `4630946482288158084`.
 - **`adb shell am force-stop` cannot kill this app while its accessibility service is
   enabled** — the binding keeps the process alive, and `am start -W` reports
   `HOT`/`WARM` instead of `COLD`. A true cold-start measurement requires the user to
@@ -343,6 +350,13 @@ permissive (AYN's default); otherwise `PService.cachedAvailable()` stays false a
 package name reaching it must pass `Shell.isPkg` (names come from other apps).
 Like `SwitcherService`, it is device-only territory: no automated coverage.
 
+**Controller focus** (`ControllerFocus`, `FocusIndicatorOverlay`): mirrors AYN's own tool —
+`setprop persist.sys.input.dispaly`, the `screen_focus_lock` setting, and `input keyevent 60`
+*without* `-d` (a `-d` to the game display makes the switch to top fail). The pictogram appears
+on shoulder DOWN, on the top display only, and is tappable to open the indicator popup of that
+button. Settings previews go through `SwitcherService.previewFocusIndicator`. Device-only
+territory.
+
 **Back + D-pad** (`PadHelper`, `DpadOverlay`, `LevelControl`, native `padhelper.c`): the
 D-pad is a hat axis, invisible to `onKeyEvent`. With pservice, a native root helper hides
 AYN's pad behind an identical uinput clone (same descriptor, controller number 1) and
@@ -365,6 +379,10 @@ tap-vs-swipe-up gesture discrimination is hand-rolled in `CardTouch`.
 action). When changing a default or renaming a stored key, add a guarded
 migration here rather than silently breaking existing installs — follow the
 existing pattern of a versioned boolean flag guarding a one-time rewrite.
+`shoulder_defaults_v3` is the model for defaults that change for never-touched
+settings: an update pins the old value (L2/R2 stay unassigned), only a fresh install
+or a reset gets the factory shortcuts (L2 screenshot top, R2 controller focus). The focus pictogram defaults
+(`DEFAULT_FOCUS_POSITION` center right, `DEFAULT_FOCUS_DURATION_MS` 500) apply to every button.
 Shoulder actions are stored as either a bare package name (an app to launch)
 or an `@`-prefixed sentinel (`SHOULDER_HOME`, `SHOULDER_FLICK_LEFT`, etc.) —
 `isShoulderApp()` distinguishes the two.

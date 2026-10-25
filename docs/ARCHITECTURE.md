@@ -99,10 +99,28 @@ with a both-screens toggle, and an empty state. `CardTouch` arbitrates each card
 touches — tap opens, upward swipe past a threshold closes, horizontal drags go to the
 scroller — and is extracted so that arbitration is testable without a real window.
 
+### `ControllerFocus` and `FocusIndicatorOverlay` — routing the controller
+
+`ControllerFocus` switches the Thor's controller between the two screens with the same three
+steps AYN's own tool runs through `PService`: set `persist.sys.input.dispaly`, write the
+`screen_focus_lock` setting, and send `input keyevent 60` **without** `-d`, so the key reaches
+the focused display where AYN's assistant window commits the route. The current route is read
+from `Settings.System`, which keeps "toggle" instant and free of a root round trip.
+
+`FocusIndicatorOverlay` shows the confirming pictogram on the top screen (the bottom one is
+permanently covered by AYN's assistant). It appears when the shoulder button goes **down**, before
+the root command has run, and disappears again if the command fails. Position (a 3×3 grid,
+default center right), display time (default 500 ms) and visibility are stored per button. Tapping the pictogram makes it a touchable
+window and opens `SettingsActivity` on the top screen inside the indicator popup for that button.
+The settings screen previews changes through `SwitcherService.previewFocusIndicator`, because only
+the service may draw accessibility overlays.
+
 ### `Prefs` — storage and migrations
 
 Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time
-**migrations** in its `init` block. Shoulder actions are stored either as a bare package
+**migrations** in its `init` block. Factory shortcuts (L2 screenshot, R2 controller focus) are
+written once on a fresh install; an update pins L2 and R2 to their existing values, unassigned
+included, so changed defaults never reach an existing install (`shoulder_defaults_v3`). Shoulder actions are stored either as a bare package
 name (launch that app) or as an `@`-prefixed sentinel (`SHOULDER_HOME`,
 `SHOULDER_FLICK_LEFT`, …); `isShoulderApp()` distinguishes the two.
 

@@ -127,6 +127,10 @@ SELinux" off). It is the same requirement swipe-to-close has.
   - **Emergency release:** holding **Home + Back for 5 seconds** makes the helper hand the pad back
     and tells the app not to restart it until the service restarts.
   - **Style switch:** switching the controller style creates a fresh pad and node in any case.
+- **A restarted helper recreates the pad.** Whenever the helper starts again (an app update, a
+  reinstall, a service restart), Android sees the pad vanish and reappear with a new device id.
+  RetroArch can ignore the new device until its activity has been paused and resumed, which looks like
+  dead controls. Opening any other app over the game and returning to it fixes it.
 - **Bounded restarts.** The app relaunches a helper that died, after a short delay and at most five
   times in a row without a successful take-over.
 
