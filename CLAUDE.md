@@ -25,7 +25,7 @@ goes red after a production change, the change is wrong, not the test.
 ```
 
 ```sh
-./tools/verify.sh          # the one gate: lint, unit tests, coverage, both builds
+./tools/verify.sh          # the one gate: lint, unit tests, coverage, both builds, androidTest compile
 ```
 
 `./tools/verify.sh` is the required check after every change — never call bare

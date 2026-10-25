@@ -37,7 +37,7 @@ attached over `adb` (the device id changes — check with `adb devices`).
 ## Everyday commands
 
 ```sh
-./tools/verify.sh                 # THE gate: lint, tests, coverage, both builds
+./tools/verify.sh                 # THE gate: lint, tests, coverage, both builds, androidTest compile
 ./gradlew assembleDebug           # debug APK
 ./gradlew installDebug            # build + install on the attached device
 ./gradlew assembleRelease         # release APK (unsigned locally - see below)
