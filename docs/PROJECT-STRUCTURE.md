@@ -148,7 +148,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `gestures.gif` | The animation embedded in `README.md`. |
+| `gestures.mp4` | The animation embedded in `README.md`. |
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
