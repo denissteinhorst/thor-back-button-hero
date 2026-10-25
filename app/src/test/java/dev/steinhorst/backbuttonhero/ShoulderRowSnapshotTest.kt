@@ -13,8 +13,15 @@ import org.robolectric.annotation.Config
 @Config(qualifiers = "en-xxhdpi")
 class ShoulderRowSnapshotTest {
 
-    private fun snapshotWith(name: String, configure: Prefs.() -> Unit) {
-        Prefs(ApplicationProvider.getApplicationContext()).apply(configure)
+    /** Starts from L2 and R2 unassigned, as before they got factory shortcuts, unless [factory]. */
+    private fun snapshotWith(name: String, factory: Boolean = false, configure: Prefs.() -> Unit) {
+        Prefs(ApplicationProvider.getApplicationContext()).apply {
+            if (!factory) {
+                setShoulderAction(ShoulderButton.L2, "")
+                setShoulderAction(ShoulderButton.R2, "")
+            }
+            configure()
+        }
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
         val root = activity.findViewById<android.view.View>(android.R.id.content)
         Golden.verify(name, ViewTree.describe(root))
@@ -59,7 +66,7 @@ class ShoulderRowSnapshotTest {
 
     @Test
     fun `defaults - L1 and R1 are the navigation-flick sentinels, no toggle shown`() =
-        snapshotWith("shoulder_defaults_flick_no_toggle") {
-            // no-op: constructing Prefs already applies the v1 navigation-flick defaults
+        snapshotWith("shoulder_defaults_flick_no_toggle", factory = true) {
+            // no-op: constructing Prefs already applies the factory defaults
         }
 }

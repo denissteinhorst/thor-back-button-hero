@@ -37,6 +37,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var padHelper: PadHelper
     private lateinit var dpadOverlay: DpadOverlay
     private lateinit var levels: LevelControl
+    private lateinit var controllerFocus: ControllerFocus
+    private lateinit var focusIndicator: FocusIndicatorOverlay
+    private val shoulderKeys = PhysicalKeyTracker()
+    private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -56,10 +60,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onServiceConnected() {
         isConnected = true
+        previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
         source = AccessibilityAppSource(this)
         overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::beforeLaunch)
         levels = LevelControl(this) { bottomDisplay()?.displayId }
+        focusIndicator = FocusIndicatorOverlay(this)
+        controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
         padHelper = PadHelper(this, ::handleDpad)
         dpadOverlay = DpadOverlay(this, ::handleDpad)
         prefs.registerListener(prefsListener)
@@ -100,15 +107,62 @@ class SwitcherService : AccessibilityService(), GestureActions {
      *  own event so the focused app/game never sees a stray press. Buttons with nothing
      *  configured are left alone, even while Back is held. */
     private fun handleShoulder(event: KeyEvent): Boolean {
-        if (!backGesture.backDown) return false
         val button = SHOULDER_BUTTONS.first { it.keyCode == event.keyCode }
         val action = prefs.shoulderAction(button)
-        if (action.isEmpty()) return false
-        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-            backGesture.markComboFired()
-            runComboAction(button, action)
+        return when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                // Outside an active Back combo the controller belongs entirely to the foreground
+                // app. Do not even track the key in that case, so its UP remains untouched too.
+                if (!backGesture.backDown || action.isEmpty()) return false
+                if (shoulderKeys.down(event.keyCode, event.deviceId) && event.repeatCount == 0) {
+                    backGesture.markComboFired()
+                    // Changing the controller route while its trigger is physically held is racy
+                    // in AYN's firmware: the setting changes, but the route can stay on the old
+                    // display. Arm focus here and commit after both mirrored devices report UP.
+                    if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) {
+                        pendingFocusTargets[event.keyCode] = button
+                        showFocusIndicator(button)
+                    } else {
+                        runComboAction(button, action)
+                    }
+                }
+                true
+            }
+            // Consume releases only for shoulder presses that began as a Back combo. The Thor can
+            // report one physical controller through two device ids, so both releases are tracked.
+            KeyEvent.ACTION_UP -> {
+                val tracked = shoulderKeys.up(event.keyCode, event.deviceId)
+                if (tracked && !shoulderKeys.isDown(event.keyCode)) {
+                    pendingFocusTargets.remove(event.keyCode)?.let(::runControllerFocus)
+                }
+                tracked
+            }
+            else -> false
         }
-        return true
+    }
+
+    private fun showFocusIndicator(button: ComboButton) {
+        val position = prefs.focusPosition(button).takeIf { prefs.focusIndicator(button) }
+        focusIndicator.show(
+            controllerFocus.targetIsTop(prefs.focusTarget(button)),
+            position,
+            prefs.focusDuration(button),
+        ) { openIndicatorSettings(button) }
+    }
+
+    private fun openIndicatorSettings(button: ComboButton) {
+        // AYN's assistant permanently covers the bottom display, so the settings would open
+        // invisibly there. CLEAR_TASK also pulls an already running settings task up from it.
+        val intent = Intent(this, SettingsActivity::class.java)
+            .putExtra(SettingsActivity.EXTRA_INDICATOR_BUTTON, button.prefKey)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        val options = ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle()
+        runCatching { startActivity(intent, options) }
+    }
+
+    private fun runControllerFocus(button: ComboButton) {
+        showFocusIndicator(button)
+        controllerFocus.run(prefs.focusTarget(button))
     }
 
     private fun runComboAction(button: ComboButton, action: String) {
@@ -117,6 +171,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_FLICK_RIGHT -> navigationFlick(left = false)
             Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
             Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
+            Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecents()
             Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
@@ -223,14 +278,21 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onDestroy() {
         isConnected = false
+        previewFocusIndicator = null
+        shoulderKeys.clear()
+        pendingFocusTargets.clear()
         stopDpad()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
+        if (::focusIndicator.isInitialized) focusIndicator.dismiss()
         super.onDestroy()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         isConnected = false
+        previewFocusIndicator = null
+        shoulderKeys.clear()
+        pendingFocusTargets.clear()
         stopDpad()
         return super.onUnbind(intent)
     }
@@ -389,6 +451,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
     companion object {
         @Volatile
         var isConnected = false
+            private set
+
+        /** Lets the settings screen preview the focus pictogram, which only the service may draw. */
+        @Volatile
+        var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long) -> Unit)? = null
             private set
 
         const val TAG = "BackButtonHero"

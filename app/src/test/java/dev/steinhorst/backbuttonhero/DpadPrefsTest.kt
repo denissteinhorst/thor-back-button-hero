@@ -28,16 +28,17 @@ class DpadPrefsTest {
     }
 
     @Test
-    fun `shoulder buttons without a migrated default stay unassigned`() {
-        assertEquals("", prefs.shoulderAction(ShoulderButton.L2))
-        assertEquals("", prefs.shoulderAction(ShoulderButton.R2))
+    fun `L2 and R2 start with the factory shortcuts`() {
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
+        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
     }
 
     @Test
     fun `level target defaults to both screens for every button`() {
-        (DpadDirection.entries + ShoulderButton.entries).forEach {
+        (DpadDirection.entries + ShoulderButton.entries - ShoulderButton.L2).forEach {
             assertEquals(Prefs.TARGET_BOTH, prefs.levelTarget(it))
         }
+        assertEquals(Prefs.DISPLAY_TOP, prefs.levelTarget(ShoulderButton.L2))
     }
 
     @Test
@@ -65,13 +66,40 @@ class DpadPrefsTest {
     }
 
     @Test
-    fun `hasScreenTarget covers the level actions and the screenshot only`() {
+    fun `hasScreenTarget covers level screenshot and controller focus actions`() {
         listOf(
             Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
             Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN, Prefs.SHOULDER_SCREENSHOT,
+            Prefs.SHOULDER_CONTROLLER_FOCUS,
         ).forEach { assertTrue(it, Prefs.hasScreenTarget(it)) }
         listOf("", Prefs.SHOULDER_HOME, Prefs.SHOULDER_RECENTS, "com.android.chrome")
             .forEach { assertFalse(it, Prefs.hasScreenTarget(it)) }
+    }
+
+    @Test
+    fun `controller focus target defaults to toggle and round-trips per button`() {
+        assertEquals(Prefs.FOCUS_TOGGLE, prefs.focusTarget(ShoulderButton.R2))
+        prefs.setFocusTarget(ShoulderButton.R2, Prefs.DISPLAY_BOTTOM)
+        assertEquals(Prefs.DISPLAY_BOTTOM, prefs.focusTarget(ShoulderButton.R2))
+        assertEquals(Prefs.FOCUS_TOGGLE, prefs.focusTarget(DpadDirection.UP))
+    }
+
+    @Test
+    fun `focus indicator settings default per button and round-trip`() {
+        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(ShoulderButton.L1))
+        prefs.setFocusPosition(ShoulderButton.L1, Prefs.FOCUS_POS_TOP_RIGHT)
+        assertEquals(Prefs.FOCUS_POS_TOP_RIGHT, prefs.focusPosition(ShoulderButton.L1))
+        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(DpadDirection.UP))
+        assertEquals(500L, prefs.focusDuration(DpadDirection.UP))
+        assertTrue(prefs.focusIndicator(ShoulderButton.L1))
+        prefs.setFocusIndicator(ShoulderButton.L1, false)
+        assertFalse(prefs.focusIndicator(ShoulderButton.L1))
+        assertTrue(prefs.focusIndicator(DpadDirection.UP))
+        assertEquals(500L, prefs.focusDuration(ShoulderButton.L1))
+        prefs.setFocusDuration(ShoulderButton.L1, 400L)
+        assertEquals(400L, prefs.focusDuration(ShoulderButton.L1))
+        prefs.setFocusDuration(ShoulderButton.L1, 50_000L)
+        assertEquals(Prefs.MAX_FOCUS_DURATION_MS, prefs.focusDuration(ShoulderButton.L1))
     }
 
     @Test

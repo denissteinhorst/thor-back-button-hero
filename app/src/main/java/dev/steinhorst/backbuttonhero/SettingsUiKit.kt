@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Switch
@@ -48,11 +49,16 @@ fun Activity.serviceStatusText(status: ServiceStatus): String = when (status) {
 class SettingsPage(private val activity: Activity, private val content: LinearLayout) {
 
     data class ToggleHandle(val row: View, val switch: CompoundButton)
-    data class ChooserHandle(val row: View, val value: TextView)
+    data class ChooserHandle(val row: View, val title: TextView, val value: TextView)
     data class ActionHandle(val row: View, val title: TextView)
     data class WarningHandle(val row: View, val label: TextView)
 
     fun dp(v: Int): Int = activity.dp(v)
+
+    companion object {
+        /** Label-to-label pitch of sub-rows stacked under the focus action. */
+        const val STACKED_ROW_DP = 28
+    }
 
     fun sectionHeader(res: Int) {
         TextView(activity).apply {
@@ -152,12 +158,14 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
         /** Title + current value with a chevron; tapping anywhere on the row runs [onClick]
          *  (used both for choice dialogs and for navigating to a sub-screen). */
         fun chooserRow(titleRes: Int, value: String, onClick: () -> Unit): ChooserHandle {
+            lateinit var titleView: TextView
             lateinit var valueView: TextView
             val row = rowContainer(minHeightDp = 56) {
                 addView(
                     LinearLayout(activity).apply {
                         orientation = LinearLayout.VERTICAL
-                        addView(TextView(activity).apply { setText(titleRes); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f) })
+                        titleView = TextView(activity).apply { setText(titleRes); setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f) }
+                        addView(titleView)
                         valueView = TextView(activity).apply {
                             text = value
                             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -175,19 +183,21 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             row.background = selectableBackground()
             row.setOnClickListener { onClick() }
             addRow(row)
-            return ChooserHandle(row, valueView)
+            return ChooserHandle(row, titleView, valueView)
         }
 
         /** A secondary, single-line chooser for an option that belongs to the row above it: smaller
          *  muted text, label on the left and current value on the right. */
         fun subChooserRow(titleRes: Int, value: String, onClick: () -> Unit): ChooserHandle {
+            lateinit var titleView: TextView
             lateinit var valueView: TextView
             val row = rowContainer(minHeightDp = 48) {
+                titleView = TextView(activity).apply {
+                    setText(titleRes)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                }
                 addView(
-                    TextView(activity).apply {
-                        setText(titleRes)
-                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-                    },
+                    titleView,
                     LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
                 )
                 valueView = TextView(activity).apply {
@@ -205,7 +215,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             row.background = selectableBackground()
             row.setOnClickListener { onClick() }
             addRow(row)
-            return ChooserHandle(row, valueView)
+            return ChooserHandle(row, titleView, valueView)
         }
 
         /** A tappable action line, optionally with supporting text below the title. */
@@ -347,3 +357,66 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             }
     }
 }
+
+const val POSITION_GRID_WIDTH_DP = 224
+const val POSITION_GRID_HEIGHT_DP = 126
+
+class PositionGrid(val view: View, val update: (selected: String, enabled: Boolean) -> Unit)
+
+/** A 16:9 screen outline (the top display) holding a 3x3 grid of dots; tapping a dot calls [onSelect].
+ *  [positions] lists the nine values row by row, each with its spoken label. [PositionGrid.update]
+ *  moves the highlight and dims the grid, ignoring taps, while it is disabled. */
+fun Activity.positionGrid(
+    positions: List<Pair<String, String>>,
+    selectedLabel: (String) -> String,
+    onSelect: (String) -> Unit,
+): PositionGrid {
+    val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
+    val idle = themedColor(android.R.attr.textColorSecondary, Color.GRAY)
+    val cells = LinkedHashMap<String, Pair<View, GradientDrawable>>()
+    var enabled = true
+    val screen = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(8), dp(8), dp(8), dp(8))
+        background = GradientDrawable().apply {
+            setStroke(dp(2), idle)
+            cornerRadius = dp(10).toFloat()
+        }
+        positions.chunked(3).forEach { line ->
+            addView(
+                LinearLayout(context).apply {
+                    line.forEach { (value, label) ->
+                        val dot = GradientDrawable().apply { shape = GradientDrawable.OVAL }
+                        val cell = FrameLayout(context).apply {
+                            contentDescription = label
+                            setOnClickListener { if (enabled) onSelect(value) }
+                            addView(View(context).apply { background = dot }, FrameLayout.LayoutParams(dp(16), dp(16), Gravity.CENTER))
+                        }
+                        cells[value] = cell to dot
+                        addView(cell, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+                    }
+                },
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f),
+            )
+        }
+    }
+    return PositionGrid(screen) { selected, isEnabled ->
+        enabled = isEnabled
+        screen.alpha = if (enabled) 1f else 0.35f
+        cells.forEach { (value, pair) ->
+            val (cell, dot) = pair
+            val on = value == selected
+            dot.setColor(if (on) accent else Color.TRANSPARENT)
+            dot.setStroke(dp(2), if (on) accent else idle)
+            cell.isClickable = enabled
+            cell.isFocusable = enabled
+            val label = positions.first { it.first == value }.second
+            cell.contentDescription = if (on) selectedLabel(label) else label
+        }
+    }
+}
+
+fun Activity.themedColor(attr: Int, fallback: Int): Int = runCatching {
+    val ta = theme.obtainStyledAttributes(intArrayOf(attr))
+    ta.getColor(0, fallback).also { ta.recycle() }
+}.getOrDefault(fallback)

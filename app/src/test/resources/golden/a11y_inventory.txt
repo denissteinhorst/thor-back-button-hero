@@ -10,35 +10,44 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L1 actio
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=L1 screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=L1 indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=R1 action: Navigation-Flick Right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=R1 screen: Both screens. Double-tap to change.
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L2 action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=R1 indicator appearance: Center right. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L2 action: Take screenshot. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=L2 screen: Both screens. Double-tap to change.
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=R2 action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=L2 screen: Top screen. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=L2 indicator appearance: Center right. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=R2 action: Set controller focus. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=R2 screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=R2 focus: Toggle focus. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=R2 indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad up action: Brightness up. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad up screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=D-pad up indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad down action: Brightness down. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad down screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=D-pad down indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad left action: Volume down. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad left screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=D-pad left indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad right action: Volume up. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad right screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=28 focusable=true contentDescription=D-pad right indicator appearance: Center right. Double-tap to change.
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Open GitHub repository

@@ -72,6 +72,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für L1: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für R1: Navigation-Flick Right. Zum Ändern doppeltippen."
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
@@ -88,37 +93,52 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für R1: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für L2: Nicht belegt. Zum Ändern doppeltippen."
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für L2: Screenshot aufnehmen. Zum Ändern doppeltippen."
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screenshot aufnehmen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
-        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
           Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
         View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für L2: Beide Bildschirme. Zum Ändern doppeltippen."
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für L2: Oberer Bildschirm. Zum Ändern doppeltippen."
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
-          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberer Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für L2: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für R2: Nicht belegt. Zum Ändern doppeltippen."
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für R2: Fokus setzen. Zum Ändern doppeltippen."
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Fokus setzen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
-        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
           Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
         View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-        LinearLayout visibility=GONE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für R2: Beide Bildschirme. Zum Ändern doppeltippen."
-          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
-          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=84 padding=[48,0,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Fokus für R2: Fokus umschalten. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Fokus-Mode" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Fokus umschalten" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für R2: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,12,12,48] clickable=false focusable=false margin=[0,0,0,0] text="Zurück halten und eine D-Pad-Richtung drücken, um die zugewiesene Aktion auszuführen. Das Spiel läuft weiter und bekommt den Druck nicht mit." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
@@ -138,6 +158,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für D-Pad hoch: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
         View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für D-Pad runter: Helligkeit verringern. Zum Ändern doppeltippen."
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
@@ -153,6 +178,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
         LinearLayout visibility=VISIBLE minHeight=144 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für D-Pad runter: Beide Bildschirme. Zum Ändern doppeltippen."
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für D-Pad runter: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
         View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für D-Pad links: Lautstärke verringern. Zum Ändern doppeltippen."
@@ -170,6 +200,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für D-Pad links: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
         View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für D-Pad rechts: Lautstärke erhöhen. Zum Ändern doppeltippen."
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
@@ -186,6 +221,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
           TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=GONE minHeight=84 padding=[48,0,48,24] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Indikator-Darstellung für D-Pad rechts: Mitte rechts. Zum Ändern doppeltippen."
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Indikator-Darstellung" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mitte rechts" textSizePx=39.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Hilfe und Debug" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
         LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
@@ -196,6 +236,10 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Dienst reparieren" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
             TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Falls die Tastengesten nicht mehr reagieren, „Dienst reparieren“ wählen und Back Button Hero einmal aus- und wieder einschalten." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Optionale Belegungen lösen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Einstellungen zurücksetzen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false

@@ -107,6 +107,80 @@ class PrefsMigrationTest {
         assertEquals(Prefs.SINGLE_LAUNCHER, prefs.singleAction)
         assertEquals(Prefs.SHOULDER_FLICK_LEFT, prefs.shoulderAction(ShoulderButton.L1))
         assertEquals(Prefs.SHOULDER_FLICK_RIGHT, prefs.shoulderAction(ShoulderButton.R1))
+        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `fresh install starts with the screenshot on L2 and controller focus on R2`() {
+        val prefs = Prefs(context())
+
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
+        assertEquals(Prefs.DISPLAY_TOP, prefs.levelTarget(ShoulderButton.L2))
+        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
+        assertEquals(Prefs.FOCUS_TOGGLE, prefs.focusTarget(ShoulderButton.R2))
+        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(ShoulderButton.R2))
+        assertEquals(500L, prefs.focusDuration(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `an update keeps unassigned L2 and R2 unassigned`() {
+        val ctx = context()
+        rawPrefs(ctx).edit()
+            .putBoolean("navigation_flick_defaults_v1", true)
+            .putBoolean("navigation_flick_directions_v2", true)
+            .apply()
+
+        val prefs = Prefs(ctx)
+
+        assertEquals("", prefs.shoulderAction(ShoulderButton.L2))
         assertEquals("", prefs.shoulderAction(ShoulderButton.R2))
+        assertTrue(rawPrefs(ctx).getBoolean("shoulder_defaults_v3", false))
+    }
+
+    @Test
+    fun `an update keeps a user's own L2 and R2 choices`() {
+        val ctx = context()
+        rawPrefs(ctx).edit()
+            .putBoolean("navigation_flick_defaults_v1", true)
+            .putBoolean("navigation_flick_directions_v2", true)
+            .putString("l2_package", "com.custom.app")
+            .putString("r2_package", Prefs.SHOULDER_RECENTS)
+            .apply()
+
+        val prefs = Prefs(ctx)
+
+        assertEquals("com.custom.app", prefs.shoulderAction(ShoulderButton.L2))
+        assertEquals(Prefs.SHOULDER_RECENTS, prefs.shoulderAction(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `the factory shoulder defaults are applied only once`() {
+        val ctx = context()
+        Prefs(ctx).setShoulderAction(ShoulderButton.R2, "")
+
+        assertEquals("", Prefs(ctx).shoulderAction(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `reset restores the factory shoulder defaults`() {
+        val prefs = Prefs(context())
+        prefs.setShoulderAction(ShoulderButton.R2, "")
+        prefs.setFocusPosition(ShoulderButton.R2, Prefs.FOCUS_POS_TOP_LEFT)
+
+        prefs.resetToDefaults()
+
+        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
+        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(ShoulderButton.R2))
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
+    }
+
+    @Test
+    fun `unbind optionals clears every shoulder button and D-pad direction`() {
+        val prefs = Prefs(context())
+
+        prefs.unbindOptionals()
+
+        ShoulderButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
+        DpadDirection.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
     }
 }
