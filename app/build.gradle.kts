@@ -16,6 +16,10 @@ val releaseKeystorePassword: String? = System.getenv("RELEASE_KEYSTORE_PASSWORD"
 val releaseKeyAlias: String? = System.getenv("RELEASE_KEY_ALIAS")
 val releaseKeyPassword: String? = System.getenv("RELEASE_KEY_PASSWORD")
 
+kotlin {
+    compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+}
+
 android {
     namespace = "dev.steinhorst.backbuttonhero"
     compileSdk = 34
@@ -34,7 +38,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -129,7 +132,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.90".toBigDecimal()
+                minimum = "0.91".toBigDecimal()
             }
         }
         rule {
@@ -165,7 +168,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.46".toBigDecimal()
+                minimum = "0.60".toBigDecimal()
             }
         }
         rule {
@@ -187,7 +190,7 @@ dependencies {
     testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }
 
