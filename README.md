@@ -99,6 +99,29 @@ The game keeps running and never sees a D-pad shortcut. Normal apps cannot read 
 
 Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
 
+## Screenshots of the app's settings
+
+These are the app's own settings screens. Everything shown can be changed,
+and the defaults work out of the box.
+
+<table>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-single-double.png" alt="Single tap and double button press settings"><br><sub><b>Single &amp; double press</b> — tap action and double-tap speed</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-tap-hold.png" alt="Tap and hold settings"><br><sub><b>Tap and hold</b> — Recents on the top screen</sub></td></tr>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-hold-swap.png" alt="Hold to swap screens settings"><br><sub><b>Hold to swap screens</b> — and its hold time</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-shoulder-buttons.png" alt="Shoulder button assignments"><br><sub><b>Shoulder buttons</b> — L1, L2, R1, R2</sub></td></tr>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-dpad-settings.png" alt="D-pad shortcut settings for brightness and volume"><br><sub><b>D-pad shortcuts</b> — per-direction actions and screen targets</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-indicator-appearance.png" alt="Indicator appearance popup with a 3 by 3 position grid, a show switch and a display time slider"><br><sub><b>Indicator appearance</b> — position, visibility and display time of the focus pictogram</sub></td></tr>
+</table>
+
+<details>
+<summary><b>More screenshots</b> (5)</summary>
+<br>
+
+<table>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker.png" alt="Action picker for a shoulder button"><br><sub><b>Pick an action</b> — Home, Recents, screenshot, flicks</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-system.png" alt="Action picker with system shortcuts"><br><sub><b>System shortcuts</b> — Quick Settings, notifications, Wi-Fi</sub></td></tr>
+<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-settings.png" alt="Action picker with settings pages"><br><sub><b>Settings pages</b> — display, sound, location and more</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-screenshot-target.png" alt="Screen target selection for a screenshot action"><br><sub><b>Screenshot target</b> — both screens, top, or bottom</sub></td></tr>
+<tr><td width="50%" align="center" colspan="2"><img src="docs/assets/screenshot-settings-bottom.png" alt="End of the settings with repair service, unbind optionals, reset settings and update check" width="50%"><br><sub><b>Help and maintenance</b> — repair service, unbind optionals, reset, update check</sub></td></tr>
+</table>
+
+</details>
+
 ## Is it safe?
 
 Back Button Hero uses Android's Accessibility Service, which is a powerful permission.
@@ -127,29 +150,6 @@ with your model and firmware version.
 
 Other devices, Android versions, and what the app needs from the hardware:
 see the [FAQ](docs/FAQ.md#compatibility).
-
-## Screenshots of the app's settings
-
-These are the app's own settings screens. Everything shown can be changed,
-and the defaults work out of the box.
-
-<table>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-single-double.png" alt="Single tap and double button press settings"><br><sub><b>Single &amp; double press</b> — tap action and double-tap speed</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-tap-hold.png" alt="Tap and hold settings"><br><sub><b>Tap and hold</b> — Recents on the top screen</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-hold-swap.png" alt="Hold to swap screens settings"><br><sub><b>Hold to swap screens</b> — and its hold time</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-shoulder-buttons.png" alt="Shoulder button assignments"><br><sub><b>Shoulder buttons</b> — L1, L2, R1, R2</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-dpad-settings.png" alt="D-pad shortcut settings for brightness and volume"><br><sub><b>D-pad shortcuts</b> — per-direction actions and screen targets</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-indicator-appearance.png" alt="Indicator appearance popup with a 3 by 3 position grid, a show switch and a display time slider"><br><sub><b>Indicator appearance</b> — position, visibility and display time of the focus pictogram</sub></td></tr>
-</table>
-
-<details>
-<summary><b>More screenshots</b> (5)</summary>
-<br>
-
-<table>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker.png" alt="Action picker for a shoulder button"><br><sub><b>Pick an action</b> — Home, Recents, screenshot, flicks</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-system.png" alt="Action picker with system shortcuts"><br><sub><b>System shortcuts</b> — Quick Settings, notifications, Wi-Fi</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-settings.png" alt="Action picker with settings pages"><br><sub><b>Settings pages</b> — display, sound, location and more</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-screenshot-target.png" alt="Screen target selection for a screenshot action"><br><sub><b>Screenshot target</b> — both screens, top, or bottom</sub></td></tr>
-<tr><td width="50%" align="center" colspan="2"><img src="docs/assets/screenshot-settings-bottom.png" alt="End of the settings with repair service, unbind optionals, reset settings and update check" width="50%"><br><sub><b>Help and maintenance</b> — repair service, unbind optionals, reset, update check</sub></td></tr>
-</table>
-
-</details>
 
 ## Settings and service health
 
