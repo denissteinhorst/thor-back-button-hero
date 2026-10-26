@@ -19,7 +19,11 @@ class ControllerFocus(
     fun targetIsTop(target: String): Boolean = resolveValue(target, currentValue()) == TOP_VALUE
 
     fun run(target: String) {
-        if (!PService.cachedAvailable()) return unavailable()
+        if (!PService.cachedAvailable()) {
+            // The indicator is already up by now; it must not confirm a switch that never happens.
+            onFailed()
+            return unavailable()
+        }
         val value = resolveValue(target, currentValue())
         worker.execute {
             // Mirrors AYN's own tool (verified from its pservice log): Shift-right is deliberately
