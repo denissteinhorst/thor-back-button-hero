@@ -41,6 +41,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var focusIndicator: FocusIndicatorOverlay
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
+    private var pendingDpadFocus: DpadDirection? = null
+    private var pendingDpadReleased = false
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -67,8 +69,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
-        padHelper = PadHelper(this, ::handleDpad)
-        dpadOverlay = DpadOverlay(this, ::handleDpad)
+        padHelper = PadHelper(this, ::handleDpad, ::handleDpadRelease)
+        dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
         prefs.registerListener(prefsListener)
         updatePadHelper()
     }
@@ -86,7 +88,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active && prefs.hasDpadAction()) {
                 dpadOverlay.attach()
             }
-            if (event.action == KeyEvent.ACTION_UP) dpadOverlay.detach()
+            if (event.action == KeyEvent.ACTION_UP) {
+                val overlayWasAttached = dpadOverlay.attached
+                dpadOverlay.detach()
+                // Once the overlay is gone a still held D-pad is released to the app, unseen; Back's
+                // release is the last moment left to commit an armed controller focus.
+                if (overlayWasAttached) {
+                    pendingDpadReleased = true
+                    commitDpadFocus()
+                }
+            }
             return backGesture.handleBack(event)
         }
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
@@ -99,7 +110,32 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val action = prefs.shoulderAction(direction)
         if (action.isEmpty()) return
         backGesture.markComboFired()
-        runComboAction(direction, action)
+        pendingDpadFocus = null
+        // Same firmware race as for the shoulder buttons (see handleShoulder): arm on press,
+        // commit on release.
+        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) {
+            pendingDpadFocus = direction
+            pendingDpadReleased = false
+            showFocusIndicator(direction)
+        } else {
+            runComboAction(direction, action)
+        }
+    }
+
+    private fun handleDpadRelease(horizontal: Boolean) {
+        val pending = pendingDpadFocus ?: return
+        if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
+        pendingDpadReleased = true
+        commitDpadFocus()
+    }
+
+    /** Without the root helper, the overlay holds window focus while Back is held and would swallow
+     *  the key event that commits the route, so the commit also waits until it is gone. */
+    private fun commitDpadFocus() {
+        val pending = pendingDpadFocus ?: return
+        if (!pendingDpadReleased || dpadOverlay.attached) return
+        pendingDpadFocus = null
+        runControllerFocus(pending)
     }
 
     /** Holding Back and pressing a shoulder button runs that button's configured action
@@ -281,6 +317,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewFocusIndicator = null
         shoulderKeys.clear()
         pendingFocusTargets.clear()
+        pendingDpadFocus = null
         stopDpad()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
@@ -293,6 +330,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewFocusIndicator = null
         shoulderKeys.clear()
         pendingFocusTargets.clear()
+        pendingDpadFocus = null
         stopDpad()
         return super.onUnbind(intent)
     }
