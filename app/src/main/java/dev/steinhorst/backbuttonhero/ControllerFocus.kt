@@ -15,8 +15,14 @@ class ControllerFocus(
     private val worker = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
 
+    // Main thread only. The setting changes only once the queued root command has run, so a toggle
+    // requested before then must resolve against the last requested value, or two quick presses
+    // would both pick the same display.
+    private var requested: String? = null
+    private var queued = 0
+
     /** True when [target] resolves to the top display, from the setting AYN's own tool keeps current. */
-    fun targetIsTop(target: String): Boolean = resolveValue(target, currentValue()) == TOP_VALUE
+    fun targetIsTop(target: String): Boolean = resolveValue(target, requested ?: currentValue()) == TOP_VALUE
 
     fun run(target: String) {
         if (!PService.cachedAvailable()) {
@@ -24,7 +30,9 @@ class ControllerFocus(
             onFailed()
             return unavailable()
         }
-        val value = resolveValue(target, currentValue())
+        val value = resolveValue(target, requested ?: currentValue())
+        requested = value
+        queued++
         worker.execute {
             // Mirrors AYN's own tool (verified from its pservice log): Shift-right is deliberately
             // sent WITHOUT -d, so it reaches the currently focused display, where AYN's assistant
@@ -33,17 +41,19 @@ class ControllerFocus(
             val command = "setprop $INPUT_DISPLAY_PROPERTY $value && " +
                 "settings put system $FOCUS_SETTING $value && " +
                 "input keyevent 60 && echo OK"
-            if (PService.exec(command)?.trim()?.endsWith("OK") != true) failed()
+            val ok = PService.exec(command)?.trim()?.endsWith("OK") == true
+            main.post {
+                if (--queued == 0) requested = null
+                if (!ok) failed()
+            }
         }
     }
 
     private fun currentValue(): String? = Settings.System.getString(context.contentResolver, FOCUS_SETTING)
 
     private fun failed() {
-        main.post {
-            onFailed()
-            unavailable()
-        }
+        onFailed()
+        unavailable()
     }
 
     private fun unavailable() {
