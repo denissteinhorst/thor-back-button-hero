@@ -16,10 +16,16 @@ import android.view.WindowManager
  * with it the D-pad. The price: the app in front loses window focus for that moment, and many games
  * and emulators pause on that. The settings screen warns about it.
  */
-class DpadOverlay(private val context: Context, private val onPress: (DpadDirection) -> Unit) {
+class DpadOverlay(
+    private val context: Context,
+    private val onPress: (DpadDirection) -> Unit,
+    private val onRelease: (horizontal: Boolean) -> Unit,
+) {
     private val windows = mutableListOf<Pair<WindowManager, View>>()
     private var lastX = 0f
     private var lastY = 0f
+
+    val attached: Boolean get() = windows.isNotEmpty()
 
     fun attach() {
         if (windows.isNotEmpty()) return
@@ -36,9 +42,13 @@ class DpadOverlay(private val context: Context, private val onPress: (DpadDirect
                     // Only the edge from rest to a direction counts, so one press fires once.
                     val pressed = DpadDirection.fromHat(true, x).takeIf { DpadDirection.fromHat(true, lastX) == null }
                         ?: DpadDirection.fromHat(false, y).takeIf { DpadDirection.fromHat(false, lastY) == null }
+                    val releasedX = DpadDirection.fromHat(true, x) == null && DpadDirection.fromHat(true, lastX) != null
+                    val releasedY = DpadDirection.fromHat(false, y) == null && DpadDirection.fromHat(false, lastY) != null
                     lastX = x
                     lastY = y
                     pressed?.let(onPress)
+                    if (releasedX) onRelease(true)
+                    if (releasedY) onRelease(false)
                     return true
                 }
 

@@ -103,8 +103,8 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `shoulderAction for L2 defaults to an empty string`() {
-        assertEquals("", prefs.shoulderAction(ShoulderButton.L2))
+    fun `shoulderAction for L2 defaults to the screenshot`() {
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
     }
 
     @Test

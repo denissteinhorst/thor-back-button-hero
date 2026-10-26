@@ -18,7 +18,11 @@ import java.io.File
  * The helper is launched through [PService] and connects back over an abstract socket. Abstract
  * sockets have no file permissions, so every peer that is not root is turned away.
  */
-class PadHelper(private val context: Context, private val onPress: (DpadDirection) -> Unit) {
+class PadHelper(
+    private val context: Context,
+    private val onPress: (DpadDirection) -> Unit,
+    private val onRelease: (horizontal: Boolean) -> Unit,
+) {
 
     /** True while the helper has taken over a pad and gates its D-pad. */
     @Volatile var active = false
@@ -79,9 +83,10 @@ class PadHelper(private val context: Context, private val onPress: (DpadDirectio
             "PAD_GONE" -> active = false
             "RELEASED" -> { released = true; wanted = false; active = false }
             "HAT" -> if (parts.size == 3) {
-                val direction = DpadDirection.fromHat(parts[1] == "X", parts[2].toFloatOrNull() ?: 0f)
-                // Releases (value 0) are only bookkeeping for the helper; act on presses.
-                if (direction != null) main.post { onPress(direction) }
+                val horizontal = parts[1] == "X"
+                val direction = DpadDirection.fromHat(horizontal, parts[2].toFloatOrNull() ?: 0f)
+                // A release (value 0) only matters to an action that commits on release.
+                if (direction != null) main.post { onPress(direction) } else main.post { onRelease(horizontal) }
             }
         }
     }

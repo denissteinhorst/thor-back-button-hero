@@ -75,6 +75,12 @@ if (!sp.getBoolean("my_change_v1", false)) {
 Then extend `PrefsMigrationTest` to cover both paths: a fresh install and an install that
 already carried the old value.
 
+When a default changes for a setting that existing users may never have touched (so no value is
+stored), pin the old effective value for installs that already ran, and apply the new default only
+to fresh installs. `shoulder_defaults_v3` in `Prefs` does this for L2 and R2: an update keeps them
+unassigned, a fresh install gets the screenshot and controller-focus shortcuts. Test all three
+cases: fresh, update with the old value, update with a custom value.
+
 ### Adding or changing a string
 
 Edit **both** `app/src/main/res/values/strings.xml` and

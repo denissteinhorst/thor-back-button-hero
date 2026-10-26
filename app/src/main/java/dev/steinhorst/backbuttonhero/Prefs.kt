@@ -44,6 +44,35 @@ class Prefs(context: Context) {
             }
         }
         if (changed) edit.apply()
+        // L2 and R2 used to ship unassigned. A fresh install now starts with a screenshot and a
+        // controller-focus shortcut, but an update must never hand those to someone who left them
+        // empty: pin whatever an existing install has (unassigned included) before the flag is set.
+        if (!sp.getBoolean("shoulder_defaults_v3", false)) {
+            val defaults = sp.edit()
+            if (hadV1Defaults) {
+                listOf(ShoulderButton.L2, ShoulderButton.R2).forEach { button ->
+                    val key = "${button.prefKey}_package"
+                    if (!sp.contains(key)) defaults.putString(key, "")
+                }
+            } else {
+                putFactoryShoulders(defaults)
+            }
+            defaults.putBoolean("shoulder_defaults_v3", true).apply()
+        }
+    }
+
+    private fun putFactoryShoulders(edit: SharedPreferences.Editor) {
+        edit.putString("${ShoulderButton.R2.prefKey}_package", SHOULDER_CONTROLLER_FOCUS)
+            .putString("${ShoulderButton.L2.prefKey}_package", SHOULDER_SCREENSHOT)
+            .putString("${ShoulderButton.L2.prefKey}_target", DISPLAY_TOP)
+    }
+
+    /** Clears every shoulder-button and D-pad assignment; everything else is left as it is. */
+    fun unbindOptionals() {
+        val edit = sp.edit()
+        ShoulderButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
+        DpadDirection.entries.forEach { edit.putString("${it.prefKey}_package", "") }
+        edit.apply()
     }
 
     var doubleTapEnabled: Boolean
@@ -100,6 +129,34 @@ class Prefs(context: Context) {
             ?: if (shoulderAction(button) == SHOULDER_SCREENSHOT) DISPLAY_TOP else TARGET_BOTH
     fun setLevelTarget(button: ComboButton, target: String) { sp.edit().putString("${button.prefKey}_target", target).apply() }
 
+    /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
+    fun focusTarget(button: ComboButton): String =
+        sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
+    fun setFocusTarget(button: ComboButton, target: String) {
+        sp.edit().putString("${button.prefKey}_focus_target", target).apply()
+    }
+
+    /** Whether the controller-focus pictogram is shown at all. */
+    fun focusIndicator(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_focus_indicator", true)
+    fun setFocusIndicator(button: ComboButton, shown: Boolean) {
+        sp.edit().putBoolean("${button.prefKey}_focus_indicator", shown).apply()
+    }
+
+    /** How long the controller-focus pictogram stays visible, [MIN_FOCUS_DURATION_MS]..[MAX_FOCUS_DURATION_MS]. */
+    fun focusDuration(button: ComboButton): Long =
+        sp.getLong("${button.prefKey}_focus_duration_ms", DEFAULT_FOCUS_DURATION_MS)
+            .coerceIn(MIN_FOCUS_DURATION_MS, MAX_FOCUS_DURATION_MS)
+    fun setFocusDuration(button: ComboButton, ms: Long) {
+        sp.edit().putLong("${button.prefKey}_focus_duration_ms", ms).apply()
+    }
+
+    /** Where the controller-focus pictogram appears on its 3x3 grid; [DEFAULT_FOCUS_POSITION] until chosen. */
+    fun focusPosition(button: ComboButton): String =
+        sp.getString("${button.prefKey}_focus_position", DEFAULT_FOCUS_POSITION) ?: DEFAULT_FOCUS_POSITION
+    fun setFocusPosition(button: ComboButton, position: String) {
+        sp.edit().putString("${button.prefKey}_focus_position", position).apply()
+    }
+
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
     fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
 
@@ -119,7 +176,7 @@ class Prefs(context: Context) {
 
     /** Restores app configuration only; Android permissions and service state are untouched. */
     fun resetToDefaults() {
-        sp.edit().clear()
+        val edit = sp.edit().clear()
             .putBoolean("double_enabled", DEFAULT_DOUBLE_TAP_ENABLED)
             .putLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
             .putBoolean("tap_hold_enabled", DEFAULT_TAP_HOLD_ENABLED)
@@ -131,7 +188,9 @@ class Prefs(context: Context) {
             .putString("${ShoulderButton.R1.prefKey}_package", SHOULDER_FLICK_RIGHT)
             .putBoolean("navigation_flick_defaults_v1", true)
             .putBoolean("navigation_flick_directions_v2", true)
-            .apply()
+            .putBoolean("shoulder_defaults_v3", true)
+        putFactoryShoulders(edit)
+        edit.apply()
     }
 
     companion object {
@@ -146,6 +205,20 @@ class Prefs(context: Context) {
         const val DISPLAY_TOP = "top"
         const val DISPLAY_BOTTOM = "bottom"
         const val TARGET_BOTH = "both"
+        const val FOCUS_TOGGLE = "toggle"
+        const val FOCUS_POS_CENTER = "center"
+        const val DEFAULT_FOCUS_DURATION_MS = 500L
+        const val MIN_FOCUS_DURATION_MS = 200L
+        const val MAX_FOCUS_DURATION_MS = 1_000L
+        const val FOCUS_POS_TOP_LEFT = "top_left"
+        const val FOCUS_POS_TOP_CENTER = "top_center"
+        const val FOCUS_POS_TOP_RIGHT = "top_right"
+        const val FOCUS_POS_CENTER_LEFT = "center_left"
+        const val FOCUS_POS_CENTER_RIGHT = "center_right"
+        const val DEFAULT_FOCUS_POSITION = FOCUS_POS_CENTER_RIGHT
+        const val FOCUS_POS_BOTTOM_LEFT = "bottom_left"
+        const val FOCUS_POS_BOTTOM_CENTER = "bottom_center"
+        const val FOCUS_POS_BOTTOM_RIGHT = "bottom_right"
         const val SHOULDER_FLICK_LEFT = "@navigation_flick_left"
         const val SHOULDER_FLICK_RIGHT = "@navigation_flick_right"
         const val SHOULDER_HOME = "@home"
@@ -167,6 +240,7 @@ class Prefs(context: Context) {
         const val SHOULDER_VOLUME_DOWN = "@volume_down"
         const val SHOULDER_BRIGHTNESS_UP = "@brightness_up"
         const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
+        const val SHOULDER_CONTROLLER_FOCUS = "@controller_focus"
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 
@@ -175,7 +249,8 @@ class Prefs(context: Context) {
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
         )
 
-        /** Actions that offer the "Screen" choice: the level actions and the screenshot. */
-        fun hasScreenTarget(action: String): Boolean = isLevelAction(action) || action == SHOULDER_SCREENSHOT
+        /** Actions that offer a secondary target choice below the action row. */
+        fun hasScreenTarget(action: String): Boolean =
+            isLevelAction(action) || action == SHOULDER_SCREENSHOT || action == SHOULDER_CONTROLLER_FOCUS
     }
 }

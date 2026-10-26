@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 113 JVM tests pass |
+| `testDebugUnitTest` | All 138 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,15 +55,18 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 18 classes, 113 tests
+### Base — JVM tests (Robolectric + JUnit), 22 classes, 138 tests
 
 Everything the gate can verify without hardware.
 
 | Area | Covered by |
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
-| Preferences: one-time migrations, reset | `PrefsMigrationTest` |
-| D-pad defaults, level targets, change listener | `DpadPrefsTest` |
+| Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
+| Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
+| Duplicate shoulder-key events from the two mirrored devices | `PhysicalKeyTrackerTest` |
+| Settings actions: Unbind optionals, the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
@@ -85,12 +88,12 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **12** goldens cover:
+The **14** goldens cover:
 
 | Golden | Scope |
 |---|---|
 | `settings_main_en_light`, `settings_main_en_dark`, `settings_main_de_light` | The whole settings page across theme and locale |
-| `shoulder_all_unassigned`, `shoulder_defaults_flick_no_toggle`, `shoulder_l1_sentinel_with_toggle`, `shoulder_l2_app_with_toggle`, `shoulder_r1_screenshot_no_toggle` | Every shoulder-row state, including whether the screen toggle shows |
+| `shoulder_all_unassigned`, `shoulder_defaults_flick_no_toggle`, `shoulder_l1_sentinel_with_toggle`, `shoulder_l2_app_with_toggle`, `shoulder_l2_volume_with_target`, `shoulder_r1_screenshot_no_toggle`, `dpad_all_unassigned` | Every shoulder-row state, including whether the screen toggle shows. All but `shoulder_defaults_flick_no_toggle` start from L2/R2 unassigned, the state before the factory shortcuts existed; that one shows the real fresh-install defaults |
 | `dialog_single_action_chooser`, `dialog_reset_settings_confirm`, `dialog_repair_service` | Three dialog flows |
 | `a11y_inventory` | Accessibility properties of every clickable row |
 
@@ -170,12 +173,13 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **0 %** (0/147 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **5.8 %** (10/172) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherOverlay` — **0 %** (0/145 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **4.7 %** (11/233) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
+| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (0/79) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.

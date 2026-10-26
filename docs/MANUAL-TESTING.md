@@ -1,7 +1,7 @@
 # Manual testing procedures
 
 The automated gate cannot see most of what this app does. `SwitcherOverlay` has **0 %**
-line coverage and `SwitcherService` **5.8 %**, because an accessibility connection, a
+line coverage and `SwitcherService` **4.7 %**, because an accessibility connection, a
 second display and real hardware key events are not reachable from Robolectric, and no
 emulator image exists for a dual-screen device.
 
@@ -22,7 +22,7 @@ Find the highest tier any touched file falls into. Mixed changes take the highes
 | **S0** | `docs/**`, `README.md`, `CLAUDE.md`, `.github/**`, `.githooks/**`, test sources, goldens, `lint-baseline.xml` | None | — |
 | **S1** | `Prefs.kt`, `SettingsUiKit.kt`, `SettingsActivity.kt`, `UpdateChecker.kt`, `res/values*/strings.xml`, `colors.xml`, version bumps | [A — Settings smoke](#procedure-a--settings-smoke) | ~3 min |
 | **S2** | `BackGestureMachine.kt`, `DoubleTapDetector.kt`, `CardTouch.kt`, `ShoulderButton.kt` | A + [B — Gesture pass](#procedure-b--gesture-pass) | ~12 min |
-| **S3** | `SwitcherService.kt`, `SwitcherOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
+| **S3** | `SwitcherService.kt`, `SwitcherOverlay.kt`, `ControllerFocus.kt`, `FocusIndicatorOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
 | **S4** | Publishing a release | S3 plus [D — Release acceptance](#procedure-d--release-acceptance) | ~40 min |
 
 Two notes on the boundaries. A **version bump alone is S1** even though it edits
@@ -156,6 +156,24 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
 | C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
 
+### Controller focus and the indicator
+
+Needs a game running on the top screen and the root helper active (a D-pad direction
+assigned). R2 is the focus button at the factory defaults.
+
+| # | Step | Expected |
+|---|---|---|
+| C23 | "Reset settings", then look at L2 and R2 | L2 is *Take screenshot* (top screen only); R2 is *Set controller focus* (toggle), indicator appearance *Center right*, 500 ms |
+| C24 | Hold Back and press R2, ten times in a row, both directions | The pictogram appears **when R2 goes down**, not after release, and shows the screen that gets the controller. Menu navigation with the pad follows to that screen every time |
+| C25 | Open *Indicator appearance* and tap each of the nine dots | The pictogram previews at that position on the top screen; in the corners and edges it is half size with the same distance to both adjacent edges; the centre dot shows it full size |
+| C26 | Switch *Show indicator* off in the popup | The dots dim and ignore taps; switching with R2 shows no pictogram, but the controller still moves |
+| C27 | Move the display-time slider to 200 ms and to 1000 ms | The preview stays visible for about that long; the value label follows the slider |
+| C28 | Tap the pictogram right after a switch | The settings open **on the top screen** inside the popup for that button; Back returns to the game |
+| C29 | Install a new build over a running game | The controller can stop working in RetroArch because the helper recreates the pad: open Settings over the game and return to it, then the controls respond again |
+
+C28 opens on the top screen on purpose: AYN's assistant permanently covers the bottom
+screen, so an activity started there would be invisible.
+
 ### Service health and localisation
 
 | # | Step | Expected |
@@ -163,7 +181,7 @@ Run these in a game or emulator that is already set up for the pad. See
 | C18 | Turn the accessibility service off in Android settings | Warning row appears, status switches to **off** |
 | C19 | Tap "Repair service" → "Open accessibility settings" | Lands on the correct system screen |
 | C20 | Turn it back on | Status returns to **on**, gestures work again |
-| C21 | "Reset settings", confirm | Every timing, switch, shoulder and D-pad assignment back to default; confirmation toast appears |
+| C21 | "Reset settings", confirm | Every timing, switch, shoulder and D-pad assignment back to default (including the factory shortcuts of C23); confirmation toast appears |
 | C22 | Switch the system language to German, reopen the app | All sections, dialogs and toasts in German; no English remnants, no clipped labels |
 
 ## Procedure D — Release acceptance
@@ -185,6 +203,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 | D2 | Install the signed APK **over** the previous version | Succeeds **without** asking to uninstall first |
 | D3 | `adb shell dumpsys package dev.steinhorst.backbuttonhero \| grep -E "versionName\|firstInstallTime\|lastUpdateTime"` | New `versionName`; `firstInstallTime` **unchanged**, `lastUpdateTime` new — this is the proof it was a true in-place update |
 | D4 | Check the service and your settings | Service still enabled, settings preserved |
+| D4a | On a device where L2 and R2 were left unassigned, update from the previous release | They stay unassigned; the factory shortcuts of C23 only appear on a fresh install or after a reset |
 | D5 | Count launcher icons | Exactly **one** — no "Leaks" icon in a release build |
 | D6 | Run procedures A, B and C on this build | All pass |
 | D7 | Tap "Check for new version" | Reports up to date |

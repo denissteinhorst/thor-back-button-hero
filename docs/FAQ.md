@@ -142,4 +142,5 @@ using the releases. [`MAINTENANCE.md`](MAINTENANCE.md) covers the full setup.
 
 Yes. Preference changes that could affect existing installs go through guarded one-time
 migrations, which are covered by tests precisely because getting them wrong would silently
-alter someone's configuration.
+alter someone's configuration. New defaults only apply to a fresh install or after **Reset
+settings**: a button you assigned, or deliberately left empty, keeps its state through an update.

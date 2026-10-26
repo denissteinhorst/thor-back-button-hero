@@ -9,10 +9,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.Typeface
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.TextView
+import android.widget.ScrollView
 import android.widget.Toast
 
 /**
@@ -29,6 +36,7 @@ class SettingsActivity : Activity() {
     private lateinit var singleValue: TextView
     private lateinit var statusLabel: TextView
     private lateinit var openA11yHandle: SettingsPage.ActionHandle
+    private val comboRows = mutableMapOf<String, ComboRow>()
     private lateinit var repairHandle: SettingsPage.ActionHandle
     private lateinit var updateHandle: SettingsPage.ActionHandle
 
@@ -42,8 +50,26 @@ class SettingsActivity : Activity() {
         }
         setContentView(ScrollView(this).apply { addView(content) })
         build()
+        openIndicatorFromIntent()
         ensureNotificationPermission()
         UpdateChecker.checkInBackground(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openIndicatorFromIntent()
+    }
+
+    /** Tapping the focus pictogram lands here: bring that button's indicator settings up directly. */
+    private fun openIndicatorFromIntent() {
+        val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
+        intent.removeExtra(EXTRA_INDICATOR_BUTTON)
+        val row = comboRows[key]?.takeIf { prefs.shoulderAction(it.button) == Prefs.SHOULDER_CONTROLLER_FOCUS } ?: return
+        content.post {
+            row.position.row.requestRectangleOnScreen(Rect(0, 0, row.position.row.width, row.position.row.height), true)
+            choosePosition(row)
+        }
     }
 
     private fun ensureNotificationPermission() {
@@ -119,6 +145,7 @@ class SettingsActivity : Activity() {
             repairHandle = actionRow(R.string.repair_service, R.string.repair_service_hint) { explainServiceRepair() }
         }
         page.card {
+            actionRow(R.string.unbind_optionals) { confirmUnbindOptionals() }
             actionRow(R.string.reset_settings) { confirmResetSettings() }
         }
         page.card {
@@ -194,6 +221,7 @@ class SettingsActivity : Activity() {
         Choice(Prefs.SHOULDER_VOLUME_DOWN, getString(R.string.shoulder_volume_down)),
         Choice(Prefs.SHOULDER_BRIGHTNESS_UP, getString(R.string.shoulder_brightness_up)),
         Choice(Prefs.SHOULDER_BRIGHTNESS_DOWN, getString(R.string.shoulder_brightness_down)),
+        Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
         Choice(Prefs.SHOULDER_QUICK_SETTINGS, getString(R.string.shoulder_quick_settings)),
         Choice(Prefs.SHOULDER_NOTIFICATIONS, getString(R.string.shoulder_notifications)),
         Choice(Prefs.SHOULDER_INTERNET, getString(R.string.shoulder_internet)),
@@ -232,6 +260,126 @@ class SettingsActivity : Activity() {
         (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.first()).label
     }
 
+    private fun focusTargets(): List<Choice> = listOf(
+        Choice(Prefs.FOCUS_TOGGLE, getString(R.string.focus_target_toggle)),
+        Choice(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
+        Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+    )
+
+    private fun describeFocusTarget(button: ComboButton): String = focusTargets().let { targets ->
+        (targets.firstOrNull { it.value == prefs.focusTarget(button) } ?: targets.first()).label
+    }
+
+    /** The nine pictogram positions, row by row as the picker lays them out. */
+    private fun focusPositions(): List<Choice> = listOf(
+        Choice(Prefs.FOCUS_POS_TOP_LEFT, getString(R.string.focus_position_top_left)),
+        Choice(Prefs.FOCUS_POS_TOP_CENTER, getString(R.string.focus_position_top_center)),
+        Choice(Prefs.FOCUS_POS_TOP_RIGHT, getString(R.string.focus_position_top_right)),
+        Choice(Prefs.FOCUS_POS_CENTER_LEFT, getString(R.string.focus_position_center_left)),
+        Choice(Prefs.FOCUS_POS_CENTER, getString(R.string.focus_position_center)),
+        Choice(Prefs.FOCUS_POS_CENTER_RIGHT, getString(R.string.focus_position_center_right)),
+        Choice(Prefs.FOCUS_POS_BOTTOM_LEFT, getString(R.string.focus_position_bottom_left)),
+        Choice(Prefs.FOCUS_POS_BOTTOM_CENTER, getString(R.string.focus_position_bottom_center)),
+        Choice(Prefs.FOCUS_POS_BOTTOM_RIGHT, getString(R.string.focus_position_bottom_right)),
+    )
+
+    private fun describeFocusPosition(button: ComboButton): String =
+        if (!prefs.focusIndicator(button)) getString(R.string.focus_position_off)
+        else focusPositions().first { it.value == prefs.focusPosition(button) }.label
+
+    private fun choosePosition(row: ComboRow) {
+        val positions = focusPositions()
+        lateinit var grid: PositionGrid
+        fun refresh() = grid.update(prefs.focusPosition(row.button), prefs.focusIndicator(row.button))
+        fun preview() {
+            val on = prefs.focusIndicator(row.button)
+            SwitcherService.previewFocusIndicator?.invoke(
+                prefs.focusTarget(row.button) != Prefs.DISPLAY_BOTTOM,
+                prefs.focusPosition(row.button).takeIf { on },
+                prefs.focusDuration(row.button),
+            )
+        }
+        grid = positionGrid(positions.map { it.value to it.label }, { getString(R.string.focus_position_selected, it) }) {
+            prefs.setFocusPosition(row.button, it)
+            refresh()
+            preview()
+        }
+        val durationValue = TextView(this).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            gravity = Gravity.END
+        }
+        val step = 100
+        val min = Prefs.MIN_FOCUS_DURATION_MS.toInt()
+        val duration = SeekBar(this).apply {
+            max = (Prefs.MAX_FOCUS_DURATION_MS.toInt() - min) / step
+            progress = (prefs.focusDuration(row.button).toInt() - min) / step
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(bar: SeekBar, progress: Int, fromUser: Boolean) {
+                    val ms = min + progress * step
+                    durationValue.text = getString(R.string.focus_duration, ms)
+                    if (fromUser) prefs.setFocusDuration(row.button, ms.toLong())
+                }
+                override fun onStartTrackingTouch(bar: SeekBar) = Unit
+                override fun onStopTrackingTouch(bar: SeekBar) = preview()
+            })
+        }
+        durationValue.text = getString(R.string.focus_duration, min + duration.progress * step)
+        val toggle = Switch(this).apply {
+            setText(R.string.focus_indicator_title)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            isChecked = prefs.focusIndicator(row.button)
+            setOnCheckedChangeListener { _, on ->
+                prefs.setFocusIndicator(row.button, on)
+                duration.isEnabled = on
+                durationValue.alpha = if (on) 1f else 0.35f
+                refresh()
+                preview()
+            }
+        }
+        fun header(res: Int) = TextView(this).apply {
+            setText(res)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setTypeface(typeface, Typeface.BOLD)
+            letterSpacing = 0.04f
+            setTextColor(themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4")))
+        }
+        val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
+        val full = ViewGroup.LayoutParams.MATCH_PARENT
+        val left = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(header(R.string.focus_header_position))
+            addView(grid.view, LinearLayout.LayoutParams(dp(POSITION_GRID_WIDTH_DP), dp(POSITION_GRID_HEIGHT_DP)).apply { topMargin = dp(16) })
+        }
+        val right = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(header(R.string.focus_header_indicator))
+            addView(toggle, LinearLayout.LayoutParams(full, dp(48)).apply { topMargin = dp(8) })
+            addView(
+                LinearLayout(context).apply {
+                    addView(header(R.string.focus_header_duration), LinearLayout.LayoutParams(0, wrap, 1f))
+                    addView(durationValue)
+                },
+                LinearLayout.LayoutParams(full, wrap).apply { topMargin = dp(32) },
+            )
+            addView(duration, LinearLayout.LayoutParams(full, dp(40)).apply { topMargin = dp(12) })
+        }
+        val content = LinearLayout(this).apply {
+            setPadding(dp(28), dp(16), dp(28), dp(8))
+            addView(left)
+            addView(right, LinearLayout.LayoutParams(0, wrap, 1f).apply { marginStart = dp(40) })
+        }
+        duration.isEnabled = toggle.isChecked
+        durationValue.alpha = if (toggle.isChecked) 1f else 0.35f
+        refresh()
+        preview()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.focus_position_title)
+            .setView(content)
+            .setPositiveButton(android.R.string.ok, null)
+            .setOnDismissListener { updateShoulderRow(row) }
+            .show()
+    }
+
     /** The views of one button's card that change with its action. */
     private class ComboRow(
         /** True when several buttons share one card, so a hidden row must not leave its hairline behind. */
@@ -241,6 +389,7 @@ class SettingsActivity : Activity() {
         val action: SettingsPage.ChooserHandle,
         val display: View,
         val target: SettingsPage.ChooserHandle,
+        val position: SettingsPage.ChooserHandle,
     )
 
     private fun chooseShoulderAction(row: ComboRow) {
@@ -285,15 +434,18 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseLevelTarget(row: ComboRow) {
-        val targets = levelTargets()
+    private fun chooseTarget(row: ComboRow) {
+        val focus = prefs.shoulderAction(row.button) == Prefs.SHOULDER_CONTROLLER_FOCUS
+        val targets = if (focus) focusTargets() else levelTargets()
+        val selected = if (focus) prefs.focusTarget(row.button) else prefs.levelTarget(row.button)
         AlertDialog.Builder(this)
-            .setTitle(R.string.level_target_dialog_title)
+            .setTitle(if (focus) R.string.focus_target_dialog_title else R.string.level_target_dialog_title)
             .setSingleChoiceItems(
                 targets.map { it.label }.toTypedArray(),
-                targets.indexOfFirst { it.value == prefs.levelTarget(row.button) }.coerceAtLeast(0),
+                targets.indexOfFirst { it.value == selected }.coerceAtLeast(0),
             ) { dialog, which ->
-                prefs.setLevelTarget(row.button, targets[which].value)
+                if (focus) prefs.setFocusTarget(row.button, targets[which].value)
+                else prefs.setLevelTarget(row.button, targets[which].value)
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
@@ -313,8 +465,10 @@ class SettingsActivity : Activity() {
         val display = card.toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) {
             prefs.setShoulderDisplay(button, if (it) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM)
         }
-        val target = card.subChooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseLevelTarget(row) }
-        row = ComboRow(sharedCard != null, button, getString(titleRes), action, display.row, target)
+        val target = card.subChooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
+        val position = card.subChooserRow(R.string.focus_position_title, describeFocusPosition(button)) { choosePosition(row) }
+        row = ComboRow(sharedCard != null, button, getString(titleRes), action, display.row, target, position)
+        comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
 
@@ -323,17 +477,31 @@ class SettingsActivity : Activity() {
         val action = prefs.shoulderAction(row.button)
         row.display.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
         val hasTarget = Prefs.hasScreenTarget(action)
+        val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
         row.target.row.visibility = if (hasTarget) View.VISIBLE else View.GONE
         // The card draws a hairline before every row. The screen row hangs directly under its action,
         // so it never gets one; the hidden top-screen row's hairline would end up between the two.
         dividerBefore(row.target.row)?.visibility = View.GONE
+        row.position.row.visibility = if (focus) View.VISIBLE else View.GONE
+        dividerBefore(row.position.row)?.visibility = View.GONE
+        row.position.row.setPadding(row.position.row.paddingLeft, 0, row.position.row.paddingRight, dp(8))
+        row.position.row.minimumHeight = dp(SettingsPage.STACKED_ROW_DP)
+        row.position.value.text = describeFocusPosition(row.button)
+        row.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, row.position.value.text)
+        row.target.row.setPadding(row.target.row.paddingLeft, 0, row.target.row.paddingRight, dp(if (focus) 0 else 8))
+        row.target.row.minimumHeight = dp(if (focus) SettingsPage.STACKED_ROW_DP else 48)
         dividerBefore(row.display)?.visibility =
             if (row.grouped) row.display.visibility else if (hasTarget) View.GONE else View.VISIBLE
         // The screen row hangs close under its action: take back most of the action row's bottom padding.
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight, dp(if (hasTarget) 0 else 10))
-        row.target.value.text = describeLevelTarget(row.button)
+        row.target.title.setText(if (focus) R.string.focus_target_title else R.string.level_target_title)
+        row.target.value.text = if (focus) describeFocusTarget(row.button) else describeLevelTarget(row.button)
         row.action.row.contentDescription = getString(R.string.shoulder_action_accessibility, row.label, row.action.value.text)
-        row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
+        row.target.row.contentDescription = getString(
+            if (focus) R.string.focus_target_accessibility else R.string.level_target_accessibility,
+            row.label,
+            row.target.value.text,
+        )
     }
 
     private fun dividerBefore(row: View): View? =
@@ -346,6 +514,21 @@ class SettingsActivity : Activity() {
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.open_a11y) { _, _ ->
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
+            .show()
+    }
+
+    private fun confirmUnbindOptionals() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.unbind_optionals_title)
+            .setMessage(R.string.unbind_optionals_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.unbind_optionals_confirm) { _, _ ->
+                prefs.unbindOptionals()
+                content.removeAllViews()
+                build()
+                refresh()
+                Toast.makeText(this, R.string.unbind_optionals_done, Toast.LENGTH_SHORT).show()
             }
             .show()
     }
@@ -406,6 +589,7 @@ class SettingsActivity : Activity() {
     }
 
     companion object {
+        const val EXTRA_INDICATOR_BUTTON = "indicator_button"
         private const val REQUEST_NOTIFICATIONS = 1
         private const val ACTION_APP = "@choose_app"
     }
