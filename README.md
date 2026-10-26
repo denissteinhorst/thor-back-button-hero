@@ -35,9 +35,7 @@
 
 <div align="center">
 
-<video src="https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e" width="640" controls muted></video>
-<br>
-<sub><a href="https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e">Open the Back Button Hero 1.3.0 gesture preview as a video</a></sub>
+https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e
 
 </div>
 
