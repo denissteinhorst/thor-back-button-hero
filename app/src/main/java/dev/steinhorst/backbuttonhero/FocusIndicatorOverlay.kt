@@ -18,11 +18,14 @@ class FocusIndicatorOverlay(private val context: Context) {
     private val shown = mutableListOf<Pair<WindowManager, View>>()
 
     private var shownKey: Triple<Boolean, String?, Boolean>? = null
+    // A reused pictogram may now belong to another button; its listener always reads this one.
+    private var tapAction: (() -> Unit)? = null
 
     /** [position] null means the indicator is switched off for this action. A non-null [onTap] makes
      *  the pictogram touchable (and closes it on tap); otherwise touches pass straight through. */
     fun show(top: Boolean, position: String?, visibleMs: Long = DEFAULT_VISIBLE_MS, onTap: (() -> Unit)? = null) {
         if (shown.isNotEmpty() && shownKey == Triple(top, position, onTap != null)) {
+            tapAction = onTap
             handler.removeCallbacksAndMessages(null)
             shown.forEach { (_, view) -> view.animate().cancel(); view.animate().alpha(VISIBLE_ALPHA).setDuration(60).start() }
             handler.postDelayed(::hide, visibleMs)
@@ -31,6 +34,7 @@ class FocusIndicatorOverlay(private val context: Context) {
         dismiss()
         if (position == null) return
         shownKey = Triple(top, position, onTap != null)
+        tapAction = onTap
         val displayManager = context.getSystemService(DisplayManager::class.java)
         // AYN's privileged game-assistant window can cover accessibility overlays on the bottom
         // display, so focus confirmations always use the unobstructed top display.
@@ -69,8 +73,9 @@ class FocusIndicatorOverlay(private val context: Context) {
             alpha = 0f
             if (onTap != null) {
                 setOnClickListener {
+                    val action = tapAction
                     dismiss()
-                    onTap()
+                    action?.invoke()
                 }
             }
         }
@@ -112,6 +117,7 @@ class FocusIndicatorOverlay(private val context: Context) {
         }
         shown.clear()
         shownKey = null
+        tapAction = null
     }
 
     companion object {
