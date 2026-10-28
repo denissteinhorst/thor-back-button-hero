@@ -16,6 +16,57 @@ goldens, and gates described below exist to freeze exactly that state. Changes t
 behavior, visuals, or wording are out of scope unless explicitly requested — if a test
 goes red after a production change, the change is wrong, not the test.
 
+## Working agreement
+
+The app is currently stable. Preserve that stability by changing as much as necessary
+and as little as possible. Keep the established code style and the existing high
+quality bar; do not use feature work as an excuse for unrelated cleanup, redesign, or
+speculative refactoring.
+
+The agent acts as the senior developer and the user as project owner. Surface decisions,
+trade-offs, ambiguities, and risks that could materially affect behavior, compatibility,
+UX, stored data, architecture, security, releases, or maintainability. Ask the project
+owner and wait for the decision instead of guessing or making a consequential product
+decision autonomously. Routine, reversible implementation details within an agreed
+direction remain the senior developer's responsibility.
+
+The ongoing work is to implement features and fixes without lowering quality. Consider
+`FEEDBACK.md` relevant context, but do not treat it as a strict queue. When work touches
+a feedback topic, remind the project owner about related open points and identify useful
+same-area synergies. Do not silently expand scope: propose the synergy and let the
+project owner decide whether it belongs in the current change.
+
+## Development workflow with the project owner
+
+During development, the physical Android device is normally connected over USB with
+USB debugging enabled and is reachable through `adb`. Re-check the actual device with
+`adb devices` rather than assuming a serial. After implementing and locally verifying a
+feature or fix, deploy the newest debug build to the device so the project owner can
+test exactly that version. The agent owns this build/install step; do not hand the owner
+an APK-install task unless device access is unexpectedly unavailable.
+
+When the deployed change is ready for owner verification, create a clearly separated
+chat section headed **Test task for the project owner**. It must contain:
+
+- one short sentence explaining the feature or fix being tested;
+- a focused checklist for the new behavior or bug fix;
+- targeted regression checks for existing behavior that the change could affect.
+
+Keep this task specific to the current change. Do not turn every handoff into the full
+manual test suite, but include every relevant interaction identified by the applicable
+risk tier in `docs/MANUAL-TESTING.md`.
+
+Prefer logs, tests, `adb` state, and the project owner's direct description over visual
+inspection by screenshot. If a visual question remains, ask the owner to describe what
+they see first. Capture or inspect screenshots only when no better verification path is
+available and after asking the owner; the owner may then explicitly request screenshot
+inspection.
+
+Once a feature or fix is genuinely complete and its applicable automated and owner
+verification has succeeded, create one clean, focused commit containing only that work.
+Never bypass hooks. Do not push the commit. The project owner will explicitly announce
+when release preparation starts; do not infer, tag, publish, or push a release early.
+
 ## Build & CI commands
 
 ```sh
