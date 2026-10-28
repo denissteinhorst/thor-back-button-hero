@@ -94,10 +94,22 @@ Draws the switcher as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to one display
 `createDisplayContext(...).createWindowContext(...)`. That binding is what pins it to the
 bottom screen; it is not a full-screen window that happens to be positioned low.
 
-Contents: a horizontal scroll row of cards (icon, label, thumbnail), a "Close all" button
-with a both-screens toggle, and an empty state. `CardTouch` arbitrates each card's
-touches — tap opens, upward swipe past a threshold closes, horizontal drags go to the
-scroller — and is extracted so that arbitration is testable without a real window.
+Contents: a horizontal scroll row of cards (icon, label, thumbnail), the current
+available/total memory, bottom-screen Screenshot and Close all actions styled like the
+top system Recents, and an empty state. Close all is bottom-only in this UI; the service
+still retains its both-screens close path for other callers. `CardTouch` arbitrates each
+card's touches — tap opens, upward swipe past a threshold closes, horizontal drags go to
+the scroller — and is extracted so that arbitration is testable without a real window.
+
+The Screenshot action dismisses the switcher, then `SystemScreenshot` uses the existing
+AYN `pservice` bridge to submit a display-targeted request to Android's protected
+SystemUI screenshot service. The saved image contains only the bottom display; this
+firmware always renders SystemUI's native screenshot animation and action strip on the
+top display. Bottom and both-screen screenshot hotkeys use the same path; the old
+accessibility capture and `ScreenshotSaver` remain only as a fallback when `pservice`
+is unavailable. For "both", AYN's encoded display request makes SystemUI produce one
+vertical composite: the top display at full width and the narrower bottom display
+centered directly underneath it.
 
 ### `ControllerFocus` and `FocusIndicatorOverlay` — routing the controller
 

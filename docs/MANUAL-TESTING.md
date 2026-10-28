@@ -110,8 +110,8 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C2 | Tap a card | That app opens, overlay closes |
 | C3 | Swipe a card upward | Card closes with its animation, the app is terminated |
 | C4 | Scroll the row horizontally | Scrolls; **no** card closes |
-| C5 | "Close all" with the both-screens toggle **off** | Only bottom-screen apps close |
-| C6 | "Close all" with the toggle **on** | Apps on both screens close |
+| C5 | Tap "Screenshot" | Overlay closes; the native screenshot animation/actions appear on the top screen, and `Pictures/Screenshots` gets a `Screenshot_yyyyMMdd-HHmmss.png` showing only the bottom screen without the switcher |
+| C6 | Tap "Close all" | Only bottom-screen apps close; the overlay closes |
 | C7 | Open the overlay with no apps open | "No recent apps" text appears instead of cards |
 | C8 | Have another app cover the bottom screen, then open a card | The covered-screen hint toast appears |
 
@@ -132,8 +132,8 @@ Each is pressed **while holding Back**.
 | C14 | One button set to *Recents* | System Recents opens |
 | C15 | One button set to *Take screenshot* | A screenshot is taken |
 | C15a | One button set to *Take screenshot*, screen **Top** (the default) | The system screenshot of the top screen, with its preview |
-| C15b | Same, screen **Bottom** | A "Screenshot saved" toast; `Pictures/Screenshots` has a new `…_bottom.png` showing the bottom screen |
-| C15c | Same, screen **Both** | The top screenshot as in C15a plus the new `…_bottom.png` |
+| C15b | Same, screen **Bottom** | Native screenshot animation/actions appear on the top screen; the saved screenshot shows only the bottom screen |
+| C15c | Same, screen **Both** | One native screenshot contains the top screen at full width and the smaller bottom screen centered directly beneath it |
 | C16 | Three different system panels (e.g. Bluetooth, Display, Battery Saver) | Each panel opens; a missing OEM panel falls back instead of failing |
 | C17 | An **unassigned** button during a game | The game receives the input normally — nothing is swallowed |
 

@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e
 
 **Single tap:** Sends a regular Back or opens the launcher on the bottom screen.
 
-**Double tap:** Opens an app switcher on the bottom screen, which the Thor does not have on its own. It shows a card for every app opened there. Tap a card to open the app, swipe it up to close it, or use "Close all". *(Timing adjustable.)*
+**Double tap:** Opens an app switcher on the bottom screen, which the Thor does not have on its own. It shows a card for every app opened there, the available memory, and actions for a bottom-screen screenshot or closing all bottom-screen apps. Tap a card to open the app or swipe it up to close it. *(Timing adjustable.)*
 
 **Tap, then hold:** Opens the system's Recents on the top screen. *(Timing adjustable.)*
 
@@ -59,7 +59,7 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 - **Navigation flick** to the previous or next app.
 - **Home**
 - **Recents**
-- **Screenshot** of the top screen, the bottom screen, or both. The bottom screen is saved to `Pictures/Screenshots`.
+- **Screenshot** of the top screen, the bottom screen, or both. Every image uses Android's native screenshot actions; "both" creates one image with the smaller bottom screen centered below the top screen.
 - **Volume up / down** on both screens, only the top, or only the bottom.
 - **Brightness up / down** on both screens, only the top, or only the bottom.
 - **Set controller focus** to the top or bottom screen, either as a toggle or fixed to one screen. A short pictogram confirms the active screen. Its position (a 3 × 3 grid), display time, and visibility can be set; tapping the pictogram opens these settings.

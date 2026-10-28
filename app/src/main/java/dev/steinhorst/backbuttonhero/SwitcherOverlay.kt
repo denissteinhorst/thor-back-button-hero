@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import android.accessibilityservice.AccessibilityService
+import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
+import android.text.format.Formatter
 import android.util.TypedValue
 import android.view.Display
 import android.view.Gravity
@@ -19,7 +21,6 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Switch
 import android.widget.TextView
 
 /** Android 13 style recents on one display: preview cards, sideways scroll, tap to open, swipe up to close. */
@@ -28,6 +29,7 @@ class SwitcherOverlay(
     private val source: AppSource,
     private val onCloseApp: (String) -> Unit,
     private val onCloseAll: (packages: List<String>, bothScreens: Boolean) -> Unit,
+    private val onScreenshot: (displayId: Int) -> Unit,
     private val beforeLaunch: (displayId: Int) -> Unit,
 ) {
     private var root: View? = null
@@ -66,48 +68,28 @@ class SwitcherOverlay(
             addView(row, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
-        // Same look as the stock Android recents actions: borderless white icon + text, centered below the cards.
-        val checkedStates = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
-        val bothSwitch = Switch(ctx).apply {
-            scaleX = 1.1f
-            scaleY = 1.1f
-            thumbTintList = android.content.res.ColorStateList(checkedStates, intArrayOf(Color.WHITE, Color.rgb(200, 200, 200)))
-            trackTintList = android.content.res.ColorStateList(checkedStates, intArrayOf(Color.rgb(110, 160, 255), Color.rgb(100, 100, 100)))
+        // Match the stock top-screen recents actions: memory above two borderless icon + text buttons.
+        val screenshot = action(ctx, R.drawable.ic_screenshot, ctx.getString(R.string.switcher_screenshot)) {
+            onScreenshot(display.displayId)
         }
-        val bothToggle = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = dp(ctx, 64)
-            setPadding(dp(ctx, 20), dp(ctx, 8), dp(ctx, 20), dp(ctx, 8))
-            addView(bothSwitch, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .apply { marginStart = dp(ctx, 4); marginEnd = dp(ctx, 10) })
-            addView(label(ctx, ctx.getString(R.string.both_screens), 14f, Color.WHITE))
-            setOnClickListener { bothSwitch.toggle() }
+        val closeAll = action(ctx, R.drawable.ic_clear_all, ctx.getString(R.string.close_all)) {
+            closeEverything(row, apps, bothScreens = false)
         }
-        val closeAll = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = dp(ctx, 64)
-            setPadding(dp(ctx, 20), dp(ctx, 8), dp(ctx, 20), dp(ctx, 8))
-            addView(ImageView(ctx).apply { setImageResource(R.drawable.ic_clear_all) },
-                LinearLayout.LayoutParams(dp(ctx, 20), dp(ctx, 20)).apply { marginEnd = dp(ctx, 10) })
-            addView(label(ctx, ctx.getString(R.string.close_all), 14f, Color.WHITE))
-            setOnClickListener { closeEverything(row, apps, bothSwitch.isChecked) }
-        }
-        // Toggle on the left of the action; the pair is centered as one group.
         val buttonRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            addView(bothToggle)
+            addView(screenshot)
             addView(closeAll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .apply { marginStart = dp(ctx, 28) })
+                .apply { marginStart = dp(ctx, 36) })
         }
         val column = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             addView(scroller, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(label(ctx, memoryText(ctx), 15f, Color.WHITE).apply { gravity = Gravity.CENTER },
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(ctx, 24)).apply { topMargin = dp(ctx, 12) })
             addView(buttonRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .apply { topMargin = dp(ctx, 64) })
+                .apply { topMargin = dp(ctx, 8) })
         }
         val frame = FrameLayout(ctx).apply {
             setBackgroundColor(Color.argb(200, 0, 0, 0))
@@ -204,6 +186,42 @@ class SwitcherOverlay(
             setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
             setTextColor(color)
         }
+
+    private fun action(ctx: Context, icon: Int, text: String, onClick: () -> Unit) =
+        LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            minimumHeight = dp(ctx, 48)
+            setPadding(dp(ctx, 12), 0, dp(ctx, 12), 0)
+            addView(ImageView(ctx).apply { setImageResource(icon) },
+                LinearLayout.LayoutParams(dp(ctx, 20), dp(ctx, 20)).apply { marginEnd = dp(ctx, 8) })
+            addView(label(ctx, text, 14f, Color.WHITE))
+            setOnClickListener { onClick() }
+        }
+
+    private fun memoryText(ctx: Context): String {
+        val memory = ActivityManager.MemoryInfo()
+        ctx.getSystemService(ActivityManager::class.java).getMemoryInfo(memory)
+        val total = roundedTotalMemory(memory.totalMem)
+        val available = if (memory.totalMem > 0) (memory.availMem.toDouble() * total / memory.totalMem).toLong() else memory.availMem
+        return ctx.getString(
+            R.string.recents_memory,
+            Formatter.formatShortFileSize(ctx, available),
+            Formatter.formatShortFileSize(ctx, total),
+        )
+    }
+
+    private fun roundedTotalMemory(bytes: Long): Long {
+        var value = bytes.toDouble()
+        var multiplier = 1L
+        repeat(4) {
+            if (value > 900) {
+                value /= 1000
+                multiplier *= 1000
+            }
+        }
+        return Math.round(value) * multiplier
+    }
 
     private fun dp(ctx: Context, v: Int) =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).toInt()

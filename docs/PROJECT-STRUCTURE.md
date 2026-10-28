@@ -45,7 +45,8 @@ collaborate.
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
 | `AccessibilityAppSource.kt` | 89 | The only source of "which apps are running". A normal app cannot read other apps' tasks, so it reconstructs a most-recently-used list per display from the windows the accessibility service observes, filters a fixed ignore-set of launcher/system/OEM packages, and caches thumbnails in memory. |
 | `RunningApp.kt` | 12 | The `RunningApp` data class (package, label, icon, thumbnail) and the `AppSource` interface that `AccessibilityAppSource` implements. |
-| `SwitcherOverlay.kt` | 207 | The bottom-screen app switcher, drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to a specific display. Scroll row of cards, "Close all" with a both-screens toggle, and the empty state. Built from framework Views in code. |
+| `SwitcherOverlay.kt` | 228 | The bottom-screen app switcher, drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to a specific display. Scroll row of cards, memory readout, bottom-screen Screenshot and Close all actions, and the empty state. Built from framework Views in code. |
+| `SystemScreenshot.kt` | 129 | Short-lived privileged entry point and Binder handshake for Android's native, display-targeted screenshot flow. Captures the bottom display while SystemUI shows its action strip on the top display. |
 | `CardTouch.kt` | 45 | Touch arbitration for a switcher card: tap opens, upward swipe past a threshold closes, horizontal drags are handed to the scroller. Extracted so the gesture maths is testable without a window. |
 | `SettingsActivity.kt` | 596 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, triggers the update check, offers "Unbind optionals" and "Reset settings", and hosts the indicator-appearance popup (also opened directly from the focus pictogram). |
 | `SettingsUiKit.kt` | 422 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
@@ -79,7 +80,7 @@ collaborate.
 | `values-de/strings.xml` | German translations (**136**; the difference is `app_name`, which is `translatable="false"` — this gap is correct and asserted by a test). |
 | `values/colors.xml` | The few named colors used by the hand-built UI. |
 | `xml/accessibility_config.xml` | The accessibility-service declaration: requested event types and the capability flags the app depends on — key-event filtering, interactive-window retrieval, gesture performing and screenshot taking. |
-| `drawable/ic_clear_all.xml` | Vector icon for the switcher's "Close all" button. |
+| `drawable/ic_clear_all.xml`, `ic_screenshot.xml` | Vector icons for the switcher's system-Recents-style actions. |
 | `drawable-nodpi/focus_top_active.webp`, `focus_bottom_active.webp` | The two controller-focus pictograms (top or bottom screen active), with the area outside the handheld transparent. |
 | `drawable-*/ic_launcher_foreground.png` | Launcher foreground at five densities; also reused as the notification icon. |
 | `mipmap-*/ic_launcher.png` | Launcher icon at five densities. |

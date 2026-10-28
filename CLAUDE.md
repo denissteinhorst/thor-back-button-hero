@@ -45,6 +45,16 @@ feature or fix, deploy the newest debug build to the device so the project owner
 test exactly that version. The agent owns this build/install step; do not hand the owner
 an APK-install task unless device access is unexpectedly unavailable.
 
+After every install or reinstall, restore the test prerequisites through `adb` before
+exercising the app: grant `POST_NOTIFICATIONS`, enable `SwitcherService` in
+`enabled_accessibility_services`, and set `accessibility_enabled` to `1`. Use the fully
+qualified component
+`dev.steinhorst.backbuttonhero/dev.steinhorst.backbuttonhero.SwitcherService`; the short
+component form is not accepted reliably on the Thor. Confirm through `dumpsys
+accessibility` that the service is both enabled and bound before testing gestures,
+window events, or switcher behavior. An APK being installed successfully is not enough
+evidence that these prerequisites survived an instrumentation uninstall or reinstall.
+
 When the deployed change is ready for owner verification, create a clearly separated
 chat section headed **Test task for the project owner**. It must contain:
 

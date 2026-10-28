@@ -65,7 +65,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
         source = AccessibilityAppSource(this)
-        overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::beforeLaunch)
+        overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::screenshotFromSwitcher, ::beforeLaunch)
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
@@ -235,15 +235,48 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /**
-     * The top screen goes through the system's own screenshot (preview, sound and all), as it always
-     * has. The system action cannot reach the bottom screen, so that one is captured here and saved
-     * by [ScreenshotSaver]; with "both" the two simply happen one after the other.
+     * Both displays use Android's native screenshot flow. AYN's SystemUI can capture the bottom
+     * display but always renders its preview and action strip on the top display. The accessibility
+     * capture remains as a compatibility fallback when the firmware's pservice is unavailable.
      */
     private fun screenshot(target: String) {
-        if (target != Prefs.DISPLAY_BOTTOM) performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
-        if (target == Prefs.DISPLAY_TOP) return
-        val bottom = bottomDisplay()?.displayId ?: return toastUnavailable()
-        saveScreenshot(bottom, "bottom", retry = true)
+        if (target == Prefs.DISPLAY_TOP) {
+            performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+            return
+        }
+        val displayId = bottomDisplay()?.displayId ?: return toastUnavailable()
+        if (target != Prefs.DISPLAY_BOTTOM) {
+            // AYN's SystemUI interprets this encoded id as default display + the referenced
+            // secondary display, stacked vertically with the narrower image centered.
+            nativeSystemScreenshot(displayId shl COMBINED_DISPLAY_SHIFT) {
+                // Preserve the old two-file behavior if the firmware bridge is unavailable.
+                performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+                handler.postDelayed({ saveScreenshot(displayId, "bottom", retry = true) }, MIN_CAPTURE_GAP_MS)
+            }
+        } else {
+            nativeSystemScreenshot(displayId) { saveScreenshot(displayId, "bottom", retry = true) }
+        }
+    }
+
+    private fun screenshotFromSwitcher(displayId: Int) {
+        overlay.dismiss()
+        handler.postDelayed({
+            nativeSystemScreenshot(displayId) { saveScreenshot(displayId, "bottom", retry = true) }
+        }, SWITCHER_SCREENSHOT_DELAY_MS)
+    }
+
+    private fun nativeSystemScreenshot(displayId: Int, fallback: () -> Unit) {
+        Thread {
+            val result = PService.runEntryPoint(this, "SystemScreenshot", displayId.toString())
+            if (result != "OK") handler.post(fallback)
+        }.apply { isDaemon = true }.start()
+        Thread {
+            val deadline = SystemClock.uptimeMillis() + SYSTEM_SCREENSHOT_CONNECT_MS
+            while (SystemClock.uptimeMillis() < deadline) {
+                if (SystemScreenshot.connect()) return@Thread
+                SystemClock.sleep(25L)
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun saveScreenshot(displayId: Int, suffix: String, retry: Boolean) {
@@ -499,6 +532,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val TAG = "BackButtonHero"
         const val CAPTURE_DELAY_MS = 800L
         const val MIN_CAPTURE_GAP_MS = 1100L
+        const val SWITCHER_SCREENSHOT_DELAY_MS = 100L
+        const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
+        const val COMBINED_DISPLAY_SHIFT = 12
         const val THUMB_WIDTH = 480
         /** Minimum time to wait for a second, held-down press before firing a plain single tap. */
         const val TAP_HOLD_GRACE_MS = 600L

@@ -131,9 +131,8 @@
   /* -- app switcher: matches SwitcherOverlay.kt exactly - cardW = 40% of
      screen width, thumbH keeps the screen's own aspect ratio, 20dp gap
      between cards, the row starts with a (100%-cardW)/2 leading margin so
-     the current card sits centered rather than flush left, and the
-     "Both screens" / "Close all" row sits BELOW the cards (64dp gap), the
-     whole column centered vertically - not overlaid on top of the cards. -- */
+     the current card sits centered rather than flush left, followed by the
+     memory readout and Screenshot / Close all actions. -- */
   .switchCard {
     position: absolute; top: 20px; width: 86px;
     transition: transform 0.3s, background 0.2s, border-color 0.2s;
@@ -157,16 +156,13 @@
   .switchCard.picked .body { background: #5a8cf0; border-color: #2f6fed; }
   .switchbar {
     position: absolute; left: 50%; top: 128px; transform: translateX(-50%);
-    display: flex; align-items: center; gap: 5px;
+    display: flex; align-items: center; gap: 14px;
   }
-  .switchbar .grp { display: flex; align-items: center; gap: 2px; }
+  .switchbar .grp { display: flex; align-items: center; gap: 3px; }
   .switchbar .lbl { font-size: 8px; font-weight: 600; color: #e4eaf7; white-space: nowrap; }
-  .toggle {
-    width: 16px; height: 8px; border-radius: 4px; background: #5b6b8a; position: relative; flex: none;
-  }
-  .toggle::after {
-    content: ''; position: absolute; left: 1px; top: 1px; width: 6px; height: 6px;
-    border-radius: 50%; background: #e4eaf7;
+  .switchmem {
+    position: absolute; left: 50%; top: 112px; transform: translateX(-50%);
+    color: #e4eaf7; font-size: 7px; white-space: nowrap;
   }
   .closeicon {
     width: 9px; height: 9px; border: 1.2px solid #e4eaf7;
@@ -544,9 +540,8 @@
       </div>
 
       <!-- app switcher, matching SwitcherOverlay.kt: cardW=40% width, 20dp gap,
-           leading margin (100%-cardW)/2 so the current card sits centered
-           (not flush left), button row below the cards, whole column
-           centered vertically. -->
+           leading margin (100%-cardW)/2 so the current card sits centered,
+           then memory and the two system-Recents-style actions. -->
       <div class="overlay" id="switcher">
         <div class="switchCard" id="cardB" style="left:65px;">
           <div class="head"><div class="ic">B</div><div class="nm">App B</div></div>
@@ -556,8 +551,9 @@
           <div class="head"><div class="ic">D</div><div class="nm">App D</div></div>
           <div class="body"></div>
         </div>
+        <div class="switchmem">11 GB available | 16 GB</div>
         <div class="switchbar">
-          <div class="grp"><div class="toggle"></div><div class="lbl">Both screens</div></div>
+          <div class="grp"><div class="shoticon"></div><div class="lbl">Screenshot</div></div>
           <div class="grp"><div class="closeicon"></div><div class="lbl">Close all</div></div>
         </div>
       </div>
