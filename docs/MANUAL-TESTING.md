@@ -111,7 +111,8 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C3 | Swipe a card upward | Card closes with its animation, the app is terminated |
 | C4 | Scroll the row horizontally | Scrolls; **no** card closes |
 | C5 | Tap "Screenshot" | Overlay closes; the native screenshot animation/actions appear on the top screen, and `Pictures/Screenshots` gets a `Screenshot_yyyyMMdd-HHmmss.png` showing only the bottom screen without the switcher |
-| C6 | Tap "Close all" | Only bottom-screen apps close; the overlay closes |
+| C6 | With **Show apps from both screens** off, tap "Close all" | Only bottom-screen apps close; the overlay closes |
+| C6a | Turn **Show apps from both screens** on, open the overlay, then tap "Close all" | Observed apps from both screens appear; all of those apps close and the overlay closes |
 | C7 | Open the overlay with no apps open | "No recent apps" text appears instead of cards |
 | C8 | Have another app cover the bottom screen, then open a card | The covered-screen hint toast appears |
 

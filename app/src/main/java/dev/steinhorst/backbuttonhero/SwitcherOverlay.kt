@@ -27,6 +27,7 @@ import android.widget.TextView
 class SwitcherOverlay(
     private val service: AccessibilityService,
     private val source: AppSource,
+    private val showAppsFromAllDisplays: () -> Boolean,
     private val onCloseApp: (String) -> Unit,
     private val onCloseAll: (packages: List<String>, bothScreens: Boolean) -> Unit,
     private val onScreenshot: (displayId: Int) -> Unit,
@@ -50,7 +51,13 @@ class SwitcherOverlay(
             .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
         val wm = ctx.getSystemService(WindowManager::class.java)
         val bounds = wm.currentWindowMetrics.bounds
-        val apps = source.appsOnDisplay(display.displayId)
+        val showingAllApps = showAppsFromAllDisplays()
+        val apps = if (showingAllApps) {
+            (source.appsOnDisplay(display.displayId) + source.appsOnDisplay(Display.DEFAULT_DISPLAY))
+                .distinctBy { it.packageName }
+        } else {
+            source.appsOnDisplay(display.displayId)
+        }
 
         val cardW = (bounds.width() * 0.40f).toInt()
         val thumbH = (cardW * bounds.height() / bounds.width().toFloat()).toInt()
@@ -73,7 +80,7 @@ class SwitcherOverlay(
             onScreenshot(display.displayId)
         }
         val closeAll = action(ctx, R.drawable.ic_clear_all, ctx.getString(R.string.close_all)) {
-            closeEverything(row, apps, bothScreens = false)
+            closeEverything(row, apps, bothScreens = showingAllApps)
         }
         val buttonRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL

@@ -30,6 +30,12 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Double-tap speed: 300 ms" textSizePx=45.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
           SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=9 progress=3
           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximum time between two taps. Higher is easier, but a single tap waits this long before it acts. Default: 300 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Show apps from both screens" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Includes apps observed on the top screen. Close all then closes apps from both screens. Apps not seen since the accessibility service started cannot appear." textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Tap and hold" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
         LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]

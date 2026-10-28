@@ -65,7 +65,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
         source = AccessibilityAppSource(this)
-        overlay = SwitcherOverlay(this, source, ::closeApp, ::closeAll, ::screenshotFromSwitcher, ::beforeLaunch)
+        overlay = SwitcherOverlay(
+            this,
+            source,
+            prefs::switcherShowsAllApps,
+            ::closeApp,
+            ::closeAll,
+            ::screenshotFromSwitcher,
+            ::beforeLaunch,
+        )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)

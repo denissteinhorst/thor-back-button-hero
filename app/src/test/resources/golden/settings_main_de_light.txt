@@ -30,6 +30,12 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Doppeltipp-Tempo: 300 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
           SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=9 progress=3
           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst. Standard: 300 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Apps beider Bildschirme anzeigen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Schließt Apps ein, die auf dem oberen Bildschirm beobachtet wurden. „Alle Apps schließen“ schließt dann Apps beider Bildschirme. Apps, die der Bedienungshilfen-Dienst seit seinem Start nicht gesehen hat, können nicht erscheinen." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Tippen und halten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
         LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]

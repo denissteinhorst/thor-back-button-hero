@@ -20,6 +20,8 @@
     <string name="double_section_title">Double button press</string>
     <string name="double_enabled">Open the app switcher</string>
     <string name="double_hint">Maximum time between two taps. Higher is easier, but a single tap waits this long before it acts. Default: 300 ms.</string>
+    <string name="switcher_all_apps">Show apps from both screens</string>
+    <string name="switcher_all_apps_hint">Includes apps observed on the top screen. Close all then closes apps from both screens. Apps not seen since the accessibility service started cannot appear.</string>
     <string name="hold_title">Hold swaps both screens</string>
     <string name="hold_speed">Hold time: %d ms</string>
     <string name="hold_section_title">Hold to swap screens</string>

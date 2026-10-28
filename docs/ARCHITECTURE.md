@@ -80,6 +80,10 @@ Implements `AppSource`. Builds a most-recently-used list **per display** purely 
 packages) so they never surface in the switcher, and supplies labels and icons from
 `PackageManager`.
 
+By default, the bottom switcher uses its own display history. Its optional **Show apps
+from both screens** setting combines that history with the top display's observed history;
+the same setting makes **Close all** act on both displays.
+
 Two consequences worth internalising:
 
 - **Only apps seen since the service started are known.** There is no history before

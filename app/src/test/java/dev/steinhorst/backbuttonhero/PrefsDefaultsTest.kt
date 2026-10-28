@@ -73,6 +73,13 @@ class PrefsDefaultsTest {
     }
 
     @Test
+    fun `switcherShowsAllApps defaults to false and round-trips`() {
+        assertFalse(prefs.switcherShowsAllApps)
+        prefs.switcherShowsAllApps = true
+        assertTrue(prefs.switcherShowsAllApps)
+    }
+
+    @Test
     fun `holdEnabled round-trips false`() {
         prefs.holdEnabled = false
         assertFalse(prefs.holdEnabled)

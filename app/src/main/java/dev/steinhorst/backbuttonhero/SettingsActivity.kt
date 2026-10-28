@@ -108,6 +108,9 @@ class SettingsActivity : Activity() {
         page.card {
             toggleRow(R.string.double_enabled, R.string.double_title, prefs.doubleTapEnabled) { prefs.doubleTapEnabled = it }
             sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint) { prefs.doubleTapMs = it }
+            toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps) {
+                prefs.switcherShowsAllApps = it
+            }
         }
 
         page.sectionHeader(R.string.tap_hold_section_title)

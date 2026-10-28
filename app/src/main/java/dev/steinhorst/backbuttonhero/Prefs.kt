@@ -83,6 +83,11 @@ class Prefs(context: Context) {
         get() = sp.getLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
         set(v) = sp.edit().putLong("double_ms", v).apply()
 
+    /** Whether the bottom-screen switcher also shows apps observed on the top screen. */
+    var switcherShowsAllApps: Boolean
+        get() = sp.getBoolean("switcher_shows_all_apps", DEFAULT_SWITCHER_SHOWS_ALL_APPS)
+        set(v) = sp.edit().putBoolean("switcher_shows_all_apps", v).apply()
+
     var holdEnabled: Boolean
         get() = sp.getBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
         set(v) = sp.edit().putBoolean("hold_enabled", v).apply()
@@ -179,6 +184,7 @@ class Prefs(context: Context) {
         val edit = sp.edit().clear()
             .putBoolean("double_enabled", DEFAULT_DOUBLE_TAP_ENABLED)
             .putLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
+            .putBoolean("switcher_shows_all_apps", DEFAULT_SWITCHER_SHOWS_ALL_APPS)
             .putBoolean("tap_hold_enabled", DEFAULT_TAP_HOLD_ENABLED)
             .putLong("tap_hold_ms", DEFAULT_TAP_HOLD_MS)
             .putBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
@@ -196,6 +202,7 @@ class Prefs(context: Context) {
     companion object {
         const val DEFAULT_DOUBLE_TAP_ENABLED = true
         const val DEFAULT_DOUBLE_TAP_MS = 300L
+        const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false
         const val DEFAULT_TAP_HOLD_ENABLED = true
         const val DEFAULT_TAP_HOLD_MS = 1000L
         const val DEFAULT_HOLD_ENABLED = true

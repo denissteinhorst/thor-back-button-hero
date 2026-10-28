@@ -88,6 +88,7 @@ class PrefsMigrationTest {
 
         prefs.doubleTapEnabled = false
         prefs.doubleTapMs = 450L
+        prefs.switcherShowsAllApps = true
         prefs.holdEnabled = false
         prefs.holdMs = 1500L
         prefs.tapHoldEnabled = false
@@ -100,6 +101,7 @@ class PrefsMigrationTest {
 
         assertEquals(Prefs.DEFAULT_DOUBLE_TAP_ENABLED, prefs.doubleTapEnabled)
         assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.doubleTapMs)
+        assertEquals(Prefs.DEFAULT_SWITCHER_SHOWS_ALL_APPS, prefs.switcherShowsAllApps)
         assertEquals(Prefs.DEFAULT_HOLD_ENABLED, prefs.holdEnabled)
         assertEquals(Prefs.DEFAULT_HOLD_MS, prefs.holdMs)
         assertEquals(Prefs.DEFAULT_TAP_HOLD_ENABLED, prefs.tapHoldEnabled)
