@@ -182,9 +182,12 @@ class SwitcherOverlay(
 
     private fun closeCard(card: View, app: RunningApp) {
         card.animate().translationY(-card.height.toFloat() * 1.5f).alpha(0f).setDuration(180).withEndAction {
-            (card.parent as? ViewGroup)?.removeView(card)
+            val row = card.parent as? ViewGroup
+            val lastCard = row?.childCount == 1
+            row?.removeView(card)
             source.forget(app.packageName)
             onCloseApp(app.packageName)
+            if (lastCard) dismiss()
         }.start()
     }
 
