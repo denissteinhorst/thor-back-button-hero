@@ -108,6 +108,8 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 |---|---|---|
 | C1 | Open the overlay (double tap) | Cards show correct icon, label and thumbnail for each open app |
 | C2 | Tap a card | That app opens, overlay closes |
+| C2a | With **Show apps from both screens** on, select a top-screen app from the bottom switcher; repeat with a background app | The existing task opens on the bottom. Moving the foreground app reveals the previous app on the top, or its normal home screen when none remains. The bottom app drawer stays on the bottom. Reopen Recents and check that the card's screen indicator reflects the new display. Repeat using controller confirmation. |
+| C2b | Open top Recents with tap-then-hold and select a bottom-screen app; test foreground and background apps, then repeat with controller navigation off | The selected task opens on the top; the bottom reveals its previous app or its own drawer. Top and bottom launchers never move. Screen indicators update on reopening Recents. Back, Home, and dismissing Recents without selecting leave apps on their original displays. |
 | C3 | Swipe a card upward | Card closes with its animation, the app is terminated |
 | C4 | Scroll the row horizontally | Scrolls; **no** card closes |
 | C5 | Tap "Screenshot" | Overlay closes; the native screenshot animation/actions appear on the top screen, and `Pictures/Screenshots` gets a `Screenshot_yyyyMMdd-HHmmss.png` showing only the bottom screen without the switcher |

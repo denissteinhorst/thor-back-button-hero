@@ -21,7 +21,7 @@ class SwitcherPreviewTest {
             override fun appsOnDisplay(displayId: Int) = emptyList<RunningApp>()
             override fun forget(packageName: String) = Unit
         }
-        val overlay = SwitcherOverlay(service, source, { false }, {}, { _, _ -> }, {}, {}, {}, {})
+        val overlay = SwitcherOverlay(service, source, { false }, {}, { _, _ -> }, {}, { _, _ -> }, {}, {})
         val preview = ImageView(service)
         val card = LinearLayout(service).apply { addView(FrameLayout(service)); addView(preview) }
         fun field(name: String, value: Any) = SwitcherOverlay::class.java.getDeclaredField(name).apply { isAccessible = true }.set(overlay, value)

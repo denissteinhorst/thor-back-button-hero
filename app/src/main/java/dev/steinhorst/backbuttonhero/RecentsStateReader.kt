@@ -10,6 +10,7 @@ import android.hardware.HardwareBuffer
 import java.io.FileOutputStream
 import android.os.Looper
 import android.os.UserHandle
+import android.util.EventLog
 import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
@@ -25,6 +26,17 @@ object RecentsStateReader {
             val thread = activityThread.getMethod("systemMain").invoke(null)
             val context = activityThread.getMethod("getSystemContext").invoke(thread) as Context
             val currentUser = ActivityManager::class.java.getMethod("getCurrentUser").invoke(null) as Int
+            val selectedTask = if (args.firstOrNull() == "selection") {
+                val since = args.getOrNull(1)?.toLongOrNull() ?: error("selection time")
+                val tag = EventLog.getTagCode("wm_task_to_front")
+                require(tag >= 0 && since > 0)
+                val events = mutableListOf<EventLog.Event>()
+                EventLog.readEvents(intArrayOf(tag), events)
+                events.asReversed().firstNotNullOfOrNull { event ->
+                    val data = event.data as? Array<*>
+                    if (event.timeNanos >= since && data?.getOrNull(0) == currentUser) data.getOrNull(1) as? Int else null
+                } ?: -1
+            } else null
             val handle = UserHandle::class.java.getMethod("of", Int::class.javaPrimitiveType).invoke(null, currentUser)
             val packageContext = Context::class.java.getMethod("createPackageContextAsUser", String::class.java,
                 Int::class.javaPrimitiveType, UserHandle::class.java)
@@ -50,6 +62,7 @@ object RecentsStateReader {
             val result = JSONArray()
             for (task in tasks) {
                 val info = task as? ActivityManager.RecentTaskInfo ?: continue
+                if (selectedTask != null && info.taskId != selectedTask) continue
                 val component = info.baseIntent?.component ?: info.baseActivity ?: continue
                 if (!Shell.isPkg(component.packageName)) continue
                 val activity = runCatching { launcher.packageManager.getActivityInfo(component, 0) }.getOrNull()

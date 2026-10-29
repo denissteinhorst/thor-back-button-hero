@@ -1,9 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import android.accessibilityservice.AccessibilityService
-import android.app.ActivityOptions
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Outline
@@ -32,7 +30,7 @@ class SwitcherOverlay(
     private val onCloseApp: (String) -> Unit,
     private val onCloseAll: (packages: List<String>, bothScreens: Boolean) -> Unit,
     private val onScreenshot: (displayId: Int) -> Unit,
-    private val beforeLaunch: (displayId: Int) -> Unit,
+    private val onLaunch: (packageName: String, displayId: Int) -> Unit,
     private val onShown: (displayId: Int) -> Unit,
     private val onDismissed: () -> Unit,
 ) {
@@ -384,10 +382,7 @@ class SwitcherOverlay(
     }
 
     private fun launch(app: RunningApp, displayId: Int) {
-        val intent = service.packageManager.getLaunchIntentForPackage(app.packageName) ?: return
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        beforeLaunch(displayId)
-        service.startActivity(intent, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+        onLaunch(app.packageName, displayId)
     }
 
     private fun label(ctx: Context, text: String, sp: Float, color: Int) =

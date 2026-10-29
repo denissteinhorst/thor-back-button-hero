@@ -41,7 +41,7 @@ class SwitcherCloseAllTest {
         val overlay = SwitcherOverlay(service, source, { bothScreens }, {}, { packages, both ->
             closed = packages
             closedBoth = both
-        }, {}, {}, {}, {})
+        }, {}, { _, _ -> }, {}, {})
         fun field(name: String, value: Any) = SwitcherOverlay::class.java.getDeclaredField(name)
             .apply { isAccessible = true }.set(overlay, value)
         field("root", root)

@@ -272,6 +272,15 @@ testing on the AYN Thor is the only net under those paths — see
 
 ### Optional system Recents metadata and styling
 
+Recents selection targets the screen where that menu opened. `RecentsTaskLauncher` uses
+the existing pservice bridge to move and resume an existing standalone app task. Android
+reveals the source display's underlying task or its own home; home/secondary-home tasks
+are excluded from this path. The bottom overlay delegates launches to the service. For
+the top native menu, the service snapshots task identities before opening Overview and
+reads Android's exact task-to-front event when Overview ends, because AYN otherwise
+launches cards on their old display. Without the
+privileged bridge, the previous launch-intent behavior remains available.
+
 The bottom overlay still lists accessibility-observed packages. `RecentsStateReader` supplements
 those entries with authoritative display IDs and the original launcher lock status through a
 read-only root entry point. `RecentsTaskState` parses the snapshot for status indicators.

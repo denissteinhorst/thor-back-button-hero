@@ -69,6 +69,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
     )
     private var topRecentsPendingDismissals = 0
     private var topRecentsClosing = false
+    private var topLaunchSession = 0
+    private var topLaunchBaseline: List<RecentsTaskState>? = null
+    private var topLaunchOverviewSeen = false
+    private var topLaunchAttempts = 0
+    private var topLaunchQueryRunning = false
+    private var topLaunchStartedAt = 0L
+    private val topLaunchRunnable = Runnable { checkTopRecentsLaunch() }
     // A switcher-close Back press must consume its matching UP too. Otherwise that UP reaches the
     // gesture machine and can turn the same physical press into a tap, double-tap, or hold gesture.
     private var switcherBackDown = false
@@ -102,7 +109,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::closeApp,
             ::closeAll,
             ::screenshotFromSwitcher,
-            ::beforeLaunch,
+            ::launchFromRecents,
             ::onBottomSwitcherShown,
             ::onBottomSwitcherDismissed,
         )
@@ -514,6 +521,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
         shoulderKeys.clear()
@@ -527,6 +535,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
         shoulderKeys.clear()
@@ -613,6 +622,23 @@ class SwitcherService : AccessibilityService(), GestureActions {
         Toast.makeText(this, getString(R.string.covered_hint), Toast.LENGTH_LONG).show()
     }
 
+    private fun launchFromRecents(pkg: String, displayId: Int) = launchFromRecents(pkg, displayId, null)
+
+    private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
+        if (!Shell.isPkg(pkg) || listOf(Intent.CATEGORY_HOME, Intent.CATEGORY_SECONDARY_HOME).any { category ->
+                packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
+            }) return
+        beforeLaunch(displayId)
+        Thread {
+            val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
+            val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
+            Log.d(TAG, "Recents launch: $result")
+            if (result?.startsWith("OK ") != true) {
+                handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
     /** A normal app can only kill background processes, so leave the app first. With AYN's root
      *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
      *  if that fails, the unprivileged kill below still runs. */
@@ -660,6 +686,69 @@ class SwitcherService : AccessibilityService(), GestureActions {
      */
     override fun openTopRecents() {
         overlay.dismiss()
+        val session = ++topLaunchSession
+        handler.removeCallbacks(topLaunchRunnable)
+        topLaunchBaseline = null
+        topLaunchOverviewSeen = false
+        topLaunchAttempts = 0
+        Thread {
+            val baseline = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            handler.post {
+                if (session != topLaunchSession || !isConnected) return@post
+                dlog("TOP_RECENTS launch baseline=${baseline?.size}")
+                topLaunchBaseline = baseline
+                topLaunchStartedAt = System.currentTimeMillis() * 1_000_000L
+                openNativeTopRecents()
+                if (baseline != null) handler.postDelayed(topLaunchRunnable, 250L)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun checkTopRecentsLaunch() {
+        val baseline = topLaunchBaseline ?: return
+        if (topLaunchQueryRunning) {
+            handler.postDelayed(topLaunchRunnable, 250L)
+            return
+        }
+        topLaunchQueryRunning = true
+        val session = topLaunchSession
+        val overviewSeen = topLaunchOverviewSeen
+        val startedAt = topLaunchStartedAt
+        Thread {
+            val dump = PService.exec(QUICKSTEP_STATE_COMMAND)
+            val overview = dump?.let { TopRecentsState.parse(it).overview }
+            val states = if (overview == false && overviewSeen) {
+                RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "selection", startedAt.toString()))
+            } else null
+            handler.post {
+                topLaunchQueryRunning = false
+                if (session != topLaunchSession || !isConnected) return@post
+                when {
+                    overview == true -> topLaunchOverviewSeen = true
+                    overview == false && topLaunchOverviewSeen -> {
+                        topLaunchBaseline = null
+                        val task = states?.let { RecentsSelection.movedTask(baseline, it, Display.DEFAULT_DISPLAY) }
+                        dlog("TOP_RECENTS selected task=${task?.taskId} states=${states?.size}")
+                        if (task != null) launchFromRecents(task.packageName, Display.DEFAULT_DISPLAY, task.taskId)
+                        return@post
+                    }
+                    ++topLaunchAttempts >= TOP_RECENTS_READY_ATTEMPTS -> {
+                        topLaunchBaseline = null
+                        return@post
+                    }
+                }
+                handler.postDelayed(topLaunchRunnable, 250L)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun cancelTopRecentsLaunch() {
+        topLaunchSession++
+        topLaunchBaseline = null
+        handler.removeCallbacks(topLaunchRunnable)
+    }
+
+    private fun openNativeTopRecents() {
         if (prefs.switcherControllerEnabled && PService.cachedAvailable()) {
             recentsFocusRestore = controllerFocus.currentTarget()
             showSwitcherFocusIndicator(top = true)
@@ -934,6 +1023,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun closeTopRecents() {
+        cancelTopRecentsLaunch()
         if (topRecentsExitRequested) return
         topRecentsExitRequested = true
         topNavigation.reset()
@@ -973,6 +1063,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun showSwitcher() {
+        cancelTopRecentsLaunch()
         val display = bottomDisplay() ?: return
         if (overlay.isShowing) { overlay.dismiss(); return }
         captureFrontApp {
