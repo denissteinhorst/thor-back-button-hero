@@ -3,7 +3,7 @@
     <string name="close_all">Alle Apps schließen</string>
     <string name="switcher_screenshot">Screenshot</string>
     <string name="recents_memory">%1$s available | %2$s</string>
-    <string name="no_recent_apps">Keine zuletzt verwendeten Apps</string>
+    <string name="no_recent_apps">Keine kürzlich verwendeten Elemente</string>
     <string name="status_on">Bedienungshilfen-Dienst ist aktiv</string>
     <string name="status_unresponsive">Bedienungshilfen-Dienst ist aktiviert, reagiert aber nicht.</string>
     <string name="status_off">Bedienungshilfen-Dienst ist aus. %1$s braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen.</string>

@@ -39,7 +39,7 @@ class SwitcherOverlay(
     private var root: View? = null
     private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
     private var memoryLabel: TextView? = null
-    private var emptyLabel: TextView? = null
+    private var emptyView: RecentsEmptyView? = null
     private var taskStates = emptyList<RecentsTaskState>()
     private var badgeStyle: RecentsBadges? = null
     private val badgeViews = mutableMapOf<String, Pair<ImageView, ImageView>>()
@@ -74,7 +74,7 @@ class SwitcherOverlay(
         recentsTheme = RecentsTheme.load(frame.context)
         frame.setBackgroundColor(recentsTheme.background)
         memoryLabel?.setTextColor(recentsTheme.memory)
-        emptyLabel?.setTextColor(recentsTheme.text)
+        emptyView?.refreshTheme()
         listOfNotNull(screenshotButton, closeAllButton).forEach { action ->
             (action as ViewGroup).let {
                 val glyph = if (action === screenshotButton) R.drawable.ic_screenshot else R.drawable.ic_clear_all
@@ -195,7 +195,7 @@ class SwitcherOverlay(
 
         recentsTheme = RecentsTheme.load(ctx)
         taskStates = emptyList()
-        emptyLabel = null
+        emptyView = null
         val style = RecentsCardStyle.load(ctx)
         badgeStyle = RecentsBadges.load(ctx)
         badgeViews.clear()
@@ -260,9 +260,18 @@ class SwitcherOverlay(
         }
 
         if (apps.isEmpty()) {
-            frame.removeView(column)
-            frame.addView(label(ctx, ctx.getString(R.string.no_recent_apps), 20f, recentsTheme.text).apply { gravity = Gravity.CENTER; emptyLabel = this },
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            // Quickstep retains the RAM row, hides unavailable actions and centers its empty
+            // illustration within the task-card area, rather than the entire screen.
+            val cardHeight = style.iconSize + style.iconGap + thumbH
+            scroller.layoutParams.height = cardHeight
+            scroller.visibility = View.INVISIBLE
+            buttonRow.visibility = View.GONE
+            screenshotButton = null
+            closeAllButton = null
+            emptyView = RecentsEmptyView(ctx).also {
+                frame.addView(it, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, cardHeight, Gravity.TOP)
+                    .apply { topMargin = dp(ctx, 24) })
+            }
         }
         val cards = apps.map { app ->
             val card = card(ctx, app, cardW, thumbH, display.displayId, style)

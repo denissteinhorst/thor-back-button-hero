@@ -85,6 +85,11 @@ its selection. Screenshot/clear-all icons follow the primary text color. The OEM
 vectors have fixed colors and no night variants in this APK; they are loaded unchanged from the
 same themed package context.
 
+The empty state uses Quickstep's original `ic_empty_recents`, `recents_empty_message`,
+16 sp text size and 16 dp spacing. Icon and text form one group centered within the task-card
+area, with the RAM row retained and unavailable actions hidden. `RecentsEmptyView` reloads
+the drawable and text colors when the system mode changes while the overlay remains open.
+
 ## Cards and motion
 
 Live landscape top display reference: 1920 × 1080 pixels at 369 dpi. Each task's snapshot

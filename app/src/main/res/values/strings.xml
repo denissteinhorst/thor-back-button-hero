@@ -4,7 +4,7 @@
     <string name="close_all">Close all</string>
     <string name="switcher_screenshot">Screenshot</string>
     <string name="recents_memory">%1$s available | %2$s</string>
-    <string name="no_recent_apps">No recent apps</string>
+    <string name="no_recent_apps">No recent items</string>
     <string name="status_on">Accessibility service is on</string>
     <string name="status_unresponsive">Accessibility service is enabled, but is not responding.</string>
     <string name="status_off">Accessibility service is off. %1$s needs it to read the Back button and show the switcher.</string>
