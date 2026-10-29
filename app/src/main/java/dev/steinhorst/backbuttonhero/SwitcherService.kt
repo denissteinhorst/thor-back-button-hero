@@ -5,10 +5,13 @@ import android.accessibilityservice.GestureDescription
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.File
 import android.graphics.Path
 import android.os.SystemClock
 import android.content.ComponentName
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.hardware.display.DisplayManager
 import android.os.Build
@@ -43,6 +46,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private var pendingDpadFocus: DpadDirection? = null
     private var pendingDpadReleased = false
+    private val recentsThumbnails = RecentsThumbnailCache()
+    private val requestedThumbnails = mutableMapOf<RecentsThumbnailCache.Key, Int>()
+    private var thumbnailQueryRunning = false
+    @Volatile private var bottomStateSession = 0
+    private var bottomStateQueryRunning = false
+    private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
     private var topRecentsConfirmed = false
@@ -96,6 +105,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::beforeLaunch,
             ::onBottomSwitcherShown,
             ::onBottomSwitcherDismissed,
+            ::filterUnlockedRecentsPackages,
         )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
@@ -535,6 +545,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         dpadOverlay.detach()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (::overlay.isInitialized) handler.post { overlay.refreshTheme() }
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         source.record(Display.DEFAULT_DISPLAY)
         bottomDisplay()?.let { source.record(it.displayId) }
@@ -691,6 +706,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onBottomSwitcherShown(displayId: Int) {
+        bottomStateSession++
+        requestedThumbnails.clear()
+        refreshBottomTaskStates()
         if (!prefs.switcherControllerEnabled) return
         recentsFocusRestore = controllerFocus.currentTarget()
         showSwitcherFocusIndicator(top = displayId == Display.DEFAULT_DISPLAY)
@@ -712,11 +730,83 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onBottomSwitcherDismissed() {
+        bottomStateSession++
+        handler.removeCallbacks(bottomStateRunnable)
         if (!prefs.switcherControllerEnabled) return
         padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
         dpadOverlay.detach()
         restoreRecentsFocus()
         updatePadHelper()
+    }
+
+    private fun refreshBottomTaskStates() {
+        if (!overlay.isShowing || bottomStateQueryRunning) return
+        bottomStateQueryRunning = true
+        val session = bottomStateSession
+        Thread {
+            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            handler.post {
+                bottomStateQueryRunning = false
+                if (!overlay.isShowing) return@post
+                if (session == bottomStateSession && states != null) {
+                    overlay.updateTaskStates(states)
+                    loadBottomThumbnails(states, session)
+                }
+                handler.removeCallbacks(bottomStateRunnable)
+                handler.postDelayed(bottomStateRunnable, 1000L)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun loadBottomThumbnails(states: List<RecentsTaskState>, session: Int) {
+        val packages = overlay.previewPackages()
+        val width = overlay.previewWidth().coerceIn(1, 1024)
+        val entries = states.filter { it.packageName in packages && it.taskId >= 0 }.distinctBy { it.packageName }
+        val requests = entries.map { it to RecentsThumbnailCache.Key(it.taskId, it.lastActiveTime, width, it.displayId) }
+        requests.forEach { (state, key) -> recentsThumbnails.get(key)?.let { overlay.updateThumbnail(state.packageName, it) } }
+        if (thumbnailQueryRunning) return
+        val pending = requests.filter { (requestedThumbnails[it.second] ?: 0) < 3 }
+        if (pending.isEmpty()) return
+        thumbnailQueryRunning = true
+        pending.forEach { requestedThumbnails[it.second] = (requestedThumbnails[it.second] ?: 0) + 1 }
+        Thread {
+            try {
+                for ((state, key) in pending) {
+                    if (session != bottomStateSession) break
+                    val bitmap = runCatching {
+                        val file = File.createTempFile("task_snapshot_", ".png", cacheDir)
+                        try {
+                            val output = PService.runEntryPoint(this, "RecentsStateReader", "snapshot",
+                                state.taskId.toString(), width.toString(), file.absolutePath)
+                            if (output?.startsWith("OK snapshot") == true) BitmapFactory.decodeFile(file.absolutePath) else null
+                        } finally { file.delete() }
+                    }.getOrNull()
+                    if (bitmap != null) {
+                        recentsThumbnails.put(key, bitmap)
+                        handler.post {
+                            if (session == bottomStateSession) requestedThumbnails[key] = 3
+                            if (session == bottomStateSession && overlay.isShowing &&
+                                overlay.representsTask(state)) overlay.updateThumbnail(state.packageName, bitmap)
+                        }
+                    }
+                }
+            } finally { handler.post { thumbnailQueryRunning = false } }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun filterUnlockedRecentsPackages(packages: List<String>, done: (List<String>) -> Unit) {
+        Thread {
+            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            handler.post {
+                if (states == null) {
+                    toastUnavailable()
+                    done(emptyList())
+                } else {
+                    overlay.updateTaskStates(states)
+                    done(RecentsTaskState.unlockedPackages(packages, states))
+                }
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun onPadHelperActiveChanged(active: Boolean) {

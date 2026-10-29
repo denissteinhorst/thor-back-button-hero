@@ -1,13 +1,14 @@
 package dev.steinhorst.backbuttonhero
 
 import android.accessibilityservice.AccessibilityService
-import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.PixelFormat
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.format.Formatter
 import android.util.TypedValue
@@ -18,10 +19,10 @@ import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import kotlin.math.roundToInt
 
 /** Android 13 style recents on one display: preview cards, sideways scroll, tap to open, swipe up to close. */
 class SwitcherOverlay(
@@ -34,8 +35,16 @@ class SwitcherOverlay(
     private val beforeLaunch: (displayId: Int) -> Unit,
     private val onShown: (displayId: Int) -> Unit,
     private val onDismissed: () -> Unit,
+    private val filterCloseAll: (List<String>, (List<String>) -> Unit) -> Unit,
 ) {
     private var root: View? = null
+    private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
+    private var memoryLabel: TextView? = null
+    private var emptyLabel: TextView? = null
+    private var taskStates = emptyList<RecentsTaskState>()
+    private var badgeStyle: RecentsBadges? = null
+    private val badgeViews = mutableMapOf<String, Pair<ImageView, ImageView>>()
+    private var bulkClosing = false
     private var windowManager: WindowManager? = null
     private var shownApps = emptyList<RunningApp>()
     private var shownCards = emptyList<View>()
@@ -56,7 +65,54 @@ class SwitcherOverlay(
         root = null
         shownApps = emptyList()
         shownCards = emptyList()
+        badgeViews.clear()
+        bulkClosing = false
         onDismissed()
+    }
+
+    fun refreshTheme() {
+        val frame = root ?: return
+        recentsTheme = RecentsTheme.load(frame.context)
+        frame.setBackgroundColor(recentsTheme.background)
+        memoryLabel?.setTextColor(recentsTheme.memory)
+        emptyLabel?.setTextColor(recentsTheme.text)
+        listOfNotNull(screenshotButton, closeAllButton).forEach { action ->
+            (action as ViewGroup).let {
+                val glyph = if (action === screenshotButton) R.drawable.ic_screenshot else R.drawable.ic_clear_all
+                val name = if (action === screenshotButton) "ic_screenshot" else "ic_clear_all"
+                (it.getChildAt(0) as ImageView).apply {
+                    setImageDrawable(RecentsTheme.actionDrawable(context, name, glyph))
+                    imageTintList = ColorStateList.valueOf(recentsTheme.text)
+                }
+                (it.getChildAt(1) as TextView).setTextColor(recentsTheme.text)
+            }
+        }
+        badgeStyle = RecentsBadges.load(frame.context)
+        updateTaskStates(taskStates)
+        updateSelection(scrollToSelection = false)
+    }
+
+    fun representsTask(state: RecentsTaskState): Boolean {
+        val current = taskStates.firstOrNull { it.packageName == state.packageName } ?: return false
+        return current.taskId == state.taskId && current.lastActiveTime == state.lastActiveTime && current.displayId == state.displayId
+    }
+
+    fun previewPackages(): Set<String> = shownApps.map { it.packageName }.toSet()
+
+    fun previewWidth(): Int = shownCards.firstOrNull()?.width?.takeIf { it > 0 }
+        ?: shownCards.firstOrNull()?.layoutParams?.width?.coerceAtLeast(1) ?: 1
+
+    fun updateThumbnail(packageName: String, bitmap: android.graphics.Bitmap) {
+        val index = shownApps.indexOfFirst { it.packageName == packageName }
+        if (index < 0 || shownApps[index].thumbnail === bitmap) return
+        ((shownCards[index] as ViewGroup).getChildAt(1) as ImageView).setImageBitmap(bitmap)
+        shownApps = shownApps.toMutableList().apply { set(index, get(index).copy(thumbnail = bitmap)) }
+    }
+
+    fun updateTaskStates(tasks: List<RecentsTaskState>) {
+        taskStates = tasks
+        memoryLabel?.let { it.text = memoryText(it.context) }
+        badgeViews.forEach { (pkg, views) -> badgeStyle?.update(views, tasks.firstOrNull { it.packageName == pkg }) }
     }
 
     fun moveSelection(right: Boolean) {
@@ -70,7 +126,7 @@ class SwitcherOverlay(
         if (shownApps.isEmpty()) return
         closeAllSelected = false
         screenshotSelected = false
-        selected = (selected + if (right) 1 else shownApps.lastIndex) % shownApps.size
+        selected = (selected + if (right) 1 else -1).coerceIn(0, shownApps.lastIndex)
         updateSelection()
     }
 
@@ -130,27 +186,47 @@ class SwitcherOverlay(
                 .distinctBy { it.packageName }
         } else {
             source.appsOnDisplay(display.displayId)
-        }
+        }.reversed()
         shownApps = apps
         shownDisplayId = display.displayId
-        selected = 0
+        // As in Quickstep, the newest task starts centered at the right-hand end of the row.
+        selected = apps.lastIndex.coerceAtLeast(0)
         closeAllSelected = false
         screenshotSelected = false
 
-        val cardW = (bounds.width() * 0.40f).toInt()
-        val thumbH = (cardW * bounds.height() / bounds.width().toFloat()).toInt()
-        val gap = dp(ctx, 20)
+        recentsTheme = RecentsTheme.load(ctx)
+        taskStates = emptyList()
+        emptyLabel = null
+        val style = RecentsCardStyle.load(ctx)
+        badgeStyle = RecentsBadges.load(ctx)
+        badgeViews.clear()
+        // Quickstep on the Thor uses a 58.125% display-sized snapshot. Reserve the icon,
+        // footer and screen margins as well, so shorter displays never clip the actions.
+        val availableHeight = (bounds.height() - style.iconSize - style.iconGap - dp(ctx, 132)).coerceAtLeast(1)
+        val scale = minOf(0.58125f, availableHeight / bounds.height().toFloat())
+        val cardW = (bounds.width() * scale).roundToInt().coerceAtLeast(1)
+        val thumbH = (bounds.height() * scale).roundToInt().coerceAtLeast(1)
+        val gap = style.pageGap
 
         val row = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             clipChildren = false
-            setPadding((bounds.width() - cardW) / 2, 0, (bounds.width() - cardW) / 2, 0)
+            setPadding((bounds.width() - cardW - gap) / 2, 0, (bounds.width() - cardW - gap) / 2, 0)
         }
-        val scroller = HorizontalScrollView(ctx).apply {
-            isHorizontalScrollBarEnabled = false
-            clipChildren = false
-            clipToPadding = false
+        val scroller = RecentsCarousel(ctx, style) { index ->
+            selected = index
+            closeAllSelected = false
+            screenshotSelected = false
+            updateSelection(scrollToSelection = false)
+        }.apply {
             addView(row, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int,
+                    oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                    removeOnLayoutChangeListener(this)
+                    selectCard(selected, animate = false)
+                }
+            })
         }
 
         // Match the stock top-screen recents actions: memory above two borderless icon + text buttons.
@@ -173,26 +249,26 @@ class SwitcherOverlay(
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             addView(scroller, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(label(ctx, memoryText(ctx), 15f, Color.WHITE).apply { gravity = Gravity.CENTER },
+            addView(label(ctx, memoryText(ctx), 15f, recentsTheme.memory).apply { gravity = Gravity.CENTER; memoryLabel = this },
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(ctx, 24)).apply { topMargin = dp(ctx, 12) })
-            addView(buttonRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .apply { topMargin = dp(ctx, 8) })
+            addView(buttonRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
         val frame = FrameLayout(ctx).apply {
-            setBackgroundColor(Color.argb(200, 0, 0, 0))
+            setBackgroundColor(recentsTheme.background)
             setOnClickListener { dismiss() }
-            addView(column, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
+            addView(column, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP)
+                .apply { topMargin = dp(ctx, 24) })
         }
 
         if (apps.isEmpty()) {
             frame.removeView(column)
-            frame.addView(label(ctx, ctx.getString(R.string.no_recent_apps), 20f, Color.WHITE).apply { gravity = Gravity.CENTER },
+            frame.addView(label(ctx, ctx.getString(R.string.no_recent_apps), 20f, recentsTheme.text).apply { gravity = Gravity.CENTER; emptyLabel = this },
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         }
         val cards = apps.map { app ->
-            val card = card(ctx, app, cardW, thumbH, display.displayId)
+            val card = card(ctx, app, cardW, thumbH, display.displayId, style)
             row.addView(card, LinearLayout.LayoutParams(cardW, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginStart = gap / 2; marginEnd = gap / 2
+                marginStart = gap / 2; marginEnd = gap - gap / 2
             })
             card
         }
@@ -213,14 +289,14 @@ class SwitcherOverlay(
         onShown(display.displayId)
     }
 
-    private fun card(ctx: Context, app: RunningApp, w: Int, thumbH: Int, displayId: Int): View {
-        val corner = dp(ctx, 20).toFloat()
-        val header = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(ctx, 4), 0, 0, dp(ctx, 10))
-            addView(ImageView(ctx).apply { setImageDrawable(app.icon) }, LinearLayout.LayoutParams(dp(ctx, 32), dp(ctx, 32)))
-            addView(label(ctx, app.label, 16f, Color.WHITE).apply { setPadding(dp(ctx, 10), 0, 0, 0); maxLines = 1 })
+    private fun card(ctx: Context, app: RunningApp, w: Int, thumbH: Int, displayId: Int, style: RecentsCardStyle): View {
+        val corner = style.cornerRadius
+        val icon = ImageView(ctx).apply {
+            setImageDrawable(app.icon)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            val inset = ((style.iconSize - style.normalizedDrawableSize(app.icon)) / 2).coerceAtLeast(0)
+            setPadding(inset, inset, inset, inset)
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
         val thumb = ImageView(ctx).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
@@ -233,7 +309,13 @@ class SwitcherOverlay(
         }
         return LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            addView(header)
+            gravity = Gravity.CENTER_HORIZONTAL
+            contentDescription = app.label
+            val header = FrameLayout(ctx).apply {
+                addView(icon, FrameLayout.LayoutParams(style.iconSize, style.iconSize, Gravity.TOP or Gravity.CENTER_HORIZONTAL))
+            }
+            badgeStyle?.let { badgeViews[app.packageName] = it.addTo(header) }
+            addView(header, LinearLayout.LayoutParams(w, style.iconSize + style.iconGap))
             addView(thumb, LinearLayout.LayoutParams(w, thumbH))
             setOnTouchListener(CardTouch(ctx, thumbH) { closing ->
                 if (closing) closeCard(this, app) else { launch(app, displayId); dismiss() }
@@ -242,15 +324,32 @@ class SwitcherOverlay(
     }
 
     private fun closeEverything(row: ViewGroup, apps: List<RunningApp>, bothScreens: Boolean) {
+        if (bulkClosing) return
+        bulkClosing = true
+        val openedRoot = root
         val all = if (bothScreens) (apps + source.appsOnDisplay(Display.DEFAULT_DISPLAY)).distinctBy { it.packageName } else apps
-        for (i in 0 until row.childCount) {
-            row.getChildAt(i).animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
+        filterCloseAll(all.map { it.packageName }) { allowed ->
+            if (root == null || root !== openedRoot) return@filterCloseAll
+            if (allowed.isEmpty()) { bulkClosing = false; return@filterCloseAll }
+            shownCards.forEachIndexed { index, card ->
+                if (shownApps[index].packageName in allowed) {
+                    card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
+                }
+            }
+            row.postDelayed({
+                if (root !== openedRoot) return@postDelayed
+                allowed.forEach(source::forget)
+                onCloseAll(allowed, bothScreens)
+                shownCards.zip(shownApps).filter { it.second.packageName in allowed }.forEach { row.removeView(it.first) }
+                shownCards = shownCards.zip(shownApps).filter { it.second.packageName !in allowed }.map { it.first }
+                shownApps = shownApps.filter { it.packageName !in allowed }
+                bulkClosing = false
+                if (shownApps.isEmpty()) dismiss() else {
+                    selected = selected.coerceAtMost(shownApps.lastIndex)
+                    updateSelection()
+                }
+            }, 220)
         }
-        row.postDelayed({
-            all.forEach { source.forget(it.packageName) }
-            onCloseAll(all.map { it.packageName }, bothScreens)
-            dismiss()
-        }, 220)
     }
 
     private fun closeCard(card: View, app: RunningApp) {
@@ -271,17 +370,18 @@ class SwitcherOverlay(
         }.start()
     }
 
-    private fun updateSelection() {
-        shownCards.forEachIndexed { index, card ->
-            card.setBackgroundColor(if (index == selected && !screenshotSelected && !closeAllSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
-        }
-        closeAllButton?.setBackgroundColor(if (closeAllSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
-        screenshotButton?.setBackgroundColor(if (screenshotSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
+    private fun updateSelection(scrollToSelection: Boolean = true) {
+        closeAllButton?.setBackgroundColor(if (closeAllSelected) recentsTheme.selection else Color.TRANSPARENT)
+        screenshotButton?.setBackgroundColor(if (screenshotSelected) recentsTheme.selection else Color.TRANSPARENT)
+        if (!scrollToSelection || screenshotSelected || closeAllSelected) return
         shownCards.getOrNull(selected)?.let { card ->
-            (card.parent as? HorizontalScrollView)?.smoothScrollTo(
-                (card.left + card.right) / 2 - ((card.parent as View).width / 2),
-                0,
-            )
+            val row = card.parent as? ViewGroup ?: return@let
+            val scroller = row.parent as? RecentsCarousel ?: return@let
+            scroller.post {
+                if (card.parent == row && root != null) {
+                    scroller.selectCard(selected)
+                }
+            }
         }
     }
 
@@ -305,36 +405,24 @@ class SwitcherOverlay(
             gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(ctx, 48)
             setPadding(dp(ctx, 12), 0, dp(ctx, 12), 0)
-            addView(ImageView(ctx).apply { setImageResource(icon) },
+            addView(ImageView(ctx).apply {
+                setImageDrawable(RecentsTheme.actionDrawable(ctx, if (icon == R.drawable.ic_screenshot) "ic_screenshot" else "ic_clear_all", icon))
+                imageTintList = ColorStateList.valueOf(recentsTheme.text)
+            },
                 LinearLayout.LayoutParams(dp(ctx, 20), dp(ctx, 20)).apply { marginEnd = dp(ctx, 8) })
-            addView(label(ctx, text, 14f, Color.WHITE))
+            addView(label(ctx, text, 14f, recentsTheme.text).apply { typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL) })
             setOnClickListener { onClick() }
         }
 
     private fun memoryText(ctx: Context): String {
-        val memory = ActivityManager.MemoryInfo()
-        ctx.getSystemService(ActivityManager::class.java).getMemoryInfo(memory)
-        val total = roundedTotalMemory(memory.totalMem)
-        val available = if (memory.totalMem > 0) (memory.availMem.toDouble() * total / memory.totalMem).toLong() else memory.availMem
+        val memory = RecentsMemory.read(ctx)
         return ctx.getString(
             R.string.recents_memory,
-            Formatter.formatShortFileSize(ctx, available),
-            Formatter.formatShortFileSize(ctx, total),
+            Formatter.formatShortFileSize(ctx, memory.available),
+            Formatter.formatShortFileSize(ctx, memory.total),
         )
     }
 
-    private fun roundedTotalMemory(bytes: Long): Long {
-        var value = bytes.toDouble()
-        var multiplier = 1L
-        repeat(4) {
-            if (value > 900) {
-                value /= 1000
-                multiplier *= 1000
-            }
-        }
-        return Math.round(value) * multiplier
-    }
-
     private fun dp(ctx: Context, v: Int) =
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).toInt()
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).roundToInt()
 }

@@ -269,3 +269,17 @@ window remains outside automated reach: `SwitcherOverlay` has no automated cover
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and
 [`TESTING.md`](TESTING.md) for how they fit into the gates.
+
+### Optional system Recents metadata and styling
+
+The bottom overlay still lists accessibility-observed packages. `RecentsStateReader` supplements
+those entries with authoritative display IDs and the original launcher lock status through a
+read-only root entry point. `RecentsTaskState` parses the snapshot and filters bulk-close targets;
+any locked task protects its package because the existing close operation force-stops packages.
+No private launcher state is written. `RecentsBadges` loads the original OEM drawables/geometry;
+`RecentsTheme` resolves the installed launcher's light/dark colors and dynamic system palette.
+
+System task snapshots now supplement the foreground screenshot cache. The existing root entry
+point exports snapshots to validated private cache files; loading and PNG decoding run off the UI
+thread. `RecentsThumbnailCache` bounds retained snapshot bytes and keeps displayed bitmaps valid
+after eviction. Overlay/session and task-identity checks reject obsolete image completions.
