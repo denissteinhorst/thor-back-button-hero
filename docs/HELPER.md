@@ -51,10 +51,19 @@ The helper sits **between AYN's pad and Android**, below the level where focus m
 
    Games and emulators therefore keep their existing button mappings and player-1 assignment. AYN's
    pad has no force feedback, so the clone offers none either.
-4. **It forwards every event unchanged**, with one exception. A D-pad press that **starts while Back is
-   held** is withheld from the clone and sent to the app instead, as a line like `HAT X -1`. The
-   press stays withheld until it is released, even if Back is let go first. A press that started
-   before Back stays with the game.
+4. **It forwards every event unchanged**, with two deliberate switcher modes. A D-pad press that
+**starts while Back is held or while the app's own bottom switcher is open** is withheld from the
+clone and sent to the app instead, as a line like `HAT X -1`. Top Recents captures directions too.
+The service buffers presses until Overview has a focused TaskView, because the first native direction
+otherwise only exits Android's touch mode. Navigation then returns over the same socket (`NAV <key>`)
+and is emitted as hat-axis presses by the existing clone, without a shell per direction. Each replay
+spans two frames so Android cannot coalesce its down and neutral into a lost press. A keyboard Tab
+initializes focus once after Overview opens (and after a dismissal), with queued directions released
+after its delivery completes. A focus failure never closes Overview.
+The service tracks the card/action rows: Up from actions returns to cards; Up from cards dismisses
+only the current card using its real geometry. After a dismissal it restores keyboard focus before
+releasing queued navigation. TOP takes precedence over held Back. A captured press stays captured
+until release, even if Back is let go or the switcher closes first.
 5. **The app runs the configured action** (`SwitcherService.handleDpad`), just as it does for a
    shoulder-button combo. The game never sees the press and never loses focus.
 
@@ -116,8 +125,9 @@ SELinux" off). It is the same requirement swipe-to-close has.
 - **Authenticated channel.** The helper connects to an abstract Unix socket, which has no file
   permissions. The app therefore accepts only peers whose credentials say **uid 0**; anything else
   is disconnected.
-- **It only runs when needed.** If no D-pad direction has an action, the helper is stopped and the
-  pad stays untouched.
+- **It only runs when needed.** If no D-pad direction has an action and controller navigation for
+  Recents is off, the helper is stopped and the pad stays untouched. Keeping controller navigation
+  on keeps the helper warm so opening either switcher never recreates the pad under the first input.
 - **The pad always comes back**, in every case:
   - **App or service stops:** the helper sees its socket close, destroys the clone, and recreates
     the node with the original mode, owner and SELinux label. Android re-adds the pad with

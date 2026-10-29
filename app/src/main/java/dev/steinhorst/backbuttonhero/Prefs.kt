@@ -88,6 +88,11 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("switcher_shows_all_apps", DEFAULT_SWITCHER_SHOWS_ALL_APPS)
         set(v) = sp.edit().putBoolean("switcher_shows_all_apps", v).apply()
 
+    /** Whether Recents can temporarily take controller input while it is open. */
+    var switcherControllerEnabled: Boolean
+        get() = sp.getBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
+        set(v) = sp.edit().putBoolean("switcher_controller_enabled", v).apply()
+
     var holdEnabled: Boolean
         get() = sp.getBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
         set(v) = sp.edit().putBoolean("hold_enabled", v).apply()
@@ -185,6 +190,7 @@ class Prefs(context: Context) {
             .putBoolean("double_enabled", DEFAULT_DOUBLE_TAP_ENABLED)
             .putLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
             .putBoolean("switcher_shows_all_apps", DEFAULT_SWITCHER_SHOWS_ALL_APPS)
+            .putBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
             .putBoolean("tap_hold_enabled", DEFAULT_TAP_HOLD_ENABLED)
             .putLong("tap_hold_ms", DEFAULT_TAP_HOLD_MS)
             .putBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
@@ -203,6 +209,7 @@ class Prefs(context: Context) {
         const val DEFAULT_DOUBLE_TAP_ENABLED = true
         const val DEFAULT_DOUBLE_TAP_MS = 300L
         const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false
+        const val DEFAULT_SWITCHER_CONTROLLER_ENABLED = true
         const val DEFAULT_TAP_HOLD_ENABLED = true
         const val DEFAULT_TAP_HOLD_MS = 1000L
         const val DEFAULT_HOLD_ENABLED = true

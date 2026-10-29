@@ -82,11 +82,11 @@ class BackGestureMachineTest {
     }
 
     @Test
-    fun `a quick tap with double-tap enabled schedules singleTap instead of firing it`() {
+    fun `single tap waits only for configured double tap window`() {
         machine.handleBack(pressDown())
         machine.handleBack(release(startTime))
         assertEquals(0, actions.onSingleTapCalls)
-        assertTrue(scheduler.pending.isNotEmpty())
+        assertEquals(listOf(prefs.doubleTapMs), scheduler.pending.values.toList())
     }
 
     @Test
@@ -98,7 +98,7 @@ class BackGestureMachineTest {
     }
 
     @Test
-    fun `two quick presses within doubleTapMs open the switcher, never a single tap`() {
+    fun `double tap never runs single tap or minimizes the current app`() {
         prefs.doubleTapMs = 300L
         machine.handleBack(pressDown())
         machine.handleBack(release(startTime))
@@ -150,7 +150,7 @@ class BackGestureMachineTest {
     }
 
     @Test
-    fun `a second press cancels the pending singleTap at DOWN, so it never fires mid-hold`() {
+    fun `second down cancels pending single tap while retaining tap hold recognition`() {
         // Regression guard for the pressFollowsTap latch-at-DOWN comment in the source.
         prefs.doubleTapEnabled = true
         prefs.tapHoldEnabled = true
@@ -160,6 +160,7 @@ class BackGestureMachineTest {
         machine.handleBack(pressDown())
         scheduler.fireAll()
         assertEquals(0, actions.onSingleTapCalls)
+        assertEquals(1, actions.openTopRecentsCalls)
     }
 
     @Test
@@ -170,4 +171,60 @@ class BackGestureMachineTest {
         assertEquals(1, actions.onSingleTapCalls)
         assertTrue(scheduler.pending.isEmpty())
     }
+    @Test
+    fun `tap hold fires at configured timeout while second press is still down and only once`() {
+        prefs.tapHoldEnabled = true
+        prefs.tapHoldMs = 750L
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        assertEquals(0, actions.onSingleTapCalls)
+        advanceBoth(100)
+        val secondDown = clock.now
+        machine.handleBack(pressDown())
+        scheduler.fireDue(749L)
+        assertEquals(0, actions.openTopRecentsCalls)
+        scheduler.fireDue(750L)
+        assertTrue(machine.backDown)
+        assertEquals(1, actions.openTopRecentsCalls)
+        advanceBoth(750)
+        machine.handleBack(release(secondDown))
+        scheduler.fireAll()
+        assertEquals(1, actions.openTopRecentsCalls)
+        assertEquals(0, actions.onSingleTapCalls)
+    }
+
+    @Test
+    fun `expired tap window schedules ordinary hold instead of tap hold`() {
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        advanceBoth(2000)
+        machine.handleBack(pressDown())
+        scheduler.fireAll()
+        assertEquals(1, actions.swapScreensCalls)
+        assertEquals(0, actions.openTopRecentsCalls)
+    }
+
+    @Test
+    fun `shoulder combo cancels both hold actions`() {
+        machine.handleBack(pressDown())
+        machine.markComboFired()
+        scheduler.fireAll()
+        machine.handleBack(release(startTime))
+        assertEquals(0, actions.swapScreensCalls)
+        assertEquals(0, actions.openTopRecentsCalls)
+        assertEquals(0, actions.onSingleTapCalls)
+    }
+
+    @Test
+    fun `tap hold remains armed after single tap has already fired`() {
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        scheduler.fireDue(prefs.doubleTapMs)
+        assertEquals(1, actions.onSingleTapCalls)
+        advanceBoth(prefs.doubleTapMs + 10)
+        machine.handleBack(pressDown())
+        scheduler.fireDue(prefs.tapHoldMs)
+        assertEquals(1, actions.openTopRecentsCalls)
+    }
+
 }

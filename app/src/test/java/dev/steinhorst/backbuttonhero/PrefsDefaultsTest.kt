@@ -80,6 +80,13 @@ class PrefsDefaultsTest {
     }
 
     @Test
+    fun `switcher controller navigation defaults to true and round-trips`() {
+        assertTrue(prefs.switcherControllerEnabled)
+        prefs.switcherControllerEnabled = false
+        assertFalse(prefs.switcherControllerEnabled)
+    }
+
+    @Test
     fun `holdEnabled round-trips false`() {
         prefs.holdEnabled = false
         assertFalse(prefs.holdEnabled)

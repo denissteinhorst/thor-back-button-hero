@@ -111,6 +111,9 @@ class SettingsActivity : Activity() {
             toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps) {
                 prefs.switcherShowsAllApps = it
             }
+            toggleRow(R.string.switcher_controller, R.string.switcher_controller_hint, prefs.switcherControllerEnabled) {
+                prefs.switcherControllerEnabled = it
+            }
         }
 
         page.sectionHeader(R.string.tap_hold_section_title)

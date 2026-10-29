@@ -42,6 +42,20 @@ class FocusIndicatorOverlay(private val context: Context) {
         handler.postDelayed(::hide, visibleMs)
     }
 
+    /** Keeps the current controller route visible while a switcher owns the controller. */
+    fun showPersistent(top: Boolean, position: String?) {
+        if (shown.isNotEmpty() && shownKey == Triple(top, position, false)) {
+            handler.removeCallbacksAndMessages(null)
+            shown.forEach { (_, view) -> view.animate().cancel(); view.animate().alpha(VISIBLE_ALPHA).setDuration(60).start() }
+            return
+        }
+        dismiss()
+        if (position == null) return
+        shownKey = Triple(top, position, false)
+        val displayManager = context.getSystemService(DisplayManager::class.java)
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.let { addToDisplay(it, top, position, null) }
+    }
+
     private fun addToDisplay(display: Display, top: Boolean, position: String, onTap: (() -> Unit)?) {
         val windowContext = context.createDisplayContext(display)
             .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)

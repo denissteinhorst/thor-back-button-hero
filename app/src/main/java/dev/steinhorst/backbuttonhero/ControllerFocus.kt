@@ -24,10 +24,15 @@ class ControllerFocus(
     /** True when [target] resolves to the top display, from the setting AYN's own tool keeps current. */
     fun targetIsTop(target: String): Boolean = resolveValue(target, requested ?: currentValue()) == TOP_VALUE
 
-    fun run(target: String) {
+    /** The current route, retained before Recents temporarily takes controller input. */
+    fun currentTarget(): String =
+        if ((requested ?: currentValue()) == TOP_VALUE) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM
+
+    fun run(target: String, onComplete: ((Boolean) -> Unit)? = null) {
         if (!PService.cachedAvailable()) {
             // The indicator is already up by now; it must not confirm a switch that never happens.
             onFailed()
+            onComplete?.let { main.post { it(false) } }
             return unavailable()
         }
         val value = resolveValue(target, requested ?: currentValue())
@@ -39,12 +44,15 @@ class ControllerFocus(
             // window commits the route. Sending it to the target display instead reaches the game
             // and the switch to top silently fails.
             val command = "setprop $INPUT_DISPLAY_PROPERTY $value && " +
-                "settings put system $FOCUS_SETTING $value && " +
-                "input keyevent 60 && echo OK"
-            val ok = PService.exec(command)?.trim()?.endsWith("OK") == true
+                "settings put system $FOCUS_SETTING $value && input keyevent 60 && echo OK"
+            // FocusedDisplayId describes the display owning the active Android window, not AYN's
+            // controller route. It can legitimately remain on the game display after this command.
+            // A successful OEM command sequence is therefore the only synchronous acknowledgement.
+            val ok = commandSucceeded(PService.exec(command))
             main.post {
                 if (--queued == 0) requested = null
                 if (!ok) failed()
+                onComplete?.invoke(ok)
             }
         }
     }
@@ -65,6 +73,8 @@ class ControllerFocus(
         const val FOCUS_SETTING = "screen_focus_lock"
         const val TOP_VALUE = "1"
         const val BOTTOM_VALUE = "2"
+
+        fun commandSucceeded(output: String?): Boolean = output?.trim()?.endsWith("OK") == true
 
         fun resolveValue(target: String, current: String?): String = when (target) {
             Prefs.DISPLAY_TOP -> TOP_VALUE

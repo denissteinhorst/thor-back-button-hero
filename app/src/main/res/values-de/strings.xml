@@ -21,6 +21,8 @@
     <string name="double_hint">Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst. Standard: 300 ms.</string>
     <string name="switcher_all_apps">Apps beider Bildschirme anzeigen</string>
     <string name="switcher_all_apps_hint">Schließt Apps ein, die auf dem oberen Bildschirm beobachtet wurden. „Alle Apps schließen“ schließt dann Apps beider Bildschirme. Apps, die der Bedienungshilfen-Dienst seit seinem Start nicht gesehen hat, können nicht erscheinen.</string>
+    <string name="switcher_controller">Recents mit dem Controller bedienen</string>
+    <string name="switcher_controller_hint">D-Pad links/rechts wählt eine App. D-Pad runter führt zu Screenshot und „Alle schließen“; Bestätigen führt die markierte Aktion aus. D-Pad hoch schließt die ausgewählte App. Die Bestätigungstaste folgt dem Thor-Controller-Stil.</string>
     <string name="hold_title">Halten tauscht beide Bildschirme</string>
     <string name="hold_speed">Haltedauer: %d ms</string>
     <string name="hold_section_title">Halten zum Bildschirmtausch</string>

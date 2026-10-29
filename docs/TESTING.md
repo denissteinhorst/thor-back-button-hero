@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 138 JVM tests pass |
+| `testDebugUnitTest` | All 146 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 22 classes, 138 tests
+### Base — JVM tests (Robolectric + JUnit), 24 classes, 146 tests
 
 Everything the gate can verify without hardware.
 
@@ -65,6 +65,7 @@ Everything the gate can verify without hardware.
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
 | Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
+| Top-Recents helper protocol and Quickstep state/TaskView geometry parsing | `PadNavigationModeTest`, `TopRecentsStateTest` |
 | Duplicate shoulder-key events from the two mirrored devices | `PhysicalKeyTrackerTest` |
 | Settings actions: Unbind optionals, the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |

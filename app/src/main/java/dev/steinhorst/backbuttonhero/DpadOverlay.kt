@@ -10,11 +10,11 @@ import android.view.View
 import android.view.WindowManager
 
 /**
- * Fallback for Back + D-pad when [PadHelper] is not running (no pservice). The D-pad is a hat axis,
- * which an accessibility service never sees; joystick events only go to the focused window. So while
- * Back is held, an invisible 1x1 focusable overlay sits on every display and takes the focus - and
- * with it the D-pad. The price: the app in front loses window focus for that moment, and many games
- * and emulators pause on that. The settings screen warns about it.
+ * Fallback for Back + D-pad and an open switcher when [PadHelper] is not running (no pservice). The
+ * D-pad is a hat axis, which an accessibility service never sees; joystick events only go to the
+ * focused window. An invisible 1x1 focusable overlay therefore takes focus - and with it the D-pad.
+ * The price: the app in front loses window focus for that moment, and many games and emulators pause.
+ * The settings screen warns about it for Back + D-pad shortcuts.
  */
 class DpadOverlay(
     private val context: Context,

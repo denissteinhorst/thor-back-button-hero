@@ -22,6 +22,8 @@
     <string name="double_hint">Maximum time between two taps. Higher is easier, but a single tap waits this long before it acts. Default: 300 ms.</string>
     <string name="switcher_all_apps">Show apps from both screens</string>
     <string name="switcher_all_apps_hint">Includes apps observed on the top screen. Close all then closes apps from both screens. Apps not seen since the accessibility service started cannot appear.</string>
+    <string name="switcher_controller">Control Recents with the controller</string>
+    <string name="switcher_controller_hint">D-pad left/right selects an app. D-pad down moves to Screenshot and Close all; confirm runs the selected action. D-pad up closes the selected app. The confirm button follows the Thor controller style.</string>
     <string name="hold_title">Hold swaps both screens</string>
     <string name="hold_speed">Hold time: %d ms</string>
     <string name="hold_section_title">Hold to swap screens</string>

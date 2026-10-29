@@ -152,8 +152,11 @@ path from the shoulder buttons. Both end in the same `runComboAction`:
 
 - **`PadHelper`** starts the native root helper (`app/src/main/cpp/padhelper.c`) through
   `PService` and listens on an abstract socket that only accepts uid 0. The helper hides AYN's pad
-  from Android behind an identical uinput clone and withholds D-pad presses made while Back is held,
-  so the game keeps focus. It runs only while some D-pad direction has an action, and it follows
+  from Android behind an identical uinput clone and withholds D-pad presses made while Back is held
+  or the bottom switcher is open, so the game keeps focus. Top Recents keeps Quickstep's native
+  controller navigation; the helper sends only Up to the service for a swipe bounded to the actual
+  TaskView geometry read when Overview opened.
+  It runs while a D-pad direction has an action or Recents controller navigation is enabled, and it follows
   AYN's controller-style switches. The full design and its safety nets are in
   [`HELPER.md`](HELPER.md).
 - **`DpadOverlay`** is the fallback when the helper is not active. A focusable 1×1 overlay exists

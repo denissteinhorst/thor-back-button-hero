@@ -10,8 +10,10 @@
 //   * It re-offers the pad as a uinput clone with the same name, bus, vendor, product, version, key
 //     and axis bits and axis ranges. Android derives the same descriptor and hands out controller
 //     number 1 again, so games and emulators keep their existing setup.
-//   * It forwards every event unchanged, except D-pad presses that start while Back is held. Those go
-//     to the app over a socket ("HAT X -1") and never reach the game, which keeps focus throughout.
+//   * It forwards every event unchanged, except D-pad presses that start while Back is held or the
+//     app's own Recents overlay is open. Those go to the app over a socket ("HAT X -1") instead.
+//     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
+//     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
 //
 // AYN's controller-style switch (Xbox / Standard / Ban on Use) destroys the pad and creates a new one
 // with another name and product id. read() then fails, the clone is torn down, and the helper takes
@@ -241,6 +243,52 @@ static void report(const char *axis, int value) {
     if (write(sock, line, n) != n) stop = 1;
 }
 
+// Only navigation keys are accepted on the authenticated app socket.
+static void navigation_key(int key) {
+    int axis, value;
+    switch (key) {
+        case KEY_UP: axis = ABS_HAT0Y; value = -1; break;
+        case KEY_DOWN: axis = ABS_HAT0Y; value = 1; break;
+        case KEY_LEFT: axis = ABS_HAT0X; value = -1; break;
+        case KEY_RIGHT: axis = ABS_HAT0X; value = 1; break;
+        default: return;
+    }
+    if (ufd < 0) return;
+    // Use the same hat path as the physical pad. BTN_DPAD key bits alone do not guarantee
+    // that AYN's controller key layout maps them to Android navigation keys.
+    struct input_event event = { .type = EV_ABS, .code = axis, .value = value };
+    struct input_event sync = { .type = EV_SYN, .code = SYN_REPORT };
+    if (write(ufd, &event, sizeof event) != sizeof event ||
+        write(ufd, &sync, sizeof sync) != sizeof sync) { stop = 1; return; }
+    // A down and neutral in the same frame can be coalesced into neutral by Android's
+    // joystick synthesizer. Span two frames so one replay always creates one direction press.
+    usleep(40000);
+    event.value = 0;
+    if (write(ufd, &event, sizeof event) != sizeof event ||
+        write(ufd, &sync, sizeof sync) != sizeof sync) stop = 1;
+}
+
+static int read_switcher_mode(char *buffer, size_t *used, int current) {
+    ssize_t n = read(sock, buffer + *used, 127 - *used);
+    if (n <= 0) return -1;
+    *used += (size_t)n;
+    buffer[*used] = '\0';
+
+    char *line = buffer;
+    char *newline;
+    while ((newline = strchr(line, '\n')) != NULL) {
+        *newline = '\0';
+        int mode, key;
+        if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 2) current = mode;
+        if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
+        line = newline + 1;
+    }
+    size_t remaining = *used - (size_t)(line - buffer);
+    memmove(buffer, line, remaining);
+    *used = remaining;
+    return current;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) { fprintf(stderr, "usage: %s <abstract-socket-name>\n", argv[0]); return 2; }
     signal(SIGTERM, on_signal);
@@ -253,7 +301,9 @@ int main(int argc, char **argv) {
     if (sock < 0) return 1;
     dprintf(sock, "READY\n");
 
-    int back = 0, home = 0, cap_x = 0, cap_y = 0, emergency = 0;
+    int back = 0, home = 0, cap_x = 0, cap_y = 0, switcher = 0, emergency = 0;
+    char command_buffer[128] = {0};
+    size_t command_used = 0;
     long both_since = 0;
 
     while (!stop) {
@@ -269,7 +319,11 @@ int main(int argc, char **argv) {
 
         struct pollfd pfd[2] = { { .fd = pad.fd, .events = POLLIN }, { .fd = sock, .events = POLLIN } };
         if (poll(pfd, 2, -1) < 0) { if (errno == EINTR) continue; break; }
-        if (pfd[1].revents) break; // EOF or hangup: the app is gone, so hand the pad back
+        if (pfd[1].revents) {
+            int mode = read_switcher_mode(command_buffer, &command_used, switcher);
+            if (mode < 0) break; // EOF or hangup: the app is gone, so hand the pad back
+            switcher = mode;
+        }
         if (pfd[0].revents & (POLLERR | POLLHUP)) goto pad_gone;
         if (!(pfd[0].revents & POLLIN)) continue;
 
@@ -286,12 +340,13 @@ int main(int argc, char **argv) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
                 // A press that starts while Back is held is ours until it is released, even if Back
                 // goes first; a press that started before Back stays the game's.
-                if (e->value != 0 && back) *cap = 1;
-                if (*cap) {
+                if (e->value != 0 && ((back && switcher == 0) || switcher == 1 || switcher == 2)) *cap = 1;
+                if (*cap == 1) {
                     report(e->code == ABS_HAT0X ? "X" : "Y", e->value);
                     if (e->value == 0) *cap = 0;
                     continue;
                 }
+
             }
             if (write(ufd, e, sizeof *e) != (ssize_t)sizeof *e) { stop = 1; break; }
         }

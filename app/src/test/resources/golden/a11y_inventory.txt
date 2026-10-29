@@ -8,6 +8,8 @@ clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
+clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L1 action: Navigation-Flick Left. Double-tap to change.
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=0 focusable=true contentDescription=(none)

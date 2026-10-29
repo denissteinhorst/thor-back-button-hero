@@ -32,17 +32,90 @@ class SwitcherOverlay(
     private val onCloseAll: (packages: List<String>, bothScreens: Boolean) -> Unit,
     private val onScreenshot: (displayId: Int) -> Unit,
     private val beforeLaunch: (displayId: Int) -> Unit,
+    private val onShown: (displayId: Int) -> Unit,
+    private val onDismissed: () -> Unit,
 ) {
     private var root: View? = null
     private var windowManager: WindowManager? = null
+    private var shownApps = emptyList<RunningApp>()
+    private var shownCards = emptyList<View>()
+    private var shownDisplayId = Display.DEFAULT_DISPLAY
+    private var selected = 0
+    private var closeAllButton: View? = null
+    private var screenshotButton: View? = null
+    private var closeAllSelected = false
+    private var screenshotSelected = false
 
     val isShowing get() = root != null
 
     fun toggle(display: Display) = if (root != null) dismiss() else show(display)
 
     fun dismiss() {
+        if (root == null) return
         root?.let { runCatching { windowManager?.removeView(it) } }
         root = null
+        shownApps = emptyList()
+        shownCards = emptyList()
+        onDismissed()
+    }
+
+    fun moveSelection(right: Boolean) {
+        if (screenshotSelected || closeAllSelected) {
+            screenshotSelected = !screenshotSelected
+            closeAllSelected = !screenshotSelected
+            updateSelection()
+            (if (screenshotSelected) screenshotButton else closeAllButton)?.requestFocus()
+            return
+        }
+        if (shownApps.isEmpty()) return
+        closeAllSelected = false
+        screenshotSelected = false
+        selected = (selected + if (right) 1 else shownApps.lastIndex) % shownApps.size
+        updateSelection()
+    }
+
+    fun moveSelectionDown() {
+        if (closeAllButton == null || screenshotButton == null) return
+        if (!screenshotSelected && !closeAllSelected) screenshotSelected = true
+        updateSelection()
+        (if (screenshotSelected) screenshotButton else closeAllButton)?.requestFocus()
+    }
+
+    fun moveSelectionUp() {
+        if (screenshotSelected || closeAllSelected) {
+            screenshotSelected = false
+            closeAllSelected = false
+            updateSelection()
+            shownCards.getOrNull(selected)?.requestFocus()
+        } else closeSelected()
+    }
+
+    fun activateSelection() {
+        if (screenshotSelected) {
+            onScreenshot(shownDisplayId)
+            dismiss()
+            return
+        }
+        if (closeAllSelected) {
+            closeAllFromController()
+            return
+        }
+        val app = shownApps.getOrNull(selected)
+        if (app == null) dismiss() else { launch(app, shownDisplayId); dismiss() }
+    }
+
+    fun closeSelected() {
+        if (closeAllSelected) {
+            closeAllFromController()
+            return
+        }
+        val app = shownApps.getOrNull(selected) ?: return
+        shownCards.getOrNull(selected)?.let { closeCard(it, app) }
+    }
+
+    fun closeAllFromController() {
+        val row = shownCards.firstOrNull()?.parent as? ViewGroup ?: return
+        closeEverything(row, shownApps, bothScreens = showAppsFromAllDisplays())
     }
 
     private fun show(display: Display) {
@@ -58,6 +131,11 @@ class SwitcherOverlay(
         } else {
             source.appsOnDisplay(display.displayId)
         }
+        shownApps = apps
+        shownDisplayId = display.displayId
+        selected = 0
+        closeAllSelected = false
+        screenshotSelected = false
 
         val cardW = (bounds.width() * 0.40f).toInt()
         val thumbH = (cardW * bounds.height() / bounds.width().toFloat()).toInt()
@@ -79,9 +157,11 @@ class SwitcherOverlay(
         val screenshot = action(ctx, R.drawable.ic_screenshot, ctx.getString(R.string.switcher_screenshot)) {
             onScreenshot(display.displayId)
         }
+        screenshotButton = screenshot
         val closeAll = action(ctx, R.drawable.ic_clear_all, ctx.getString(R.string.close_all)) {
             closeEverything(row, apps, bothScreens = showingAllApps)
         }
+        closeAllButton = closeAll
         val buttonRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -109,11 +189,12 @@ class SwitcherOverlay(
             frame.addView(label(ctx, ctx.getString(R.string.no_recent_apps), 20f, Color.WHITE).apply { gravity = Gravity.CENTER },
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         }
-        apps.forEach { app ->
+        val cards = apps.map { app ->
             val card = card(ctx, app, cardW, thumbH, display.displayId)
             row.addView(card, LinearLayout.LayoutParams(cardW, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = gap / 2; marginEnd = gap / 2
             })
+            card
         }
 
         val params = WindowManager.LayoutParams(
@@ -127,6 +208,9 @@ class SwitcherOverlay(
         wm.addView(frame, params)
         windowManager = wm
         root = frame
+        shownCards = cards
+        updateSelection()
+        onShown(display.displayId)
     }
 
     private fun card(ctx: Context, app: RunningApp, w: Int, thumbH: Int, displayId: Int): View {
@@ -176,8 +260,29 @@ class SwitcherOverlay(
             row?.removeView(card)
             source.forget(app.packageName)
             onCloseApp(app.packageName)
-            if (lastCard) dismiss()
+            if (lastCard) {
+                dismiss()
+            } else {
+                shownApps = shownApps.filterNot { it.packageName == app.packageName }
+                shownCards = shownCards.filterNot { it == card }
+                selected = selected.coerceAtMost(shownApps.lastIndex)
+                updateSelection()
+            }
         }.start()
+    }
+
+    private fun updateSelection() {
+        shownCards.forEachIndexed { index, card ->
+            card.setBackgroundColor(if (index == selected && !screenshotSelected && !closeAllSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
+        }
+        closeAllButton?.setBackgroundColor(if (closeAllSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
+        screenshotButton?.setBackgroundColor(if (screenshotSelected) Color.rgb(66, 66, 76) else Color.TRANSPARENT)
+        shownCards.getOrNull(selected)?.let { card ->
+            (card.parent as? HorizontalScrollView)?.smoothScrollTo(
+                (card.left + card.right) / 2 - ((card.parent as View).width / 2),
+                0,
+            )
+        }
     }
 
     private fun launch(app: RunningApp, displayId: Int) {

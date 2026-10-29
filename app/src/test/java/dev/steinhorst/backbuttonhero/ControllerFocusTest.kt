@@ -23,6 +23,15 @@ class ControllerFocusTest {
         assertEquals(ControllerFocus.TOP_VALUE, ControllerFocus.resolveValue(Prefs.FOCUS_TOGGLE, "2"))
         assertEquals(ControllerFocus.TOP_VALUE, ControllerFocus.resolveValue(Prefs.FOCUS_TOGGLE, null))
     }
+
+    @Test
+    fun `OEM command acknowledgement is independent of Android window focus`() {
+        assertTrue(ControllerFocus.commandSucceeded("OK\n"))
+        assertTrue(ControllerFocus.commandSucceeded("unrelated pservice output\nOK"))
+        assertFalse(ControllerFocus.commandSucceeded(null))
+        assertFalse(ControllerFocus.commandSucceeded(""))
+        assertFalse(ControllerFocus.commandSucceeded("command failed"))
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)

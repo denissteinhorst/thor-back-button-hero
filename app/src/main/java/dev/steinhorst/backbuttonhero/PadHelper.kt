@@ -11,9 +11,9 @@ import java.io.File
 
 /**
  * Starts and talks to the root input helper (src/main/cpp/padhelper.c, docs/HELPER.md). While the
- * helper holds the pad ([active]), Back + D-pad arrives in [onPress] and the game never sees it nor
- * loses focus. Without it - no pservice, or the user pulled the emergency release - [DpadOverlay] is
- * the fallback.
+ * helper holds the pad ([active]), Back + D-pad and the open switcher's D-pad arrive in [onPress]
+ * and the game never sees them nor loses focus. Without it - no pservice, or the user pulled the
+ * emergency release - [DpadOverlay] is the fallback.
  *
  * The helper is launched through [PService] and connects back over an abstract socket. Abstract
  * sockets have no file permissions, so every peer that is not root is turned away.
@@ -22,6 +22,7 @@ class PadHelper(
     private val context: Context,
     private val onPress: (DpadDirection) -> Unit,
     private val onRelease: (horizontal: Boolean) -> Unit,
+    private val onActiveChanged: (Boolean) -> Unit,
 ) {
 
     /** True while the helper has taken over a pad and gates its D-pad. */
@@ -32,6 +33,7 @@ class PadHelper(
     // Home + Back held 5 s in the helper: the user wants the pad left alone until the service restarts.
     @Volatile private var released = false
     @Volatile private var client: LocalSocket? = null
+    @Volatile private var navigationMode = PadNavigationMode.OFF
     private var listening = false
     private var failedLaunches = 0
     private val main = Handler(Looper.getMainLooper())
@@ -51,8 +53,27 @@ class PadHelper(
     /** Closing our end makes the helper hand the pad back to Android and exit. */
     fun stop() {
         wanted = false
-        active = false
+        setActive(false)
         runCatching { client?.close() }
+    }
+
+    /** Selects how bare D-pad input is handled while one of the two switchers is open. */
+    fun setSwitcherNavigation(mode: PadNavigationMode) {
+        navigationMode = mode
+        val command = "SWITCHER ${mode.wireValue}\n"
+        runCatching { client?.outputStream?.write(command.toByteArray()) }
+    }
+
+    /** Linux key codes, emitted by the existing clone without another root-shell round trip. */
+    fun navigateTop(direction: DpadDirection) = sendNavigation(when (direction) {
+        DpadDirection.UP -> 103
+        DpadDirection.DOWN -> 108
+        DpadDirection.LEFT -> 105
+        DpadDirection.RIGHT -> 106
+    })
+
+    private fun sendNavigation(key: Int) {
+        runCatching { client?.outputStream?.write("NAV $key\n".toByteArray()) }
     }
 
     private fun serve() {
@@ -70,7 +91,7 @@ class PadHelper(
             client = socket
             runCatching { socket.inputStream.bufferedReader().forEachLine(::handle) }
             client = null
-            active = false
+            setActive(false)
             runCatching { socket.close() }
             if (wanted && !released) launchSoon(RELAUNCH_DELAY_MS)
         }
@@ -79,9 +100,14 @@ class PadHelper(
     private fun handle(line: String) {
         val parts = line.split(' ')
         when (parts[0]) {
-            "PAD" -> { active = true; failedLaunches = 0 }
-            "PAD_GONE" -> active = false
-            "RELEASED" -> { released = true; wanted = false; active = false }
+            "PAD" -> {
+                setActive(true)
+                failedLaunches = 0
+                if (navigationMode != PadNavigationMode.OFF) setSwitcherNavigation(navigationMode)
+            }
+            "PAD_GONE" -> setActive(false)
+            "RELEASED" -> { released = true; wanted = false; setActive(false) }
+            "MODE" -> Unit
             "HAT" -> if (parts.size == 3) {
                 val horizontal = parts[1] == "X"
                 val direction = DpadDirection.fromHat(horizontal, parts[2].toFloatOrNull() ?: 0f)
@@ -89,6 +115,12 @@ class PadHelper(
                 if (direction != null) main.post { onPress(direction) } else main.post { onRelease(horizontal) }
             }
         }
+    }
+
+    private fun setActive(value: Boolean) {
+        if (active == value) return
+        active = value
+        main.post { onActiveChanged(value) }
     }
 
     private fun launchSoon(delayMs: Long) {
@@ -118,4 +150,11 @@ class PadHelper(
         private const val RELAUNCH_DELAY_MS = 3000L
         private const val MAX_FAILED_LAUNCHES = 5
     }
+}
+
+/** TOP captures directions until Overview is ready; NAV replays them through the clone. */
+enum class PadNavigationMode(val wireValue: Int) {
+    OFF(0),
+    CAPTURE(1),
+    TOP(2),
 }

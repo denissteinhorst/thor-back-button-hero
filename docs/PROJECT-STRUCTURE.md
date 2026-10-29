@@ -69,7 +69,7 @@ collaborate.
 
 | File | Lines | Purpose |
 |---|---|---|
-| `padhelper.c` | 319 | The root input helper: hides AYN's pad behind an identical uinput clone and withholds D-pad presses made while Back is held. Kernel UAPI and libc only; compiled by the Gradle task `buildPadHelper` with the NDK's clang and shipped as `lib/arm64-v8a/libpadhelper.so`. See [`HELPER.md`](HELPER.md). |
+| `padhelper.c` | 352 | The root input helper: hides AYN's pad behind an identical uinput clone, captures D-pad for Back combos and the bottom switcher, and captures only Up for top-Recents card dismissal. Kernel UAPI and libc only; compiled by the Gradle task `buildPadHelper` with the NDK's clang and shipped as `lib/arm64-v8a/libpadhelper.so`. See [`HELPER.md`](HELPER.md). |
 | `UpdateChecker.kt` | 141 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, and posts a notification. No in-app APK install by design. |
 
 #### Resources — `app/src/main/res/`
@@ -90,7 +90,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 22 test classes, **138 tests**. Run by the gate.
+The automated safety net. 22 test classes, **140 tests**. Run by the gate.
 
 | File | Purpose |
 |---|---|

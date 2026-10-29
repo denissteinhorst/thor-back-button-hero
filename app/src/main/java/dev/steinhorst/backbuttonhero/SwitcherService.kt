@@ -43,6 +43,27 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private var pendingDpadFocus: DpadDirection? = null
     private var pendingDpadReleased = false
+    private var recentsFocusRestore: String? = null
+    private var topRecentsControllerActive = false
+    private var topRecentsConfirmed = false
+    private var topRecentsSession = 0
+    private var topRecentsStateCheckRunning = false
+    private var topRecentsStateCheckPending = false
+    private var topRecentsReadyAttempts = 0
+    private var topRecentsCardBounds: TopRecentsState.CardBounds? = null
+    private var topRecentsInputReady = false
+    private var topRecentsFocusPrimed = false
+    private var topRecentsExitRequested = false
+    private val topNavigation = TopRecentsNavigation(
+        { padHelper.navigateTop(it) },
+        { queueTopRecentsDismissal() },
+    )
+    private var topRecentsPendingDismissals = 0
+    private var topRecentsClosing = false
+    // A switcher-close Back press must consume its matching UP too. Otherwise that UP reaches the
+    // gesture machine and can turn the same physical press into a tap, double-tap, or hold gesture.
+    private var switcherBackDown = false
+    private var switcherBackDeviceId = Int.MIN_VALUE
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -73,24 +94,63 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::closeAll,
             ::screenshotFromSwitcher,
             ::beforeLaunch,
+            ::onBottomSwitcherShown,
+            ::onBottomSwitcherDismissed,
         )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
-        padHelper = PadHelper(this, ::handleDpad, ::handleDpadRelease)
+        padHelper = PadHelper(
+            this,
+            ::handleDpad,
+            ::handleDpadRelease,
+            ::onPadHelperActiveChanged,
+        )
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
         prefs.registerListener(prefsListener)
         updatePadHelper()
     }
 
-    // The helper hides the pad from Android while it runs, so only run it while the D-pad has a job.
+    // The helper hides the pad from Android while it runs, so keep it only when shortcuts or native
+    // switcher navigation need it.
     private val prefsListener = { updatePadHelper() }
 
     private fun updatePadHelper() {
-        if (prefs.hasDpadAction()) padHelper.start() else padHelper.stop()
+        // Controller-enabled switchers must be ready on their first frame; starting the helper only
+        // after one opens would recreate the pad while the user is already trying to navigate.
+        if (prefs.hasDpadAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            // Explicitly injected keyboard Back belongs to Quickstep, including its UP.
+            if (topRecentsExitRequested && event.deviceId == -1) return false
+            if (switcherBackDown) {
+                // Root-injected Back uses a virtual device id and must reach Quickstep; only the
+                // physical press that requested the close belongs to this consumed key pair.
+                if (event.deviceId != switcherBackDeviceId) return false
+                if (event.action == KeyEvent.ACTION_UP) {
+                    switcherBackDown = false
+                    switcherBackDeviceId = Int.MIN_VALUE
+                }
+                return true
+            }
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                if (overlay.isShowing && !backGesture.followsRecentTap()) {
+                    switcherBackDown = true
+                    switcherBackDeviceId = event.deviceId
+                    overlay.dismiss()
+                    return true
+                }
+                if (topRecentsControllerActive) {
+                    switcherBackDown = true
+                    switcherBackDeviceId = event.deviceId
+                    closeTopRecents()
+                    return true
+                }
+            }
+        }
+        handleRecentsControllerKey(event)?.let { return it }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active && prefs.hasDpadAction()) {
@@ -106,14 +166,59 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     commitDpadFocus()
                 }
             }
-            return backGesture.handleBack(event)
+            val consumed = backGesture.handleBack(event)
+            return consumed
         }
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
         return false
     }
 
+    /** The Thor's style switch swaps the confirm face button at runtime. */
+    private fun isRecentsConfirm(event: KeyEvent): Boolean = event.keyCode == if (
+        Settings.System.getInt(contentResolver, CONTROLLER_FLIP_SETTING, 0) != 0
+    ) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+
+    private fun handleRecentsControllerKey(event: KeyEvent): Boolean? {
+        if (!prefs.switcherControllerEnabled) return null
+        if (overlay.isShowing) {
+            if (event.action == KeyEvent.ACTION_UP &&
+                (isRecentsConfirm(event) || event.keyCode == KeyEvent.KEYCODE_BUTTON_X)
+            ) return true
+            if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return null
+            return when {
+                isRecentsConfirm(event) -> { overlay.activateSelection(); true }
+                event.keyCode == KeyEvent.KEYCODE_BUTTON_X -> { overlay.closeAllFromController(); true }
+                else -> null
+            }
+        }
+        if (!topRecentsControllerActive) return null
+        if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return null
+        return when {
+            isRecentsConfirm(event) -> {
+                // Quickstep receives the real confirm; the state observer ends the session
+                // as soon as the selected app replaces it.
+                scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+                false
+            }
+            else -> null
+        }
+    }
+
     /** Back + D-pad, from [PadHelper] or [DpadOverlay]; both only report presses made while Back is held. */
     private fun handleDpad(direction: DpadDirection) {
+        if (topRecentsControllerActive && prefs.switcherControllerEnabled) {
+            topNavigation.press(direction)
+            return
+        }
+        if (overlay.isShowing && prefs.switcherControllerEnabled) {
+            when (direction) {
+                DpadDirection.LEFT -> overlay.moveSelection(right = false)
+                DpadDirection.RIGHT -> overlay.moveSelection(right = true)
+                DpadDirection.UP -> overlay.moveSelectionUp()
+                DpadDirection.DOWN -> overlay.moveSelectionDown()
+            }
+            return
+        }
         if (!backGesture.backDown) return
         val action = prefs.shoulderAction(direction)
         if (action.isEmpty()) return
@@ -135,6 +240,52 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
         pendingDpadReleased = true
         commitDpadFocus()
+    }
+
+    private fun queueTopRecentsDismissal() {
+        topNavigation.pause()
+        topRecentsPendingDismissals++
+        drainTopRecentsDismissals()
+    }
+
+    private fun drainTopRecentsDismissals() {
+        if (!topRecentsControllerActive || topRecentsClosing ||
+            topRecentsCardBounds == null || topRecentsPendingDismissals == 0) return
+        topRecentsPendingDismissals--
+        dispatchTopRecentsSwipeUp()
+    }
+
+    private fun dispatchTopRecentsSwipeUp() {
+        if (topRecentsClosing) return
+        val bounds = topRecentsCardBounds ?: return
+        val display = getSystemService(DisplayManager::class.java)
+            .getDisplay(Display.DEFAULT_DISPLAY) ?: return
+        val size = android.graphics.Point().also(display::getRealSize)
+        val cardHeight = bounds.height
+        val startY = (bounds.bottom - cardHeight * 0.06f).coerceAtMost(size.y - 1f)
+        val endY = (bounds.top - cardHeight * 0.35f).coerceAtLeast(1f)
+        if (startY <= endY) return
+        val path = Path().apply {
+            moveTo(size.x / 2f, startY)
+            lineTo(size.x / 2f, endY)
+        }
+        val gesture = GestureDescription.Builder()
+            .setDisplayId(Display.DEFAULT_DISPLAY)
+            .addStroke(GestureDescription.StrokeDescription(path, 0, TOP_RECENTS_DISMISS_MS))
+            .build()
+        topRecentsClosing = true
+        val accepted = dispatchGesture(gesture, object : GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription?) = finishTopRecentsDismiss()
+            override fun onCancelled(gestureDescription: GestureDescription?) = finishTopRecentsDismiss()
+        }, handler)
+        if (!accepted) topRecentsClosing = false
+    }
+
+    private fun finishTopRecentsDismiss() {
+        topRecentsInputReady = false
+        topRecentsFocusPrimed = false
+        topRecentsClosing = false
+        scheduleTopRecentsStateCheck(TOP_RECENTS_DELETE_SETTLE_MS)
     }
 
     /** Without the root helper, the overlay holds window focus while Back is held and would swallow
@@ -387,6 +538,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         source.record(Display.DEFAULT_DISPLAY)
         bottomDisplay()?.let { source.record(it.displayId) }
+        if (topRecentsControllerActive) {
+            scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+        }
         handler.removeCallbacks(captureRunnable)
         handler.postDelayed(captureRunnable, CAPTURE_DELAY_MS)
     }
@@ -492,7 +646,238 @@ class SwitcherService : AccessibilityService(), GestureActions {
      */
     override fun openTopRecents() {
         overlay.dismiss()
+        if (prefs.switcherControllerEnabled && PService.cachedAvailable()) {
+            recentsFocusRestore = controllerFocus.currentTarget()
+            showSwitcherFocusIndicator(top = true)
+            topRecentsControllerActive = true
+            topRecentsConfirmed = false
+            topRecentsInputReady = false
+            topRecentsFocusPrimed = false
+            topRecentsExitRequested = false
+            topNavigation.reset()
+            topRecentsSession++
+            topRecentsReadyAttempts = 0
+            topRecentsStateCheckRunning = false
+            topRecentsStateCheckPending = false
+            topRecentsCardBounds = null
+            topRecentsPendingDismissals = 0
+            topRecentsClosing = false
+            dlog("TOP_RECENTS session started")
+            updatePadHelper()
+            padHelper.setSwitcherNavigation(PadNavigationMode.TOP)
+            dpadOverlay.detach()
+            routeTopRecentsController()
+            return
+        }
         performGlobalAction(GLOBAL_ACTION_RECENTS)
+    }
+
+    private fun routeTopRecentsController() {
+        if (!topRecentsControllerActive) return
+        val session = topRecentsSession
+        controllerFocus.run(Prefs.DISPLAY_TOP) { routed ->
+            if (session != topRecentsSession || topRecentsExitRequested) return@run
+            if (routed && topRecentsControllerActive) {
+                if (performGlobalAction(GLOBAL_ACTION_RECENTS)) {
+                    topRecentsReadyAttempts = 0
+                    scheduleTopRecentsStateCheck(TOP_RECENTS_READY_RETRY_MS)
+                } else {
+                    restoreRecentsFocus()
+                }
+            } else if (topRecentsControllerActive) {
+                restoreRecentsFocus()
+            }
+        }
+    }
+
+    private fun onBottomSwitcherShown(displayId: Int) {
+        if (!prefs.switcherControllerEnabled) return
+        recentsFocusRestore = controllerFocus.currentTarget()
+        showSwitcherFocusIndicator(top = displayId == Display.DEFAULT_DISPLAY)
+        // Capture before routing: the overlay is already visible at this point.
+        padHelper.setSwitcherNavigation(PadNavigationMode.CAPTURE)
+        if (!padHelper.active) dpadOverlay.attach()
+        val session = topRecentsSession
+        controllerFocus.run(if (displayId == Display.DEFAULT_DISPLAY) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM) { routed ->
+            if (!overlay.isShowing || session != topRecentsSession) return@run
+            if (routed) {
+                updatePadHelper()
+                if (padHelper.active) {
+                    padHelper.setSwitcherNavigation(PadNavigationMode.CAPTURE)
+                } else {
+                    dpadOverlay.attach()
+                }
+            }
+        }
+    }
+
+    private fun onBottomSwitcherDismissed() {
+        if (!prefs.switcherControllerEnabled) return
+        padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
+        dpadOverlay.detach()
+        restoreRecentsFocus()
+        updatePadHelper()
+    }
+
+    private fun onPadHelperActiveChanged(active: Boolean) {
+        if (!::overlay.isInitialized || !prefs.switcherControllerEnabled ||
+            (!overlay.isShowing && !topRecentsControllerActive)
+        ) return
+        if (active) {
+            dpadOverlay.detach()
+            padHelper.setSwitcherNavigation(
+                when {
+                    topRecentsControllerActive && topRecentsConfirmed -> PadNavigationMode.TOP
+                    topRecentsControllerActive -> PadNavigationMode.TOP
+                    else -> PadNavigationMode.CAPTURE
+                },
+            )
+        } else if (overlay.isShowing) {
+            dpadOverlay.attach()
+        } else {
+            // Top Recents is already the focused top-screen window. A focus-taking fallback would
+            // sit in front of Quickstep and swallow Back; until the helper reconnects, let
+            // Quickstep receive the controller directly.
+            dpadOverlay.detach()
+        }
+    }
+
+    private fun restoreRecentsFocus() {
+        val target = recentsFocusRestore ?: return
+        dlog("TOP_RECENTS session ended; restoring $target")
+        recentsFocusRestore = null
+        topRecentsControllerActive = false
+        topRecentsConfirmed = false
+        topRecentsInputReady = false
+        topRecentsFocusPrimed = false
+        topRecentsExitRequested = false
+        topNavigation.reset()
+        topRecentsSession++
+        topRecentsReadyAttempts = 0
+        topRecentsStateCheckRunning = false
+        topRecentsStateCheckPending = false
+        topRecentsCardBounds = null
+        topRecentsPendingDismissals = 0
+        topRecentsClosing = false
+        handler.removeCallbacks(topRecentsStateRunnable)
+        focusIndicator.dismiss()
+        padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
+        if (overlay.isShowing) {
+            padHelper.setSwitcherNavigation(PadNavigationMode.CAPTURE)
+        } else {
+            dpadOverlay.detach()
+            updatePadHelper()
+        }
+        controllerFocus.run(target)
+    }
+
+    private fun scheduleTopRecentsStateCheck(delayMs: Long) {
+        if (!topRecentsControllerActive) return
+        handler.removeCallbacks(topRecentsStateRunnable)
+        handler.postDelayed(topRecentsStateRunnable, delayMs)
+    }
+
+    private val topRecentsStateRunnable = Runnable { requestTopRecentsStateCheck() }
+
+    /** AYN's Quickstep keeps its task cards outside the accessibility window tree while its Recents
+     *  animation owns input. Query its authoritative state only at lifecycle boundaries; controller
+     *  navigation itself never waits for this root channel. */
+    private fun requestTopRecentsStateCheck() {
+        if (!topRecentsControllerActive) return
+        if (topRecentsStateCheckRunning) {
+            topRecentsStateCheckPending = true
+            return
+        }
+        topRecentsStateCheckRunning = true
+        val session = topRecentsSession
+        Thread {
+            val state = PService.exec(QUICKSTEP_STATE_COMMAND)
+            handler.post {
+                if (!topRecentsControllerActive || session != topRecentsSession) return@post
+                topRecentsStateCheckRunning = false
+                val snapshot = TopRecentsState.parse(state)
+                snapshot.cardBounds?.let { topRecentsCardBounds = it }
+                val overview = state?.let { snapshot.overview }
+                when {
+                    overview == true -> {
+                        topRecentsConfirmed = true
+                        if (topRecentsCardBounds != null) {
+                            if (topRecentsInputReady || topRecentsExitRequested) {
+                                drainTopRecentsDismissals()
+                            } else if (!topRecentsFocusPrimed) {
+                                primeTopRecentsFocus()
+                            }
+
+                        } else if (++topRecentsReadyAttempts < TOP_RECENTS_READY_ATTEMPTS) {
+                            scheduleTopRecentsStateCheck(TOP_RECENTS_READY_RETRY_MS)
+                        } else {
+                            restoreRecentsFocus()
+                            return@post
+                        }
+                    }
+                    overview == false && topRecentsConfirmed -> {
+                        restoreRecentsFocus()
+                        return@post
+                    }
+                    ++topRecentsReadyAttempts < TOP_RECENTS_READY_ATTEMPTS -> {
+                        scheduleTopRecentsStateCheck(TOP_RECENTS_READY_RETRY_MS)
+                    }
+                    else -> {
+                        restoreRecentsFocus()
+                        return@post
+                    }
+                }
+                if (topRecentsStateCheckPending) {
+                    topRecentsStateCheckPending = false
+                    scheduleTopRecentsStateCheck(0L)
+                }
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun primeTopRecentsFocus() {
+        topRecentsFocusPrimed = true
+        val session = topRecentsSession
+        Thread {
+            // Unlike the pad's vendor key layout, keyboard Tab is known to leave touch mode and
+            // focus a TaskView without activating it. input waits for its delivery to complete.
+            val primed = ControllerFocus.commandSucceeded(PService.exec(
+                "input keyboard -d ${Display.DEFAULT_DISPLAY} keyevent ${KeyEvent.KEYCODE_TAB} && echo OK",
+            ))
+            handler.post {
+                if (session != topRecentsSession || topRecentsExitRequested) return@post
+                if (primed) {
+                    topRecentsInputReady = true
+                    topNavigation.ready()
+                    drainTopRecentsDismissals()
+                } else {
+                    // A failed focus probe must never close the user's Overview.
+                    topRecentsFocusPrimed = false
+                    scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+                }
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun closeTopRecents() {
+        if (topRecentsExitRequested) return
+        topRecentsExitRequested = true
+        topNavigation.reset()
+        val session = topRecentsSession
+        Thread {
+            val injected = ControllerFocus.commandSucceeded(PService.exec(
+                "input keyboard -d ${Display.DEFAULT_DISPLAY} keyevent ${KeyEvent.KEYCODE_BACK} && echo OK",
+            ))
+            handler.post {
+                if (session != topRecentsSession) return@post
+                if (!injected) performGlobalAction(GLOBAL_ACTION_BACK)
+                scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun showSwitcherFocusIndicator(top: Boolean) {
+        focusIndicator.showPersistent(top, Prefs.DEFAULT_FOCUS_POSITION)
     }
 
     override fun onSingleTap() {
@@ -547,6 +932,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         /** Minimum time to wait for a second, held-down press before firing a plain single tap. */
         const val TAP_HOLD_GRACE_MS = 600L
         const val NAV_FLICK_DURATION_MS = 120L
+        const val QUICKSTEP_STATE_COMMAND =
+            "dumpsys activity com.android.launcher3 | " +
+                "awk '/TaskView\\{/ && task == \"\" { task=\$0 } " +
+                "/mState:/ { state=\$0 } END { print state \" | \" task }'"
+        const val TOP_RECENTS_READY_RETRY_MS = 40L
+        const val TOP_RECENTS_READY_ATTEMPTS = 25
+        const val TOP_RECENTS_EVENT_SETTLE_MS = 140L
+        const val TOP_RECENTS_DELETE_SETTLE_MS = 260L
+        const val TOP_RECENTS_DISMISS_MS = 110L
+        const val CONTROLLER_FLIP_SETTING = "flip_button_layout"
         const val ACTION_EXTRA_DIM_SETTINGS = "android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"
         const val ACTION_ZEN_MODE_SETTINGS = "android.settings.ZEN_MODE_SETTINGS"
         /** Flip on to trace every key-event decision (DOWN/UP, what got scheduled, what fired)

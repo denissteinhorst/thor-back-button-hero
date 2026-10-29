@@ -115,6 +115,9 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C6a | Turn **Show apps from both screens** on, open the overlay, then tap "Close all" | Observed apps from both screens appear; all of those apps close and the overlay closes |
 | C7 | Open the overlay with no apps open | "No recent apps" text appears instead of cards |
 | C8 | Have another app cover the bottom screen, then open a card | The covered-screen hint toast appears |
+| C8a | With **Control Recents with the controller** on, open the bottom switcher | Controller focus moves to the bottom screen; D-pad left/right changes the highlighted card, confirm opens the app, D-pad up closes it, and down moves through Screenshot and Close all. Confirm runs the highlighted action. The confirm button is B in Standard Style and A in Xbox Style. After every close path, controller focus returns to its original screen. |
+| C8b | Tap then hold to open the top system Recents with the option on | Left/right and confirm react immediately through Quickstep's native controller path; D-pad up closes only the current card, never the whole Overview. Repeated and alternating directions never need a second press. Controller focus returns to its original screen after confirmation, Back, or the final card closing. |
+| C8c | Turn **Control Recents with the controller** off | Both switchers leave controller routing and input untouched. |
 
 C3 and C4 are the two halves of the same arbitration: if a horizontal scroll ever closes a
 card, or a swipe up only scrolls, `CardTouch` is the suspect.
