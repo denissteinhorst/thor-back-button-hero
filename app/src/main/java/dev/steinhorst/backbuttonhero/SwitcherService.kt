@@ -105,7 +105,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::beforeLaunch,
             ::onBottomSwitcherShown,
             ::onBottomSwitcherDismissed,
-            ::filterUnlockedRecentsPackages,
         )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
@@ -791,21 +790,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     }
                 }
             } finally { handler.post { thumbnailQueryRunning = false } }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun filterUnlockedRecentsPackages(packages: List<String>, done: (List<String>) -> Unit) {
-        Thread {
-            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
-            handler.post {
-                if (states == null) {
-                    toastUnavailable()
-                    done(emptyList())
-                } else {
-                    overlay.updateTaskStates(states)
-                    done(RecentsTaskState.unlockedPackages(packages, states))
-                }
-            }
         }.apply { isDaemon = true }.start()
     }
 

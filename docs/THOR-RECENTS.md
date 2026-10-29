@@ -33,8 +33,8 @@ The bottom switcher represents packages observed through accessibility, not
 system tasks. `RecentsStateReader` now supplements those entries with the system's recent tasks
 and the launcher's existing lock store, through a read-only root entry point. Indicators use the
 most recent native task of each package. The overlay refreshes these values while open; its
-bulk-close path obtains a fresh snapshot and protects the whole package if any of its tasks is
-locked, because our existing force-stop operation acts on packages. A package can have multiple tasks/displays, and a historical observation
+Close all command deliberately overrides launcher locks for every targeted package. This is a
+Back Button Hero policy; the original lock state and native Overview behavior remain unchanged. A package can have multiple tasks/displays, and a historical observation
 is not authoritative current placement. `RecentsBadges` reads the original drawables and dimensions from the installed launcher, including
 the exact 80-pixel offset; it does not redraw or copy the assets into this repository. Do not label
 historical package entries as current system tasks. The same task identity now also drives system snapshot loading. Task launch/move or lock controls
@@ -58,14 +58,16 @@ It is therefore not simply a per-task-ID or per-package boolean.
 
 `RecentsView.removeUnlockTaskViews()` skips locked TaskViews while
 removing the others. This is protection against bulk removal from Recents, not Android
-screen pinning and not a guarantee that Android will keep the process in RAM. The bottom overlay displays and honors this same saved status. It does not write the launcher's
+screen pinning and not a guarantee that Android will keep the process in RAM. The bottom overlay displays this same saved status. Its explicit Close all command overrides the
+lock and uses the existing package termination path. It does not write the launcher's
 preference file: that risks stale in-process caches and is not a supported synchronization API.
 In this installed build, `onFinishInflate()` does not attach the existing lock-click lambda or
 initialize the lock touch delegate; the original lock images themselves are status indicators.
 No independent bottom-only lock or misleading local toggle is introduced.
 
-If task/lock metadata is unavailable or malformed, indicators remain unknown and bulk-close is
-refused with the existing unavailable message. It must not silently force-stop a protected package.
+If task/lock metadata is unavailable or malformed, indicators remain unknown. Back Button Hero's
+Close all does not depend on metadata availability: it still targets every app within the selected
+bottom-only/both-screens scope, including locked apps. Native Overview retains its original policy.
 
 ## Background and system theme
 
@@ -158,3 +160,15 @@ Device verification used fast switches among Settings, Files and Chrome after re
 service so the screenshot cache was empty for the short-lived foreground apps. Their native
 snapshots loaded while paging through the bottom cards, and screenshots confirmed no preview
 border. Snapshot transfer files were absent after loading completed.
+
+## Back Button Hero Close all override
+
+The owner explicitly chose to always override launcher locks when Close all originates from our
+overlay. Both its touch action and controller shortcut share this path. The lock badge remains a
+readout of native state, not a veto on this explicit command; no lock preference is changed.
+The previous metadata-dependent unlocked-package filter has been removed, including its failure
+case that blocked Close all when metadata could not be read.
+
+Device verification found Chrome locked before the operation (task 139). Triggering our controller
+Close all removed its task and stopped its process; the launcher's lock-store SHA-256 was identical
+before and after. This changes only our close-all policy, not native Overview's lock handling.

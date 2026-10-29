@@ -35,7 +35,6 @@ class SwitcherOverlay(
     private val beforeLaunch: (displayId: Int) -> Unit,
     private val onShown: (displayId: Int) -> Unit,
     private val onDismissed: () -> Unit,
-    private val filterCloseAll: (List<String>, (List<String>) -> Unit) -> Unit,
 ) {
     private var root: View? = null
     private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
@@ -325,31 +324,21 @@ class SwitcherOverlay(
 
     private fun closeEverything(row: ViewGroup, apps: List<RunningApp>, bothScreens: Boolean) {
         if (bulkClosing) return
+        val openedRoot = root ?: return
         bulkClosing = true
-        val openedRoot = root
         val all = if (bothScreens) (apps + source.appsOnDisplay(Display.DEFAULT_DISPLAY)).distinctBy { it.packageName } else apps
-        filterCloseAll(all.map { it.packageName }) { allowed ->
-            if (root == null || root !== openedRoot) return@filterCloseAll
-            if (allowed.isEmpty()) { bulkClosing = false; return@filterCloseAll }
-            shownCards.forEachIndexed { index, card ->
-                if (shownApps[index].packageName in allowed) {
-                    card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
-                }
-            }
-            row.postDelayed({
-                if (root !== openedRoot) return@postDelayed
-                allowed.forEach(source::forget)
-                onCloseAll(allowed, bothScreens)
-                shownCards.zip(shownApps).filter { it.second.packageName in allowed }.forEach { row.removeView(it.first) }
-                shownCards = shownCards.zip(shownApps).filter { it.second.packageName !in allowed }.map { it.first }
-                shownApps = shownApps.filter { it.packageName !in allowed }
-                bulkClosing = false
-                if (shownApps.isEmpty()) dismiss() else {
-                    selected = selected.coerceAtMost(shownApps.lastIndex)
-                    updateSelection()
-                }
-            }, 220)
+        // This explicit Back Button Hero command overrides OEM locks. The badges still show
+        // the shared launcher status; neither that status nor native Overview policy is changed.
+        val packages = all.map { it.packageName }
+        shownCards.forEach { card ->
+            card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
         }
+        row.postDelayed({
+            if (root !== openedRoot) return@postDelayed
+            packages.forEach(source::forget)
+            onCloseAll(packages, bothScreens)
+            dismiss()
+        }, 220)
     }
 
     private fun closeCard(card: View, app: RunningApp) {

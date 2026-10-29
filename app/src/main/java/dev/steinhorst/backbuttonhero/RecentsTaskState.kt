@@ -33,8 +33,5 @@ data class RecentsTaskState(val packageName: String, val displayId: Int, val loc
             return keys
         }
 
-        /** Force-stop operates on packages; any protected task must therefore protect its package. */
-        fun unlockedPackages(packages: List<String>, tasks: List<RecentsTaskState>): List<String> =
-            packages.filter { pkg -> tasks.any { it.packageName == pkg } && tasks.none { it.packageName == pkg && it.locked } }
     }
 }

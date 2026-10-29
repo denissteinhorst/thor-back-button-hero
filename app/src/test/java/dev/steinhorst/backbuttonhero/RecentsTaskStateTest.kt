@@ -36,11 +36,4 @@ class RecentsTaskStateTest {
         assertThrows(IllegalArgumentException::class.java) { RecentsTaskState.lockKeys("<unrelated/>") }
     }
 
-    @Test
-    fun `bulk close protects every task of a package if one native task is locked`() {
-        val tasks = listOf(RecentsTaskState("dev.example.locked", 0, false),
-            RecentsTaskState("dev.example.locked", 17, true), RecentsTaskState("dev.example.free", 17, false))
-        assertEquals(listOf("dev.example.free"), RecentsTaskState.unlockedPackages(
-            listOf("dev.example.locked", "dev.example.free", "dev.example.unknown"), tasks))
-    }
 }

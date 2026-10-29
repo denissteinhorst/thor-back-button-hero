@@ -111,8 +111,8 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C3 | Swipe a card upward | Card closes with its animation, the app is terminated |
 | C4 | Scroll the row horizontally | Scrolls; **no** card closes |
 | C5 | Tap "Screenshot" | Overlay closes; the native screenshot animation/actions appear on the top screen, and `Pictures/Screenshots` gets a `Screenshot_yyyyMMdd-HHmmss.png` showing only the bottom screen without the switcher |
-| C6 | With **Show apps from both screens** off, tap "Close all" | Only bottom-screen apps close; the overlay closes |
-| C6a | Turn **Show apps from both screens** on, open the overlay, then tap "Close all" | Observed apps from both screens appear; all of those apps close and the overlay closes |
+| C6 | With **Show apps from both screens** off, tap "Close all" | All listed bottom-screen apps close, including launcher-locked apps such as Chrome; the overlay closes. The shared lock setting remains unchanged |
+| C6a | Turn **Show apps from both screens** on, open the overlay, then tap "Close all" | Observed apps from both screens appear; all of those apps close regardless of launcher lock status and the overlay closes. Native Overview still honors its own locks |
 | C7 | Open the overlay with no apps open | "No recent apps" text appears instead of cards |
 | C8 | Have another app cover the bottom screen, then open a card | The covered-screen hint toast appears |
 | C8a | With **Control Recents with the controller** on, open the bottom switcher | Controller focus moves to the bottom screen; D-pad left/right changes the highlighted card, confirm opens the app, D-pad up closes it, and down moves through Screenshot and Close all. Confirm runs the highlighted action. The confirm button is B in Standard Style and A in Xbox Style. After every close path, controller focus returns to its original screen. |

@@ -274,8 +274,9 @@ testing on the AYN Thor is the only net under those paths — see
 
 The bottom overlay still lists accessibility-observed packages. `RecentsStateReader` supplements
 those entries with authoritative display IDs and the original launcher lock status through a
-read-only root entry point. `RecentsTaskState` parses the snapshot and filters bulk-close targets;
-any locked task protects its package because the existing close operation force-stops packages.
+read-only root entry point. `RecentsTaskState` parses the snapshot for status indicators.
+Back Button Hero's explicit Close all command overrides these locks within its configured scope;
+it does not change the launcher's lock store or native Overview behavior.
 No private launcher state is written. `RecentsBadges` loads the original OEM drawables/geometry;
 `RecentsTheme` resolves the installed launcher's light/dark colors and dynamic system palette.
 
