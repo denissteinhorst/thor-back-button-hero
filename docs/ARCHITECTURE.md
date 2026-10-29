@@ -273,13 +273,38 @@ testing on the AYN Thor is the only net under those paths — see
 ### Optional system Recents metadata and styling
 
 Recents selection targets the screen where that menu opened. `RecentsTaskLauncher` uses
-the existing pservice bridge to move and resume an existing standalone app task. Android
-reveals the source display's underlying task or its own home; home/secondary-home tasks
+the existing pservice bridge to move and resume an existing standalone app task. It uses
+`moveTaskToFront` with flags 0: `startActivityFromRecents` raises default-display Home even
+for a background move or a same-display bottom launch. Android
+reveals the source display's underlying task or its own home. If native Recents interposed
+Home above the previous app, the mover restores that app after the target activation;
+moving a background task retains the original source foreground as its fallback too. Home/secondary-home tasks
 are excluded from this path. The bottom overlay delegates launches to the service. For
-the top native menu, the service snapshots task identities before opening Overview and
-reads Android's exact task-to-front event when Overview ends, because AYN otherwise
-launches cards on their old display. Without the
+the top native menu, the service binds native card-click labels to unique, known task
+identities and checks their current displays. Card indices cannot be system-task indices:
+AYN can retain an older card order after a screen swap. Android's task-to-front events
+remain a fallback; reselecting an already visible bottom task need not emit such an event
+or close native Overview. Ambiguous labels are not forcibly assigned to a task. Without the
 privileged bridge, the previous launch-intent behavior remains available.
+
+Controller confirmation of an identified native card is consumed before Quickstep handles
+the key. The service moves and activates that task directly on the top display, consuming
+the matching key release too. Action buttons and unidentified cards keep their native key
+handling. Touch clicks are reported after the native launch, so this observation path can
+still briefly expose an app on its former display before moving it.
+
+Hold-to-swap captures both foreground packages and resolves both task IDs before moving
+either one, then uses this same move entry point sequentially. This preserves task identity
+and lets Android notify the launcher about display changes.
+
+`TopRecentsFocus` completes AYN's paused Overview handoff with a non-Home intent before
+keyboard initialization. A successful injection alone does not make navigation ready:
+Quickstep must be resumed, its window focused, and a native card/action focused. Pooled
+cards and the secondary drawer can retain focus flags that do not represent live top
+input. After the handoff, the service retains the centered card node before Tab exits touch
+mode and restores input focus to that exact node afterward. Initialization never injects a
+directional key. Focus transactions invalidate older state queries before queued directions
+are released. A queued focus worker checks that Overview is still active and the screen awake.
 
 The bottom overlay still lists accessibility-observed packages. `RecentsStateReader` supplements
 those entries with authoritative display IDs and the original launcher lock status through a
@@ -293,3 +318,8 @@ System task snapshots now supplement the foreground screenshot cache. The existi
 point exports snapshots to validated private cache files; loading and PNG decoding run off the UI
 thread. `RecentsThumbnailCache` bounds retained snapshot bytes and keeps displayed bitmaps valid
 after eviction. Overlay/session and task-identity checks reject obsolete image completions.
+
+Successful system task snapshots also expire accessibility-history entries whose packages no
+longer have a recent task. This runs before the bottom overlay opens and during its metadata
+refresh, removing stale cards without killing apps. It does not add apps absent from the observed
+history or change display scope. Failed/unavailable snapshots leave the history intact.

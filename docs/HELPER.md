@@ -58,8 +58,13 @@ The service buffers presses until Overview has a focused TaskView, because the f
 otherwise only exits Android's touch mode. Navigation then returns over the same socket (`NAV <key>`)
 and is emitted as hat-axis presses by the existing clone, without a shell per direction. Each replay
 spans two frames so Android cannot coalesce its down and neutral into a lost press. A keyboard Tab
-initializes focus once after Overview opens (and after a dismissal), with queued directions released
-after its delivery completes. A focus failure never closes Overview.
+initializes focus after Overview opens (and after a dismissal). The service first completes AYN's
+paused launcher handoff with a non-Home intent, then verifies that Quickstep is resumed, its window
+has focus, and a TaskView/action is focused before releasing queued directions. It retains the
+centered card node before Tab and restores that node's input focus afterward, without a spatial
+direction that could scroll the row. State queries begun before/during this focus transaction
+cannot release queued presses. Injection delivery and a pooled card's retained focus flag are
+insufficient. A focus failure never closes Overview.
 The service tracks the card/action rows: Up from actions returns to cards; Up from cards dismisses
 only the current card using its real geometry. After a dismissal it restores keyboard focus before
 releasing queued navigation. TOP takes precedence over held Back. A captured press stays captured
@@ -142,7 +147,10 @@ SELinux" off). It is the same requirement swipe-to-close has.
   RetroArch can ignore the new device until its activity has been paused and resumed, which looks like
   dead controls. Opening any other app over the game and returning to it fixes it.
 - **Bounded restarts.** The app relaunches a helper that died, after a short delay and at most five
-  times in a row without a successful take-over.
+  times in a row without a successful take-over. Startup requests are coalesced while a launch is
+  pending. Stopping shuts down both socket directions before close so a blocked reader cannot keep
+  the root process alive. Disposing a service also wakes and closes its listening socket before a
+  replacement binds; queued input/status callbacks from that disposed helper are ignored.
 
 ## Without pservice
 

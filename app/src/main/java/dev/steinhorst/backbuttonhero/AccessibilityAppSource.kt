@@ -69,6 +69,13 @@ class AccessibilityAppSource(private val service: AccessibilityService) : AppSou
         thumbnails.remove(packageName)?.recycle()
     }
 
+    /** A successful system snapshot can expire observed history, but never adds unobserved apps. */
+    fun retainRecentTasks(tasks: List<RecentsTaskState>) {
+        val packages = tasks.map { it.packageName }.toSet()
+        val expired = history.values.flatten().toSet() - packages
+        expired.forEach(::forget)
+    }
+
     override fun appsOnDisplay(displayId: Int): List<RunningApp> {
         record(displayId)
         val pm = service.packageManager

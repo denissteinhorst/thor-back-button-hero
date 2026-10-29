@@ -22,7 +22,8 @@ class TopRecentsNavigation(
 
     fun pause() { ready = false }
 
-    fun ready() {
+    fun ready(actionsFocused: Boolean = false) {
+        actions = actionsFocused
         ready = true
         drain()
     }

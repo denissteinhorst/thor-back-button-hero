@@ -112,6 +112,29 @@ class SwitcherOverlay(
         badgeViews.forEach { (pkg, views) -> badgeStyle?.update(views, tasks.firstOrNull { it.packageName == pkg }) }
     }
 
+    /** Remove expired cards before the source recycles their accessibility thumbnail bitmaps. */
+    fun reconcileTaskStates(tasks: List<RecentsTaskState>): Boolean {
+        if (bulkClosing) return false
+        val packages = tasks.map { it.packageName }.toSet()
+        val selectedPackage = shownApps.getOrNull(selected)?.packageName
+        val keep = shownApps.indices.filter { shownApps[it].packageName in packages }
+        if (keep.size != shownApps.size) {
+            shownApps.indices.filterNot { it in keep }.forEach { index ->
+                val card = shownCards.getOrNull(index)
+                card?.animate()?.cancel()
+                (card?.parent as? ViewGroup)?.removeView(card)
+                badgeViews.remove(shownApps[index].packageName)
+            }
+            shownApps = keep.map { shownApps[it] }
+            shownCards = keep.mapNotNull { shownCards.getOrNull(it) }
+            selected = shownApps.indexOfFirst { it.packageName == selectedPackage }
+                .takeIf { it >= 0 } ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
+            if (shownApps.isEmpty()) dismiss() else updateSelection()
+        }
+        updateTaskStates(tasks)
+        return true
+    }
+
     fun moveSelection(right: Boolean) {
         if (screenshotSelected || closeAllSelected) {
             screenshotSelected = !screenshotSelected
@@ -232,7 +255,7 @@ class SwitcherOverlay(
         }
         screenshotButton = screenshot
         val closeAll = action(ctx, R.drawable.ic_clear_all, ctx.getString(R.string.close_all)) {
-            closeEverything(row, apps, bothScreens = showingAllApps)
+            closeEverything(row, shownApps, bothScreens = showingAllApps)
         }
         closeAllButton = closeAll
         val buttonRow = LinearLayout(ctx).apply {

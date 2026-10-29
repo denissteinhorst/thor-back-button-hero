@@ -16,6 +16,15 @@ class RecentsTaskStateTest {
     }
 
     @Test
+    fun `native card label stays bound to its task identity across a display move`() {
+        val output = """OK [{"package":"dev.example.app","display":17,"locked":false,"task":42,"label":"Dateien & Ordner"}]"""
+        val task = RecentsTaskState.parse(output)!!.single()
+        assertEquals(42, task.taskId)
+        assertEquals("Dateien & Ordner", task.label)
+        assertEquals(task, RecentsSelection.fromCard(listOf(task.copy(displayId = 0)), listOf(task), "Dateien & Ordner"))
+    }
+
+    @Test
     fun `missing and invalid state never becomes an unlocked snapshot`() {
         assertNull(RecentsTaskState.parse(null))
         assertNull(RecentsTaskState.parse("ERR unavailable"))

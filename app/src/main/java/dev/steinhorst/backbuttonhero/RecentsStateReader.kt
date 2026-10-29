@@ -67,11 +67,12 @@ object RecentsStateReader {
                 if (!Shell.isPkg(component.packageName)) continue
                 val activity = runCatching { launcher.packageManager.getActivityInfo(component, 0) }.getOrNull()
                 val name = activity?.taskAffinity?.takeIf { it.isNotEmpty() } ?: component.toString()
+                val label = info.taskDescription?.label ?: activity?.loadLabel(launcher.packageManager)?.toString()
                 val user = info.javaClass.getField("userId").getInt(info)
                 val display = info.javaClass.getField("displayId").getInt(info)
                 result.put(JSONObject().put("package", component.packageName).put("display", display)
                     .put("locked", "u: $user, $name" in saved).put("task", info.taskId)
-                    .put("active", info.javaClass.getField("lastActiveTime").getLong(info)))
+                    .put("active", info.javaClass.getField("lastActiveTime").getLong(info)).put("label", label))
             }
             finish("OK $result", 0)
         } catch (t: Throwable) {

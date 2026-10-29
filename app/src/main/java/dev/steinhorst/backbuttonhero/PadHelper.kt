@@ -33,14 +33,18 @@ class PadHelper(
     // Home + Back held 5 s in the helper: the user wants the pad left alone until the service restarts.
     @Volatile private var released = false
     @Volatile private var client: LocalSocket? = null
+    @Volatile private var server: LocalServerSocket? = null
+    @Volatile private var closed = false
     @Volatile private var navigationMode = PadNavigationMode.OFF
     private var listening = false
     private var failedLaunches = 0
+    private var launchPending = false
+    private val connectionLock = Any()
     private val main = Handler(Looper.getMainLooper())
     private val socketName = "${context.packageName}.padhelper"
 
     fun start() {
-        if (released) return
+        if (released || closed) return
         wanted = true
         if (!listening) {
             listening = true
@@ -52,9 +56,30 @@ class PadHelper(
 
     /** Closing our end makes the helper hand the pad back to Android and exit. */
     fun stop() {
-        wanted = false
+        val socket = synchronized(connectionLock) {
+            wanted = false
+            client
+        }
         setActive(false)
-        runCatching { client?.close() }
+        socket?.let(::closeSocket)
+    }
+
+    /** A service instance must release its abstract socket before a replacement can bind it. */
+    fun dispose() {
+        closed = true
+        stop()
+        server?.let { listener ->
+            // Wake accept as well: closing an fd on another thread need not interrupt that call.
+            runCatching { android.system.Os.shutdown(listener.fileDescriptor, android.system.OsConstants.SHUT_RDWR) }
+            runCatching { listener.close() }
+        }
+    }
+
+    private fun closeSocket(socket: LocalSocket) {
+        // close alone can leave a blocking read holding the fd, so root never sees EOF.
+        runCatching { socket.shutdownOutput() }
+        runCatching { socket.shutdownInput() }
+        runCatching { socket.close() }
     }
 
     /** Selects how bare D-pad input is handled while one of the two switchers is open. */
@@ -77,30 +102,36 @@ class PadHelper(
     }
 
     private fun serve() {
-        val server = runCatching { LocalServerSocket(socketName) }.getOrElse {
+        val listener = runCatching { LocalServerSocket(socketName) }.getOrElse {
             Log.w(TAG, "socket: ${it.javaClass.simpleName}")
             return
         }
+        server = listener
+        if (closed) { runCatching { listener.close() }; return }
         launchSoon(0)
-        while (true) {
-            val socket = runCatching { server.accept() }.getOrNull() ?: continue
-            if (runCatching { socket.peerCredentials.uid }.getOrDefault(-1) != 0 || !wanted) {
-                runCatching { socket.close() }
+        while (!closed) {
+            val socket = runCatching { listener.accept() }.getOrNull() ?: break
+            val root = runCatching { socket.peerCredentials.uid }.getOrDefault(-1) == 0
+            val accepted = synchronized(connectionLock) {
+                if (!root || !wanted || closed) false else { client = socket; true }
+            }
+            if (!accepted) {
+                closeSocket(socket)
                 continue
             }
-            client = socket
             runCatching { socket.inputStream.bufferedReader().forEachLine(::handle) }
             client = null
             setActive(false)
-            runCatching { socket.close() }
+            closeSocket(socket)
             if (wanted && !released) launchSoon(RELAUNCH_DELAY_MS)
         }
+        runCatching { listener.close() }
     }
 
     private fun handle(line: String) {
         val parts = line.split(' ')
         when (parts[0]) {
-            "PAD" -> {
+            "PAD" -> if (wanted && !closed) {
                 setActive(true)
                 failedLaunches = 0
                 if (navigationMode != PadNavigationMode.OFF) setSwitcherNavigation(navigationMode)
@@ -112,7 +143,11 @@ class PadHelper(
                 val horizontal = parts[1] == "X"
                 val direction = DpadDirection.fromHat(horizontal, parts[2].toFloatOrNull() ?: 0f)
                 // A release (value 0) only matters to an action that commits on release.
-                if (direction != null) main.post { onPress(direction) } else main.post { onRelease(horizontal) }
+                main.post {
+                    if (wanted && !closed) {
+                        if (direction != null) onPress(direction) else onRelease(horizontal)
+                    }
+                }
             }
         }
     }
@@ -120,16 +155,25 @@ class PadHelper(
     private fun setActive(value: Boolean) {
         if (active == value) return
         active = value
-        main.post { onActiveChanged(value) }
+        main.post { if (!closed) onActiveChanged(value) }
     }
 
+    @Synchronized
     private fun launchSoon(delayMs: Long) {
         // A helper that keeps dying without ever taking a pad over is not worth restarting forever.
-        if (failedLaunches >= MAX_FAILED_LAUNCHES) return
+        if (closed || launchPending || failedLaunches >= MAX_FAILED_LAUNCHES) return
+        launchPending = true
         failedLaunches++
         Thread({
-            SystemClock.sleep(delayMs)
-            if (wanted && client == null && PService.isAvailable()) launch()
+            try {
+                SystemClock.sleep(delayMs)
+                if (!closed && wanted && client == null && PService.isAvailable()) launch()
+            } finally {
+                synchronized(this) { launchPending = false }
+                // A helper can disconnect while pservice's startup script is still sleeping.
+                // Its retry request was coalesced above; retain the bounded retry afterward.
+                if (!closed && wanted && client == null && !released) launchSoon(RELAUNCH_DELAY_MS)
+            }
         }, "PadHelperLaunch").apply { isDaemon = true }.start()
     }
 

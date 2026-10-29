@@ -110,6 +110,7 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C2 | Tap a card | That app opens, overlay closes |
 | C2a | With **Show apps from both screens** on, select a top-screen app from the bottom switcher; repeat with a background app | The existing task opens on the bottom. Moving the foreground app reveals the previous app on the top, or its normal home screen when none remains. The bottom app drawer stays on the bottom. Reopen Recents and check that the card's screen indicator reflects the new display. Repeat using controller confirmation. |
 | C2b | Open top Recents with tap-then-hold and select a bottom-screen app; test foreground and background apps, then repeat with controller navigation off | The selected task opens on the top; the bottom reveals its previous app or its own drawer. Top and bottom launchers never move. Screen indicators update on reopening Recents. Back, Home, and dismissing Recents without selecting leave apps on their original displays. |
+| C2c | Open two ordinary apps, remove one through native top Recents, then open the bottom switcher; repeat with both-screen scope off and on | The removed app has no stale bottom card; the remaining task stays available in the configured scope, with its correct indicator. Removing the last task leaves the normal empty state on the next open. Closing tasks while the bottom overlay is already visible removes their cards on refresh and keeps controller selection valid. Failed system queries must not clear history. |
 | C3 | Swipe a card upward | Card closes with its animation, the app is terminated |
 | C4 | Scroll the row horizontally | Scrolls; **no** card closes |
 | C5 | Tap "Screenshot" | Overlay closes; the native screenshot animation/actions appear on the top screen, and `Pictures/Screenshots` gets a `Screenshot_yyyyMMdd-HHmmss.png` showing only the bottom screen without the switcher |
@@ -120,6 +121,8 @@ The part with no automated coverage at all. Needs the two or three apps from ste
 | C8a | With **Control Recents with the controller** on, open the bottom switcher | Controller focus moves to the bottom screen; D-pad left/right changes the highlighted card, confirm opens the app, D-pad up closes it, and down moves through Screenshot and Close all. Confirm runs the highlighted action. The confirm button is B in Standard Style and A in Xbox Style. After every close path, controller focus returns to its original screen. |
 | C8b | Tap then hold to open the top system Recents with the option on | Left/right and confirm react immediately through Quickstep's native controller path; D-pad up closes only the current card, never the whole Overview. Repeated and alternating directions never need a second press. Controller focus returns to its original screen after confirmation, Back, or the final card closing. |
 | C8c | Turn **Control Recents with the controller** off | Both switchers leave controller routing and input untouched. |
+| C8d | Open top Recents from a running top-screen app, close and reopen repeatedly, then alternate left/right immediately after opening. Repeat from top Home. Move Total Commander top→bottom with hold, open top Recents and select it by touch and by controller. Repeat the touch selection with controller navigation off. | The first direction changes the native card selection, including after a prior card retained focus. Total Commander returns to the top with the same task ID; its former screen reveals its previous app or its own home. Controller focus is restored, native/bottom screen indicators follow the move, and the bottom drawer remains on the bottom. Back or an unrelated launcher icon click never selects/moves an app. |
+| C8e | Leave app A foreground and app B background on top, then select B in the bottom switcher. Repeat in the other direction, and select an app already on the bottom while A stays foreground on top. Open top Recents repeatedly, wait without input, then press one horizontal direction immediately after opening and again after initialization. | Background moves and same-display selections leave A visible with its original task ID. A foreground move reveals the previous source app or its own home. Opening Recents causes no autonomous horizontal step; each physical press moves exactly one neighboring card, including a press queued during initialization. |
 
 C3 and C4 are the two halves of the same arbitration: if a horizontal scroll ever closes a
 card, or a swipe up only scrolls, `CardTouch` is the suspect.
@@ -184,9 +187,9 @@ screen, so an activity started there would be invisible.
 
 | # | Step | Expected |
 |---|---|---|
-| C18 | Turn the accessibility service off in Android settings | Warning row appears, status switches to **off** |
+| C18 | Turn the accessibility service off in Android settings | Warning row appears, status switches to **off**; the root input helper exits and restores the original controller |
 | C19 | Tap "Repair service" → "Open accessibility settings" | Lands on the correct system screen |
-| C20 | Turn it back on | Status returns to **on**, gestures work again |
+| C20 | Turn it back on; repeat off/on three times | Status returns to **on**, gestures work again, exactly one root input helper runs, and top Recents has no extra navigation from the retired service |
 | C21 | "Reset settings", confirm | Every timing, switch, shoulder and D-pad assignment back to default (including the factory shortcuts of C23); confirmation toast appears |
 | C22 | Switch the system language to German, reopen the app | All sections, dialogs and toasts in German; no English remnants, no clipped labels |
 

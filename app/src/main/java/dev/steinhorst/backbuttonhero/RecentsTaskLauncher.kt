@@ -6,9 +6,10 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.os.IBinder
 import android.os.Looper
+import android.view.Display
 
 /** Root entry point: resume an existing task on the requested screen without relaunching its root. */
-@SuppressLint("PrivateApi") // Task reparenting and startActivityFromRecents have no public equivalents.
+@SuppressLint("PrivateApi") // Task reparenting and moveTaskToFront have no public equivalents.
 object RecentsTaskLauncher {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -39,27 +40,73 @@ object RecentsTaskLauncher {
                 "non-app task"
             }
             val oldDisplay = task.javaClass.getField("displayId").getInt(task)
+            val front = atm.javaClass.methods.first { it.name == "moveTaskToFront" }
+            var restoreSource = false
+            var fallback: Int? = null
             if (oldDisplay != display) {
                 val roots = atm.javaClass.getMethod("getAllRootTaskInfos").invoke(atm) as List<*>
-                val rootInfo = roots.filterNotNull().first { info ->
+                val sourceRoots = roots.filterNotNull().filter { info ->
+                    info.javaClass.getField("displayId").getInt(info) == oldDisplay &&
+                        info.javaClass.getField("topActivity").get(info) != null
+                }
+                val rootInfo = sourceRoots.firstOrNull { info ->
                     (info.javaClass.getField("childTaskIds").get(info) as IntArray).contains(task.taskId)
                 }
-                val root = rootInfo.javaClass.getField("taskId").getInt(rootInfo)
-                // Never move a shared root (home, split screen, etc.) along with unrelated tasks.
-                require(root == task.taskId &&
-                    (rootInfo.javaClass.getField("childTaskIds").get(rootInfo) as IntArray).contentEquals(intArrayOf(task.taskId))) {
-                    "shared root task"
+                val foreground = sourceRoots.firstOrNull()?.let { it.javaClass.getField("taskId").getInt(it) }
+                val appTasks = sourceRoots.filter { activityType(it) == 1 }.flatMap { info ->
+                    (info.javaClass.getField("childTaskIds").get(info) as IntArray).reversed()
                 }
-                atm.javaClass.getMethod("moveRootTaskToDisplay", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
-                    .invoke(atm, root, display)
+                fallback = TaskMovePolicy.sourceFallback(task.taskId, foreground, appTasks)
+                restoreSource = foreground == task.taskId || fallback != null
+                // An evicted recent task has no live root to move; moveTaskToFront below restores
+                // its existing task identity with the target display options.
+                if (rootInfo != null) {
+                    val root = rootInfo.javaClass.getField("taskId").getInt(rootInfo)
+                    // Never move a shared root (home, split screen, etc.) along with unrelated tasks.
+                    require(root == task.taskId &&
+                        (rootInfo.javaClass.getField("childTaskIds").get(rootInfo) as IntArray).contentEquals(intArrayOf(task.taskId))) {
+                        "shared root task"
+                    }
+                    atm.javaClass.getMethod("moveRootTaskToDisplay", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+                        .invoke(atm, root, display)
+                }
             }
             val options = ActivityOptions.makeBasic().setLaunchDisplayId(display).toBundle()
-            atm.javaClass.getMethod("startActivityFromRecents", Int::class.javaPrimitiveType, android.os.Bundle::class.java)
-                .invoke(atm, task.taskId, options)
+            // startActivityFromRecents raises default-display Home even for a background task or
+            // a same-display bottom selection. Flags 0 bring only this task forward, without Home.
+            front.invoke(atm, null, "android", task.taskId, 0, options)
+            if (restoreSource) {
+                // Recents may have interposed Home above the previous source app. Check after
+                // activation, retaining an unrelated source foreground when a background task moves.
+                val after = atm.javaClass.getMethod("getAllRootTaskInfos").invoke(atm) as List<*>
+                val sourceFront = after.filterNotNull().firstOrNull { info ->
+                    info.javaClass.getField("displayId").getInt(info) == oldDisplay &&
+                        info.javaClass.getField("topActivity").get(info) != null
+                }
+                if (sourceFront == null || activityType(sourceFront) != 1) {
+                    val restored = fallback != null && runCatching {
+                        front.invoke(atm, null, "android", fallback, 0,
+                            ActivityOptions.makeBasic().setLaunchDisplayId(oldDisplay).toBundle())
+                    }.isSuccess
+                    if (!restored && sourceFront == null) {
+                        val category = if (oldDisplay == Display.DEFAULT_DISPLAY) Intent.CATEGORY_HOME else Intent.CATEGORY_SECONDARY_HOME
+                        val home = ProcessBuilder("am", "start", "--display", oldDisplay.toString(),
+                            "-a", Intent.ACTION_MAIN, "-c", category).redirectErrorStream(true).start()
+                        home.inputStream.bufferedReader().use { it.readText() }
+                        home.waitFor()
+                    }
+                }
+            }
             finish("OK task=${task.taskId} from=$oldDisplay to=$display", 0)
         } catch (t: Throwable) {
             finish("ERR ${t.javaClass.simpleName}: ${t.cause?.message ?: t.message}", 1)
         }
+    }
+
+    private fun activityType(info: Any): Int {
+        val configuration = info.javaClass.getField("configuration").get(info)
+        val window = configuration.javaClass.getField("windowConfiguration").get(configuration)
+        return window.javaClass.getMethod("getActivityType").invoke(window) as Int
     }
 
     private fun finish(line: String, code: Int) {

@@ -72,4 +72,42 @@ class AccessibilityAppSourceTest {
     fun `appsOnDisplay returns an empty list when nothing was ever recorded`() {
         assertEquals(emptyList<RunningApp>(), source.appsOnDisplay(0))
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun history(): MutableMap<Int, MutableList<String>> = AccessibilityAppSource::class.java
+        .getDeclaredField("history").apply { isAccessible = true }.get(source) as MutableMap<Int, MutableList<String>>
+
+    @Test
+    fun `system snapshot removes closed apps from both histories and recycles only their thumbnails`() {
+        history()[0] = mutableListOf("dev.example.closed", "dev.example.alive")
+        history()[17] = mutableListOf("dev.example.closed", "dev.example.alive")
+        val closed = bitmap()
+        val alive = bitmap()
+        source.saveThumbnail("dev.example.closed", closed)
+        source.saveThumbnail("dev.example.alive", alive)
+        source.retainRecentTasks(listOf(RecentsTaskState("dev.example.alive", 17, true, 123)))
+        assertEquals(listOf("dev.example.alive"), history()[0])
+        assertEquals(listOf("dev.example.alive"), history()[17])
+        assertTrue(closed.isRecycled)
+        assertFalse(alive.isRecycled)
+    }
+
+    @Test
+    fun `successful empty snapshot clears history without adding system only apps`() {
+        history()[17] = mutableListOf("dev.example.closed")
+        source.retainRecentTasks(listOf(RecentsTaskState("dev.example.unobserved", 0, false, 321)))
+        assertEquals(emptyList<String>(), history()[17])
+        assertEquals(setOf(17), history().keys)
+        history()[17] = mutableListOf("dev.example.alive")
+        source.retainRecentTasks(emptyList())
+        assertEquals(emptyList<String>(), history()[17])
+    }
+
+    @Test
+    fun `multiple tasks for one app keep its observed history regardless of lock or display`() {
+        history()[31] = mutableListOf("dev.example.alive")
+        source.retainRecentTasks(listOf(RecentsTaskState("dev.example.alive", 0, false, 123),
+            RecentsTaskState("dev.example.alive", 17, true, 456)))
+        assertEquals(listOf("dev.example.alive"), history()[31])
+    }
 }

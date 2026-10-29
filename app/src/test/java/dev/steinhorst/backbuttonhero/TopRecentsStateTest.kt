@@ -50,4 +50,45 @@ class TopRecentsStateTest {
         assertFalse(TopRecentsState.parse("Button{abc VFED..C.. .F...... 578,0-858,111}").cardFocused)
     }
 
+    @Test
+    fun `secondary drawer focus and stopped cached Overview never count as live top Recents`() {
+        val dump = """
+            ACTIVITY com.android.launcher3/.secondarydisplay.SecondaryDisplayLauncher
+              mResumed=true mStopped=false
+              TaskView{bottom VFE...C.. .F...... 10,55-20,831}
+            ACTIVITY com.android.launcher3/.uioverrides.QuickstepLauncher
+              mResumed=false mStopped=true
+              TaskView{top VFE...C.. ........ 402,55-1518,831}
+              mState:Overview
+        """.trimIndent()
+        val state = TopRecentsState.parse(dump)
+        assertFalse(state.overview)
+        assertFalse(state.cardFocused)
+        assertEquals(TopRecentsState.CardBounds(402, 55, 1518, 831), state.cardBounds)
+        assertTrue(TopRecentsState.parse(dump.replace("mStopped=true", "mStopped=false")).overview)
+    }
+
+    @Test
+    fun `compact pservice records do not confuse action focus with a card on the same output line`() {
+        val state = TopRecentsState.parse("mState:Overview|mResumed=true mStopped=false|" +
+            "TaskView{top VFE...C.. ........ 402,55-1518,831}|" +
+            "Button{action VFED..C.. .F...... app:id/action_screenshot aid=42}|")
+        assertTrue(state.overview)
+        assertFalse(state.cardFocused)
+        assertTrue(state.actionsFocused)
+        assertTrue(SwitcherService.QUICKSTEP_STATE_COMMAND.length < 300)
+    }
+
+    @Test
+    fun `cached focused card cannot make an unfocused animation window ready on reopening`() {
+        val cache = "mState:Overview|mResumed=false mStopped=false|mHasWindowFocus=false|" +
+            "TaskView{pooled VFE...C.. .F...... 402,55-1518,831}|"
+        assertTrue(TopRecentsState.parse(cache).cardFocused)
+        assertTrue(TopRecentsState.parse(cache).overview)
+        assertFalse(TopRecentsState.parse(cache).windowFocused)
+        assertFalse(TopRecentsState.parse(cache.replace("mResumed=false", "mResumed=true")).windowFocused)
+        assertTrue(TopRecentsState.parse(cache.replace("mResumed=false", "mResumed=true")
+            .replace("mHasWindowFocus=false", "mHasWindowFocus=true")).windowFocused)
+    }
+
 }

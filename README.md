@@ -248,7 +248,8 @@ exactly what the app uses them for:
 <details>
 <summary>What does the Accessibility Service access?</summary>
 
-It receives Back, shoulder-button and D-pad events, plus window-change events.
+It receives Back, shoulder-button and D-pad events, plus window-change events and
+click events used to identify selected cards in the top system Recents.
 It uses app window/package information to build the recent-app list for each
 screen, and takes a screenshot of the bottom screen to make the switcher's
 preview cards. Screenshots and the recent-app history are kept in memory for
@@ -262,12 +263,12 @@ D-pad. Everything else is passed on untouched, and key presses are never stored
 or logged. The code is `onKeyEvent` in
 [`SwitcherService.kt`](app/src/main/java/dev/steinhorst/backbuttonhero/SwitcherService.kt).
 
-**Does it read window contents?** No. Android requires the "retrieve window
-content" capability for an app to learn which app is open in each window, so it
-is switched on in the
-[service configuration](app/src/main/res/xml/accessibility_config.xml). The app
-uses it for one thing: the package name of each window. It never reads text,
-input fields or other content.
+**Does it read window contents?** It reads window package names and, while the
+top system Recents is open, its card labels and focus information to identify
+the selected app and route controller input. Clicks from other apps are ignored.
+It does not read input fields or other app content. Android requires the
+"retrieve window content" capability for these queries, so it is enabled in the
+[service configuration](app/src/main/res/xml/accessibility_config.xml).
 
 </details>
 

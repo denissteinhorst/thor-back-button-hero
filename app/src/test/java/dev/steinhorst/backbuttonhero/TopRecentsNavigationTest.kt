@@ -51,4 +51,12 @@ class TopRecentsNavigationTest {
         state.ready()
         assertEquals(listOf("DISMISS", "LEFT"), events)
     }
+
+    @Test
+    fun `readiness on an actual action focus preserves up as navigation instead of dismissal`() {
+        navigation.press(DpadDirection.UP)
+        navigation.ready(actionsFocused = true)
+        navigation.press(DpadDirection.UP)
+        assertEquals(listOf("UP", "DISMISS"), events)
+    }
 }

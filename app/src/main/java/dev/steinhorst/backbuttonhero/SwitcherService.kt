@@ -23,6 +23,7 @@ import android.widget.Toast
 import android.view.Display
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 
 /**
  * Double-tap Back opens the switcher on the bottom screen; a single Back goes to the bottom screen's
@@ -51,6 +52,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var thumbnailQueryRunning = false
     @Volatile private var bottomStateSession = 0
     private var bottomStateQueryRunning = false
+    private var bottomSwitcherOpening = false
     private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
@@ -62,6 +64,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var topRecentsCardBounds: TopRecentsState.CardBounds? = null
     private var topRecentsInputReady = false
     private var topRecentsFocusPrimed = false
+    private var topRecentsFocusWorkerRunning = false
+    private var topRecentsFocusVersion = 0
     private var topRecentsExitRequested = false
     private val topNavigation = TopRecentsNavigation(
         { padHelper.navigateTop(it) },
@@ -74,12 +78,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var topLaunchOverviewSeen = false
     private var topLaunchAttempts = 0
     private var topLaunchQueryRunning = false
+    private var topLaunchSelectionPending = false
     private var topLaunchStartedAt = 0L
     private val topLaunchRunnable = Runnable { checkTopRecentsLaunch() }
     // A switcher-close Back press must consume its matching UP too. Otherwise that UP reaches the
     // gesture machine and can turn the same physical press into a tap, double-tap, or hold gesture.
     private var switcherBackDown = false
     private var switcherBackDeviceId = Int.MIN_VALUE
+    private var topRecentsBackClosePending = false
+    private val recentsConfirmKeys = mutableSetOf<Pair<Int, Int>>()
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -98,6 +105,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onServiceConnected() {
+        if (::padHelper.isInitialized) stopDpad()
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
@@ -138,6 +146,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        val confirmKey = event.deviceId to event.keyCode
+        if (confirmKey in recentsConfirmKeys) {
+            if (event.action == KeyEvent.ACTION_UP) recentsConfirmKeys.remove(confirmKey)
+            return true
+        }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             // Explicitly injected keyboard Back belongs to Quickstep, including its UP.
             if (topRecentsExitRequested && event.deviceId == -1) return false
@@ -148,6 +161,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (event.action == KeyEvent.ACTION_UP) {
                     switcherBackDown = false
                     switcherBackDeviceId = Int.MIN_VALUE
+                    val closeTop = topRecentsBackClosePending
+                    topRecentsBackClosePending = false
+                    if (closeTop && topRecentsControllerActive) closeTopRecents()
                 }
                 return true
             }
@@ -161,7 +177,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (topRecentsControllerActive) {
                     switcherBackDown = true
                     switcherBackDeviceId = event.deviceId
-                    closeTopRecents()
+                    // Inject only after physical UP. A second Back pair while the controller's
+                    // Back is still down can be acknowledged without dismissing native Overview.
+                    topRecentsBackClosePending = true
+                    cancelTopRecentsLaunch()
+                    topNavigation.reset()
                     return true
                 }
             }
@@ -211,8 +231,25 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return null
         return when {
             isRecentsConfirm(event) -> {
-                // Quickstep receives the real confirm; the state observer ends the session
-                // as soon as the selected app replaces it.
+                val card = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty()
+                    .mapNotNull { it.root }.firstOrNull { it.packageName == "com.android.launcher3" }
+                    ?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+                val description = card?.contentDescription?.toString()
+                val baseline = topLaunchBaseline
+                val task = if (baseline != null && description != null && card.collectionItemInfo != null &&
+                    card.parent?.viewIdResourceName == "com.android.launcher3:id/overview_panel") {
+                    RecentsSelection.fromCard(baseline, baseline, description)
+                } else null
+                if (task != null) {
+                    // Native Quickstep explicitly starts on the task's old display. Consume both
+                    // halves of confirm and move first, before that old-display start can happen.
+                    recentsConfirmKeys += event.deviceId to event.keyCode
+                    cancelTopRecentsLaunch()
+                    restoreRecentsFocus()
+                    launchFromRecents(task.packageName, Display.DEFAULT_DISPLAY, task.taskId)
+                    return true
+                }
+                // Action buttons and unidentified cards retain their native behavior.
                 scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
                 false
             }
@@ -223,6 +260,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** Back + D-pad, from [PadHelper] or [DpadOverlay]; both only report presses made while Back is held. */
     private fun handleDpad(direction: DpadDirection) {
         if (topRecentsControllerActive && prefs.switcherControllerEnabled) {
+            if (topLaunchSelectionPending || topRecentsBackClosePending) return
+            if (topRecentsInputReady && topRecentsLostFocus()) {
+                topRecentsInputReady = false
+                topNavigation.pause()
+            }
+            if (!topRecentsInputReady && !topRecentsFocusWorkerRunning && !topRecentsExitRequested) {
+                topRecentsFocusPrimed = false
+                topRecentsReadyAttempts = 0
+                scheduleTopRecentsStateCheck(0L)
+            }
             topNavigation.press(direction)
             return
         }
@@ -521,6 +568,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
@@ -535,6 +583,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
@@ -547,9 +596,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
+        // isConnected is shared with a replacement service. Retire this instance's focus workers
+        // explicitly so they cannot initialize an old Recents session after reconnection.
+        topRecentsControllerActive = false
+        topRecentsSession++
+        topNavigation.reset()
+        handler.removeCallbacks(topRecentsStateRunnable)
         if (!::padHelper.isInitialized) return
         prefs.unregisterListener(prefsListener)
-        padHelper.stop()
+        padHelper.dispose()
         dpadOverlay.detach()
     }
 
@@ -559,6 +614,20 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event?.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+            // Other applications' clicks are irrelevant; only native top Recents identifies
+            // card activations here, including an app already visible on the bottom screen.
+            if (event.packageName == "com.android.launcher3" && topLaunchBaseline != null) {
+                val node = event.source
+                val parent = node?.parent
+                val description = node?.contentDescription?.toString()
+                val topWindow = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty().any { it.id == event.windowId }
+                if (topWindow && parent?.viewIdResourceName == "com.android.launcher3:id/overview_panel" && node.collectionItemInfo != null && description != null) {
+                    selectTopRecentsCard(description)
+                }
+            }
+            return
+        }
         source.record(Display.DEFAULT_DISPLAY)
         bottomDisplay()?.let { source.record(it.displayId) }
         if (topRecentsControllerActive) {
@@ -566,6 +635,38 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         handler.removeCallbacks(captureRunnable)
         handler.postDelayed(captureRunnable, CAPTURE_DELAY_MS)
+    }
+
+    private fun topRecentsLostFocus(): Boolean {
+        val root = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty()
+            .mapNotNull { it.root }.firstOrNull { it.packageName == "com.android.launcher3" }
+            ?: return false // Window events can trail the authoritative focus snapshot.
+        val node = root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT) ?: return true
+        val card = node.collectionItemInfo != null && node.parent?.viewIdResourceName == "com.android.launcher3:id/overview_panel"
+        return !card && node.viewIdResourceName !in setOf("com.android.launcher3:id/action_screenshot", "com.android.launcher3:id/clear_all_button")
+    }
+
+    private fun selectTopRecentsCard(description: String) {
+        val baseline = topLaunchBaseline ?: return
+        if (topLaunchSelectionPending) return
+        topLaunchSelectionPending = true
+        val session = topLaunchSession
+        Thread {
+            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            handler.post {
+                if (session != topLaunchSession || !isConnected) return@post
+                topLaunchSelectionPending = false
+                val task = states?.let { RecentsSelection.fromCard(baseline, it, description) }
+                if (task != null) {
+                    cancelTopRecentsLaunch()
+                    // End controller initialization before moving the app. A late window-change
+                    // check must not bring Overview back over the task we just selected.
+                    restoreRecentsFocus()
+                    if (task.displayId != Display.DEFAULT_DISPLAY) launchFromRecents(task.packageName, Display.DEFAULT_DISPLAY, task.taskId)
+                    scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+                }
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     private val captureRunnable = Runnable { captureFrontApp() }
@@ -625,18 +726,24 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun launchFromRecents(pkg: String, displayId: Int) = launchFromRecents(pkg, displayId, null)
 
     private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
-        if (!Shell.isPkg(pkg) || listOf(Intent.CATEGORY_HOME, Intent.CATEGORY_SECONDARY_HOME).any { category ->
-                packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
-            }) return
+        if (!canMoveApp(pkg)) return
         beforeLaunch(displayId)
-        Thread {
-            val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
-            val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
-            Log.d(TAG, "Recents launch: $result")
-            if (result?.startsWith("OK ") != true) {
-                handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
-            }
-        }.apply { isDaemon = true }.start()
+        Thread { launchTask(pkg, displayId, taskId) }.apply { isDaemon = true }.start()
+    }
+
+    private fun canMoveApp(pkg: String): Boolean = Shell.isPkg(pkg) &&
+        listOf(Intent.CATEGORY_HOME, Intent.CATEGORY_SECONDARY_HOME).none { category ->
+            packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
+        }
+
+    /** Runs on a worker; swap moves must use one ordered worker rather than competing launches. */
+    private fun launchTask(pkg: String, displayId: Int, taskId: Int?) {
+        val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
+        val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
+        Log.d(TAG, "Recents launch: $result")
+        if (result?.startsWith("OK ") != true) {
+            handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
+        }
     }
 
     /** A normal app can only kill background processes, so leave the app first. With AYN's root
@@ -663,15 +770,21 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }, 500)
     }
 
-    /** Moves the front app of each screen to the other one by relaunching it there. */
+    /** Move the two captured foreground tasks; the first move must not change the second target. */
     override fun swapScreens() {
+        cancelBottomSwitcherOpen()
         val bottom = bottomDisplay()?.displayId ?: return
         val top = Display.DEFAULT_DISPLAY
         overlay.dismiss()
         val topApp = source.topApp(top)
         val bottomApp = source.topApp(bottom)
-        topApp?.let { launchOn(it, bottom) }
-        bottomApp?.let { launchOn(it, top) }
+        Thread {
+            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            val topTask = states?.firstOrNull { it.packageName == topApp && it.displayId == top }
+            val bottomTask = states?.firstOrNull { it.packageName == bottomApp && it.displayId == bottom }
+            topApp?.takeIf(::canMoveApp)?.let { launchTask(it, bottom, topTask?.taskId) }
+            bottomApp?.takeIf(::canMoveApp)?.let { launchTask(it, top, bottomTask?.taskId) }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun launchOn(pkg: String, displayId: Int) {
@@ -685,11 +798,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
      * always targets the default display, which is exactly the top screen in this setup.
      */
     override fun openTopRecents() {
+        cancelBottomSwitcherOpen()
         overlay.dismiss()
         val session = ++topLaunchSession
         handler.removeCallbacks(topLaunchRunnable)
         topLaunchBaseline = null
         topLaunchOverviewSeen = false
+        topLaunchSelectionPending = false
         topLaunchAttempts = 0
         Thread {
             val baseline = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
@@ -706,7 +821,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun checkTopRecentsLaunch() {
         val baseline = topLaunchBaseline ?: return
-        if (topLaunchQueryRunning) {
+        if (topLaunchQueryRunning || topLaunchSelectionPending) {
             handler.postDelayed(topLaunchRunnable, 250L)
             return
         }
@@ -723,8 +838,17 @@ class SwitcherService : AccessibilityService(), GestureActions {
             handler.post {
                 topLaunchQueryRunning = false
                 if (session != topLaunchSession || !isConnected) return@post
+                if (topLaunchSelectionPending) {
+                    handler.postDelayed(topLaunchRunnable, 250L)
+                    return@post
+                }
                 when {
-                    overview == true -> topLaunchOverviewSeen = true
+                    overview == true -> {
+                        if (!topLaunchOverviewSeen && !prefs.switcherControllerEnabled) {
+                            Thread { PService.runEntryPoint(this, "TopRecentsFocus") }.apply { isDaemon = true }.start()
+                        }
+                        topLaunchOverviewSeen = true
+                    }
                     overview == false && topLaunchOverviewSeen -> {
                         topLaunchBaseline = null
                         val task = states?.let { RecentsSelection.movedTask(baseline, it, Display.DEFAULT_DISPLAY) }
@@ -745,6 +869,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun cancelTopRecentsLaunch() {
         topLaunchSession++
         topLaunchBaseline = null
+        topLaunchSelectionPending = false
         handler.removeCallbacks(topLaunchRunnable)
     }
 
@@ -756,6 +881,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             topRecentsConfirmed = false
             topRecentsInputReady = false
             topRecentsFocusPrimed = false
+            topRecentsFocusWorkerRunning = false
             topRecentsExitRequested = false
             topNavigation.reset()
             topRecentsSession++
@@ -837,7 +963,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 bottomStateQueryRunning = false
                 if (!overlay.isShowing) return@post
                 if (session == bottomStateSession && states != null) {
-                    overlay.updateTaskStates(states)
+                    if (overlay.reconcileTaskStates(states)) source.retainRecentTasks(states)
+                    if (!overlay.isShowing) return@post
                     loadBottomThumbnails(states, session)
                 }
                 handler.removeCallbacks(bottomStateRunnable)
@@ -913,6 +1040,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         topRecentsConfirmed = false
         topRecentsInputReady = false
         topRecentsFocusPrimed = false
+        topRecentsFocusWorkerRunning = false
         topRecentsExitRequested = false
         topNavigation.reset()
         topRecentsSession++
@@ -947,17 +1075,32 @@ class SwitcherService : AccessibilityService(), GestureActions {
      *  navigation itself never waits for this root channel. */
     private fun requestTopRecentsStateCheck() {
         if (!topRecentsControllerActive) return
+        if (topRecentsBackClosePending) return
+        if (topLaunchSelectionPending) {
+            scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+            return
+        }
         if (topRecentsStateCheckRunning) {
             topRecentsStateCheckPending = true
             return
         }
         topRecentsStateCheckRunning = true
         val session = topRecentsSession
+        val focusVersion = topRecentsFocusVersion
         Thread {
             val state = PService.exec(QUICKSTEP_STATE_COMMAND)
             handler.post {
                 if (!topRecentsControllerActive || session != topRecentsSession) return@post
                 topRecentsStateCheckRunning = false
+                if (topRecentsBackClosePending) return@post
+                if (focusVersion != topRecentsFocusVersion) {
+                    scheduleTopRecentsStateCheck(0L)
+                    return@post
+                }
+                if (topLaunchSelectionPending) {
+                    scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+                    return@post
+                }
                 val snapshot = TopRecentsState.parse(state)
                 snapshot.cardBounds?.let { topRecentsCardBounds = it }
                 val overview = state?.let { snapshot.overview }
@@ -965,10 +1108,24 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     overview == true -> {
                         topRecentsConfirmed = true
                         if (topRecentsCardBounds != null) {
+                            if (topRecentsInputReady && !snapshot.windowFocused) {
+                                topRecentsInputReady = false
+                                topNavigation.pause()
+                            }
+                            if (!topRecentsInputReady && topRecentsFocusPrimed && !topRecentsFocusWorkerRunning && snapshot.windowFocused && (snapshot.cardFocused || snapshot.actionsFocused)) {
+                                topRecentsInputReady = true
+                                topRecentsFocusPrimed = true
+                                topNavigation.ready(snapshot.actionsFocused)
+                            }
                             if (topRecentsInputReady || topRecentsExitRequested) {
                                 drainTopRecentsDismissals()
-                            } else if (!topRecentsFocusPrimed) {
+                            } else if (!topRecentsFocusPrimed && !topRecentsFocusWorkerRunning) {
                                 primeTopRecentsFocus()
+                            } else if (++topRecentsReadyAttempts < TOP_RECENTS_READY_ATTEMPTS) {
+                                scheduleTopRecentsStateCheck(TOP_RECENTS_READY_RETRY_MS)
+                            } else {
+                                restoreRecentsFocus()
+                                return@post
                             }
 
                         } else if (++topRecentsReadyAttempts < TOP_RECENTS_READY_ATTEMPTS) {
@@ -1000,26 +1157,55 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun primeTopRecentsFocus() {
         topRecentsFocusPrimed = true
+        topRecentsFocusWorkerRunning = true
+        topRecentsFocusVersion++
         val session = topRecentsSession
         Thread {
-            // Unlike the pad's vendor key layout, keyboard Tab is known to leave touch mode and
-            // focus a TaskView without activating it. input waits for its delivery to complete.
-            val primed = ControllerFocus.commandSucceeded(PService.exec(
-                "input keyboard -d ${Display.DEFAULT_DISPLAY} keyevent ${KeyEvent.KEYCODE_TAB} && echo OK",
-            ))
+            val focused = PService.runEntryPoint(this, "TopRecentsFocus")?.startsWith("OK ") == true
             handler.post {
                 if (session != topRecentsSession || topRecentsExitRequested) return@post
-                if (primed) {
-                    topRecentsInputReady = true
-                    topNavigation.ready()
-                    drainTopRecentsDismissals()
-                } else {
-                    // A failed focus probe must never close the user's Overview.
-                    topRecentsFocusPrimed = false
-                    scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+                // Capture the centered card after the launcher handoff but before Tab can advance
+                // a pooled focus into another card/action. Its node identity survives scrolling.
+                val card = if (focused) centeredTopRecentsCard() else null
+                if (card == null) {
+                    finishTopRecentsFocus(false)
+                    return@post
                 }
+                Thread {
+                    val primed = PService.runEntryPoint(this, "TopRecentsFocus", "controller")?.startsWith("OK ") == true
+                    handler.post {
+                        if (session != topRecentsSession || topRecentsExitRequested) return@post
+                        val restored = primed && card.refresh() &&
+                            (card.isFocused || card.performAction(AccessibilityNodeInfo.ACTION_FOCUS))
+                        finishTopRecentsFocus(restored)
+                    }
+                }.apply { isDaemon = true }.start()
             }
         }.apply { isDaemon = true }.start()
+    }
+
+    private fun centeredTopRecentsCard(): AccessibilityNodeInfo? {
+        val root = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty()
+            .mapNotNull { it.root }.firstOrNull { it.packageName == "com.android.launcher3" } ?: return null
+        val panel = root.findAccessibilityNodeInfosByViewId("com.android.launcher3:id/overview_panel").firstOrNull() ?: return null
+        val display = getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY) ?: return null
+        val size = android.graphics.Point().also(display::getRealSize)
+        return (0 until panel.childCount).mapNotNull(panel::getChild)
+            .filter { node ->
+                val bounds = android.graphics.Rect().also(node::getBoundsInScreen)
+                node.collectionItemInfo != null && bounds.width() > 0 && bounds.right > 0 && bounds.left < size.x
+            }.minByOrNull { node ->
+                val bounds = android.graphics.Rect().also(node::getBoundsInScreen)
+                kotlin.math.abs(bounds.centerX() - size.x / 2)
+            }
+    }
+
+    private fun finishTopRecentsFocus(primed: Boolean) {
+        topRecentsFocusWorkerRunning = false
+        topRecentsFocusVersion++
+        if (!primed) topRecentsFocusPrimed = false
+        // Only a fresh snapshot after the focus transaction may release queued directions.
+        scheduleTopRecentsStateCheck(if (primed) TOP_RECENTS_READY_RETRY_MS else TOP_RECENTS_EVENT_SETTLE_MS)
     }
 
     private fun closeTopRecents() {
@@ -1045,6 +1231,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onSingleTap() {
+        if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { dlog("ACTION onSingleTap: overlay was showing -> dismiss only"); overlay.dismiss(); return }
         dlog("ACTION onSingleTap: singleAction=${prefs.singleAction}")
         when (prefs.singleAction) {
@@ -1055,7 +1242,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun goHome(displayId: Int? = null, dismissSwitcher: Boolean = true, component: ComponentName? = null) {
         val target = displayId ?: bottomDisplay()?.displayId ?: return
-        if (dismissSwitcher) overlay.dismiss()
+        if (dismissSwitcher) { cancelBottomSwitcherOpen(); overlay.dismiss() }
         val category = if (target == Display.DEFAULT_DISPLAY) Intent.CATEGORY_HOME else Intent.CATEGORY_SECONDARY_HOME
         val home = Intent(Intent.ACTION_MAIN).addCategory(category).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         component?.let { home.component = it }
@@ -1065,10 +1252,26 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun showSwitcher() {
         cancelTopRecentsLaunch()
         val display = bottomDisplay() ?: return
+        if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { overlay.dismiss(); return }
+        bottomSwitcherOpening = true
+        val session = ++bottomStateSession
         captureFrontApp {
-            runCatching { overlay.toggle(display) }.onFailure { Log.e(TAG, "toggle failed", it) }
+            Thread {
+                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+                handler.post {
+                    if (session != bottomStateSession || !isConnected) return@post
+                    bottomSwitcherOpening = false
+                    if (states != null) source.retainRecentTasks(states)
+                    runCatching { overlay.toggle(display) }.onFailure { Log.e(TAG, "toggle failed", it) }
+                }
+            }.apply { isDaemon = true }.start()
         }
+    }
+
+    private fun cancelBottomSwitcherOpen() {
+        bottomSwitcherOpening = false
+        bottomStateSession++
     }
 
     /** The AYN Thor's second screen is the non-default internal display (id 4, "Screen-2" here). */
@@ -1099,8 +1302,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val NAV_FLICK_DURATION_MS = 120L
         const val QUICKSTEP_STATE_COMMAND =
             "dumpsys activity com.android.launcher3 | " +
-                "awk '/TaskView\\{/ && task == \"\" { task=\$0 } " +
-                "/mState:/ { state=\$0 } END { print state \" | \" task }'"
+                "awk '/ACTIVITY /{a=/QuickstepLauncher/} " +
+                "a&&(/mState:|mResumed=|mHasWindowFocus=/||(/TaskView\\{/&&(!t++||/ \\.F/))||" +
+                "(/ \\.F/&&/app:id\\/(action_screenshot|clear_all_button)/)){printf \"%s|\",\$0}'"
         const val TOP_RECENTS_READY_RETRY_MS = 40L
         const val TOP_RECENTS_READY_ATTEMPTS = 25
         const val TOP_RECENTS_EVENT_SETTLE_MS = 140L
