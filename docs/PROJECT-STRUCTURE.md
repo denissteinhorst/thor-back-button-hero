@@ -180,7 +180,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `Back Button Hero 1.3.0.mp4` | Source of the 60 fps video of all eight gesture demonstrations. The README embeds the copy hosted on GitHub. |
+| `Back Button Hero 1.4.0.mp4` | Source of the 60 fps video, recorded frame by frame from `gesture-explainer.html?autoplay`. The README and the landing page embed the copy hosted on GitHub. |
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |

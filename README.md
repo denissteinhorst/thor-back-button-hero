@@ -65,6 +65,7 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 - **Volume up / down** on both screens, only the top, or only the bottom.
 - **Brightness up / down** on both screens, only the top, or only the bottom.
 - **Set controller focus** to the top or bottom screen, either as a toggle or fixed to one screen. A short pictogram confirms the active screen. Its position (a 3 × 3 grid), display time, and visibility can be set; tapping the pictogram opens these settings.
+- **Active App Control** minimizes the app in front (as if you swiped up) or force-closes it, on the top screen, the bottom screen, both, or asks each time. "Ask" opens a small prompt on the screen the controller is on, which you steer with the D-pad or stick. **Force-Close ends the app immediately and does not save anything for you, so unsaved progress and files can be lost.** For a fixed screen it can optionally ask first.
 - **Quick Settings** and **notifications**
 - **System settings pages:** Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb, Battery Saver
 - **Not set**
