@@ -169,6 +169,7 @@ first build, so they work right after a clone without a manual step.
 | `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
 | `PROJECT-STRUCTURE.md` | This file. |
 | `MAINTENANCE.md` | Setup, building, releasing, dependency policy, and recipes for common changes. |
+| `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `gesture-explainer.html` | Interactive page demonstrating each gesture on a device diagram. Fully self-contained: `thor-base.png` is embedded as a base64 data URI so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. |
 
 ### `docs/assets/`
