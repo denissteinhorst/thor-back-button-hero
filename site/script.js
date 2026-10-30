@@ -120,7 +120,12 @@
     else window.addEventListener('resize', fit);
     explainerOpen.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!frame.src) frame.src = explainerOpen.getAttribute('href');
+      // The page's own light/dark choice wins over the system setting the explainer would otherwise follow.
+      var theme = currentTheme();
+      if (frame.getAttribute('data-theme') !== theme) {
+        frame.setAttribute('data-theme', theme);
+        frame.src = explainerOpen.getAttribute('href') + '?theme=' + theme;
+      }
       explainer.showModal();
       fit();
     });

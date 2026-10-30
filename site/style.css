@@ -271,8 +271,9 @@ nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left:
 .explainer-close:hover { background: var(--accent-soft); color: var(--accent); }
 /* The explainer is a fixed 640×640 page; script.js scales it to the available width. */
 .explainer-stage { position: relative; width: 100%; aspect-ratio: 1; max-height: calc(100dvh - 32px - 58px); background: #fff; overflow: hidden; }
-/* match the explainer's own dark theme, which follows the system like this page */
-@media (prefers-color-scheme: dark) { .explainer-stage { background: #0f0f10; } }
+/* match the explainer's own themes: script.js hands it the page's current choice */
+:root[data-theme="dark"] .explainer-stage { background: #0f0f10; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .explainer-stage { background: #0f0f10; } }
 .explainer-stage iframe { position: absolute; top: 0; left: 50%; width: 640px; height: 640px; border: 0; transform-origin: top center; transform: translateX(-50%) scale(var(--s, 1)); }
 
 /* features: sub heads */
