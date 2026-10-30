@@ -23,7 +23,7 @@
 > **Get more out of the Back button on your [AYN Thor](https://www.ayntec.com/products/ayn-thor).**
 > Double-tap for an app switcher on the bottom screen, hold to swap both screens, and put your favorite
 > actions on L1, L2, R1, R2 and the D-pad: screenshots, volume, brightness, controller focus, minimizing or closing the app in front and more.
-> <ins>No root required. Free and open source.</ins>
+> <ins>No rooting needed. Free and open source.</ins>
 >
 > Every setting is optional. The app is lean by design, and none of the gestures or hotkeys has to be used.
 >
@@ -93,7 +93,7 @@ The controller-focus pictogram appears at the center right of the top screen for
 
 ## How the D-pad shortcuts work
 
-The game keeps running and never sees a D-pad shortcut. Normal apps cannot read the Thor's D-pad without taking focus away from the game, so the app uses a root service that AYN's firmware already provides. Back Button Hero uses it for exactly one thing: starting a tiny helper program that sits between the controller and Android and holds back D-pad presses made while Back is held. Your device is not rooted.
+The game keeps running and never sees a D-pad shortcut. Normal apps cannot read the Thor's D-pad without taking focus away from the game, so the app uses a root service that AYN's firmware already provides. For the D-pad, Back Button Hero uses it to start a tiny helper program that sits between the controller and Android and holds back D-pad presses made while Back is held. Your device is not rooted.
 
 | | |
 |---|---|
@@ -103,6 +103,8 @@ The game keeps running and never sees a D-pad shortcut. Normal apps cannot read 
 | **If it's unavailable** | Shortcuts still work, but games may pause while Back is held. The settings screen shows a warning. |
 
 Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
+
+**What else uses AYN's root service?** Everything that needs more than an ordinary app may do: brightness and bottom-screen volume, setting the controller focus, moving apps between the screens (hold-to-swap and picking an app in Recents), force-closing apps, the real Back for apps with exceptions, the frontend compatibility for ES-DE Companion, NeoStation and Cocoon, controller navigation in Recents, and the native screenshots of the bottom screen. It works while the Thor's SELinux is permissive, which is AYN's factory default. Where it is unavailable, the app falls back to a simpler method where one exists (for example closing an app through Android's normal background kill) and otherwise reports the action as unavailable.
 
 ## Screenshots of the app's settings
 
@@ -167,11 +169,8 @@ own accessibility service.
   the game. With all four Back gestures unchecked, Back and every combo go to that
   app untouched. Each app can be switched off without losing its boxes, and
   **Remove all exceptions** previews and clears the whole list.
-- **Check for updates** asks GitHub Releases for a newer version, in addition to
-  the automatic background check. This is useful right after installing.
-
-**Exceptions** is a WIP interface preview: its app list and checkboxes do not yet
-change button behavior or save permanent rules.
+- **Check for new version** asks GitHub Releases for a newer version, in addition to
+  the automatic check when you open the app. This is useful right after installing.
 
 Settings are kept when you update the app. A new version only applies its
 defaults to settings you have never changed, and it does not overwrite buttons
@@ -180,18 +179,22 @@ you have assigned or deliberately left empty.
 ## Small footprint
 
 With the accessibility service enabled and idle in the background, Back
-Button Hero used **7.8 MiB PSS** and `top` rounded its CPU use to **0.0%** in
-five consecutive one-second samples. This is a small footprint for a service
-that stays ready to handle button input.
+Button Hero 1.4.0 used **41.9 MiB PSS**, and `top` showed **0.0%** CPU in four of
+five consecutive one-second samples and 1.0% in the fifth. Version 1.3.0 measured
+7.8 MiB; the larger figure now includes the new Recents, the root helper and the
+frontend handling. This is still a small footprint for a service that stays ready to
+handle button input.
 
 <details>
 <summary>How this was measured</summary>
 
-Measured live over ADB on 25 October 2026 on an AYN Thor Max 16GB/1TB
+Measured live over ADB on 30 October 2026 on an AYN Thor Max 16GB/1TB
 (Rainbow), 1st Batch, Android 13, firmware
-`Thor_V1.0.0.377_20260206_165408_user`. At the time of measurement, the app
-had no open activities. `dumpsys meminfo` reported
-7,998 KiB PSS and 96,204 KiB RSS; RSS includes shared resident pages, while
+`Thor_V1.0.0.377_20260206_165408_user`, with the release build of 1.4.0 (signed
+with a debug key, since release signing happens in CI). About 20 seconds after a
+fresh install and service start, the app had no open activities. `dumpsys meminfo`
+reported 42,943 KiB PSS (Java heap 8,036 KiB, native heap 17,064 KiB) and
+175,696 KiB RSS; RSS includes shared resident pages, while
 PSS apportions shared pages and is the more useful estimate of memory
 attributable to this process. CPU was sampled with `top -b -d 1 -n 5 -p <pid>`.
 These are idle-state readings, not a peak-use benchmark; actual usage varies
@@ -357,6 +360,10 @@ detail for people who want to understand or work on it:
   privacy and trust questions an accessibility service ought to answer.
 - [Helper service](docs/HELPER.md) — what the AYN firmware helper does and why
   the D-pad shortcuts need it.
+- [Performance](docs/PERFORMANCE.md) — measured runtime cost of the hot paths, and
+  the optimizations that were tried and not kept.
+- [Thor system Recents reference](docs/THOR-RECENTS.md) — what the AYN launcher's
+  Recents does, and how the bottom Recents copies it.
 - [Interactive gesture explainer][explainer-url] — a clickable device diagram
   showing what each Back-button gesture does. Self-contained; open the
   downloaded file in any browser.

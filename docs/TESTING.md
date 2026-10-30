@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 295 JVM tests pass |
+| `testDebugUnitTest` | All 336 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 52 classes, 295 tests
+### Base — JVM tests (Robolectric + JUnit), 57 classes, 336 tests
 
 Everything the gate can verify without hardware.
 
@@ -71,6 +71,15 @@ Everything the gate can verify without hardware.
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
+| Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
+| Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
+| Active App Control: target resolution, defaults, snapshots | `AppControlTest` |
+| Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest` |
+| Top Recents navigation and state parsing | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
+| Task moves, swap return, frontend parking and bottom panels | `TaskMovePolicyTest`, `SwapReturnTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
+| Pad helper lifecycle, navigation mode, RetroArch port claim | `PadHelperLifecycleTest`, `PadNavigationModeTest`, `PadPortClaimTest` |
+| Shell quoting and package validation | `ShellTest` |
+| Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
 | Card touch arbitration | `CardTouchTest` |
 | Recent-app bookkeeping, thumbnail cache | `AccessibilityAppSourceTest` |
 | Release parsing, semver ordering, legacy tags | `UpdateCheckerParseTest` |
@@ -110,9 +119,9 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 git diff app/src/test/resources/golden/   # must contain only the intended change
 ```
 
-### Tip — one instrumented smoke test
+### Tip — instrumented tests
 
-`SettingsActivitySmokeTest` starts `SettingsActivity` on a real device to catch manifest,
+`RecentsMemoryDeviceTest` checks on a real device that the launcher's memory helper can be read. `SettingsActivitySmokeTest` starts `SettingsActivity` on a real device to catch manifest,
 resource and framework-integration failures that a JVM model cannot reproduce. It needs an
 attached device and is **not** part of the gate:
 
@@ -154,11 +163,11 @@ measures instructions instead, which is not what these numbers mean.
 | `LevelSteps` | 1.00 | 1.0000 |
 | `DpadDirection` (and its companion) | 1.00 | 1.0000 |
 | `CardTouch` | 1.00 | 1.0000 |
-| `BackGestureMachine` | 0.98 | 0.9865 |
+| `BackGestureMachine` | 0.98 | 0.9890 |
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
 
-A further 24 classes (settings, navigation, Recents routing/state, panels, key gate,
+A further 26 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle) are ratcheted at 0.95–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
@@ -179,8 +188,8 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **34 %** (119/349 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **13 %** (123/946) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherOverlay` — **36 %** (127/357 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **15 %** (165/1127) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |

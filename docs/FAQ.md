@@ -17,7 +17,7 @@ used on day to day.
 It should. Nothing in the app depends on the Max variant: all Thor models share the same
 dual-screen layout and the same Back and shoulder-button hardware, which is everything
 the app relies on. The variants differ in RAM and storage, and the app asks very little
-of either — measured at **7.8 MiB PSS** and 0.0 % CPU while idle in the background, so
+of either — measured at **41.9 MiB PSS** and about 0 % CPU while idle in the background, so
 the lower-specced models are not a concern. See
 [Small footprint](../README.md#small-footprint) for how that was measured.
 
@@ -74,11 +74,10 @@ exists, and posts a notification if so. Worth knowing:
 
 ### Why does the update check fail even though I have internet?
 
-Most often one of three reasons: the network was not up yet when you opened the app
-(the check happens immediately, with a 5-second timeout and no retry); GitHub's limit of
-60 unauthenticated API requests per hour per IP was reached; or, right after the very
-first release, there was nothing to compare against. Opening the app again, or tapping
-"Check for new version", is enough in all three cases.
+Most often one of two reasons: the network was not up yet when you opened the app
+(the check happens immediately, with a 5-second timeout and no retry), or GitHub's limit of
+60 unauthenticated API requests per hour per IP was reached. Opening the app again, or
+tapping "Check for new version", is enough in both cases.
 
 ### Can I install an update over an existing version?
 
@@ -103,6 +102,17 @@ A fair question, and the honest answer is that you should verify rather than tru
 
 The README's [permissions section](../README.md#accessibility-permissions--privacy)
 explains what each capability is used for.
+
+### Does it need root?
+
+No, the device is not rooted and the app is not installed with root rights. Some features
+use the root service that the Thor's firmware ships (`pservice`, the backend of Settings →
+Thor → "Run Script as Root"): the Back + D-pad shortcuts without pausing the game, brightness
+and bottom-screen volume, controller focus, moving apps between the screens, force-closing
+apps, and the frontend compatibility. It works while the Thor's SELinux is permissive, which
+is AYN's factory default. Without it the app falls back to a simpler method where one exists
+and otherwise reports the action as unavailable; the settings screen warns when a D-pad
+shortcut cannot use it. [`HELPER.md`](HELPER.md) explains the D-pad part in detail.
 
 ### What leaves my device?
 

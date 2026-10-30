@@ -42,8 +42,7 @@ owner's reply.** Do not use `AskUserQuestion` or any other follow-up input menu 
 asynchronous question tool — the owner easily overlooks them. The owner writes in
 German; answer in German, while code, comments, commits, and repo docs stay English.
 
-Untracked or modified files in the worktree belong to the owner (currently e.g.
-`site/` and `.github/workflows/pages.yml`). Preserve them and never fold them into a
+Untracked or modified files in the worktree belong to the owner. Preserve them and never fold them into a
 commit for unrelated work.
 
 **Self-contained compatibility.** Every compatibility fix must ship entirely in this
@@ -176,7 +175,7 @@ to record:
   `UpdateChecker$Version` is its own entry. Aggregating a class with its nested types
   overstates the figure the rule actually enforces. Measured values come from
   `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
-- **Release APK ~3.23 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
+- **Release APK ~3.34 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
   `lib/arm64-v8a/libpadhelper.so`. Debug is much larger because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -198,8 +197,8 @@ compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs,
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at about **34 %** line coverage (119/349), `SwitcherService` about **13 %**
-(123/946) and `FocusIndicatorOverlay` **0 %** (0/93). The panel host, Recents task
+`SwitcherOverlay` is at about **36 %** line coverage (127/357), `SwitcherService` about **15 %**
+(165/1127) and `FocusIndicatorOverlay` **0 %** (0/93). The panel host, Recents task
 routing, and top-Recents controller focus are likewise device-only. The entire switcher overlay UI, multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
@@ -386,9 +385,10 @@ a previous version.
   the app shows "Couldn't check for updates". That is expected pre-`v1` and resolves
   itself once the release workflow has published once. Verified unauthenticated, exactly
   as the app calls it.
-- **Branch protection is available but not yet configured** (`GET .../branches/main/protection`
-  answers `404 Branch not protected`). Until it is set up to require the `verify` check,
-  CI is advisory only and nothing mechanically stops a direct push to `main`.
+- **Protection is configured as rulesets, not classic branch protection**
+  (`GET .../branches/main/protection` answers `404`, which is expected): `protect-main` requires
+  the `verify` check and `protect-release-tags` guards `v*` tags. Admins bypass, so a direct push
+  to `main` is still possible for the owner. See `docs/MAINTENANCE.md`.
 - Note when debugging the update path: unauthenticated GitHub API calls are limited to
   **60/hour per IP**, and a local `curl` loop exhausts that quickly. A `403` with
   `rate_limit.core.remaining == 0` is throttling, not a visibility or code problem —

@@ -134,7 +134,7 @@ The top screen's volume is ordinary `STREAM_MUSIC` and needs no root.
 
 Neither the app nor the device is rooted. The Thor's firmware ships a root daemon, **`pservice`**
 (uid 0, started at boot). It backs Settings → Thor → "Run Script as Root" and exposes the binder
-service `PServerBinder`. `PService.kt` talks to it; swipe-to-close in the switcher already uses it.
+service `PServerBinder`. `PService.kt` talks to it; swipe-to-close in the switcher, controller focus and the screen swap use it as well.
 
 The helper is started like this (see `PadHelper.launch`):
 
@@ -192,7 +192,10 @@ the app falls back to `DpadOverlay`:
 - The **settings screen shows a warning banner** at the top whenever a D-pad direction has an action
   but pservice is not reachable.
 
-Everything else in the app works with or without pservice.
+Other features use pservice as well (controller focus, moving apps between the screens, force-close,
+frontend compatibility; see [`ARCHITECTURE.md`](ARCHITECTURE.md)). Each falls back to a simpler method
+where one exists, or reports the action as unavailable. The Back gestures, the bottom switcher, the shoulder
+shortcuts that do not need it and the settings work either way.
 
 ## Testing
 

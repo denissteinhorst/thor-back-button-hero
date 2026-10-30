@@ -37,17 +37,16 @@ Close all command deliberately overrides launcher locks for every targeted packa
 Back Button Hero policy; the original lock state and native Overview behavior remain unchanged. A package can have multiple tasks/displays, and a historical observation
 is not authoritative current placement. `RecentsBadges` reads the original drawables and dimensions from the installed launcher, including
 the exact 80-pixel offset; it does not redraw or copy the assets into this repository. Do not label
-historical package entries as current system tasks. The same task identity now also drives system snapshot loading. Task launch/move or lock controls
-would be separate behavior/architecture work.
+historical package entries as current system tasks. The same task identity now also drives system snapshot loading. Task launch/move is handled by `RecentsTaskLauncher`
+(see [`ARCHITECTURE.md`](ARCHITECTURE.md)); lock controls remain separate behavior/architecture work.
 
 The installed `SecondaryDisplayLauncher.getOverviewPanel()` returns null. Its existence and the
 multi-display badges therefore do not by themselves establish a reusable native Overview on the
 bottom screen. Moving or embedding system Recents would require a separate compatibility study.
 
-A useful related investigation for the task-preserving swap feedback is Quickstep's
-`ActivityManagerWrapper.startActivityFromRecents(TaskKey, ActivityOptions)`, which launches
-an existing task rather than a package's launcher intent. Its privileges and display
-behavior must be checked before adopting it.
+Quickstep's `ActivityManagerWrapper.startActivityFromRecents(TaskKey, ActivityOptions)` launches an
+existing task rather than a package's launcher intent, but it raises the default-display Home even
+for a background move, so `RecentsTaskLauncher` uses `moveTaskToFront` with flags 0 instead.
 
 ## Lock semantics
 

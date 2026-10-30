@@ -108,8 +108,8 @@ changes (for example whether the screen toggle shows).
 ### Touching gesture or overlay code
 
 `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, `CardTouch` and
-`BackGestureMachine` are where a green gate proves the least — `SwitcherOverlay` has no
-automated coverage at all. These changes are tier S2 or S3 — always follow up with the
+`BackGestureMachine` are where a green gate proves the least — `SwitcherOverlay` is only
+about a third covered. These changes are tier S2 or S3 — always follow up with the
 corresponding device procedure in [`MANUAL-TESTING.md`](MANUAL-TESTING.md), and use the
 gesture-trace comparison there if the change is meant to be behavior-neutral.
 

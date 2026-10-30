@@ -1,7 +1,7 @@
 # Manual testing procedures
 
-The automated gate cannot see most of what this app does. `SwitcherOverlay` has **0 %**
-line coverage and `SwitcherService` about **13 %**, because an accessibility connection, a
+The automated gate cannot see most of what this app does. `SwitcherOverlay` has about **36 %**
+line coverage and `SwitcherService` about **15 %**, because an accessibility connection, a
 second display and real hardware key events are not reachable from Robolectric, and no
 emulator image exists for a dual-screen device.
 
@@ -22,7 +22,7 @@ Find the highest tier any touched file falls into. Mixed changes take the highes
 | **S0** | `docs/**`, `README.md`, `CLAUDE.md`, `.github/**`, `.githooks/**`, test sources, goldens, `lint-baseline.xml` | None | — |
 | **S1** | `Prefs.kt`, `SettingsUiKit.kt`, `SettingsActivity.kt`, `UpdateChecker.kt`, `res/values*/strings.xml`, `colors.xml`, version bumps | [A — Settings smoke](#procedure-a--settings-smoke) | ~3 min |
 | **S2** | `BackGestureMachine.kt`, `DoubleTapDetector.kt`, `CardTouch.kt`, `ShoulderButton.kt` | A + [B — Gesture pass](#procedure-b--gesture-pass) | ~12 min |
-| **S3** | `SwitcherService.kt`, `SwitcherOverlay.kt`, `ControllerFocus.kt`, `FocusIndicatorOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
+| **S3** | `SwitcherService.kt`, `SwitcherOverlay.kt`, `ControllerFocus.kt`, `FocusIndicatorOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AppControl.kt`, the D-pad path (`PadHelper.kt`, `padhelper.c`, `DpadOverlay.kt`, `LevelControl.kt`, `BrightnessControl.kt`), the Recents, panel and parking classes (`Recents*.kt`, `TopRecents*.kt`, `Panel*.kt`, `BottomPanels.kt`, `FrontendParking.kt`, `TaskParker.kt`, `TaskRemover.kt`, `SwapReturn.kt`), `PService.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
 | **S4** | Publishing a release | S3 plus [D — Release acceptance](#procedure-d--release-acceptance) | ~40 min |
 
 Two notes on the boundaries. A **version bump alone is S1** even though it edits
@@ -100,7 +100,7 @@ showing Recents, that is the `pressFollowsTap` latching behavior breaking — se
 
 ## Procedure C — Overlay and shoulder pass
 
-The part with no automated coverage at all. Needs the two or three apps from step 0.
+The part with little or no automated coverage. Needs the two or three apps from step 0.
 
 ### Switcher overlay
 

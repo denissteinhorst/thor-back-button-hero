@@ -100,8 +100,8 @@ bottom screen; it is not a full-screen window that happens to be positioned low.
 
 Contents: a horizontal scroll row of cards (icon, label, thumbnail), the current
 available/total memory, bottom-screen Screenshot and Close all actions styled like the
-top system Recents, and an empty state. Close all is bottom-only in this UI; the service
-still retains its both-screens close path for other callers. `CardTouch` arbitrates each
+top system Recents, and an empty state. Close all acts on the bottom screen, or on both screens
+when **Show apps from both screens** is on. `CardTouch` arbitrates each
 card's touches — tap opens, upward swipe past a threshold closes, horizontal drags go to
 the scroller — and is extracted so that arbitration is testable without a real window.
 
@@ -285,7 +285,7 @@ The five outcomes and their triggers:
 | Double tap within the window | Switcher overlay on the bottom screen |
 | Hold for the configured duration | Swap the apps on the top and bottom screens |
 | Tap, then hold again within the tap-hold window | System Recents on the **top** screen instead of a swap |
-| Hold + L1/L2/R1/R2 | That button's configured action, on its configured screen |
+| Hold + L1/L2/R1/R2 or a D-pad direction | That button's configured action, on its configured screen |
 
 ### Why `pressFollowsTap` is latched at DOWN
 
@@ -373,8 +373,8 @@ Three extractions exist purely so that logic became reachable from the JVM:
 `UpdateChecker.parseVersion`/`parseRelease` (release parsing).
 
 Everything that needs a real accessibility connection, a second display, or a real
-window remains outside automated reach: `SwitcherOverlay` has no automated coverage and
-`SwitcherService` has almost none. Robolectric cannot provide
+window remains outside automated reach: `SwitcherOverlay` is only partly covered (about
+36 % of its lines) and `SwitcherService` barely (about 15 %). Robolectric cannot provide
 `windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and
