@@ -24,8 +24,10 @@
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+/* The system setting applies until a visitor picks a theme with the toggle (data-theme). */
+:root[data-theme="light"] { color-scheme: light; }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0f0f10;
     --band: #151517;
     --surface: #1b1b1e;
@@ -42,6 +44,24 @@
     --part: #f0b14a;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 16px 40px -20px rgba(0, 0, 0, .7);
   }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f0f10;
+  --band: #151517;
+  --surface: #1b1b1e;
+  --fg: #efefef;
+  --muted: #a8a8a8;
+  --line: #2d2d31;
+  --accent: #ff5a5f;
+  --accent-fg: #111111;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --ink: #1d1d20;
+  --ink-2: #26262a;
+  --focus: #8ab4ff;
+  --ok: #5fd08a;
+  --part: #f0b14a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 16px 40px -20px rgba(0, 0, 0, .7);
 }
 
 /* base */
@@ -94,6 +114,22 @@ nav { display: flex; gap: .15rem; font-size: .95rem; }
 nav a { text-decoration: none; color: var(--muted); padding: .5rem .75rem; border-radius: 999px; transition: color .15s, background .15s; }
 nav a:hover { color: var(--fg); background: var(--accent-soft); }
 nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left: .35rem; }
+.bar-end { display: flex; align-items: center; gap: .6rem; }
+/* light/dark switch: the knob carries the icon of the active mode */
+.theme-switch {
+  flex: none; position: relative; width: 52px; height: 30px; padding: 0; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--band);
+  transition: border-color .15s;
+}
+.theme-switch:hover { border-color: var(--accent); }
+.theme-switch .knob {
+  position: absolute; top: 3px; left: 3px; display: grid; place-items: center; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--accent); color: var(--accent-fg); transition: transform .2s;
+}
+.theme-switch[aria-checked="true"] .knob { transform: translateX(22px); }
+.theme-switch svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.theme-switch .ico-moon, .theme-switch[aria-checked="true"] .ico-sun { display: none; }
+.theme-switch[aria-checked="true"] .ico-moon { display: block; }
 @media (max-width: 680px) {
   nav a:nth-child(1), nav a:nth-child(2), nav a:nth-child(4), nav a:nth-child(5) { display: none; }
 }
@@ -181,6 +217,38 @@ nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left:
 .showcase h3 { font: 700 1.75rem/1.2 var(--serif); letter-spacing: -.01em; margin-bottom: .5rem; }
 .showcase > p { color: var(--muted); font-size: 1.05rem; }
 .showcase > p:last-child { margin: 1.75rem 0 0; }
+/* showcase tabs: video and screenshots share the headline slot */
+/* Without JavaScript both panels and every screenshot simply stack; the controls need it. */
+.show-tabs, .shot-chapters, .shot-nav { display: none !important; }
+.js .show-tabs { display: inline-flex !important; }
+.js .shot-chapters, .js .shot-nav { display: flex !important; }
+.shot + .shot { margin-top: 2rem; }
+.js .shot + .shot { margin-top: 0; }
+.show-tabs { gap: .25rem; padding: .3rem; margin-bottom: 1rem; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.show-tabs button {
+  font: 700 1.2rem/1.2 var(--serif); letter-spacing: -.01em; padding: .55rem 1.2rem; min-height: 44px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.show-tabs button:hover { color: var(--fg); }
+.show-tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); }
+.show-panel > p { color: var(--muted); font-size: 1.05rem; }
+.show-panel > p:last-child { margin: 1.75rem 0 0; }
+.showcase:has(#panel-shots:not([hidden])) { max-width: 980px; }
+.shot-chapters { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; margin: 1.25rem 0; }
+.shot-chapters button {
+  font: 600 .9rem var(--sans); min-height: 36px; padding: .3rem .9rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.shot-chapters button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.shot img { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--band); }
+.shot figcaption { max-width: 40rem; min-height: 3em; margin: 1rem auto 0; font-size: 1rem; color: var(--fg); text-wrap: pretty; }
+.shot-nav { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+.shot-nav button {
+  width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  font-size: 1.2rem; cursor: pointer;
+}
+.shot-nav button:hover, .shot-chapters button:hover { border-color: var(--accent); color: var(--accent); }
+.shot-count { min-width: 4.5rem; font-variant-numeric: tabular-nums; color: var(--muted); }
 .media { margin: 1.75rem 0 0; }
 .media video {
   width: 100%; aspect-ratio: 1; border-radius: var(--radius); background: #000;
@@ -490,6 +558,16 @@ pre code { word-break: normal; }
   .fe-help ul { columns: 1; }
 }
 
+/* back to top: appears after scrolling, hidden without JavaScript */
+.to-top {
+  position: fixed; right: 20px; bottom: 20px; z-index: 9; display: grid; place-items: center; width: 48px; height: 48px;
+  padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--fg);
+  box-shadow: var(--shadow); cursor: pointer;
+}
+.to-top[hidden] { display: none; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+.to-top svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
 /* footer */
 footer { background: var(--ink); color: var(--ink-fg); padding: 4rem 0 3rem; --muted: var(--ink-muted); --accent: var(--ink-accent); --line: rgba(255, 255, 255, .12); }
 footer .wrap { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem 4rem; }
@@ -546,7 +624,7 @@ footer .small { grid-column: 1 / -1; margin: 0; padding-top: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn, .play, nav a, summary::after { transition: none; }
+  .btn, .play, nav a, summary::after, .theme-switch, .theme-switch .knob { transition: none; }
   .btn:hover { transform: none; }
   .hero-art::before, .combo-bar::before, .combo-keys kbd, .combo-logo img, .combo-logo::after { animation: none; }
 }

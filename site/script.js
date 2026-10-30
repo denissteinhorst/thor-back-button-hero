@@ -4,6 +4,59 @@
 
   var REPO = 'denissteinhorst/thor-back-button-hero';
 
+  // Showcase tabs (video / screenshots) and the screenshot stepper.
+  document.documentElement.classList.add('js');
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.show-tabs [role="tab"]'));
+  function selectTab(tab, focus) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (focus) tab.focus();
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () { selectTab(tab, false); });
+    tab.addEventListener('keydown', function (e) {
+      var step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (step) { e.preventDefault(); selectTab(tabs[(i + step + tabs.length) % tabs.length], true); }
+    });
+  });
+  if (tabs.length) selectTab(tabs[0], false);
+
+  var shots = Array.prototype.slice.call(document.querySelectorAll('.shot'));
+  var chapters = Array.prototype.slice.call(document.querySelectorAll('.shot-chapters button'));
+  var count = document.querySelector('.shot-count');
+  var current = 0;
+  function showShot(index) {
+    current = (index + shots.length) % shots.length;
+    shots.forEach(function (s, i) { s.hidden = i !== current; });
+    var chapter = shots[current].getAttribute('data-chapter');
+    chapters.forEach(function (c) {
+      if (c.getAttribute('data-chapter') === chapter) c.setAttribute('aria-current', 'true');
+      else c.removeAttribute('aria-current');
+    });
+    if (count) count.textContent = (current + 1) + ' / ' + shots.length;
+  }
+  if (shots.length) {
+    document.querySelector('.shot-prev').addEventListener('click', function () { showShot(current - 1); });
+    document.querySelector('.shot-next').addEventListener('click', function () { showShot(current + 1); });
+    chapters.forEach(function (c) {
+      c.addEventListener('click', function () {
+        for (var i = 0; i < shots.length; i++) {
+          if (shots[i].getAttribute('data-chapter') === c.getAttribute('data-chapter')) { showShot(i); return; }
+        }
+      });
+    });
+    document.getElementById('panel-shots').addEventListener('keydown', function (e) {
+      if (e.target.closest('.show-tabs')) return;
+      if (e.key === 'ArrowRight') showShot(current + 1);
+      if (e.key === 'ArrowLeft') showShot(current - 1);
+    });
+    showShot(0);
+  }
+
   // Help tooltip: hover and focus work in CSS; this adds tap-to-toggle and Esc to dismiss.
   document.querySelectorAll('.tip').forEach(function (tip) {
     var btn = tip.querySelector('.tip-btn');
@@ -19,6 +72,39 @@
       if (!tip.contains(e.target)) tip.classList.remove('open');
     });
   });
+
+  // Light/dark toggle: the system setting applies until a visitor picks one, and that pick is kept in localStorage.
+  var themeKey = 'bbh-theme';
+  var themeBtn = document.getElementById('theme-toggle');
+  var systemDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function storedTheme() {
+    try { var t = localStorage.getItem(themeKey); return t === 'light' || t === 'dark' ? t : null; } catch (e) { return null; }
+  }
+  function currentTheme() {
+    return storedTheme() || (systemDark && systemDark.matches ? 'dark' : 'light');
+  }
+  function paintTheme() {
+    themeBtn.setAttribute('aria-checked', String(currentTheme() === 'dark'));
+  }
+  if (themeBtn) {
+    paintTheme();
+    themeBtn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem(themeKey, next); } catch (e) { /* the choice then lasts for this page only */ }
+      paintTheme();
+    });
+    if (systemDark && systemDark.addEventListener) systemDark.addEventListener('change', paintTheme);
+  }
+
+  // Back-to-top button appears once the header has scrolled out of view.
+  var toTop = document.getElementById('to-top');
+  if (toTop) {
+    var syncToTop = function () { toTop.hidden = window.scrollY <= window.innerHeight; };
+    toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    window.addEventListener('scroll', syncToTop, { passive: true });
+    syncToTop();
+  }
 
   // Gesture explainer in a modal; without <dialog> support the link opens the page itself.
   var explainer = document.getElementById('explainer');

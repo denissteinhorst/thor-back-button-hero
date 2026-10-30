@@ -12,6 +12,10 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.png">
 <link rel="stylesheet" href="style.css">
+<script>
+  // Apply a stored light/dark choice before the first paint, so the page does not flash.
+  try { var bbhTheme = localStorage.getItem('bbh-theme'); if (bbhTheme === 'light' || bbhTheme === 'dark') document.documentElement.setAttribute('data-theme', bbhTheme); } catch (e) {}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -19,14 +23,22 @@
 <header class="top">
   <div class="wrap bar">
     <a class="brand" href="#main" aria-label="Back Button Hero, top of page"><img src="assets/favicon.png" alt="" width="28" height="28"> Back Button Hero</a>
-    <nav aria-label="Main">
-      <a href="#features">Features</a>
-      <a href="#changelog">Changelog</a>
-      <a href="#install">Install</a>
-      <a href="#frontends">Frontends</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://github.com/denissteinhorst/thor-back-button-hero" target="_blank" rel="noopener noreferrer nofollow">GitHub</a>
-    </nav>
+    <div class="bar-end">
+      <nav aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#changelog">Changelog</a>
+        <a href="#install">Install</a>
+        <a href="#frontends">Frontends</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/denissteinhorst/thor-back-button-hero" target="_blank" rel="noopener noreferrer nofollow">GitHub</a>
+      </nav>
+      <button class="theme-switch" id="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
+        <span class="knob">
+          <svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -70,7 +82,11 @@
     </div>
 
     <div class="showcase">
-      <h3>See it in action</h3>
+      <div class="show-tabs" role="tablist" aria-label="Showcase">
+        <button type="button" role="tab" id="tab-demo" aria-controls="panel-demo" aria-selected="true">See it in action</button>
+        <button type="button" role="tab" id="tab-shots" aria-controls="panel-shots" aria-selected="false" tabindex="-1">Screenshots</button>
+    </div>
+      <div class="show-panel" role="tabpanel" id="panel-demo" aria-labelledby="tab-demo">
       <p>Press Back differently and it does more. Every gesture can be switched off.</p>
       <figure class="media">
         <video controls preload="metadata" playsinline aria-describedby="demo-desc" width="640" height="640">
@@ -80,6 +96,153 @@
         <figcaption id="demo-desc">About a minute: an animated diagram of the Thor and its two screens walks through the Back button gestures. Each one is described below.</figcaption>
       </figure>
       <p><a class="btn" id="explainer-open" href="gesture-explainer.html">Try the interactive gesture explainer →</a></p>
+    </div>
+      <div class="show-panel shots" role="tabpanel" id="panel-shots" aria-labelledby="tab-shots">
+        <p>This is how you make it your own! A walk through every page of the settings, as you see them on the Thor.</p>
+        <div class="shot-chapters" aria-label="Jump to a settings page">
+          <button type="button" data-chapter="basic">Basic</button>
+          <button type="button" data-chapter="shoulders">Shoulder buttons</button>
+          <button type="button" data-chapter="dpad">D-pad</button>
+          <button type="button" data-chapter="exceptions">Exceptions</button>
+          <button type="button" data-chapter="settings">Settings</button>
+          <button type="button" data-chapter="help">Help</button>
+        </div>
+        <div class="shot-stage">
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/01-basic-single.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Basic Controls: decide what a single press of Back does, for example open the app drawer on the bottom screen.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/02-basic-single-choice.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Pick what a single tap does: a normal Back, the bottom screen's own launcher, or a launcher you choose.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/03-basic-double-taphold.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Double-tap opens the app switcher on the bottom screen. Tap, then hold opens Recents on the top screen. You set how quick you need to be.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/04-basic-hold-swap.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back to swap the apps on both screens, and choose how long you hold.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/05-basic-clear-preview.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Before anything changes, you see exactly what will happen. Nothing changes until you tap Apply.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/06-shoulders.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back and press a shoulder button for a shortcut. Buttons without one keep working in your game as usual.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/07-shoulders-action.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Every shoulder button can do something else: flick between apps, change volume or brightness, take a screenshot, open an app and more.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/08-shoulders-details.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Some shortcuts have extra options, like which screen to capture or where the controller should go.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/09-shoulders-screen.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Choose the screen a shortcut works on: top, bottom or both.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/10-shoulders-focus-mode.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Controller focus: switch back and forth with one button, or always send the controller to one screen.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11-shoulders-indicator.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>A small icon shows where your controller just went. Choose where it appears, whether it appears at all, and for how long.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11a-shoulders-app-control.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Active App Control: a shortcut that acts on the app you are using right now.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11b-shoulders-app-control-mode.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Minimize it, as if you swiped up, or close it instantly with Force-Close.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11c-shoulders-app-control-screen.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Pick the screen: top, bottom, both, or Ask. Ask opens a small prompt on the screen your controller is on, which you steer with the D-pad or stick.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11d-shoulders-app-control-options.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>With a fixed screen, Force-Close can still ask before it closes anything.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/11e-shoulders-app-control-warning.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Force-Close does not save anything for you, so unsaved progress can be lost. You are warned before you can pick it.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dpad">
+            <img src="assets/screenshots/12-dpad.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back and press a D-pad direction. Out of the box, up and down set the brightness, left and right the volume.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dpad">
+            <img src="assets/screenshots/13-dpad-action.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Give each direction its own action, from brightness to Quick Settings.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dpad">
+            <img src="assets/screenshots/14-dpad-more.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Directions you leave empty go straight to your game.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/15-exceptions.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Exceptions: if one app needs a button for itself, add it here. Everywhere else, Back Button Hero works as usual.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/16-exceptions-back.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Each row is one app. The first columns are the Back gestures: single, double, tap and hold, and hold.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/17-exceptions-shoulders.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Scroll sideways for the shoulder buttons. Anything unticked reaches the app as if Back Button Hero weren't installed.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/18-exceptions-dpad.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Then come the D-pad directions. The last box ticks or unticks the whole row at once.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/19-exceptions-add.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Add an app from the list, or search for it by name.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/20-exceptions-start.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Start with everything allowed or everything blocked, then fine-tune it in the table.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/21-settings-switcher.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Settings: show apps from both screens in the switcher, and move through Recents with your controller.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/22-settings-pause.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Pause Back Button Hero with a button pair, for example when an emulator needs Back for its own menu. Hold the pair again to resume.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/23-settings-pause-buttons.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Choose the button pair for pausing, or switch this shortcut off.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/24-settings-reset.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Start over: remove all optional shortcuts, or reset the whole app to how it came.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/25-settings-reset-preview.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>A reset also shows every change first, so nothing catches you off guard.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="help">
+            <img src="assets/screenshots/26-help-service.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Update & Help: see whether Back Button Hero is running, repair it if gestures stop responding, or report a bug.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="help">
+            <img src="assets/screenshots/27-help-updates.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Check for a new version, or visit the project on GitHub.</figcaption>
+          </figure>
+        </div>
+        <div class="shot-nav">
+          <button type="button" class="shot-prev" aria-label="Previous screenshot">←</button>
+          <span class="shot-count" aria-live="polite">1 / 32</span>
+          <button type="button" class="shot-next" aria-label="Next screenshot">→</button>
+        </div>
+    </div>
     </div>
 
     <dialog class="explainer" id="explainer" aria-label="Interactive gesture explainer">
@@ -449,6 +612,10 @@
     <p class="small">An independent hobby project, not affiliated with or endorsed by AYN. No cookies, no tracking on this page.</p>
   </div>
 </footer>
+
+<button class="to-top" id="to-top" type="button" aria-label="Back to top" title="Back to top" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 
 <script src="script.js"></script>
 </body>
