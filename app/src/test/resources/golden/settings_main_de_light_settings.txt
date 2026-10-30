@@ -1,0 +1,63 @@
+FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    LinearLayout visibility=VISIBLE minHeight=168 padding=[24,12,24,12] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menü" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Einstellungen" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Bedienungshilfen-Dienst ist aus. Back Button Hero braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen." textSizePx=42.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bedienungshilfen-Dienst einschalten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Passe den App-Switcher an, wähle eine Ein-/Aus-Tastenkombination oder setze die App zurück." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
+                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Werkseinstellungen laden" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Belegungen lösen" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="App-Switcher" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Apps beider Bildschirme anzeigen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Schließt Apps ein, die auf dem oberen Bildschirm beobachtet wurden. „Alle Apps schließen“ schließt dann Apps beider Bildschirme. Apps, die der Bedienungshilfen-Dienst seit seinem Start nicht gesehen hat, können nicht erscheinen." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Apps beider Bildschirme anzeigen" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Recents mit dem Controller bedienen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad links/rechts wählt eine App. D-Pad runter führt zu Screenshot und „Alle schließen“; Bestätigen führt die markierte Aktion aus. D-Pad hoch schließt die ausgewählte App. Die Bestätigungstaste folgt dem Thor-Controller-Stil." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Recents mit dem Controller bedienen" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Aktivieren / deaktivieren" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,36,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Taste(n) zum Halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2 + R2" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Haltedauer: 300 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Haltedauer: 300 ms" max=29 progress=2
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Halten schaltet alle Back-Gesten und Tastenkombinationen aus oder ein. Ohne gehaltenes Back gehen die Tasten weiterhin ans Spiel. Nach einem Neustart ist Back Button Hero aktiv." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Zurücksetzen" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Optionale Belegungen lösen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Gesamte App: Alle Schulter-, D-Pad- und Ein-/Aus-Tastenkombinationen entfernen." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Einstellungen zurücksetzen" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Gesamte App: Alle App-Einstellungen auf Werkseinstellungen zurücksetzen." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false

@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+
 import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
@@ -23,6 +25,7 @@ class ShoulderRowSnapshotTest {
             configure()
         }
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
+        selectSettingsPage(activity, if (name.startsWith("dpad")) SettingsSection.DPAD else SettingsSection.SHOULDERS)
         val root = activity.findViewById<android.view.View>(android.R.id.content)
         Golden.verify(name, ViewTree.describe(root))
     }
@@ -69,4 +72,10 @@ class ShoulderRowSnapshotTest {
         snapshotWith("shoulder_defaults_flick_no_toggle", factory = true) {
             // no-op: constructing Prefs already applies the factory defaults
         }
+
+    @Test
+    fun `D-pad focus action groups its two child options`() = snapshotWith("dpad_focus_options") {
+        setShoulderAction(DpadDirection.UP, Prefs.SHOULDER_CONTROLLER_FOCUS)
+        setFocusTarget(DpadDirection.UP, Prefs.DISPLAY_BOTTOM)
+    }
 }

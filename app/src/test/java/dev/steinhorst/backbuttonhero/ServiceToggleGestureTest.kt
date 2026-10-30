@@ -170,6 +170,40 @@ class ServiceToggleGestureTest {
         scheduler.fire()
         assertEquals(0, toggles)
     }
+    @Test
+    fun `not set never arms any former pair including mirrored devices`() {
+        prefs.toggleButtons = Prefs.TOGGLE_NONE
+        val buttons = listOf(left, right, KeyEvent.KEYCODE_BUTTON_L1, KeyEvent.KEYCODE_BUTTON_R1,
+            KeyEvent.KEYCODE_BUTTON_L2, KeyEvent.KEYCODE_BUTTON_R2)
+        for (device in 1..2) buttons.forEach { down(it, device) }
+        scheduler.fire()
+        assertEquals(0, toggles)
+        assertTrue(scheduler.pending.isEmpty())
+        for (device in 1..2) buttons.forEach { up(it, device) }
+    }
+
+    @Test
+    fun `changing or removing a pending combination prevents its timer from toggling`() {
+        down(left)
+        down(right)
+        prefs.toggleButtons = Prefs.TOGGLE_NONE
+        scheduler.fire()
+        assertEquals(0, toggles)
+        down(left)
+        assertTrue(scheduler.pending.isEmpty())
+        prefs.toggleButtons = Prefs.TOGGLE_L1_R1
+        down(KeyEvent.KEYCODE_BUTTON_L1)
+        assertTrue(scheduler.pending.isEmpty())
+        down(KeyEvent.KEYCODE_BUTTON_R1)
+        prefs.toggleButtons = Prefs.TOGGLE_L2_R2
+        scheduler.fire()
+        assertEquals(0, toggles)
+        down(KeyEvent.KEYCODE_BUTTON_L2)
+        down(KeyEvent.KEYCODE_BUTTON_R2)
+        scheduler.fire()
+        assertEquals(1, toggles)
+    }
+
 }
 
 private class ToggleScheduler : GestureScheduler {

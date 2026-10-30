@@ -1,0 +1,71 @@
+FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    LinearLayout visibility=VISIBLE minHeight=168 padding=[24,12,24,12] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menu" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Settings" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=42.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Turn on accessibility service" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Basic Controls" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Shoulder Button Binds" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="D-Pad Binds" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Exceptions" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Settings" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,0] text="Update & Help" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Adjust the app switcher, choose a quick on/off shortcut or reset the app." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
+                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Load defaults" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="App Switcher" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Show apps from both screens" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Includes apps observed on the top screen. Close all then closes apps from both screens. Apps not seen since the accessibility service started cannot appear." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Show apps from both screens" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Control Recents with the controller" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left/right selects an app. D-pad down moves to Screenshot and Close all; confirm runs the selected action. D-pad up closes the selected app. The confirm button follows the Thor controller style." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Control Recents with the controller" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Activate / deactivate" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,36,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold button(s)" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2 + R2" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold time: 300 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Hold time: 300 ms" max=29 progress=2
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Hold to turn all Back gestures and shortcuts off or on. Without Back held, the buttons still reach your game. Back Button Hero starts active after a restart." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Reset" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unbind optionals" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: remove all shoulder button, D-pad and on/off shortcut bindings." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+              LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Reset settings" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: restore all app settings to factory defaults." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false

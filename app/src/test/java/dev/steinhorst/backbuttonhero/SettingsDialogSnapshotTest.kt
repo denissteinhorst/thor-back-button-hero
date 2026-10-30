@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+
 import android.app.Dialog
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
@@ -35,6 +37,7 @@ class SettingsDialogSnapshotTest {
     @Test
     fun `reset settings confirmation dialog`() {
         val activity = buildActivity()
+        selectSettingsPage(activity, SettingsSection.SETTINGS)
         clickRowWithText(activity, activity.getString(R.string.reset_settings))
         snapshotDialog("dialog_reset_settings_confirm")
     }
@@ -42,8 +45,25 @@ class SettingsDialogSnapshotTest {
     @Test
     fun `repair service explanation dialog`() {
         val activity = buildActivity()
+        selectSettingsPage(activity, SettingsSection.HELP)
         clickRowWithText(activity, activity.getString(R.string.repair_service))
         snapshotDialog("dialog_repair_service")
+    }
+
+    @Test
+    fun `shoulder unbind previews only that page`() {
+        val activity = buildActivity()
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        clickRowWithText(activity, activity.getString(R.string.settings_unbind))
+        snapshotDialog("dialog_unbind_shoulders")
+    }
+
+    @Test
+    fun `preset previews current and factory values`() {
+        val activity = buildActivity()
+        Prefs(activity).doubleTapMs = 500L
+        clickRowWithText(activity, activity.getString(R.string.settings_preset))
+        snapshotDialog("dialog_preset_basic")
     }
 
     private fun clickRowWithText(activity: SettingsActivity, text: String) {

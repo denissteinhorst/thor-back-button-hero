@@ -157,6 +157,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     // switcher navigation need it.
     private val prefsListener = {
         toggleGesture.reset()
+        // Removing the only activation shortcut must not leave BBH stranded in pass-through.
+        if (prefs.toggleButtons == Prefs.TOGGLE_NONE && !interceptionEnabled) toggleInterception()
         updatePadHelper()
     }
 
@@ -193,10 +195,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
             else -> "L3 + R3"
         }
         toggleToast?.cancel()
-        toggleToast = Toast.makeText(this, getString(
-            if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive,
-            buttons,
-        ), Toast.LENGTH_LONG).also { it.show() }
+        val message = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) getString(R.string.service_toggle_no_shortcut)
+        else getString(if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive, buttons)
+        toggleToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {

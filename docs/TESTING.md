@@ -89,7 +89,8 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **14** goldens cover:
+The **44** goldens cover six-page navigation across locale/theme/window sizes,
+button states, change previews and accessibility. The main groups are:
 
 | Golden | Scope |
 |---|---|

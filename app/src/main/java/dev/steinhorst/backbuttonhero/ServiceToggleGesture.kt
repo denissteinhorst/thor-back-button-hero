@@ -11,14 +11,23 @@ class ServiceToggleGesture(
     private val keys = PhysicalKeyTracker()
     private var armed = false
     private var fired = false
+    private var binding = prefs.toggleButtons
     private val hold = Runnable {
         armed = false
         fired = true
-        onToggle()
+        if (prefs.toggleButtons == binding && binding != Prefs.TOGGLE_NONE) onToggle()
     }
 
     fun handle(event: KeyEvent) {
-        val required = when (prefs.toggleButtons) {
+        if (binding != prefs.toggleButtons) {
+            reset()
+            binding = prefs.toggleButtons
+        }
+        if (binding == Prefs.TOGGLE_NONE) {
+            reset()
+            return
+        }
+        val required = when (binding) {
             Prefs.TOGGLE_L1_R1 -> listOf(KeyEvent.KEYCODE_BUTTON_L1, KeyEvent.KEYCODE_BUTTON_R1)
             Prefs.TOGGLE_L2_R2 -> listOf(KeyEvent.KEYCODE_BUTTON_L2, KeyEvent.KEYCODE_BUTTON_R2)
             else -> listOf(KeyEvent.KEYCODE_BUTTON_THUMBL, KeyEvent.KEYCODE_BUTTON_THUMBR)

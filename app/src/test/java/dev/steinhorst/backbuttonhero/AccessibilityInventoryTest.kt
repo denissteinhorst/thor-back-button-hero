@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+
 import dev.steinhorst.backbuttonhero.support.Golden
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +18,11 @@ class AccessibilityInventoryTest {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
         val root = activity.findViewById<android.view.View>(android.R.id.content)
         val report = StringBuilder()
-        collectClickableRows(root, activity.resources.displayMetrics.density, report)
+        SettingsSection.entries.forEach { section ->
+            selectSettingsPage(activity, section)
+            report.append("Page: ${section.name}\n")
+            collectClickableRows(root, activity.resources.displayMetrics.density, report)
+        }
         Golden.verify("a11y_inventory", report.toString())
     }
 

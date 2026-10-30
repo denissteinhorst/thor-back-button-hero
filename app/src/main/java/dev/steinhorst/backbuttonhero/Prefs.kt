@@ -80,12 +80,12 @@ class Prefs(context: Context) {
             .putString("${ShoulderButton.L2.prefKey}_target", DISPLAY_TOP)
     }
 
-    /** Clears every shoulder-button and D-pad assignment; everything else is left as it is. */
+    /** Clears optional combos, including the temporary activation shortcut. */
     fun unbindOptionals() {
         val edit = sp.edit()
         ShoulderButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
         DpadDirection.entries.forEach { edit.putString("${it.prefKey}_package", "") }
-        edit.apply()
+        edit.putString("toggle_buttons", TOGGLE_NONE).apply()
     }
 
     var doubleTapEnabled: Boolean
@@ -191,6 +191,58 @@ class Prefs(context: Context) {
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
     fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
 
+    fun snapshot(): SettingsState = SettingsState(
+        singleAction, doubleTapEnabled, doubleTapMs, tapHoldEnabled, tapHoldMs,
+        holdEnabled, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
+        (ShoulderButton.entries + DpadDirection.entries).associate { button ->
+            button.prefKey to BindingSettings(
+                shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
+                focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
+            )
+        },
+    )
+
+    /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
+    fun applySettings(before: SettingsState, after: SettingsState): Boolean {
+        if (snapshot() != before) return false
+        if (before == after) return true
+        val edit = sp.edit()
+        fun string(key: String, old: String?, value: String?) {
+            if (old != value) {
+                if (value == null) edit.remove(key) else edit.putString(key, value)
+            }
+        }
+        fun boolean(key: String, old: Boolean, value: Boolean) {
+            if (old != value) edit.putBoolean(key, value)
+        }
+        fun long(key: String, old: Long, value: Long) {
+            if (old != value) edit.putLong(key, value)
+        }
+        string("single_action", before.singleAction, after.singleAction)
+        boolean("double_enabled", before.doubleEnabled, after.doubleEnabled)
+        long("double_ms", before.doubleMs, after.doubleMs)
+        boolean("tap_hold_enabled", before.tapHoldEnabled, after.tapHoldEnabled)
+        long("tap_hold_ms", before.tapHoldMs, after.tapHoldMs)
+        boolean("hold_enabled", before.holdEnabled, after.holdEnabled)
+        long("hold_ms", before.holdMs, after.holdMs)
+        boolean("switcher_shows_all_apps", before.allApps, after.allApps)
+        boolean("switcher_controller_enabled", before.controller, after.controller)
+        string("toggle_buttons", before.toggleButtons, after.toggleButtons)
+        long("toggle_hold_ms", before.toggleMs, after.toggleMs)
+        before.bindings.forEach { (key, old) ->
+            val value = after.bindings.getValue(key)
+            string("${key}_package", old.action, value.action)
+            string("${key}_display", old.display, value.display)
+            string("${key}_target", old.targetOverride, value.targetOverride)
+            string("${key}_focus_target", old.focusTarget, value.focusTarget)
+            boolean("${key}_focus_indicator", old.indicator, value.indicator)
+            long("${key}_focus_duration_ms", old.duration, value.duration)
+            string("${key}_focus_position", old.position, value.position)
+        }
+        edit.apply()
+        return true
+    }
+
     // SharedPreferences keeps its listeners only weakly, so hold the wrappers here.
     private val listeners = mutableMapOf<() -> Unit, SharedPreferences.OnSharedPreferenceChangeListener>()
 
@@ -230,6 +282,7 @@ class Prefs(context: Context) {
     }
 
     companion object {
+        const val TOGGLE_NONE = ""
         const val TOGGLE_BOTH = "both"
         const val TOGGLE_L1_R1 = "l1_r1"
         const val TOGGLE_L2_R2 = "l2_r2"

@@ -172,13 +172,25 @@ button's action, launch screen and level target the same way.
 
 ### `SettingsActivity` + `SettingsUiKit`
 
-A single hand-built screen: no `PreferenceFragment`, no XML. `SettingsUiKit` provides the
-vocabulary (`dp()`, `ServiceStatus`, `SettingsPage` with its cards, rows, sliders and
-choosers) and `SettingsActivity` assembles the page from it.
+Six hand-built pages share framework Views; no `PreferenceFragment` or layout XML.
+`SettingsNavigation` lazily builds and caches pages, using a left panel at 720 dp and
+above and a menu dialog below that width. Explicit navigation starts content at the top;
+activity recreation preserves the active page and scroll position. `SettingsUiKit`
+provides shared cards, branch-connected dependent controls and aligned range sliders.
+Accessibility warnings appear at the right of the top bar; root-helper/setup warnings
+remain below it. Service health still distinguishes on / unresponsive / off and offers
+the existing Android accessibility-settings repair flow.
 
-It also surfaces accessibility-service health in three states (on / unresponsive / off)
-and offers a "repair service" flow, because Android does not permit an app to re-enable
-its own accessibility service — the best it can do is walk the user to the right toggle.
+`SettingsChanges` captures immutable before/after snapshots for page defaults/unbind and
+whole-app reset/unbind. Confirmations list actual changes; `Prefs.applySettings` rejects
+stale previews and writes accepted plans atomically. Whole-app unbind clears shoulder,
+D-pad and activation shortcuts, preserving primary gestures. An unassigned activation
+shortcut reactivates temporarily paused interception so the app cannot remain stranded.
+
+`ExceptionSettingsPage` is a WIP UI draft only: installed-app search and a ten-column
+checkbox matrix have no runtime effect or persistent preferences. Its draft survives
+navigation and saved-state recreation. Help and Exceptions have no defaults/unbind links.
+
 
 ### `UpdateChecker`
 

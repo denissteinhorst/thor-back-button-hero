@@ -33,7 +33,7 @@ class PrefsMigrationTest {
     @Test
     fun `pair migration preserves supported choices and subsequent user selections`() {
         val ctx = context()
-        for (binding in listOf(Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
+        for (binding in listOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
             rawPrefs(ctx).edit().clear().putString("toggle_buttons", binding).apply()
             assertEquals(binding, Prefs(ctx).toggleButtons)
             Prefs(ctx).toggleButtons = Prefs.TOGGLE_L2_R2
@@ -47,7 +47,7 @@ class PrefsMigrationTest {
         rawPrefs(ctx).edit().clear().putBoolean("toggle_pairs_v1", true).apply()
         assertEquals(Prefs.TOGGLE_L2_R2, Prefs(ctx).toggleButtons)
         assertTrue(rawPrefs(ctx).getBoolean("toggle_default_v2", false))
-        for (binding in listOf(Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
+        for (binding in listOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
             rawPrefs(ctx).edit().putString("toggle_buttons", binding).remove("toggle_default_v2").apply()
             assertEquals(binding, Prefs(ctx).toggleButtons)
             assertEquals(binding, Prefs(ctx).toggleButtons)

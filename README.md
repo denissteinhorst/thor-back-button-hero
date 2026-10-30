@@ -103,7 +103,8 @@ Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
 
 ## Screenshots of the app's settings
 
-These are the app's own settings screens. Everything shown can be changed,
+These screenshots show the previous settings layout; the current interface groups the
+same controls into six navigation pages. Everything shown can be changed,
 and the defaults work out of the box.
 
 <table>
@@ -160,14 +161,20 @@ gestures stop responding, **Repair service** takes you straight to the right
 toggle in Android's settings, because Android does not let an app re-enable its
 own accessibility service.
 
-- **Unbind optionals** removes the assignments of all four shoulder buttons and
-  all four D-pad directions in one step. Gesture timings and other settings
+- **Clear bindings** on a page previews the bindings it will remove; **Load defaults**
+  previews that page's factory settings. Under **Settings → Reset**, the whole-app
+  unbind clears all four shoulder buttons, all four D-pad directions and the activation
+  shortcut in one step. Removing the activation shortcut also resumes temporarily
+  paused interception. Gesture timings and other settings
   stay as they are.
 - **Reset settings** restores every gesture timing, switch, button assignment,
   and screen target to its default. Android permissions and the state of the
   accessibility service are not changed.
 - **Check for updates** asks GitHub Releases for a newer version, in addition to
   the automatic background check. This is useful right after installing.
+
+**Exceptions** is a WIP interface preview: its app list and checkboxes do not yet
+change button behavior or save permanent rules.
 
 Settings are kept when you update the app. A new version only applies its
 defaults to settings you have never changed, and it does not overwrite buttons
