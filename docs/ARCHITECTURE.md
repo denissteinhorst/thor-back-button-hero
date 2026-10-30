@@ -135,6 +135,23 @@ window and opens `SettingsActivity` on the top screen inside the indicator popup
 The settings screen previews changes through `SwitcherService.previewFocusIndicator`, because only
 the service may draw accessibility overlays.
 
+### Active App Control — `AppControl` and `AppControlPrompt`
+
+A Back + button action that minimizes or force-closes the app in front. Per button it stores a mode
+(`minimize` or `force_close`), a screen (top, bottom, both or `ask`) and, for force-close with a fixed
+screen, whether to confirm first; none of it is set until the action is assigned, so existing installs
+are unchanged. `SwitcherService.runAppControl` resolves the target apps through
+`AccessibilityAppSource.topApp` **before** any prompt opens, so "the app behind the modal" is the one
+acted on even if the window state shifts while the user decides. Minimize reuses `goHome` for the
+display; force-close reuses `killOnly`, the same path as swiping a card away in the switcher
+(`TaskRemover` and `force-stop` through `PService`, with the unprivileged kill as fallback). Neither
+saves anything for the app, which the settings say plainly.
+
+`AppControlPrompt` is a focusable accessibility overlay on the display the controller currently
+drives (`controllerDisplayId`). Joystick and hat events reach only the focused window, so it takes
+focus like `DpadOverlay`; D-pad or stick moves the choice, the confirm key (which follows the Thor's
+A/B flip setting) accepts it and the other face button cancels. It is dismissed with the service.
+
 ### `Prefs` — storage and migrations
 
 Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time

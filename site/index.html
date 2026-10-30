@@ -48,7 +48,7 @@
   <section class="hero wrap">
     <div class="hero-text">
       <h1><span class="h1-line">The Back Button</span> <span class="h1-line">Just Got Superpowers.</span></h1>
-      <p class="lead">An app switcher for the bottom screen, a hold to swap both screens, shortcuts on every shoulder button, and volume and brightness right under your thumb. All from the button you already use most.</p>
+      <p class="lead">An app switcher for the bottom screen, a hold to swap both screens, shortcuts on every shoulder button, a way to minimize or force-close the app in front, and volume and brightness right under your thumb. All from the button you already use most.</p>
       <p class="lead-note">Take what you need, skip the rest. Every gesture is optional, every button yours to assign.</p>
       <p class="cta">
         <a class="btn primary" id="download" href="https://github.com/denissteinhorst/thor-back-button-hero/releases/latest" target="_blank" rel="noopener noreferrer nofollow">Download <span id="dl-version"></span></a>
@@ -90,7 +90,7 @@
       <p>Press Back differently and it does more. Every gesture can be switched off.</p>
       <figure class="media">
         <video controls preload="metadata" playsinline aria-describedby="demo-desc" width="640" height="640">
-          <source src="assets/demo.mp4" type="video/mp4">
+          <source src="https://github.com/user-attachments/assets/c7b64853-2772-4e28-bc0e-51372f0e7e27" type="video/mp4">
           Your browser can't play this video. <a href="https://github.com/denissteinhorst/thor-back-button-hero" target="_blank" rel="noopener noreferrer nofollow">Watch it on GitHub</a>.
         </video>
         <figcaption id="demo-desc">About two and a half minutes: an animated diagram of the Thor and its two screens walks through the Back button gestures. Each one is described below.</figcaption>
@@ -134,7 +134,7 @@
           </figure>
           <figure class="shot" data-chapter="shoulders">
             <img src="assets/screenshots/07-shoulders-action.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
-            <figcaption>Every shoulder button can do something else: flick between apps, change volume or brightness, take a screenshot, open an app and more.</figcaption>
+            <figcaption>Every shoulder button can do something else: flick between apps, change volume or brightness, take a screenshot, minimize or close the app in front, open an app and more.</figcaption>
           </figure>
           <figure class="shot" data-chapter="shoulders">
             <img src="assets/screenshots/08-shoulders-details.webp" alt="" width="1600" height="854" loading="lazy" decoding="async">
@@ -352,6 +352,7 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>Volume</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Brightness</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10c3 0 5 2.5 5.5 6l.5 3c.3 2-1 3.5-2.5 3.5-1 0-1.8-.5-2.5-1.5L16.5 16h-9L6 18c-.7 1-1.5 1.5-2.5 1.5C2 19.5.7 18 1 16l.5-3C2 9.5 4 7 7 7z"/><path d="M7.5 10.5v4M5.5 12.5h4"/></svg>Controller focus</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9.5 10l5 4M14.5 10l-5 4"/></svg>Active App Control: minimize or force-close the app in front <span class="ver new">v1.4.0</span></li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Home</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="8" width="12" height="13" rx="2"/><path d="M8 5h8M10 2h4"/></svg>Recents</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg>Previous / next app</li>
@@ -360,6 +361,7 @@
         <li class="wide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg>Wi-Fi, Bluetooth, Night Light, Do Not Disturb and more</li>
       </ul>
       <p class="small"><span class="ver new">v1.4.0</span> Screenshots use Android's own screenshot action. "Both screens" creates one image with the bottom screen centered below the top screen.</p>
+      <p class="small"><span class="ver new">v1.4.0</span> Active App Control acts on the top screen, the bottom screen, both, or asks each time with a small prompt you steer with the D-pad. Force-Close ends the app immediately and saves nothing for you, so unsaved progress can be lost.</p>
     </details>
   </div>
 </section>
@@ -459,7 +461,7 @@
       <div id="releases">
         <article class="release">
           <h3>v1.4.0</h3>
-          <p>Frontend compatibility for ES-DE Companion, NeoStation, Cocoon and RetroArch. A new bottom Recents that looks like the system's own, D-pad navigation in both Recents, swaps that keep your game running, a pause shortcut and per-app exceptions.</p>
+          <p>Frontend compatibility for ES-DE Companion, NeoStation, Cocoon and RetroArch. A new bottom Recents that looks like the system's own, D-pad navigation in both Recents, swaps that keep your game running, a pause shortcut, per-app exceptions, and an Active App Control shortcut that minimizes or force-closes the app in front.</p>
         </article>
         <article class="release">
           <h3>v1.3.0 <time datetime="2026-10-26">Oct 26, 2026</time></h3>

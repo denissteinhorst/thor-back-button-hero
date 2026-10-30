@@ -22,7 +22,7 @@
 > [!NOTE]
 > **Get more out of the Back button on your [AYN Thor](https://www.ayntec.com/products/ayn-thor).**
 > Double-tap for an app switcher on the bottom screen, hold to swap both screens, and put your favorite
-> actions on L1, L2, R1, R2 and the D-pad: screenshots, volume, brightness, controller focus and more.
+> actions on L1, L2, R1, R2 and the D-pad: screenshots, volume, brightness, controller focus, minimizing or closing the app in front and more.
 > <ins>No root required. Free and open source.</ins>
 >
 > Every setting is optional. The app is lean by design, and none of the gestures or hotkeys has to be used.
@@ -30,12 +30,14 @@
 > I don't earn anything from this app and don't even know how many people use it. If it helps you, a [star on GitHub](https://github.com/denissteinhorst/thor-back-button-hero) would mean a lot.
 >
 > [Download the latest release][release-url] · [Try the interactive explainer][explainer-url]
+>
+> **More information, the video and every settings page:** [the website][pages-url]
 
 ## One button, many possibilities
 
 <div align="center">
 
-https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e
+https://github.com/user-attachments/assets/c7b64853-2772-4e28-bc0e-51372f0e7e27
 
 </div>
 
@@ -104,27 +106,14 @@ Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
 
 ## Screenshots of the app's settings
 
-These screenshots show the previous settings layout; the current interface groups the
-same controls into six navigation pages. Everything shown can be changed,
-and the defaults work out of the box.
+The six most important views of the settings. Everything shown can be changed, and the
+defaults work out of the box. [The website][pages-url] walks through every page, with a video.
 
 <table>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-single-double.png" alt="Single tap and double button press settings"><br><sub><b>Single &amp; double press</b> — tap action and double-tap speed</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-tap-hold.png" alt="Tap and hold settings"><br><sub><b>Tap and hold</b> — Recents on the top screen</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-hold-swap.png" alt="Hold to swap screens settings"><br><sub><b>Hold to swap screens</b> — and its hold time</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-shoulder-buttons.png" alt="Shoulder button assignments"><br><sub><b>Shoulder buttons</b> — L1, L2, R1, R2</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-dpad-settings.png" alt="D-pad shortcut settings for brightness and volume"><br><sub><b>D-pad shortcuts</b> — per-direction actions and screen targets</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-indicator-appearance.png" alt="Indicator appearance popup with a 3 by 3 position grid, a show switch and a display time slider"><br><sub><b>Indicator appearance</b> — position, visibility and display time of the focus pictogram</sub></td></tr>
+<tr><td width="50%" align="center"><img src="site/assets/screenshots/01-basic-single.webp" alt="Basic Controls: what a single press of Back does"><br><sub><b>Basic Controls</b> — what a single press of Back does</sub></td><td width="50%" align="center"><img src="site/assets/screenshots/06-shoulders.webp" alt="Shoulder Button Binds: one action per button while Back is held"><br><sub><b>Shoulder Button Binds</b> — one action per button while Back is held</sub></td></tr>
+<tr><td width="50%" align="center"><img src="site/assets/screenshots/11d-shoulders-app-control-options.webp" alt="Active App Control: minimize or force-close, on one screen, both, or ask"><br><sub><b>Active App Control</b> — minimize or force-close, on one screen, both, or ask</sub></td><td width="50%" align="center"><img src="site/assets/screenshots/12-dpad.webp" alt="D-Pad Binds: the same actions on the four directions"><br><sub><b>D-Pad Binds</b> — the same actions on the four directions</sub></td></tr>
+<tr><td width="50%" align="center"><img src="site/assets/screenshots/15-exceptions.webp" alt="Exceptions: apps that keep a gesture or button for themselves"><br><sub><b>Exceptions</b> — apps that keep a gesture or button for themselves</sub></td><td width="50%" align="center"><img src="site/assets/screenshots/22-settings-pause.webp" alt="Pause shortcut: switch everything off and on with a button pair"><br><sub><b>Pause shortcut</b> — switch everything off and on with a button pair</sub></td></tr>
 </table>
-
-<details>
-<summary><b>More screenshots</b> (5)</summary>
-<br>
-
-<table>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker.png" alt="Action picker for a shoulder button"><br><sub><b>Pick an action</b> — Home, Recents, screenshot, flicks</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-system.png" alt="Action picker with system shortcuts"><br><sub><b>System shortcuts</b> — Quick Settings, notifications, Wi-Fi</sub></td></tr>
-<tr><td width="50%" align="center"><img src="docs/assets/screenshot-action-picker-settings.png" alt="Action picker with settings pages"><br><sub><b>Settings pages</b> — display, sound, location and more</sub></td><td width="50%" align="center"><img src="docs/assets/screenshot-screenshot-target.png" alt="Screen target selection for a screenshot action"><br><sub><b>Screenshot target</b> — both screens, top, or bottom</sub></td></tr>
-<tr><td width="50%" align="center" colspan="2"><img src="docs/assets/screenshot-settings-bottom.png" alt="End of the settings with repair service, unbind optionals, reset settings and update check" width="50%"><br><sub><b>Help and maintenance</b> — repair service, unbind optionals, reset, update check</sub></td></tr>
-</table>
-
-</details>
 
 ## Is it safe?
 
@@ -423,6 +412,7 @@ never in release.
 [release-shield]: https://img.shields.io/github/v/release/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
 [explainer-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest/download/gesture-explainer.html
+[pages-url]: https://denissteinhorst.github.io/thor-back-button-hero/
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
 [platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white

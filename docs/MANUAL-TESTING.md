@@ -231,6 +231,21 @@ assigned). R2 is the focus button at the factory defaults.
 | C28 | Tap the pictogram right after a switch | The settings open **on the top screen** inside the popup for that button; Back returns to the game |
 | C29 | Install a new build over a running game | The controller can stop working in RetroArch because the helper recreates the pad: open Settings over the game and return to it, then the controls respond again |
 
+### Active App Control
+
+Assign *Active App Control* to a button (L2 is convenient). Use a throwaway app on each screen,
+never one with unsaved work: Force-Close saves nothing.
+
+| # | Step | Expected |
+|---|---|---|
+| C30 | Open the L2 row in the settings and switch *Control* and *Screen* through every combination | The branch line stays unbroken whichever rows are shown; *Ask before closing* appears only for Force-Close with a fixed screen; the warning shows for Force-Close; choosing Force-Close first shows a warning dialog and *Cancel* keeps the old mode |
+| C31 | Minimize with *Screen* = *Ask*: hold Back, press the button | A prompt opens on the screen that has the controller; D-pad or stick moves the choice; the confirm key accepts, the other face button cancels (repeat with the A/B style switched); the app behind the prompt, not the prompt, is minimized |
+| C32 | Minimize with Top, Bottom and Both | Only that screen's app goes Home and stays in Recents; a screen that already shows Home does nothing |
+| C33 | Force-Close with Top, Bottom and Both, *Ask before closing* off | The app ends and leaves Recents at once; an empty screen shows the "no app" toast and nothing else is closed |
+| C34 | Force-Close with a fixed screen and *Ask before closing* on | A confirmation prompt names the app first; cancelling leaves it running |
+| C35 | Open the prompt, then pause the service with the activation shortcut | The prompt closes and nothing is closed or minimized |
+| C36 | Back, double tap, hold, L1/R1 and R2 afterwards | Unchanged; the game receives its keys again and the prompt left no focus behind |
+
 C28 opens on the top screen on purpose: AYN's assistant permanently covers the bottom
 screen, so an activity started there would be invisible.
 

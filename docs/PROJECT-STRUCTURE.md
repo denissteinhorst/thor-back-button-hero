@@ -60,6 +60,7 @@ collaborate.
 | `PadHelper.kt` | 116 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses. See [`HELPER.md`](HELPER.md). |
 | `DpadOverlay.kt` | 71 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
+| `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. It takes window focus on the controller's display because hat and stick events only reach the focused window. |
 | `ControllerFocus.kt` | 61 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
 | `FocusIndicatorOverlay.kt` | 125 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions (half size away from the centre, equal margins to the physical display edges), configurable display time, optional tap-through to the settings. |
 | `ScreenshotSaver.kt` | 40 | Saves a screenshot of one display to `Pictures/Screenshots` through MediaStore (no storage permission). The system action only reaches the top screen, so the bottom one is captured by the service and saved here. |
@@ -101,6 +102,7 @@ The automated safety net. 22 test classes, **140 tests**. Run by the gate.
 | `SmokeTest.kt` | Minimal proof the test infrastructure itself works. |
 | `PrefsDefaultsTest.kt` | Every default value and typed accessor in `Prefs`. |
 | `DpadPrefsTest.kt` | D-pad defaults, level and screenshot targets, `hasDpadAction`, the change listener. |
+| `AppControlTest.kt` | Target resolution for every screen choice, the defaults of the per-button app-control settings, and their round trip through snapshots. |
 | `ControllerFocusTest.kt` | Target resolution for toggle, fixed top, and fixed bottom controller focus, including the route read from `Settings.System`. |
 | `SettingsActionsTest.kt` | Unbind optionals (confirm and cancel) and the indicator-appearance popup: dots, show switch, display-time slider, opening it from the pictogram. |
 | `PhysicalKeyTrackerTest.kt` | Duplicate-device key-down deduplication, release tracking, and reset behavior. |
