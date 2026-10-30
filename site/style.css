@@ -99,6 +99,7 @@ code { font: .9rem var(--mono); word-break: break-all; }
 .sec.band { background: var(--band); }
 .sec-head { max-width: 42rem; margin-bottom: 2.5rem; }
 .sec-head > p { color: var(--muted); font-size: 1.1rem; }
+#frontends .sec-head { max-width: none; }
 
 /* header */
 .top {
@@ -300,8 +301,8 @@ nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left:
 /* the accent rule runs on through Hold, so it spans the whole right column */
 .gestures > li.g-hold { grid-column: 2; grid-row: 2; padding-left: 2rem; border-left: 3px solid var(--accent); }
 /* full width under the gestures, laid out like the pause block: heading with badge, text below */
-.spot { margin-top: 2.5rem; }
-.spot .sub { font-size: 1.3rem; margin-bottom: .4rem; }
+.spot { margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--line); }
+.spot .sub { margin-bottom: .75rem; }
 .spot p { margin: 0; color: var(--muted); font-size: .95rem; }
 /* mini D-pads: the highlighted arm is the direction for that action */
 .pad-map { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem 1.5rem; }
@@ -316,11 +317,14 @@ nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left:
 
 .pattern {
   position: relative; display: flex; align-items: center; gap: 6px; align-self: flex-start;
-  min-height: 32px; padding: 0 12px; border-radius: 999px; background: var(--band);
+  min-height: 32px; padding: 0;
 }
-.press, .hold { display: inline-block; height: 12px; border-radius: 6px; background: var(--accent); }
+.press, .hold {
+  display: inline-block; box-sizing: content-box; height: 12px; padding: 2px; border: 1.5px solid var(--muted); border-radius: 999px;
+  background: var(--accent); background-clip: content-box;
+}
 .press { width: 12px; }
-.hold { width: 44px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, transparent)); }
+.hold { width: 44px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, transparent)); background-clip: content-box; }
 
 /* shortcuts */
 /* both groups side by side as open lists, rows split by hairlines */
@@ -333,12 +337,11 @@ nav a:last-child { color: var(--fg); border: 1px solid var(--line); margin-left:
 kbd {
   display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2rem; padding: 0 .55rem;
   border-radius: 8px; font: 800 .9rem var(--sans); letter-spacing: .02em;
-  background: linear-gradient(#2c2c2f, #141416); color: #f4f4f4;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 3px 0 #000, 0 4px 8px -2px rgba(0, 0, 0, .35);
+  background: transparent; color: var(--fg); border: 1.5px solid var(--muted);
 }
 .shoulders kbd { min-width: 3rem; border-radius: 14px 14px 7px 7px; }
 .dpad kbd { font-size: 1.05rem; }
-.intro kbd { height: 1.8rem; min-width: 2.4rem; font-size: .8rem; margin: 0 .1rem; vertical-align: .05em; }
+.intro kbd { height: 1.4rem; min-width: 1.9rem; padding: 0 .35rem; border-radius: 10px 10px 5px 5px; font-size: .72rem; margin: 0 .1rem; vertical-align: .05em; }
 
 /* pause */
 .pause {
@@ -348,6 +351,7 @@ kbd {
 .pause .sub { font-size: 1.3rem; margin-bottom: .4rem; }
 .pause .intro { margin: 0; font-size: .95rem; }
 .exceptions { grid-template-columns: 1fr; }
+.exceptions .intro { max-width: none; }
 .combo { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
 .combo-keys { display: flex; align-items: center; gap: .5rem; font: 700 1.1rem var(--sans); color: var(--muted); }
 .combo-keys kbd { height: 2.4rem; min-width: 3.25rem; font-size: 1rem; border-radius: 14px 14px 7px 7px; animation: press 3s ease-out infinite; }
@@ -358,7 +362,7 @@ kbd {
 @keyframes hold { 0%, 13% { transform: scaleX(0); } 55%, 78% { transform: scaleX(1); } 88%, 100% { transform: scaleX(0); } }
 @keyframes press {
   0%, 10%, 81%, 100% { transform: none; }
-  13%, 78% { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 0 #000, 0 1px 2px rgba(0, 0, 0, .3); filter: brightness(.85); }
+  13%, 78% { transform: translateY(2px); background: var(--accent-soft); border-color: var(--accent); }
 }
 /* Two hold cycles per loop: the first full bar pauses BBH (grey, struck through),
    the second resumes it. 6s = 2 × 3s keeps it in step with the bar; the switch
@@ -385,8 +389,9 @@ kbd {
   flex: none; width: 32px; height: 32px; padding: 6px; border-radius: 8px; background: var(--accent-soft);
   fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }
-.action-grid + .small { max-width: none; display: flex; align-items: baseline; gap: .6rem; margin-top: 1.5rem; }
-.action-grid + .small .ver { flex: none; }
+.actions .small { max-width: none; display: flex; align-items: baseline; gap: .6rem; margin-top: .75rem; }
+.action-grid + .small { margin-top: 1.5rem; }
+.actions .small .ver { flex: none; }
 
 /* help tooltip */
 .tip { position: relative; display: inline-block; vertical-align: middle; }
@@ -514,6 +519,8 @@ details > p { color: var(--muted); max-width: 42em; }
   content: counter(step); position: absolute; top: calc(-1.05rem - 1px); left: 0; display: grid; place-items: center;
   width: 2.1rem; height: 2.1rem; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font: 700 1rem var(--sans);
 }
+.install-cta { margin: 0 0 1rem; }
+.install-note { margin: 0 0 1.5rem; color: var(--muted); }
 .verify > div { margin-top: 1.25rem; }
 .verify p { color: var(--muted); }
 .verify p:last-child { margin: 0; }

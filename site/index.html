@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Back Button Hero for the AYN Thor</title>
-<meta name="description" content="Give the Back button on your AYN Thor more tricks: a bottom-screen app switcher, screen swap and shortcuts on L1, L2, R1, R2 and the D-pad. Free, open source, no root.">
+<meta name="description" content="Give the Back button on your AYN Thor more tricks: a bottom-screen app switcher, screen swap and shortcuts on L1, L2, R1, R2 and the D-pad. Free, open source, no rooting needed.">
 <meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Back Button Hero for the AYN Thor">
-<meta property="og:description" content="One button, many possibilities. Free, open source, no root.">
+<meta property="og:description" content="One button, many possibilities. Free, open source, no rooting needed.">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.png">
 <link rel="stylesheet" href="style.css">
@@ -65,7 +65,7 @@
     <ul>
       <li><strong id="stat-version">Open source</strong><span id="stat-version-label">0BSD license</span></li>
       <li><strong id="stat-downloads">No tracking</strong><span id="stat-downloads-label">No ads, no account</span></li>
-      <li><strong>No root</strong><span>Just an accessibility service</span></li>
+      <li><strong>No rooting needed</strong><span>Uses AYN's built-in root service for a few features</span></li>
     </ul>
   </section>
 </div>
@@ -282,7 +282,7 @@
       </ul>
       <div class="spot">
         <div>
-          <h4 class="sub">Plus: hands off the screen <span class="ver new">v1.4.0</span></h4>
+          <h3 class="sub">Hands off the screen <span class="ver new">v1.4.0</span></h3>
           <p>No more letting go of the controller to tap the screen. <span class="mark">Both app switchers</span>, top and bottom, now follow the D-pad.</p>
           <ul class="pad-map">
             <li><svg class="mini-pad" viewBox="0 0 24 24" aria-hidden="true"><path class="pad" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/><path class="on" d="M2 9h7v6H2zM15 9h7v6h-7z"/></svg><span><span class="sr-only">D-pad left or right: </span>Browse through open apps</span></li>
@@ -292,6 +292,7 @@
           </ul>
           <p class="spot-note">The bottom switcher now matches the Recents you know from the top screen, with the same Screenshot button, memory display and Close all.</p>
           <p class="spot-tip"><strong>Tip:</strong> In the top Recents, a picked app opens on the screen where Recents is shown.</p>
+          <p class="spot-tip"><strong>Tip:</strong> You can also minimize or force-close the app in front directly with a hotkey of your choice: assign Active App Control to any shoulder button or D-pad direction.</p>
         </div>
       </div>
     </div>
@@ -341,7 +342,7 @@
     <div class="pause exceptions">
       <div>
         <h3 class="sub">Exceptions for single apps <span class="ver new">v1.4.0</span></h3>
-        <p class="intro">Normally, the regular setup of Back Button Hero is all you need. Only when a particular app needs a gesture or button for itself can an explicit exception be necessary &ndash; that is exactly what the Exceptions page in the settings is for. The app on the screen with controller focus decides; unchecked actions behave there as if Back Button Hero were not installed.</p>
+        <p class="intro">You don't need this. Back Button Hero works fine without it. But if you want, you can decide for every single app, one by one, which binds are allowed and which are blocked: each Back gesture, every shoulder button and every D-pad direction. Whatever you block behaves in that app as if Back Button Hero were not installed. For example, let an emulator keep L1 and the D-pad for itself while everything else keeps working. The app on the screen your controller is on decides.</p>
       </div>
     </div>
 
@@ -460,7 +461,7 @@
     <div class="changelog">
       <div id="releases">
         <article class="release">
-          <h3>v1.4.0</h3>
+          <h3>v1.4.0 <time datetime="2026-10-31">Oct 31, 2026</time></h3>
           <p>Frontend compatibility for ES-DE Companion, NeoStation, Cocoon and RetroArch. A new bottom Recents that looks like the system's own, D-pad navigation in both Recents, swaps that keep your game running, a pause shortcut, per-app exceptions, and an Active App Control shortcut that minimizes or force-closes the app in front.</p>
         </article>
         <article class="release">
@@ -476,14 +477,16 @@
 <section class="sec" id="install">
   <div class="wrap">
     <div class="sec-head">
-      <h2>Install</h2>
-      <p>Not on the Play Store. Download the APK, install it, then:</p>
+      <h2>Install – Easy Peasy</h2>
+      <p>Not on the Play Store, but it takes a minute. No setup, no account, nothing else to install.</p>
     </div>
     <ol class="steps">
-      <li>Open Back Button Hero and tap <strong>Turn on accessibility service</strong>.</li>
-      <li>In Android's Accessibility settings, switch the service on. Android shows a generic warning for every accessibility app; <a href="#faq">here's what this one does</a>.</li>
-      <li>Return to the app and check that the status shows as on.</li>
+      <li><strong>Download</strong> the APK from GitHub on your AYN Thor (Android 13).</li>
+      <li><strong>Open it and tap Install.</strong></li>
+      <li><strong>Allow accessibility:</strong> open the app, tap <em>Turn on accessibility service</em> and switch it on. You're good to go.</li>
     </ol>
+    <p class="install-cta"><a class="btn primary" href="https://github.com/denissteinhorst/thor-back-button-hero/releases/latest" target="_blank" rel="noopener noreferrer nofollow">Download the latest APK</a></p>
+    <p class="install-note">Android shows a generic warning for every accessibility app; <a href="#faq">here's what this one does</a>.</p>
     <details class="verify">
       <summary>Verify your download</summary>
       <div>
@@ -506,7 +509,7 @@
       <article class="fe-card">
         <div class="fe-top">
           <div class="fe-icons"><img src="assets/frontends/es-de.png" alt="" width="48" height="48" loading="lazy"><img src="assets/frontends/es-de-companion.png" alt="" width="48" height="48" loading="lazy"></div>
-          <div><h3>ES-DE + Companion</h3><span class="ver ok">Works <small class="ver-ext">testing</small></span></div>
+          <div><h3>ES-DE + Companion</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
         <p>Companion stays one card away in bottom Recents while you use another app on the bottom screen. Overlay-based versions get the same treatment: the overlay steps aside and comes back exactly as it was.</p>
         <p><span class="ver new">v1.4.0</span> Swap a game to the other screen and quit it, and Companion moves back on its own, so ES-DE and Companion end up where they started.</p>
@@ -514,7 +517,7 @@
       <article class="fe-card">
         <div class="fe-top">
           <div class="fe-icons"><img class="fe-square" src="assets/frontends/neostation.png" alt="" width="48" height="48" loading="lazy"></div>
-          <div><h3>NeoStation</h3><span class="ver ok">Works <small class="ver-ext">testing</small></span></div>
+          <div><h3>NeoStation</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
         <p><span class="ver new">v1.4.0</span> The bottom screen is finally yours again. NeoStation's panel normally can't be covered by anything, but Back Button Hero moves it aside whenever you open another app there, and its own card in bottom Recents brings it back exactly as it was.</p>
         <p>The one limit: the panel can't move to the other screen, so hold-to-swap can't take NeoStation along. Instead of half-swapping, Back Button Hero leaves both screens as they are and shows a short message explaining why.</p>
@@ -522,14 +525,14 @@
       <article class="fe-card">
         <div class="fe-top">
           <div class="fe-icons"><img src="assets/frontends/cocoon.png" alt="" width="48" height="48" loading="lazy"></div>
-          <div><h3>Cocoon</h3><span class="ver ok">Works <small class="ver-ext">testing</small></span></div>
+          <div><h3>Cocoon</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
         <p><span class="ver new">v1.4.0</span> Cocoon's bottom screen keeps running out of sight while you use another app there, so its top screen stays in the dual-screen layout. Its card in bottom Recents brings it back. If Cocoon reopens its bottom screen by itself, after standby or a game, it's moved away again.</p>
       </article>
       <article class="fe-card">
         <div class="fe-top">
           <div class="fe-icons"><img src="assets/frontends/retroarch.png" alt="" width="48" height="48" loading="lazy"></div>
-          <div><h3>RetroArch</h3><span class="ver ok">Works <small class="ver-ext">testing</small></span></div>
+          <div><h3>RetroArch</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
         <p>Swapping, the switchers and the Back gestures work as with any other app.</p>
         <p><span class="ver new">v1.4.0</span> After a swap back to the top screen, AYN's focus switch could leave RetroArch on a phantom “Virtual (0/0)” controller, and the real one stopped responding. When RetroArch has the controller, a swap now takes the controller focus along automatically, with the usual focus icon, and RetroArch keeps the real controller. This automatic focus swap is still experimental.</p>
@@ -579,12 +582,14 @@
           <p>Partly, at best. Screen swap and the bottom-screen switcher need a second display, and every gesture starts from a hardware Back button. Other devices are untested.</p></details>
         <details><summary>An accessibility service can see everything. Why trust this one?</summary>
           <p>Verify rather than trust: the source is public, releases are built and signed by GitHub Actions, and the app has no third-party runtime dependencies. It acts on Back, the shoulder buttons and the D-pad; all other keys are passed on untouched. It doesn't read the text inside apps.</p></details>
+        <details><summary>Does it need root?</summary>
+          <p>No, your Thor stays unrooted. A few features use the root service that AYN's firmware already ships: Back + D-pad shortcuts without pausing the game, brightness and bottom-screen volume, controller focus, moving apps between the screens, force-close and the frontend compatibility. Where it isn't available, the app falls back to a simpler method or reports the action as unavailable.</p></details>
         <details><summary>What leaves my device?</summary>
           <p>One HTTPS request to GitHub's Releases API to check for updates, containing no app data. Settings, app list and switcher previews stay on the device.</p></details>
         <details><summary>Does it interfere with my games or emulator bindings?</summary>
           <p>Shoulder buttons and the D-pad only act while Back is held. Otherwise they reach the game as usual, and buttons without an assignment are left alone. <span class="ver new">v1.4.0</span> You can also pause it: hold two buttons for a moment, for example when an emulator needs Back for its own menu, and hold again to resume.</p></details>
-        <details><summary>Does it work with Cocoon, NeoStation or iiSU?</summary>
-          <p>Cocoon and NeoStation work, iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
+        <details><summary>Does it work with ES-DE, NeoStation, Cocoon, RetroArch or iiSU?</summary>
+          <p>ES-DE with Companion, NeoStation, Cocoon and RetroArch work and are in public testing. iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
         <details><summary>An app is missing from the switcher.</summary>
           <p>Android gives no way to read another app's task history, so the list is rebuilt from windows the service has seen since it started. Open the app on that screen once and it will appear.</p></details>
         <details><summary>Will my settings survive an update?</summary>
