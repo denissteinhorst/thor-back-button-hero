@@ -42,7 +42,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                   TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Check for new version" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
-                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Version 1.3.0" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Version 1.4.0" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=144 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Open GitHub repository"
                 TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="GitHub repository" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
