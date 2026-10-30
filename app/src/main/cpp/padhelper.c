@@ -279,7 +279,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
     while ((newline = strchr(line, '\n')) != NULL) {
         *newline = '\0';
         int mode, key;
-        if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 2) current = mode;
+        if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
         line = newline + 1;
     }
@@ -339,7 +339,8 @@ int main(int argc, char **argv) {
             if (e->type == EV_ABS && (e->code == ABS_HAT0X || e->code == ABS_HAT0Y)) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
                 // A press that starts while Back is held is ours until it is released, even if Back
-                // goes first; a press that started before Back stays the game's.
+                // goes first; a press that started before Back stays the game's. Mode 3 suspends
+                // all new captures without recreating the controller under a running game.
                 if (e->value != 0 && ((back && switcher == 0) || switcher == 1 || switcher == 2)) *cap = 1;
                 if (*cap == 1) {
                     report(e->code == ABS_HAT0X ? "X" : "Y", e->value);

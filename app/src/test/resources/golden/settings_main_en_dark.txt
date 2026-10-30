@@ -66,6 +66,18 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold time: 1000 ms" textSizePx=45.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
           SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=15 progress=5
           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Moves the app on the top screen to the bottom and the other way round. Default: 1000 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Activate / deactivate" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold button(s)" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2 + R2" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold time: 300 ms" textSizePx=45.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+          SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=29 progress=2
+          TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Hold to turn all Back gestures and shortcuts off or on. Without Back held, the buttons still reach your game. Back Button Hero starts active after a restart." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Shoulder buttons" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,12,12,48] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a shoulder button to run its assigned action. Screen selection is shown only for actions that support it. An unassigned button is left alone." textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]

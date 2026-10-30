@@ -171,6 +171,32 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
 | C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
 
+### Temporary activation toggle
+
+Use S3 for changes to the toggle or the helper's pass-through mode.
+
+- In settings, confirm L2 + R2 and 300 ms by default. Confirm that only L3 + R3, L1 + R1 and L2 + R2 are offered; select each pair,
+  change the duration, and reopen settings to confirm persistence. Check light/dark
+  themes and English/German wording. Restore the default selection afterward.
+- Hold only one button of the selected pair: nothing toggles. Hold both buttons for less than the
+  threshold: nothing toggles. Hold both past it: exactly one two-line message confirms
+  deactivation, even if you keep holding. Release and hold again to activate.
+- For both shoulder combinations, verify either button alone and mixed pairs do not
+  toggle; both required buttons must overlap for the full duration. The message must
+  name the selected pair. Without Back held, verify both shoulders still reach the game
+  in either state. With BBH active, Back + each shoulder retains its existing shortcut.
+- In a game, verify both stick clicks still work in both states. While deactivated,
+  test Back tap, double tap, hold, tap-then-hold, Back + every shoulder and Back +
+  every D-pad direction: no BBH action, normal game input and no focus loss.
+- Toggle while Back or a shoulder/D-pad combination is already held, and with either
+  switcher open. Releasing keys must not trigger a delayed action or leave navigation
+  captured. Reactivate and repeat ordinary Back gestures and controller navigation
+  in both switchers.
+- Check Xbox/Standard styles, a style change while deactivated, and the no-helper
+  fallback. No controller disconnect or lost mappings may occur just from toggling.
+- Deactivate, restart the accessibility service (and verify after a device restart
+  when convenient): BBH starts active; the selected buttons and hold time remain saved.
+
 ### Controller focus and the indicator
 
 Needs a game running on the top screen and the root helper active (a D-pad direction

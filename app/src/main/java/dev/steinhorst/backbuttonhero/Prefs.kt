@@ -59,6 +59,19 @@ class Prefs(context: Context) {
             }
             defaults.putBoolean("shoulder_defaults_v3", true).apply()
         }
+        // Single-stick toggles were offered in development builds; keep their replacement usable.
+        if (!sp.getBoolean("toggle_pairs_v1", false)) {
+            val toggle = sp.edit()
+            if (sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) in listOf("l3", "r3")) {
+                toggle.putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
+            }
+            toggle.putBoolean("toggle_pairs_v1", true).apply()
+        }
+        if (!sp.getBoolean("toggle_default_v2", false)) {
+            val toggle = sp.edit()
+            if (!sp.contains("toggle_buttons")) toggle.putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
+            toggle.putBoolean("toggle_default_v2", true).apply()
+        }
     }
 
     private fun putFactoryShoulders(edit: SharedPreferences.Editor) {
@@ -92,6 +105,14 @@ class Prefs(context: Context) {
     var switcherControllerEnabled: Boolean
         get() = sp.getBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
         set(v) = sp.edit().putBoolean("switcher_controller_enabled", v).apply()
+
+    var toggleButtons: String
+        get() = sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) ?: DEFAULT_TOGGLE_BUTTONS
+        set(v) = sp.edit().putString("toggle_buttons", v).apply()
+
+    var toggleHoldMs: Long
+        get() = sp.getLong("toggle_hold_ms", DEFAULT_TOGGLE_HOLD_MS).coerceIn(100L, 3000L)
+        set(v) = sp.edit().putLong("toggle_hold_ms", v).apply()
 
     var holdEnabled: Boolean
         get() = sp.getBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
@@ -201,11 +222,19 @@ class Prefs(context: Context) {
             .putBoolean("navigation_flick_defaults_v1", true)
             .putBoolean("navigation_flick_directions_v2", true)
             .putBoolean("shoulder_defaults_v3", true)
+            .putBoolean("toggle_pairs_v1", true)
+            .putBoolean("toggle_default_v2", true)
+            .putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
         putFactoryShoulders(edit)
         edit.apply()
     }
 
     companion object {
+        const val TOGGLE_BOTH = "both"
+        const val TOGGLE_L1_R1 = "l1_r1"
+        const val TOGGLE_L2_R2 = "l2_r2"
+        const val DEFAULT_TOGGLE_BUTTONS = TOGGLE_L2_R2
+        const val DEFAULT_TOGGLE_HOLD_MS = 300L
         const val DEFAULT_DOUBLE_TAP_ENABLED = true
         const val DEFAULT_DOUBLE_TAP_MS = 300L
         const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false

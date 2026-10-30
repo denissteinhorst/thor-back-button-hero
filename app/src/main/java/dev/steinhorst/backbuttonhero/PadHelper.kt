@@ -36,6 +36,7 @@ class PadHelper(
     @Volatile private var server: LocalServerSocket? = null
     @Volatile private var closed = false
     @Volatile private var navigationMode = PadNavigationMode.OFF
+    @Volatile private var suspended = false
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -85,8 +86,13 @@ class PadHelper(
     /** Selects how bare D-pad input is handled while one of the two switchers is open. */
     fun setSwitcherNavigation(mode: PadNavigationMode) {
         navigationMode = mode
-        val command = "SWITCHER ${mode.wireValue}\n"
+        val command = "SWITCHER ${if (suspended) PadNavigationMode.PASSTHROUGH.wireValue else mode.wireValue}\n"
         runCatching { client?.outputStream?.write(command.toByteArray()) }
+    }
+
+    fun setSuspended(value: Boolean) {
+        suspended = value
+        setSwitcherNavigation(navigationMode)
     }
 
     /** Linux key codes, emitted by the existing clone without another root-shell round trip. */
@@ -134,7 +140,7 @@ class PadHelper(
             "PAD" -> if (wanted && !closed) {
                 setActive(true)
                 failedLaunches = 0
-                if (navigationMode != PadNavigationMode.OFF) setSwitcherNavigation(navigationMode)
+                setSwitcherNavigation(navigationMode)
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }
@@ -201,4 +207,5 @@ enum class PadNavigationMode(val wireValue: Int) {
     OFF(0),
     CAPTURE(1),
     TOP(2),
+    PASSTHROUGH(3),
 }

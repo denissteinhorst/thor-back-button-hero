@@ -17,6 +17,44 @@ class PrefsMigrationTest {
     private fun context() = ApplicationProvider.getApplicationContext<Context>()
 
     @Test
+    fun `retired single-stick toggles migrate to the default pair without changing duration`() {
+        val ctx = context()
+        for (legacy in listOf("l3", "r3")) {
+            rawPrefs(ctx).edit().clear().putString("toggle_buttons", legacy)
+                .putLong("toggle_hold_ms", 1700L).apply()
+            val prefs = Prefs(ctx)
+            assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
+            assertEquals(1700L, prefs.toggleHoldMs)
+            assertTrue(rawPrefs(ctx).getBoolean("toggle_pairs_v1", false))
+            assertEquals(Prefs.TOGGLE_L2_R2, rawPrefs(ctx).getString("toggle_buttons", null))
+        }
+    }
+
+    @Test
+    fun `pair migration preserves supported choices and subsequent user selections`() {
+        val ctx = context()
+        for (binding in listOf(Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
+            rawPrefs(ctx).edit().clear().putString("toggle_buttons", binding).apply()
+            assertEquals(binding, Prefs(ctx).toggleButtons)
+            Prefs(ctx).toggleButtons = Prefs.TOGGLE_L2_R2
+            assertEquals(Prefs.TOGGLE_L2_R2, Prefs(ctx).toggleButtons)
+        }
+    }
+
+    @Test
+    fun `new toggle default applies to an unset selection and preserves explicit pairs`() {
+        val ctx = context()
+        rawPrefs(ctx).edit().clear().putBoolean("toggle_pairs_v1", true).apply()
+        assertEquals(Prefs.TOGGLE_L2_R2, Prefs(ctx).toggleButtons)
+        assertTrue(rawPrefs(ctx).getBoolean("toggle_default_v2", false))
+        for (binding in listOf(Prefs.TOGGLE_BOTH, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2)) {
+            rawPrefs(ctx).edit().putString("toggle_buttons", binding).remove("toggle_default_v2").apply()
+            assertEquals(binding, Prefs(ctx).toggleButtons)
+            assertEquals(binding, Prefs(ctx).toggleButtons)
+        }
+    }
+
+    @Test
     fun `fresh install applies v1 navigation-flick defaults and marks both migrations done`() {
         val ctx = context()
         val prefs = Prefs(ctx)

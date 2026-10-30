@@ -44,6 +44,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var levels: LevelControl
     private lateinit var controllerFocus: ControllerFocus
     private lateinit var focusIndicator: FocusIndicatorOverlay
+    private var interceptionEnabled = true
+    private val interceptionGate = KeyInterceptionGate()
+    private val toggleGesture by lazy { ServiceToggleGesture(prefs, gestureScheduler, ::toggleInterception) }
+    private var toggleToast: Toast? = null
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private var pendingDpadFocus: DpadDirection? = null
@@ -111,6 +115,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onServiceConnected() {
         if (::panels.isInitialized) panels.close()
         if (::padHelper.isInitialized) stopDpad()
+        interceptionEnabled = true
+        interceptionGate.clear()
+        toggleGesture.reset()
+        backGesture.reset()
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
@@ -147,7 +155,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     // The helper hides the pad from Android while it runs, so keep it only when shortcuts or native
     // switcher navigation need it.
-    private val prefsListener = { updatePadHelper() }
+    private val prefsListener = {
+        toggleGesture.reset()
+        updatePadHelper()
+    }
 
     private fun updatePadHelper() {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
@@ -155,7 +166,45 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (prefs.hasDpadAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
     }
 
+    private fun toggleInterception() {
+        interceptionEnabled = !interceptionEnabled
+        Log.i(TAG, "Back interception active=$interceptionEnabled")
+        interceptionGate.changed()
+        backGesture.reset()
+        shoulderKeys.clear()
+        pendingFocusTargets.clear()
+        pendingDpadFocus = null
+        switcherBackDown = false
+        switcherBackDeviceId = Int.MIN_VALUE
+        topRecentsBackClosePending = false
+        recentsConfirmKeys.clear()
+        padHelper.setSuspended(!interceptionEnabled)
+        if (!interceptionEnabled) {
+            cancelBottomSwitcherOpen()
+            cancelTopRecentsLaunch()
+            overlay.dismiss()
+            restoreRecentsFocus()
+            dpadOverlay.detach()
+            focusIndicator.dismiss()
+        }
+        val buttons = when (prefs.toggleButtons) {
+            Prefs.TOGGLE_L1_R1 -> "L1 + R1"
+            Prefs.TOGGLE_L2_R2 -> "L2 + R2"
+            else -> "L3 + R3"
+        }
+        toggleToast?.cancel()
+        toggleToast = Toast.makeText(this, getString(
+            if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive,
+            buttons,
+        ), Toast.LENGTH_LONG).also { it.show() }
+    }
+
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        toggleGesture.handle(event)
+        return interceptionGate.handle(event, interceptionEnabled, ::handleActiveKeyEvent)
+    }
+
+    private fun handleActiveKeyEvent(event: KeyEvent): Boolean {
         val confirmKey = event.deviceId to event.keyCode
         if (confirmKey in recentsConfirmKeys) {
             if (event.action == KeyEvent.ACTION_UP) recentsConfirmKeys.remove(confirmKey)
@@ -269,6 +318,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Back + D-pad, from [PadHelper] or [DpadOverlay]; both only report presses made while Back is held. */
     private fun handleDpad(direction: DpadDirection) {
+        if (!interceptionEnabled) return
         if (topRecentsControllerActive && prefs.switcherControllerEnabled) {
             if (topLaunchSelectionPending || topRecentsBackClosePending) return
             if (topRecentsInputReady && topRecentsLostFocus()) {
@@ -608,6 +658,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
+        toggleGesture.reset()
+        backGesture.reset()
+        interceptionGate.clear()
+        toggleToast?.cancel()
         // isConnected is shared with a replacement service. Retire this instance's focus workers
         // explicitly so they cannot initialize an old Recents session after reconnection.
         topRecentsControllerActive = false
@@ -1118,7 +1172,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onPadHelperActiveChanged(active: Boolean) {
-        if (!::overlay.isInitialized || !prefs.switcherControllerEnabled ||
+        if (!interceptionEnabled || !::overlay.isInitialized || !prefs.switcherControllerEnabled ||
             (!overlay.isShowing && !topRecentsControllerActive)
         ) return
         if (active) {

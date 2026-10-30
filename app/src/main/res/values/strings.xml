@@ -143,4 +143,10 @@
     <string name="open_github_repository">Open GitHub repository</string>
     <string name="update_available_title">%1$s update available</string>
     <string name="update_available_text">Version %1$s is ready. Tap to open the release.</string>
+    <string name="service_toggle_title">Activate / deactivate</string>
+    <string name="service_toggle_buttons">Hold button(s)</string>
+    <string name="service_toggle_duration">Hold time: %d ms</string>
+    <string name="service_toggle_hint">Hold to turn all Back gestures and shortcuts off or on. Without Back held, the buttons still reach your game. Back Button Hero starts active after a restart.</string>
+    <string name="service_toggle_active">Back Button Hero: Activated\nHold %1$s to deactivate</string>
+    <string name="service_toggle_inactive">Back Button Hero: Deactivated\nHold %1$s to activate</string>
 </resources>

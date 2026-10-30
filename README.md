@@ -49,6 +49,8 @@ https://github.com/user-attachments/assets/fe2d9c3a-b73b-416f-9198-39178ad2ff0e
 
 Each gesture can be switched off in the app's settings.
 
+Hold **L2 + R2 together for 300 ms** to deactivate all Back gestures and shortcuts; hold again to reactivate them. While deactivated, Back and its combinations reach your game normally. Stick clicks always reach the game. Settings also offer L3 + R3 or L1 + R1, and a hold time from 100 to 3000 ms. A message confirms each change. Back Button Hero starts active after a device or service restart.
+
 ## Shoulder buttons and D-pad
 
 Hold Back and press another button to run a shortcut. The shoulder buttons **L1, L2, R1, R2** and the four D-pad directions **D-pad left, D-pad up, D-pad right, D-pad down** can each be assigned any action from the list below. A button without an assignment is left alone, so games and apps still receive its normal input.
@@ -130,7 +132,7 @@ Here is what that means in practice:
 - **Open source.** Every line is in this repository, and releases are built by GitHub Actions from this code.
 - **No tracking.** No analytics, no telemetry, no accounts.
 - **One network request.** An HTTPS call to GitHub to check for updates. It sends no settings, app list or screenshots.
-- **Only your hardware buttons.** It acts on Back, L1, L2, R1, R2 and the D-pad. All other keys, including typing on a keyboard, are passed on untouched and are never stored or logged ([`onKeyEvent`](app/src/main/java/dev/steinhorst/backbuttonhero/SwitcherService.kt)).
+- **Only your hardware buttons.** It acts on Back, L1, L2, R1, R2, L3, R3 and the D-pad. All other keys, including typing on a keyboard, are passed on untouched and are never stored or logged ([`onKeyEvent`](app/src/main/java/dev/steinhorst/backbuttonhero/SwitcherService.kt)).
 - **No reading of app content.** The service sees which apps are open, not the text inside them.
 - **Nothing leaves your device.** Switcher previews live in memory only and are discarded when the service stops.
 - **Easy to undo.** Switch the service off or uninstall the app, and everything is gone.

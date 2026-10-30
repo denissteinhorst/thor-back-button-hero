@@ -72,6 +72,15 @@ until release, even if Back is let go or the switcher closes first.
 5. **The app runs the configured action** (`SwitcherService.handleDpad`), just as it does for a
    shoulder-button combo. The game never sees the press and never loses focus.
 
+### Temporarily deactivating Back Button Hero
+
+The app sends `SWITCHER 3` while its Back interception is deactivated. New D-pad
+presses then pass through even while Back is held. A direction already captured
+keeps its original release handling. The helper and its clone remain connected,
+so toggling does not recreate the controller under a running game. The app returns
+to the ordinary navigation mode when reactivated and resends the current mode
+when the helper takes over a new pad.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one

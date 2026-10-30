@@ -82,6 +82,24 @@ class BackGestureMachineTest {
     }
 
     @Test
+    fun `reset cancels pending tap and hold and starts a fresh gesture`() {
+        machine.handleBack(pressDown())
+        machine.reset()
+        scheduler.fireAll()
+        assertEquals(0, actions.swapScreensCalls)
+        assertTrue(!machine.backDown)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        machine.reset()
+        scheduler.fireAll()
+        assertEquals(0, actions.onSingleTapCalls)
+        assertTrue(!machine.followsRecentTap())
+        machine.handleBack(pressDown())
+        scheduler.fireAll()
+        assertEquals(1, actions.swapScreensCalls)
+    }
+
+    @Test
     fun `single tap waits only for configured double tap window`() {
         machine.handleBack(pressDown())
         machine.handleBack(release(startTime))

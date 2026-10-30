@@ -142,4 +142,10 @@
     <string name="open_github_repository">GitHub-Repository öffnen</string>
     <string name="update_available_title">%1$s-Update verfügbar</string>
     <string name="update_available_text">Version %1$s ist bereit. Tippen, um das Release zu öffnen.</string>
+    <string name="service_toggle_title">Aktivieren / deaktivieren</string>
+    <string name="service_toggle_buttons">Taste(n) zum Halten</string>
+    <string name="service_toggle_duration">Haltedauer: %d ms</string>
+    <string name="service_toggle_hint">Halten schaltet alle Back-Gesten und Tastenkombinationen aus oder ein. Ohne gehaltenes Back gehen die Tasten weiterhin ans Spiel. Nach einem Neustart ist Back Button Hero aktiv.</string>
+    <string name="service_toggle_active">Back Button Hero: Aktiviert\n%1$s halten zum Deaktivieren</string>
+    <string name="service_toggle_inactive">Back Button Hero: Deaktiviert\n%1$s halten zum Aktivieren</string>
 </resources>

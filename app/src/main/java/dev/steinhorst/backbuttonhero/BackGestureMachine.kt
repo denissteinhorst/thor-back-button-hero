@@ -71,6 +71,20 @@ class BackGestureMachine(
         scheduler.removeCallbacks(tapHoldRunnable)
     }
 
+    /** Discard pending gestures when interception is suspended or the service disconnects. */
+    fun reset() {
+        scheduler.removeCallbacks(holdRunnable)
+        scheduler.removeCallbacks(tapHoldRunnable)
+        scheduler.removeCallbacks(singleTap)
+        backDown = false
+        comboFired = false
+        holdFired = false
+        tapHoldFired = false
+        firstDownAt = 0L
+        lastTapAt = null
+        pressFollowsTap = false
+    }
+
     fun handleBack(event: KeyEvent): Boolean {
         when {
             event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> {

@@ -56,6 +56,29 @@ class SettingsActionsTest {
         (ShadowDialog.getLatestDialog() ?: error("No dialog")).window!!.decorView
 
     @Test
+    fun `toggle buttons chooser offers stick and shoulder choices and persists selection`() {
+        val activity = open().get()
+        for ((index, expected) in listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH).withIndex()) {
+            clickRow(activity, activity.getString(R.string.service_toggle_buttons))
+            val dialog = ShadowAlertDialog.getLatestAlertDialog()
+            assertEquals(3, dialog.listView.adapter.count)
+            assertEquals(listOf("L1 + R1", "L2 + R2", "L3 + R3")[index], dialog.listView.adapter.getItem(index))
+            dialog.listView.performItemClick(null, index, index.toLong())
+            assertEquals(expected, Prefs(context).toggleButtons)
+            assertFalse(dialog.isShowing)
+        }
+    }
+
+    @Test
+    fun `toggle duration slider stores the selected hold time`() {
+        val activity = open().get()
+        val root = activity.findViewById<View>(android.R.id.content)
+        val slider = find(root) { it is SeekBar && it.max == 29 } as SeekBar
+        shadowOf(slider).onSeekBarChangeListener.onProgressChanged(slider, 16, true)
+        assertEquals(1700L, Prefs(context).toggleHoldMs)
+    }
+
+    @Test
     fun `unbind optionals clears every button after confirming`() {
         val activity = open().get()
 

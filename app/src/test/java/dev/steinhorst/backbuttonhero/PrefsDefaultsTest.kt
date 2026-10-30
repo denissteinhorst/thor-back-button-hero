@@ -21,6 +21,23 @@ class PrefsDefaultsTest {
     }
 
     @Test
+    fun `toggle defaults round trip clamp and reset`() {
+        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
+        assertEquals(300L, prefs.toggleHoldMs)
+        prefs.toggleButtons = Prefs.TOGGLE_L1_R1
+        prefs.toggleHoldMs = 1700L
+        assertEquals(Prefs.TOGGLE_L1_R1, prefs.toggleButtons)
+        assertEquals(1700L, prefs.toggleHoldMs)
+        prefs.toggleHoldMs = 1L
+        assertEquals(100L, prefs.toggleHoldMs)
+        prefs.toggleHoldMs = 9999L
+        assertEquals(3000L, prefs.toggleHoldMs)
+        prefs.resetToDefaults()
+        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
+        assertEquals(300L, prefs.toggleHoldMs)
+    }
+
+    @Test
     fun `doubleTapEnabled defaults to true`() {
         assertEquals(Prefs.DEFAULT_DOUBLE_TAP_ENABLED, prefs.doubleTapEnabled)
     }

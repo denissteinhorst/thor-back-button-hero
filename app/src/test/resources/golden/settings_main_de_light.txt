@@ -66,6 +66,18 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Haltedauer: 1000 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
           SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=15 progress=5
           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Verschiebt die App vom oberen Bildschirm nach unten und umgekehrt. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Aktivieren / deaktivieren" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Taste(n) zum Halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2 + R2" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="›" textSizePx=60.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Haltedauer: 300 ms" textSizePx=45.0 textColor=#FF70777C maxLines=2147483647 bold=false
+          SeekBar visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=true margin=[0,12,0,0] max=29 progress=2
+          TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Halten schaltet alle Back-Gesten und Tastenkombinationen aus oder ein. Ohne gehaltenes Back gehen die Tasten weiterhin ans Spiel. Nach einem Neustart ist Back Button Hero aktiv." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Schultertasten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
       TextView visibility=VISIBLE minHeight=0 padding=[12,12,12,48] clickable=false focusable=false margin=[0,0,0,0] text="Zurück halten und eine Schultertaste drücken, um die zugewiesene Aktion auszuführen. Die Bildschirmauswahl erscheint nur bei Aktionen, die sie unterstützen. Eine unbelegte Taste bleibt unangetastet." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]

@@ -33,6 +33,7 @@ class SettingsActivity : Activity() {
     private lateinit var content: LinearLayout
     private lateinit var warning: SettingsPage.WarningHandle
     private lateinit var rootWarning: SettingsPage.WarningHandle
+    private lateinit var toggleButtonsValue: TextView
     private lateinit var singleValue: TextView
     private lateinit var statusLabel: TextView
     private lateinit var openA11yHandle: SettingsPage.ActionHandle
@@ -128,6 +129,15 @@ class SettingsActivity : Activity() {
             sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint) { prefs.holdMs = it }
         }
 
+        page.sectionHeader(R.string.service_toggle_title)
+        page.card {
+            val buttons = chooserRow(R.string.service_toggle_buttons, toggleButtonsLabel()) { chooseToggleButtons() }
+            toggleButtonsValue = buttons.value
+            sliderRow(R.string.service_toggle_duration, 100, 3000, 100, prefs.toggleHoldMs, R.string.service_toggle_hint) {
+                prefs.toggleHoldMs = it
+            }
+        }
+
         page.sectionHeader(R.string.shoulder_title)
         page.hintText(R.string.shoulder_hint)
         buildShoulderRow(page, ShoulderButton.L1, R.string.shoulder_l1)
@@ -159,6 +169,24 @@ class SettingsActivity : Activity() {
             textRow(getString(R.string.version_label, appVersionName()))
             linkRow(getString(R.string.github_repository), R.string.open_github_repository) { openUrl(UpdateChecker.REPOSITORY_URL) }
         }
+    }
+
+    private fun toggleButtonsLabel(): String = when (prefs.toggleButtons) {
+        Prefs.TOGGLE_L1_R1 -> "L1 + R1"
+        Prefs.TOGGLE_L2_R2 -> "L2 + R2"
+        else -> "L3 + R3"
+    }
+
+    private fun chooseToggleButtons() {
+        val values = listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.service_toggle_buttons)
+            .setSingleChoiceItems(arrayOf("L1 + R1", "L2 + R2", "L3 + R3"), values.indexOf(prefs.toggleButtons)) { dialog, which ->
+                prefs.toggleButtons = values[which]
+                toggleButtonsValue.text = toggleButtonsLabel()
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun refresh() {
