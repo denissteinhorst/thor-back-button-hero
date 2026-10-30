@@ -126,6 +126,27 @@ task history, so the list is rebuilt from the windows the accessibility service 
 packages are filtered out deliberately. Open the app on that screen once and it will
 appear.
 
+### Does it work with dual-screen frontends like ES-DE, NeoStation, Cocoon or iiSU?
+
+Frontends draw their bottom screen in one of two ways, and Back Button Hero handles both
+without a per-app list. Either way the frontend's bottom screen gets its own card in bottom
+Recents; selecting it brings that screen back exactly as it was.
+
+- **Overlay window** (ES-DE Companion, NeoStation): the window is hidden while you use
+  another app on the bottom screen. The frontend never notices.
+- **Normal activity** (Cocoon): covering it would make Android stop it, and Cocoon would
+  then switch its top screen to its single-screen layout. Instead, Back Button Hero moves
+  that activity onto an invisible screen of its own, where it keeps running. If the frontend
+  later starts its bottom screen again by itself (after standby or when you return from a
+  game), it is moved away once more.
+
+This needs AYN's built-in root service, which the Thor ships with. Moving a frontend away
+keeps it running in the background, which costs a little battery while you use another app.
+
+**iiSU is not supported yet.** It starts a new bottom screen as soon as any other app comes
+to the front there, so it immediately covers the app you just opened. Back Button Hero
+notices that and leaves iiSU alone rather than fighting it in a loop.
+
 ### Can I build it myself instead of trusting a release?
 
 Yes, and the result is functionally identical:

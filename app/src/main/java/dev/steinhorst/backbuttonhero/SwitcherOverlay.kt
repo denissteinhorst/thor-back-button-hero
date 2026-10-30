@@ -92,8 +92,14 @@ class SwitcherOverlay(
 
     fun representsTask(state: RecentsTaskState): Boolean {
         if (shownApps.none { it.panel == null && it.packageName == state.packageName }) return false
-        val current = taskStates.firstOrNull { it.packageName == state.packageName } ?: return false
+        val current = taskFor(state.packageName) ?: return false
         return current.taskId == state.taskId && current.lastActiveTime == state.lastActiveTime && current.displayId == state.displayId
+    }
+
+    /** A frontend can own a task on each screen; its card stands for the one on this switcher's screen. */
+    fun taskFor(packageName: String, tasks: List<RecentsTaskState> = taskStates): RecentsTaskState? {
+        val own = tasks.filter { it.packageName == packageName }
+        return own.firstOrNull { it.displayId == shownDisplayId } ?: own.firstOrNull()
     }
 
     fun previewPackages(): Set<String> = shownApps.filter { it.panel == null }.map { it.packageName }.toSet()
@@ -113,7 +119,7 @@ class SwitcherOverlay(
         memoryLabel?.let { it.text = memoryText(it.context) }
         badgeViews.forEach { (key, views) ->
             val panel = shownApps.firstOrNull { it.key == key }?.panel
-            badgeStyle?.update(views, if (panel == null) tasks.firstOrNull { it.packageName == key }
+            badgeStyle?.update(views, if (panel == null) taskFor(key, tasks)
                 else RecentsTaskState(panel.packageName, panel.displayId, false))
             if (panel != null) views.first.visibility = View.INVISIBLE
         }

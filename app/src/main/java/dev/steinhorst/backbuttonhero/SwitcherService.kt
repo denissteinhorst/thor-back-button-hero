@@ -41,6 +41,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var overlay: SwitcherOverlay
     private lateinit var source: AccessibilityAppSource
     private lateinit var panels: BottomPanels
+    private lateinit var parking: FrontendParking
     private lateinit var padHelper: PadHelper
     private lateinit var dpadOverlay: DpadOverlay
     private lateinit var levels: LevelControl
@@ -63,6 +64,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
     private val panelStateRunnable = Runnable {
         if (::panels.isInitialized) panels.refresh(bottomDisplay())
+    }
+    private val reclaimRunnable = Runnable {
+        bottomDisplay()?.let { parking.reclaimed(it, source.topApp(it.displayId)) }
     }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
@@ -123,6 +127,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     override fun onServiceConnected() {
         if (::panels.isInitialized) panels.close()
+        if (::parking.isInitialized) parking.close()
         if (::padHelper.isInitialized) stopDpad()
         interceptionEnabled = true
         interceptionGate.clear()
@@ -135,6 +140,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         panels = BottomPanels(this, source::isCovered, ::capturePanel) {
             if (::overlay.isInitialized) overlay.reconcilePanels(panels.cards(bottomDisplay()?.displayId ?: -1))
         }
+        parking = FrontendParking(this)
         overlay = SwitcherOverlay(
             this,
             source,
@@ -241,6 +247,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             restoreRecentsFocus()
             dpadOverlay.detach()
             focusIndicator.dismiss()
+            // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
+            bottomDisplay()?.let { parking.restore(it.displayId) {} }
         }
         val buttons = when (prefs.toggleButtons) {
             Prefs.TOGGLE_L1_R1 -> "L1 + R1"
@@ -719,6 +727,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingDpadFocus = null
         stopDpad()
         if (::panels.isInitialized) panels.close()
+        if (::parking.isInitialized) parking.close()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         if (::focusIndicator.isInitialized) focusIndicator.dismiss()
@@ -735,6 +744,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingDpadFocus = null
         stopDpad()
         if (::panels.isInitialized) panels.close()
+        if (::parking.isInitialized) parking.close()
         return super.onUnbind(intent)
     }
 
@@ -781,6 +791,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         updateDpadPassthrough(currentException())
         handler.removeCallbacks(panelStateRunnable)
         handler.postDelayed(panelStateRunnable, 400L)
+        if (parking.parkedPackage != null) {
+            handler.removeCallbacks(reclaimRunnable)
+            handler.postDelayed(reclaimRunnable, PARKING_RECLAIM_SETTLE_MS)
+        }
         if (topRecentsControllerActive) {
             scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
         }
@@ -873,12 +887,17 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /** Stores a preview of the app in front on the bottom screen; [then] runs whether or not it worked. */
-    private fun captureFrontApp(then: (() -> Unit)? = null) {
+    private fun captureFrontApp(waitForGap: Boolean = false, then: (() -> Unit)? = null) {
         val display = bottomDisplay()
         val pkg = display?.let { source.topApp(it.displayId) }
         val now = SystemClock.uptimeMillis()
-        if (display == null || pkg == null || overlay.isShowing || source.isCovered(display.displayId) || now - lastCapture < MIN_CAPTURE_GAP_MS) {
+        if (display == null || pkg == null || overlay.isShowing || source.isCovered(display.displayId)) {
             then?.invoke(); return
+        }
+        val remaining = MIN_CAPTURE_GAP_MS - (now - lastCapture)
+        if (remaining > 0) {
+            if (waitForGap) handler.postDelayed({ captureFrontApp(waitForGap = true, then = then) }, remaining) else then?.invoke()
+            return
         }
         lastCapture = now
         takeScreenshot(display.displayId, mainExecutor, object : TakeScreenshotCallback {
@@ -912,7 +931,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Close all: every app task on the bottom screen, or on both screens when [bothScreens] is set. */
     private fun closeAll(packages: List<String>, bothScreens: Boolean) {
-        val displays = if (bothScreens) getSystemService(DisplayManager::class.java).displays.map { it.displayId }.toSet()
+        val displays = if (bothScreens) getSystemService(DisplayManager::class.java).displays
+            .filterNot(FrontendParking::isParkingDisplay).map { it.displayId }.toSet()
         else setOfNotNull(bottomDisplay()?.displayId)
         killOnly(packages, displays)
     }
@@ -921,6 +941,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
         if (!Shell.isPkg(pkg)) return
+        if (parking.parkedPackage == pkg) {
+            // The ordinary mover would treat the parking display as a source screen needing a Home.
+            prepareBottomLaunch(displayId) {
+                parking.restore(displayId) { restored -> if (!restored) toastUnavailable() }
+            }
+            return
+        }
         if (!canRelaunch(pkg)) {
             // The package may offer Home while this task is a normal app. Verify/activate
             // the actual task first, so a rejected Home task cannot hide a bottom panel.
@@ -939,7 +966,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun prepareBottomLaunch(displayId: Int, then: () -> Unit) {
         val display = bottomDisplay()
         if (display?.displayId != displayId) { then(); return }
-        if (!panels.hasPanels && !source.isCovered(displayId)) { then(); return }
+        val top = source.topApp(Display.DEFAULT_DISPLAY)
+        val bottom = source.topApp(displayId)
+        val park = { parking.prepareLaunch(display, top, bottom) { if (isConnected) preparePanels(display, then) } }
+        // A parked task gets no system snapshot of its own; take its card preview while it is still visible.
+        if (!parking.wouldPark(top, bottom)) return park()
+        // Card callbacks run before dismiss(). Capture only after the overlay's surface is gone.
+        val delay = if (overlay.isShowing) SWITCHER_SCREENSHOT_DELAY_MS else 0L
+        handler.postDelayed({ captureFrontApp(waitForGap = true) { if (isConnected) park() } }, delay)
+    }
+
+    private fun preparePanels(display: Display, then: () -> Unit) {
+        if (!panels.hasPanels && !source.isCovered(display.displayId)) { then(); return }
         // Card callbacks run before dismiss(). Capture only after the overlay's surface is gone.
         val delay = if (overlay.isShowing) SWITCHER_SCREENSHOT_DELAY_MS else 0L
         handler.postDelayed({
@@ -985,6 +1023,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val activityManager = getSystemService(ActivityManager::class.java)
         val closesOwn = packageName in closing
         val packages = closing - packageName
+        if (::parking.isInitialized) packages.forEach(parking::forget)
         packages.forEach { pkg ->
             displays.forEach { d -> if (source.topApp(d) == pkg) goHome(d, dismissSwitcher = false) }
         }
@@ -1223,9 +1262,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun loadBottomThumbnails(states: List<RecentsTaskState>, session: Int) {
-        val packages = overlay.previewPackages()
+        // A parked frontend's newest task is usually its top-screen activity; keep the captured bottom preview.
+        val packages = overlay.previewPackages() - setOfNotNull(parking.parkedPackage)
         val width = overlay.previewWidth().coerceIn(1, 1024)
-        val entries = states.filter { it.packageName in packages && it.taskId >= 0 }.distinctBy { it.packageName }
+        val entries = packages.mapNotNull { overlay.taskFor(it, states) }.filter { it.taskId >= 0 }
         val requests = entries.map { it to RecentsThumbnailCache.Key(it.taskId, it.lastActiveTime, width, it.displayId) }
         requests.forEach { (state, key) -> recentsThumbnails.get(key)?.let { overlay.updateThumbnail(state.packageName, it) } }
         if (thumbnailQueryRunning) return
@@ -1506,6 +1546,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { overlay.dismiss(); return }
         bottomSwitcherOpening = true
+        parking.verify()
         val session = ++bottomStateSession
         panels.prepareSwitcher(display) { captureFrontApp {
             Thread {
@@ -1525,10 +1566,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         bottomStateSession++
     }
 
-    /** The AYN Thor's second screen is the non-default internal display (id 4, "Screen-2" here). */
+    /** The AYN Thor's second screen is the non-default internal display (id 4, "Screen-2" here).
+     *  The parking display has a higher id but is never a screen. */
     private fun bottomDisplay(): Display? =
         getSystemService(DisplayManager::class.java).displays
-            .filter { it.displayId != Display.DEFAULT_DISPLAY }
+            .filter { it.displayId != Display.DEFAULT_DISPLAY && !FrontendParking.isParkingDisplay(it) }
             .maxByOrNull { it.displayId }
 
     companion object {
@@ -1545,6 +1587,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val CAPTURE_DELAY_MS = 800L
         const val MIN_CAPTURE_GAP_MS = 1100L
         const val SWITCHER_SCREENSHOT_DELAY_MS = 100L
+        const val PARKING_RECLAIM_SETTLE_MS = 300L
         const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
         const val COMBINED_DISPLAY_SHIFT = 12
         const val THUMB_WIDTH = 480

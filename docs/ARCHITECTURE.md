@@ -322,6 +322,33 @@ This path does not rewrite window types. Hold-to-swap is rejected
 with a localized explanation if either foreground app owns an observed bottom panel,
 including a hidden panel; neither task is moved in that case.
 
+### Parked frontend activities
+
+Some frontends (Cocoon) draw their bottom screen as an ordinary activity rather than a
+panel window. Covering it stops it, and the frontend reacts to that (Cocoon switches its top
+screen to a single-screen layout). `FrontendParking` therefore moves such a task, before
+anything else starts on the bottom screen, onto a private `VirtualDisplay` owned by this
+process. The task stays resumed there; an `ImageReader` drains its frames. Detection is
+`ParkingPolicy.candidate`: the same package is in front on both screens. No package list.
+`TaskParker` (root entry point) only moves the visible front task of that package, only a
+standalone movable root, and reads running root tasks because recent-task queries may omit
+private displays.
+
+The package's ordinary bottom Recents card restores the parked task to the requested display
+without relaunching it; `launchFromRecents` routes it there, since `RecentsTaskLauncher`
+would treat the parking display as a source screen needing a Home. The card preview is
+captured just before parking: a parked task never becomes invisible, so it gets no system
+snapshot of its own. A frontend can restart its bottom activity on the real bottom display
+when its top activity starts (wake, return from a game). Window events then park the new
+instance again. A reclaim within `ParkingPolicy.REPARK_MIN_INTERVAL_MS` of the last park
+means the frontend reacts to any foreground change (iiSU); that package is then left alone
+for the rest of the service session instead of looping.
+
+Pausing interception and service teardown restore the parked task to the bottom screen.
+If this process dies first, Android removes the private display and destroys its content;
+the frontend recreates its bottom screen on its next start. `bottomDisplay()`, Close all and
+`DpadOverlay` skip private displays, so the parking display is never treated as a screen.
+
 ## Testability seams, and where they stop
 
 Three extractions exist purely so that logic became reachable from the JVM:

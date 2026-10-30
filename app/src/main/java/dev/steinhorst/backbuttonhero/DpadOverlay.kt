@@ -31,7 +31,7 @@ class DpadOverlay(
         if (windows.isNotEmpty()) return
         lastX = 0f
         lastY = 0f
-        for (display in context.getSystemService(DisplayManager::class.java).displays) {
+        for (display in context.getSystemService(DisplayManager::class.java).displays.filterNot(FrontendParking::isParkingDisplay)) {
             val ctx = context.createDisplayContext(display)
                 .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
             val wm = ctx.getSystemService(WindowManager::class.java)
