@@ -64,6 +64,11 @@ class SwitcherOverlay(
         shownApps = emptyList()
         shownCards = emptyList()
         badgeViews.clear()
+        // Any one of these would keep the whole detached tree alive through its parents.
+        memoryLabel = null
+        emptyView = null
+        closeAllButton = null
+        screenshotButton = null
         bulkClosing = false
         onDismissed()
     }

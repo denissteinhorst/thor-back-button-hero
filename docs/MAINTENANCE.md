@@ -54,6 +54,14 @@ artifact without installing it.
 Debug builds additionally bundle LeakCanary, which adds a second "Leaks" launcher icon
 and a few MB. Neither appears in a release build.
 
+Automated UI runs that call `uiautomator dump` (or connect any other `UiAutomation`)
+make Android 13 unbind every accessibility service and bind it again, so each dump
+destroys and recreates `SwitcherService` — and restarts the pad helper with it.
+LeakCanary then reports `AccessibilityService$IAccessibilityServiceClientWrapper.mContext`
+holding the destroyed instances. That binder stub is released once system_server
+collects its side (LeakCanary later logs "All retained objects have been garbage
+collected"); it is an artifact of the automation, not a leak in normal use.
+
 ## Changing things safely
 
 The app's features, layout and wording are **final**. The suite exists to keep them that
