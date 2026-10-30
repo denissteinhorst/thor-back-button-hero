@@ -3,12 +3,24 @@ package dev.steinhorst.backbuttonhero
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class RecentsTaskStateTest {
+    @Test
+    fun `actual task movability is retained separately from package Home capability`() {
+        val state = requireNotNull(RecentsTaskState.parse("""OK [
+            {"package":"dev.example.frontend","display":0,"locked":false,"task":55,"movable":true},
+            {"package":"dev.example.launcher","display":17,"locked":false,"task":56,"movable":false}
+        ]"""))
+        assertTrue(state[0].movable)
+        assertFalse(state[1].movable)
+    }
+
     @Test
     fun `system task display and lock values are retained without assuming bottom id`() {
         assertEquals(listOf(RecentsTaskState("dev.example.app", 17, true)),

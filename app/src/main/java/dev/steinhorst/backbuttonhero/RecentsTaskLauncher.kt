@@ -24,20 +24,17 @@ object RecentsTaskLauncher {
             val atm = Class.forName("android.app.IActivityTaskManager\$Stub").getMethod("asInterface", IBinder::class.java)
                 .invoke(null, binder)!!
             val user = ActivityManager::class.java.getMethod("getCurrentUser").invoke(null) as Int
-            val recent = atm.javaClass.methods.first { it.name == "getRecentTasks" }
-            val raw = recent.invoke(atm, 500, 0, user)
-            val tasks = raw as? List<*> ?: raw?.javaClass?.getMethod("getList")?.invoke(raw) as? List<*>
-                ?: error("task list unavailable")
-            val task = tasks.filterIsInstance<ActivityManager.RecentTaskInfo>().firstOrNull {
+            val tasks = RecentTaskQuery.read(atm, user, includeExcluded = true)
+            val task = tasks.firstOrNull {
                 it.taskId >= 0 && (expectedTask == null || it.taskId == expectedTask) &&
                     (it.baseIntent?.component ?: it.baseActivity)?.packageName == pkg
             } ?: return finish("ERR task unavailable", 1)
-            require(!task.baseIntent.hasCategory(Intent.CATEGORY_HOME) &&
-                !task.baseIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME)) { "launcher task" }
             val configuration = task.javaClass.getField("configuration").get(task)
             val windowConfiguration = configuration.javaClass.getField("windowConfiguration").get(configuration)
-            require(windowConfiguration.javaClass.getMethod("getActivityType").invoke(windowConfiguration) == 1) {
-                "non-app task"
+            val type = windowConfiguration.javaClass.getMethod("getActivityType").invoke(windowConfiguration) as Int
+            if (!TaskMovePolicy.isMovable(type, task.baseIntent.hasCategory(Intent.CATEGORY_HOME),
+                    task.baseIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME))) {
+                return finish(TaskMovePolicy.PROTECTED_TASK, 1)
             }
             val oldDisplay = task.javaClass.getField("displayId").getInt(task)
             val front = atm.javaClass.methods.first { it.name == "moveTaskToFront" }
@@ -63,9 +60,9 @@ object RecentsTaskLauncher {
                 if (rootInfo != null) {
                     val root = rootInfo.javaClass.getField("taskId").getInt(rootInfo)
                     // Never move a shared root (home, split screen, etc.) along with unrelated tasks.
-                    require(root == task.taskId &&
-                        (rootInfo.javaClass.getField("childTaskIds").get(rootInfo) as IntArray).contentEquals(intArrayOf(task.taskId))) {
-                        "shared root task"
+                    if (root != task.taskId ||
+                        !(rootInfo.javaClass.getField("childTaskIds").get(rootInfo) as IntArray).contentEquals(intArrayOf(task.taskId))) {
+                        return finish(TaskMovePolicy.PROTECTED_TASK, 1)
                     }
                     atm.javaClass.getMethod("moveRootTaskToDisplay", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
                         .invoke(atm, root, display)

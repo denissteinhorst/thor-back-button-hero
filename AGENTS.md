@@ -36,6 +36,10 @@ owner and wait for the decision instead of guessing or making a consequential pr
 decision autonomously. Routine, reversible implementation details within an agreed
 direction remain the senior developer's responsibility.
 
+Ask questions directly in chat with numbered answer choices (1–n), and wait for the
+project owner's reply before continuing work. Do not use follow-up input menus or
+asynchronous question tools; the owner easily overlooks them.
+
 The ongoing work is to implement features and fixes without lowering quality. Consider
 `FEEDBACK.md` relevant context, but do not treat it as a strict queue. When work touches
 a feedback topic, remind the project owner about related open points and identify useful
@@ -158,6 +162,21 @@ narrate obvious code.
 
 English resources are the source of truth; maintain German parity. User-visible changes
 must be deliberate because snapshot and resource-integrity tests freeze the output.
+
+### Self-contained compatibility
+
+All compatibility fixes must ship entirely in this app's APK and work automatically
+after its normal setup. Never patch another app's APK, code, files, or settings to make
+our integration work. Device-side probes are development verification only; no probe,
+ADB command, companion patch, or extra manual configuration may be a prerequisite for
+other users. Adapt how our app observes and controls existing windows/tasks instead.
+
+Solve shared compatibility problems through general window, task, and input behavior,
+not package-specific exceptions, unless an app-specific distinction is demonstrated
+and explicitly agreed. Keep effects on other apps and existing workflows in view.
+
+Implement our own solutions. Other open-source projects may inform investigation and
+design, but never copy their implementation verbatim or transplant it into this app.
 
 ## Build and verification
 

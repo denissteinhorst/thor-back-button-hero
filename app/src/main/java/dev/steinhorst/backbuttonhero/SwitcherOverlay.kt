@@ -33,6 +33,7 @@ class SwitcherOverlay(
     private val onLaunch: (packageName: String, displayId: Int) -> Unit,
     private val onShown: (displayId: Int) -> Unit,
     private val onDismissed: () -> Unit,
+    private val onPanelLaunch: (Int) -> Unit = {},
 ) {
     private var root: View? = null
     private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
@@ -90,17 +91,18 @@ class SwitcherOverlay(
     }
 
     fun representsTask(state: RecentsTaskState): Boolean {
+        if (shownApps.none { it.panel == null && it.packageName == state.packageName }) return false
         val current = taskStates.firstOrNull { it.packageName == state.packageName } ?: return false
         return current.taskId == state.taskId && current.lastActiveTime == state.lastActiveTime && current.displayId == state.displayId
     }
 
-    fun previewPackages(): Set<String> = shownApps.map { it.packageName }.toSet()
+    fun previewPackages(): Set<String> = shownApps.filter { it.panel == null }.map { it.packageName }.toSet()
 
     fun previewWidth(): Int = shownCards.firstOrNull()?.width?.takeIf { it > 0 }
         ?: shownCards.firstOrNull()?.layoutParams?.width?.coerceAtLeast(1) ?: 1
 
     fun updateThumbnail(packageName: String, bitmap: android.graphics.Bitmap) {
-        val index = shownApps.indexOfFirst { it.packageName == packageName }
+        val index = shownApps.indexOfFirst { it.panel == null && it.packageName == packageName }
         if (index < 0 || shownApps[index].thumbnail === bitmap) return
         ((shownCards[index] as ViewGroup).getChildAt(1) as ImageView).setImageBitmap(bitmap)
         shownApps = shownApps.toMutableList().apply { set(index, get(index).copy(thumbnail = bitmap)) }
@@ -109,30 +111,57 @@ class SwitcherOverlay(
     fun updateTaskStates(tasks: List<RecentsTaskState>) {
         taskStates = tasks
         memoryLabel?.let { it.text = memoryText(it.context) }
-        badgeViews.forEach { (pkg, views) -> badgeStyle?.update(views, tasks.firstOrNull { it.packageName == pkg }) }
+        badgeViews.forEach { (key, views) ->
+            val panel = shownApps.firstOrNull { it.key == key }?.panel
+            badgeStyle?.update(views, if (panel == null) tasks.firstOrNull { it.packageName == key }
+                else RecentsTaskState(panel.packageName, panel.displayId, false))
+            if (panel != null) views.first.visibility = View.INVISIBLE
+        }
     }
 
     /** Remove expired cards before the source recycles their accessibility thumbnail bitmaps. */
     fun reconcileTaskStates(tasks: List<RecentsTaskState>): Boolean {
         if (bulkClosing) return false
         val packages = tasks.map { it.packageName }.toSet()
-        val selectedPackage = shownApps.getOrNull(selected)?.packageName
-        val keep = shownApps.indices.filter { shownApps[it].packageName in packages }
+        val selectedPackage = shownApps.getOrNull(selected)?.key
+        val keep = shownApps.indices.filter { shownApps[it].panel != null || shownApps[it].packageName in packages }
         if (keep.size != shownApps.size) {
             shownApps.indices.filterNot { it in keep }.forEach { index ->
                 val card = shownCards.getOrNull(index)
                 card?.animate()?.cancel()
                 (card?.parent as? ViewGroup)?.removeView(card)
-                badgeViews.remove(shownApps[index].packageName)
+                badgeViews.remove(shownApps[index].key)
             }
             shownApps = keep.map { shownApps[it] }
             shownCards = keep.mapNotNull { shownCards.getOrNull(it) }
-            selected = shownApps.indexOfFirst { it.packageName == selectedPackage }
+            selected = shownApps.indexOfFirst { it.key == selectedPackage }
                 .takeIf { it >= 0 } ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
             if (shownApps.isEmpty()) dismiss() else updateSelection()
         }
         updateTaskStates(tasks)
         return true
+    }
+
+    /** Panel lifetime is independent of task metadata; disappearing windows expire only their cards. */
+    fun reconcilePanels(panels: List<RunningApp>) {
+        if (!isShowing || bulkClosing) return
+        val current = panels.associateBy { it.key }
+        val selectedKey = shownApps.getOrNull(selected)?.key
+        val keep = shownApps.indices.filter { shownApps[it].panel == null || shownApps[it].key in current }
+        shownApps.indices.filterNot { it in keep }.forEach { index ->
+            val card = shownCards.getOrNull(index)
+            card?.animate()?.cancel()
+            (card?.parent as? ViewGroup)?.removeView(card)
+            badgeViews.remove(shownApps[index].key)
+        }
+        shownCards = keep.mapNotNull { shownCards.getOrNull(it) }
+        shownApps = keep.map { index -> current[shownApps[index].key] ?: shownApps[index] }
+        shownApps.forEachIndexed { index, app ->
+            if (app.panel != null) ((shownCards[index] as ViewGroup).getChildAt(1) as ImageView).setImageBitmap(app.thumbnail)
+        }
+        selected = shownApps.indexOfFirst { it.key == selectedKey }.takeIf { it >= 0 }
+            ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
+        if (shownApps.isEmpty()) dismiss() else updateSelection(scrollToSelection = false)
     }
 
     fun moveSelection(right: Boolean) {
@@ -201,12 +230,13 @@ class SwitcherOverlay(
         val wm = ctx.getSystemService(WindowManager::class.java)
         val bounds = wm.currentWindowMetrics.bounds
         val showingAllApps = showAppsFromAllDisplays()
-        val apps = if (showingAllApps) {
+        val regularApps = if (showingAllApps) {
             (source.appsOnDisplay(display.displayId) + source.appsOnDisplay(Display.DEFAULT_DISPLAY))
                 .distinctBy { it.packageName }
         } else {
             source.appsOnDisplay(display.displayId)
-        }.reversed()
+        }
+        val apps = (source.panelsOnDisplay(display.displayId) + regularApps).distinctBy { it.key }.reversed()
         shownApps = apps
         shownDisplayId = display.displayId
         // As in Quickstep, the newest task starts centered at the right-hand end of the row.
@@ -343,7 +373,7 @@ class SwitcherOverlay(
             val header = FrameLayout(ctx).apply {
                 addView(icon, FrameLayout.LayoutParams(style.iconSize, style.iconSize, Gravity.TOP or Gravity.CENTER_HORIZONTAL))
             }
-            badgeStyle?.let { badgeViews[app.packageName] = it.addTo(header) }
+            badgeStyle?.let { badgeViews[app.key] = it.addTo(header) }
             addView(header, LinearLayout.LayoutParams(w, style.iconSize + style.iconGap))
             addView(thumb, LinearLayout.LayoutParams(w, thumbH))
             setOnTouchListener(CardTouch(ctx, thumbH) { closing ->
@@ -359,7 +389,8 @@ class SwitcherOverlay(
         val all = if (bothScreens) (apps + source.appsOnDisplay(Display.DEFAULT_DISPLAY)).distinctBy { it.packageName } else apps
         // This explicit Back Button Hero command overrides OEM locks. The badges still show
         // the shared launcher status; neither that status nor native Overview policy is changed.
-        val packages = all.map { it.packageName }
+        val packages = all.map { it.packageName }.distinct()
+        if (packages.isEmpty()) { bulkClosing = false; return }
         shownCards.forEach { card ->
             card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
         }
@@ -372,6 +403,11 @@ class SwitcherOverlay(
     }
 
     private fun closeCard(card: View, app: RunningApp) {
+        if (app.panel != null) {
+            // Dismissing the return card must not kill the owner's top-screen Activity.
+            card.animate().translationY(0f).alpha(1f).setDuration(150).start()
+            return
+        }
         card.animate().translationY(-card.height.toFloat() * 1.5f).alpha(0f).setDuration(180).withEndAction {
             val row = card.parent as? ViewGroup
             val lastCard = row?.childCount == 1
@@ -381,7 +417,7 @@ class SwitcherOverlay(
             if (lastCard) {
                 dismiss()
             } else {
-                shownApps = shownApps.filterNot { it.packageName == app.packageName }
+                shownApps = shownApps.filterNot { it.key == app.key }
                 shownCards = shownCards.filterNot { it == card }
                 selected = selected.coerceAtMost(shownApps.lastIndex)
                 updateSelection()
@@ -405,7 +441,8 @@ class SwitcherOverlay(
     }
 
     private fun launch(app: RunningApp, displayId: Int) {
-        onLaunch(app.packageName, displayId)
+        val panel = app.panel
+        if (panel == null) onLaunch(app.packageName, displayId) else onPanelLaunch(panel.id)
     }
 
     private fun label(ctx: Context, text: String, sp: Float, color: Int) =

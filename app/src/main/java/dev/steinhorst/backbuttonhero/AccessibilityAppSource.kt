@@ -9,7 +9,8 @@ import android.view.accessibility.AccessibilityWindowInfo
  * A normal app cannot read other apps' task list, so this builds a most-recently-used list from the
  * windows the accessibility service sees on each display. Only apps seen since the service started appear.
  */
-class AccessibilityAppSource(private val service: AccessibilityService) : AppSource {
+class AccessibilityAppSource(private val service: AccessibilityService,
+    private val panels: (Int) -> List<RunningApp> = { emptyList() }) : AppSource {
 
     private val history = mutableMapOf<Int, MutableList<String>>()
 
@@ -81,6 +82,8 @@ class AccessibilityAppSource(private val service: AccessibilityService) : AppSou
         val pm = service.packageManager
         return history[displayId].orEmpty().map { RunningApp(it, labelOf(pm, it), iconOf(pm, it), thumbnails[it]) }
     }
+
+    override fun panelsOnDisplay(displayId: Int): List<RunningApp> = panels(displayId)
 
     private fun iconOf(pm: PackageManager, pkg: String) = try {
         pm.getApplicationIcon(pkg)

@@ -253,8 +253,41 @@ dynamically detected bottom display — `bottomDisplay()` returns the non-defaul
 with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
 target a screen, the overlay's window binding, and the swap all route through this.
 
-`AccessibilityAppSource` additionally tracks whether a display is *covered*, so the
-switcher can warn when opening a card would land behind another window.
+`AccessibilityAppSource` additionally tracks whether a display is *covered*, so panel
+discovery can run before launching and app thumbnails never capture a covering panel.
+
+### Bottom-screen frontend panels
+
+`BottomPanels` tracks window identities separately from activity packages. Full-screen
+third-party `PRESENTATION`, `PRIVATE_PRESENTATION`, and `APPLICATION_OVERLAY` windows
+are eligible; normal activities, input/accessibility windows and system-owned panels are
+excluded. `PanelWindows` joins WindowManager ownership/type/bounds with accessibility
+window IDs, including panels whose accessibility root is null. Display IDs are resolved
+at runtime. No frontend package allowlist is used.
+
+Before opening the bottom launcher or an app, the service captures each visible panel
+and then hides it. Bottom Recents also captures the visible front panel before its own
+overlay appears. Each panel has its own card, icon, localized label and retained image;
+its owner's activity task snapshots never replace that image. Selecting the card
+restores the original window without moving or relaunching its owner's activity.
+Swiping up/controller dismissal leaves the return card intact. Close all closes each
+listed panel's owner package too, including its upper-screen activity; it does not
+spare panel owners in either scope. Normal activity cards remain independently closable.
+Destroyed/replaced windows expire their
+old cards; a failed capture leaves the normal empty preview rather than using an
+unrelated activity snapshot.
+
+`PanelConnection` owns an authenticated uid-0 local socket to `PanelWindowHost`, started
+through the existing AYN bridge. The root owner retains each `IWindow` binder before
+`dispatchAppVisibility(false)` removes the window from accessibility discovery. An
+independent root recovery process retains the same binders before hiding is allowed.
+App/socket death restores all held windows; if either root process dies, its surviving
+peer restores them. Both channels have bounded timeouts. Service teardown explicitly
+closes the channel, but recovery does not rely on `onDestroy`. Without the privileged
+bridge or on unsupported firmware, ordinary launches continue without panel handling.
+This path does not rewrite window types. Hold-to-swap is rejected
+with a localized explanation if either foreground app owns an observed bottom panel,
+including a hidden panel; neither task is moved in that case.
 
 ## Testability seams, and where they stop
 
@@ -323,3 +356,16 @@ Successful system task snapshots also expire accessibility-history entries whose
 longer have a recent task. This runs before the bottom overlay opens and during its metadata
 refresh, removing stale cards without killing apps. It does not add apps absent from the observed
 history or change display scope. Failed/unavailable snapshots leave the history intact.
+
+Bottom inventory queries include tasks with `FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS`, so
+an observed companion app is not mistaken for a closed task. `RecentTaskQuery` uses the
+same flags for existing-task activation and explicit removal. Native top Recents keeps
+its original filtered queries. A package advertising Home may still have an ordinary
+companion activity: that task can be resumed or moved like any other ordinary app.
+Task metadata reports actual activity type/Home intent protection through `movable`.
+Hold-to-swap queries excluded tasks too and builds both moves before executing either;
+a protected task rejects the pair with a localized message. A package's Home intent
+filters only restrict the unprivileged package-relaunch fallback when task identity
+cannot be verified. The root mover independently checks the live task's type, intent
+and standalone root before moving it. Protected-task rejection never falls back to a
+package relaunch. Genuine Home/secondary-Home tasks remain excluded from task activation.

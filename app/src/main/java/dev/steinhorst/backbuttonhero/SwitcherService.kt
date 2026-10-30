@@ -38,6 +38,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private lateinit var overlay: SwitcherOverlay
     private lateinit var source: AccessibilityAppSource
+    private lateinit var panels: BottomPanels
     private lateinit var padHelper: PadHelper
     private lateinit var dpadOverlay: DpadOverlay
     private lateinit var levels: LevelControl
@@ -54,6 +55,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var bottomStateQueryRunning = false
     private var bottomSwitcherOpening = false
     private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
+    private val panelStateRunnable = Runnable {
+        if (::panels.isInitialized) panels.refresh(bottomDisplay())
+    }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
     private var topRecentsConfirmed = false
@@ -105,11 +109,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onServiceConnected() {
+        if (::panels.isInitialized) panels.close()
         if (::padHelper.isInitialized) stopDpad()
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         PService.probeAsync()
-        source = AccessibilityAppSource(this)
+        source = AccessibilityAppSource(this) { display -> panels.cards(display) }
+        panels = BottomPanels(this, source::isCovered, ::capturePanel) {
+            if (::overlay.isInitialized) overlay.reconcilePanels(panels.cards(bottomDisplay()?.displayId ?: -1))
+        }
         overlay = SwitcherOverlay(
             this,
             source,
@@ -120,6 +128,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::launchFromRecents,
             ::onBottomSwitcherShown,
             ::onBottomSwitcherDismissed,
+            ::restorePanel,
         )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
@@ -133,6 +142,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
         prefs.registerListener(prefsListener)
         updatePadHelper()
+        handler.post(panelStateRunnable)
     }
 
     // The helper hides the pad from Android while it runs, so keep it only when shortcuts or native
@@ -576,6 +586,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingFocusTargets.clear()
         pendingDpadFocus = null
         stopDpad()
+        if (::panels.isInitialized) panels.close()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         if (::focusIndicator.isInitialized) focusIndicator.dismiss()
@@ -591,6 +602,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingFocusTargets.clear()
         pendingDpadFocus = null
         stopDpad()
+        if (::panels.isInitialized) panels.close()
         return super.onUnbind(intent)
     }
 
@@ -630,6 +642,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         source.record(Display.DEFAULT_DISPLAY)
         bottomDisplay()?.let { source.record(it.displayId) }
+        handler.removeCallbacks(panelStateRunnable)
+        handler.postDelayed(panelStateRunnable, 400L)
         if (topRecentsControllerActive) {
             scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
         }
@@ -671,6 +685,55 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private val captureRunnable = Runnable { captureFrontApp() }
     private var lastCapture = 0L
+
+    /** Take the displayed panel before hiding it; task snapshots belong to its owner's Activity. */
+    private fun capturePanel(panel: PanelWindow, then: (Bitmap?) -> Unit) = capturePanel(panel, true, then)
+
+    private fun capturePanel(panel: PanelWindow, retry: Boolean, then: (Bitmap?) -> Unit) {
+        if (!isConnected || overlay.isShowing ||
+            windowsOnAllDisplays.get(panel.displayId).orEmpty().none { it.id == panel.id }) {
+            then(null)
+            return
+        }
+        val remaining = MIN_CAPTURE_GAP_MS - (SystemClock.uptimeMillis() - lastCapture)
+        if (remaining > 0) {
+            handler.postDelayed({ capturePanel(panel, retry, then) }, remaining)
+            return
+        }
+        lastCapture = SystemClock.uptimeMillis()
+        takeScreenshot(panel.displayId, mainExecutor, object : TakeScreenshotCallback {
+            override fun onSuccess(result: ScreenshotResult) {
+                val buffer = result.hardwareBuffer
+                val stillVisible = !overlay.isShowing &&
+                    windowsOnAllDisplays.get(panel.displayId).orEmpty().any { it.id == panel.id }
+                Thread {
+                    val image = runCatching {
+                        if (!stillVisible) return@runCatching null
+                        val hardware = Bitmap.wrapHardwareBuffer(buffer, result.colorSpace) ?: return@runCatching null
+                        try {
+                            val software = hardware.copy(Bitmap.Config.ARGB_8888, false) ?: return@runCatching null
+                            try {
+                                val width = minOf(THUMB_WIDTH, software.width)
+                                val height = (software.height.toLong() * width / software.width).toInt().coerceAtLeast(1)
+                                // Keep a distinct immutable bitmap even when no scaling is needed.
+                                Bitmap.createScaledBitmap(software, width, height, true).let {
+                                    if (it === software) software.copy(Bitmap.Config.ARGB_8888, false) else it
+                                }
+                            } finally { software.recycle() }
+                        } finally { hardware.recycle() }
+                    }.getOrNull()
+                    buffer.close()
+                    handler.post { if (isConnected) then(image) }
+                }.apply { isDaemon = true }.start()
+            }
+
+            override fun onFailure(errorCode: Int) {
+                if (retry && errorCode == ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT) {
+                    handler.postDelayed({ capturePanel(panel, false, then) }, MIN_CAPTURE_GAP_MS)
+                } else then(null)
+            }
+        })
+    }
 
     /** Stores a preview of the app in front on the bottom screen; [then] runs whether or not it worked. */
     private fun captureFrontApp(then: (() -> Unit)? = null) {
@@ -717,33 +780,64 @@ class SwitcherService : AccessibilityService(), GestureActions {
         killOnly(packages, displays)
     }
 
-    /** Called just before an app is launched from the switcher. Deals with windows that would hide it. */
-    private fun beforeLaunch(displayId: Int) {
-        if (!source.isCovered(displayId)) return
-        Toast.makeText(this, getString(R.string.covered_hint), Toast.LENGTH_LONG).show()
-    }
-
     private fun launchFromRecents(pkg: String, displayId: Int) = launchFromRecents(pkg, displayId, null)
 
     private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
-        if (!canMoveApp(pkg)) return
-        beforeLaunch(displayId)
-        Thread { launchTask(pkg, displayId, taskId) }.apply { isDaemon = true }.start()
+        if (!Shell.isPkg(pkg)) return
+        if (!canRelaunch(pkg)) {
+            // The package may offer Home while this task is a normal app. Verify/activate
+            // the actual task first, so a rejected Home task cannot hide a bottom panel.
+            Thread {
+                if (launchTask(pkg, displayId, taskId)) {
+                    handler.post { if (isConnected) prepareBottomLaunch(displayId) {} }
+                }
+            }.apply { isDaemon = true }.start()
+            return
+        }
+        prepareBottomLaunch(displayId) {
+            Thread { launchTask(pkg, displayId, taskId) }.apply { isDaemon = true }.start()
+        }
     }
 
-    private fun canMoveApp(pkg: String): Boolean = Shell.isPkg(pkg) &&
+    private fun prepareBottomLaunch(displayId: Int, then: () -> Unit) {
+        val display = bottomDisplay()
+        if (display?.displayId != displayId) { then(); return }
+        if (!panels.hasPanels && !source.isCovered(displayId)) { then(); return }
+        // Card callbacks run before dismiss(). Capture only after the overlay's surface is gone.
+        val delay = if (overlay.isShowing) SWITCHER_SCREENSHOT_DELAY_MS else 0L
+        handler.postDelayed({
+            if (isConnected) panels.prepareLaunch(display) {
+                if (isConnected) then()
+            }
+        }, delay)
+    }
+
+    private fun restorePanel(id: Int) {
+        handler.postDelayed({
+            if (isConnected) panels.show(id) { restored -> if (!restored) toastUnavailable() }
+        }, SWITCHER_SCREENSHOT_DELAY_MS)
+    }
+
+    /** Only the unprivileged fallback lacks task identity; never relaunch a potential launcher there. */
+    private fun canRelaunch(pkg: String): Boolean = Shell.isPkg(pkg) &&
         listOf(Intent.CATEGORY_HOME, Intent.CATEGORY_SECONDARY_HOME).none { category ->
             packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
         }
 
     /** Runs on a worker; swap moves must use one ordered worker rather than competing launches. */
-    private fun launchTask(pkg: String, displayId: Int, taskId: Int?) {
+    private fun launchTask(pkg: String, displayId: Int, taskId: Int?): Boolean {
         val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
         val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
         Log.d(TAG, "Recents launch: $result")
-        if (result?.startsWith("OK ") != true) {
-            handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
+        val launched = result?.startsWith("OK ") == true
+        if (!launched) {
+            if (TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
+                handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
+                return true
+            }
+            handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
         }
+        return launched
     }
 
     /** A normal app can only kill background processes, so leave the app first. With AYN's root
@@ -773,23 +867,37 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** Move the two captured foreground tasks; the first move must not change the second target. */
     override fun swapScreens() {
         cancelBottomSwitcherOpen()
-        val bottom = bottomDisplay()?.displayId ?: return
+        val display = bottomDisplay() ?: return
+        val bottom = display.displayId
         val top = Display.DEFAULT_DISPLAY
         overlay.dismiss()
-        val topApp = source.topApp(top)
-        val bottomApp = source.topApp(bottom)
-        Thread {
-            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
-            val topTask = states?.firstOrNull { it.packageName == topApp && it.displayId == top }
-            val bottomTask = states?.firstOrNull { it.packageName == bottomApp && it.displayId == bottom }
-            topApp?.takeIf(::canMoveApp)?.let { launchTask(it, bottom, topTask?.taskId) }
-            bottomApp?.takeIf(::canMoveApp)?.let { launchTask(it, top, bottomTask?.taskId) }
-        }.apply { isDaemon = true }.start()
+        panels.refresh(display) {
+            if (!isConnected) return@refresh
+            val topApp = source.topApp(top)
+            val bottomApp = source.topApp(bottom)
+            if (panels.preventsSwap(topApp, bottomApp)) {
+                Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
+                return@refresh
+            }
+            Thread {
+                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
+                val moves = TaskMovePolicy.planSwap(topApp, bottomApp, top, bottom, states, ::canRelaunch)
+                if (moves.isNullOrEmpty()) {
+                    handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
+                    return@Thread
+                }
+                for (move in moves) {
+                    if (!launchTask(move.packageName, move.targetDisplay, move.taskId)) break
+                }
+            }.apply { isDaemon = true }.start()
+        }
     }
 
     private fun launchOn(pkg: String, displayId: Int) {
         val intent = packageManager.getLaunchIntentForPackage(pkg)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) ?: return
-        startActivity(intent, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+        prepareBottomLaunch(displayId) {
+            startActivity(intent, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+        }
     }
 
     /**
@@ -958,7 +1066,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         bottomStateQueryRunning = true
         val session = bottomStateSession
         Thread {
-            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
             handler.post {
                 bottomStateQueryRunning = false
                 if (!overlay.isShowing) return@post
@@ -1246,7 +1354,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val category = if (target == Display.DEFAULT_DISPLAY) Intent.CATEGORY_HOME else Intent.CATEGORY_SECONDARY_HOME
         val home = Intent(Intent.ACTION_MAIN).addCategory(category).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         component?.let { home.component = it }
-        startActivity(home, ActivityOptions.makeBasic().setLaunchDisplayId(target).toBundle())
+        prepareBottomLaunch(target) {
+            startActivity(home, ActivityOptions.makeBasic().setLaunchDisplayId(target).toBundle())
+        }
     }
 
     override fun showSwitcher() {
@@ -1256,9 +1366,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (overlay.isShowing) { overlay.dismiss(); return }
         bottomSwitcherOpening = true
         val session = ++bottomStateSession
-        captureFrontApp {
+        panels.prepareSwitcher(display) { captureFrontApp {
             Thread {
-                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
+                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
                 handler.post {
                     if (session != bottomStateSession || !isConnected) return@post
                     bottomSwitcherOpening = false
@@ -1266,7 +1376,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     runCatching { overlay.toggle(display) }.onFailure { Log.e(TAG, "toggle failed", it) }
                 }
             }.apply { isDaemon = true }.start()
-        }
+        } }
     }
 
     private fun cancelBottomSwitcherOpen() {

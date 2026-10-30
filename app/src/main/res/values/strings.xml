@@ -39,7 +39,9 @@
     <string name="single_launcher_default">Open bottom screen launcher (system default)</string>
     <string name="single_dialog_title">What should a single tap do?</string>
     <string name="single_launcher_named">Open launcher: %s</string>
-    <string name="covered_hint">Another app covers the bottom screen, for example a frontend panel. Close that app to see the app you picked.</string>
+    <string name="bottom_panel_label">%1$s – bottom panel</string>
+    <string name="panel_swap_unavailable">This app uses both screens and cannot be swapped externally.</string>
+    <string name="swap_unavailable">These apps cannot be swapped.</string>
     <string name="shoulder_title">Shoulder buttons</string>
     <string name="shoulder_hint">Hold Back and press a shoulder button to run its assigned action. Screen selection is shown only for actions that support it. An unassigned button is left alone.</string>
     <string name="shoulder_l1">L1</string>

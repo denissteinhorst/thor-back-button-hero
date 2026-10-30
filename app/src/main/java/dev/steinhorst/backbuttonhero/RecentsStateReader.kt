@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import android.os.IBinder
 import android.graphics.Bitmap
 import android.graphics.ColorSpace
@@ -52,16 +53,9 @@ object RecentsStateReader {
             val launcher = packageContext.invoke(context, "com.android.launcher3", 0, handle) as Context
             val lockFile = File(launcher.applicationInfo.dataDir, "shared_prefs/recents_lockedtasks.xml")
             val saved = if (lockFile.exists()) RecentsTaskState.lockKeys(lockFile.readText()) else emptySet()
-            val method = atm.javaClass.methods.first { it.name == "getRecentTasks" }
-            val parameters = method.parameterTypes.mapIndexed { index, type ->
-                if (type == Int::class.javaPrimitiveType) (when (index) { 0 -> 500; 2 -> currentUser; else -> 0 }) else null
-            }.toTypedArray()
-            val raw = method.invoke(atm, *parameters)
-            val tasks = raw as? List<*> ?: raw?.javaClass?.getMethod("getList")?.invoke(raw) as? List<*>
-                ?: error("task list unavailable")
+            val tasks = RecentTaskQuery.read(atm, currentUser, includeExcluded = args.firstOrNull() == "include-excluded")
             val result = JSONArray()
-            for (task in tasks) {
-                val info = task as? ActivityManager.RecentTaskInfo ?: continue
+            for (info in tasks) {
                 if (selectedTask != null && info.taskId != selectedTask) continue
                 val component = info.baseIntent?.component ?: info.baseActivity ?: continue
                 if (!Shell.isPkg(component.packageName)) continue
@@ -70,9 +64,14 @@ object RecentsStateReader {
                 val label = info.taskDescription?.label ?: activity?.loadLabel(launcher.packageManager)?.toString()
                 val user = info.javaClass.getField("userId").getInt(info)
                 val display = info.javaClass.getField("displayId").getInt(info)
+                val configuration = info.javaClass.getField("configuration").get(info)
+                val window = configuration.javaClass.getField("windowConfiguration").get(configuration)
+                val type = window.javaClass.getMethod("getActivityType").invoke(window) as Int
+                val movable = TaskMovePolicy.isMovable(type, info.baseIntent.hasCategory(Intent.CATEGORY_HOME),
+                    info.baseIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME))
                 result.put(JSONObject().put("package", component.packageName).put("display", display)
                     .put("locked", "u: $user, $name" in saved).put("task", info.taskId)
-                    .put("active", info.javaClass.getField("lastActiveTime").getLong(info)).put("label", label))
+                    .put("active", info.javaClass.getField("lastActiveTime").getLong(info)).put("label", label).put("movable", movable))
             }
             finish("OK $result", 0)
         } catch (t: Throwable) {

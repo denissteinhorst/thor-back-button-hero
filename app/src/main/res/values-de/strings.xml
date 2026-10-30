@@ -38,7 +38,9 @@
     <string name="single_launcher_default">Launcher des unteren Bildschirms öffnen (Systemstandard)</string>
     <string name="single_dialog_title">Was soll ein einfacher Tipp tun?</string>
     <string name="single_launcher_named">Launcher öffnen: %s</string>
-    <string name="covered_hint">Eine andere App verdeckt den unteren Bildschirm, zum Beispiel ein Frontend-Panel. Schließe diese App, um die gewählte App zu sehen.</string>
+    <string name="bottom_panel_label">%1$s – unteres Panel</string>
+    <string name="panel_swap_unavailable">Diese App nutzt beide Bildschirme und kann extern nicht getauscht werden.</string>
+    <string name="swap_unavailable">Diese Apps können nicht getauscht werden.</string>
     <string name="shoulder_title">Schultertasten</string>
     <string name="shoulder_hint">Zurück halten und eine Schultertaste drücken, um die zugewiesene Aktion auszuführen. Die Bildschirmauswahl erscheint nur bei Aktionen, die sie unterstützen. Eine unbelegte Taste bleibt unangetastet.</string>
     <string name="shoulder_l1">L1</string>

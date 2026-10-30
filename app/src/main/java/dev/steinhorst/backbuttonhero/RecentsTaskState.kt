@@ -6,7 +6,7 @@ import org.xmlpull.v1.XmlPullParser
 
 /** Most-recent task first, matching the system Recents query. No status is inferred from history. */
 data class RecentsTaskState(val packageName: String, val displayId: Int, val locked: Boolean, val taskId: Int = -1, val lastActiveTime: Long = 0,
-    val label: String? = null) {
+    val label: String? = null, val movable: Boolean = true) {
     companion object {
         fun parse(output: String?): List<RecentsTaskState>? {
             if (output == null || !output.startsWith("OK ")) return null
@@ -17,7 +17,7 @@ data class RecentsTaskState(val packageName: String, val displayId: Int, val loc
                     val pkg = item.getString("package")
                     require(Shell.isPkg(pkg))
                     RecentsTaskState(pkg, item.getInt("display"), item.getBoolean("locked"), item.optInt("task", -1), item.optLong("active", 0),
-                        item.optString("label").takeIf { it.isNotEmpty() })
+                        item.optString("label").takeIf { it.isNotEmpty() }, item.optBoolean("movable", true))
                 }
             }.getOrNull()
         }

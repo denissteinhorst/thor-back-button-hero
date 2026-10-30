@@ -13,8 +13,6 @@ import android.os.IBinder
  */
 @SuppressLint("PrivateApi") // hidden IActivityTaskManager, reached by reflection as no SDK exposes it
 object TaskRemover {
-    private const val MAX_TASKS = 500
-
     @JvmStatic
     fun main(args: Array<String>) {
         val targets = (args.getOrNull(0) ?: "").split(",").filter { Shell.isPkg(it) }.toSet()
@@ -26,22 +24,14 @@ object TaskRemover {
                 .getMethod("asInterface", IBinder::class.java)
                 .invoke(null, binder)!!
 
-            val getRecentTasks = atm.javaClass.methods.firstOrNull { it.name == "getRecentTasks" }
-                ?: return finish("ERR getRecentTasks missing", 1)
             val removeTask = atm.javaClass.methods.firstOrNull { it.name == "removeTask" && it.parameterTypes.size == 1 }
                 ?: return finish("ERR removeTask missing", 1)
 
-            // Signature differs per release; the first int is maxNum, any other int (flags, userId) is 0.
-            val callArgs = getRecentTasks.parameterTypes.mapIndexed { i, t ->
-                if (t == Int::class.javaPrimitiveType) (if (i == 0) MAX_TASKS else 0) else null
-            }.toTypedArray()
-            val raw = getRecentTasks.invoke(atm, *callArgs)
-            // Comes back as a ParceledListSlice on most releases.
-            val tasks = raw as? List<*> ?: raw?.javaClass?.getMethod("getList")?.invoke(raw) as? List<*> ?: emptyList<Any?>()
+            val user = ActivityManager::class.java.getMethod("getCurrentUser").invoke(null) as Int
+            val tasks = RecentTaskQuery.read(atm, user, includeExcluded = true)
 
             var removed = 0
-            for (task in tasks) {
-                val info = task as? ActivityManager.RecentTaskInfo ?: continue
+            for (info in tasks) {
                 val pkg = info.baseActivity?.packageName ?: info.topActivity?.packageName
                     ?: info.baseIntent?.component?.packageName
                 if (info.taskId < 0 || pkg !in targets) continue
