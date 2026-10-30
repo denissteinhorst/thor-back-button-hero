@@ -105,6 +105,10 @@ still retains its both-screens close path for other callers. `CardTouch` arbitra
 card's touches — tap opens, upward swipe past a threshold closes, horizontal drags go to
 the scroller — and is extracted so that arbitration is testable without a real window.
 
+Back Button Hero's own settings appear as a card like any other app, matching top
+Recents. Closing that card (swipe or Close all) only finishes and removes our own task:
+this process hosts the accessibility service, so it is never force-stopped or killed.
+
 The Screenshot action dismisses the switcher, then `SystemScreenshot` uses the existing
 AYN `pservice` bridge to submit a display-targeted request to Android's protected
 SystemUI screenshot service. The saved image contains only the bottom display; this
@@ -187,9 +191,26 @@ stale previews and writes accepted plans atomically. Whole-app unbind clears sho
 D-pad and activation shortcuts, preserving primary gestures. An unassigned activation
 shortcut reactivates temporarily paused interception so the app cannot remain stranded.
 
-`ExceptionSettingsPage` is a WIP UI draft only: installed-app search and a ten-column
-checkbox matrix have no runtime effect or persistent preferences. Its draft survives
-navigation and saved-state recreation. Help and Exceptions have no defaults/unbind links.
+`ExceptionSettingsPage` edits per-app exceptions (`AppException`, stored by `Prefs` as
+`app_exceptions`): installed-app search (system apps hidden unless toggled on or
+searched for), a start choice (allow or block everything), and a
+twelve-column matrix (Back single/double/tap-and-hold/hold, L1–R2, four D-pad directions)
+under group headers with diagonal labels (D-pad arrows stay upright). Rows have an active switch, a trash button (with confirmation) and an
+all-box; every change is written at once. Help has no page actions; Exceptions offers **Add app** and
+**Remove all exceptions** (a `PRESET` plan for that section) in its introduction. Whole-app factory settings also
+clear exceptions; Unbind never does.
+
+At runtime `SwitcherService` resolves the exception of the top application window on the
+display the controller is routed to (`screen_focus_lock`) and latches it at Back DOWN for that
+press and its combos. `BackGestureMachine` treats a blocked double/tap-and-hold as disabled,
+turns a blocked single tap into `nativeBack(false)` and a blocked hold into
+`nativeBack(true)` at the system long-press timeout. `nativeBack` injects `input -d <display>
+keyevent [--longpress] 4` through pservice (global Back as fallback); the injected virtual-device
+Back passes `onKeyEvent` untouched. With all four Back gestures blocked the physical Back is
+not consumed at all, and no combo runs. Blocked shoulder buttons stay unconsumed and blocked
+D-pad directions are sent to the helper as a `PASS` mask; either still marks the Back press as a
+combo, so its release is no tap. The mask is refreshed on window changes, setting
+changes and every Back DOWN. The activation toggle is global and unaffected.
 
 
 ### `UpdateChecker`

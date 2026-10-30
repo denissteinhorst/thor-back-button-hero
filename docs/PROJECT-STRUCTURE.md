@@ -52,7 +52,8 @@ collaborate.
 | `SettingsUiKit.kt` | 576 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
 | `SettingsNavigation.kt` | 211 | Adaptive six-page navigation, lazy page cache and scroll state. |
 | `SettingsChanges.kt` | 91 | Immutable settings snapshots and scoped defaults/unbind change plans. |
-| `ExceptionSettingsPage.kt` | 302 | WIP app-search and checkbox-matrix UI; saved-state draft only, no runtime effect. |
+| `ExceptionSettingsPage.kt` | 428 | Per-app exception editor: app search, allow/block start choice, twelve-column matrix with diagonal labels, active switch, trash and all-box. |
+| `AppExceptions.kt` | 58 | `ExceptionControl` columns and `AppException` rules, plus their stored line format. |
 | `Prefs.kt` | 256 | `SharedPreferences` wrapper: schema, defaults, typed accessors, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
 | `ShoulderButton.kt` | 42 | The `ComboButton` interface and its two enums: the four shoulder buttons (preference key, Android keycode) and the four D-pad directions (preference key, default action, hat-axis mapping). |
 | `PhysicalKeyTracker.kt` | 31 | Collapses duplicate shoulder-key events from the Thor's two mirrored controller input devices into one physical press/release cycle. |
@@ -109,7 +110,7 @@ The automated safety net. 22 test classes, **140 tests**. Run by the gate.
 | `BackGestureMachineTest.kt` | Every branch of the Back decision logic with a controlled clock and scheduler. |
 | `CardTouchTest.kt` | Tap vs. swipe-up vs. horizontal-drag arbitration. |
 | `AccessibilityAppSourceTest.kt` | Recent-app bookkeeping and the thumbnail cache, within what Robolectric can reach. |
-| `SettingsNavigationTest.kt`, `ExceptionSettingsPageTest.kt` | Navigation/scroll state, aligned controls, WIP app picker and draft matrix. |
+| `SettingsNavigationTest.kt`, `ExceptionSettingsPageTest.kt` | Navigation/scroll state, aligned controls, exception picker, matrix, persistence and remove-all. |
 | `SettingsChangesTest.kt`, `SettingsChangeDialogTest.kt`, `ServiceToggleSettingsTest.kt` | Scoped change previews, atomic application and activation-shortcut removal. |
 | `SettingsUiKitTest.kt` | The UI-kit helpers (`dp`, service-status mapping). |
 | `UpdateCheckerParseTest.kt` | Release-payload parsing, semver ordering, the legacy tag forms, and the inputs that must be rejected. |

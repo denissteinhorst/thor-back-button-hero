@@ -58,6 +58,7 @@ Page: EXCEPTIONS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SETTINGS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)

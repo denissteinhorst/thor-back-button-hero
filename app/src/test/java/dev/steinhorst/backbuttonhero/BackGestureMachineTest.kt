@@ -39,10 +39,12 @@ private class RecordingActions : GestureActions {
     var openTopRecentsCalls = 0
     var showSwitcherCalls = 0
     var onSingleTapCalls = 0
+    val nativeBacks = mutableListOf<Boolean>()
     override fun swapScreens() { swapScreensCalls++ }
     override fun openTopRecents() { openTopRecentsCalls++ }
     override fun showSwitcher() { showSwitcherCalls++ }
     override fun onSingleTap() { onSingleTapCalls++ }
+    override fun nativeBack(longPress: Boolean) { nativeBacks += longPress }
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -57,6 +59,7 @@ class BackGestureMachineTest {
     private lateinit var scheduler: FakeScheduler
     private lateinit var actions: RecordingActions
     private lateinit var machine: BackGestureMachine
+    private var exception: AppException? = null
 
     @Before
     fun setUp() {
@@ -64,7 +67,12 @@ class BackGestureMachineTest {
         clock = FakeClock(startTime)
         scheduler = FakeScheduler()
         actions = RecordingActions()
-        machine = BackGestureMachine(prefs, clock, scheduler, actions)
+        machine = BackGestureMachine(prefs, clock, scheduler, actions, exception = { exception }, nativeLongPressMs = NATIVE_LONG_PRESS_MS)
+    }
+
+    private fun except(vararg blocked: ExceptionControl, active: Boolean = true) {
+        exception = AppException("org.example.game", "Game",
+            blocked.fold(ExceptionControl.ALL) { mask, control -> mask and control.bit.inv() }, active)
     }
 
     /** A DOWN event whose downTime is the current fake-clock reading. */
@@ -245,4 +253,89 @@ class BackGestureMachineTest {
         assertEquals(1, actions.openTopRecentsCalls)
     }
 
+
+    @Test
+    fun `an excepted single tap delivers a native Back after the double tap window`() {
+        except(ExceptionControl.SINGLE)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        assertEquals(emptyList<Boolean>(), actions.nativeBacks)
+        scheduler.fireAll()
+        assertEquals(listOf(false), actions.nativeBacks)
+        assertEquals(0, actions.onSingleTapCalls)
+    }
+
+    @Test
+    fun `an excepted double tap resolves every tap at once and never opens the switcher`() {
+        except(ExceptionControl.DOUBLE)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        assertTrue(scheduler.pending.isEmpty())
+        advanceBoth(50)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(clock.now))
+        assertEquals(2, actions.onSingleTapCalls)
+        assertEquals(0, actions.showSwitcherCalls)
+    }
+
+    @Test
+    fun `excepted single and double taps become two native Backs`() {
+        except(ExceptionControl.SINGLE, ExceptionControl.DOUBLE)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        advanceBoth(50)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(clock.now))
+        assertEquals(listOf(false, false), actions.nativeBacks)
+    }
+
+    @Test
+    fun `an excepted hold sends a native long press at the system timeout and swallows its release`() {
+        prefs.holdEnabled = false
+        except(ExceptionControl.HOLD)
+        machine.handleBack(pressDown())
+        assertEquals(listOf(NATIVE_LONG_PRESS_MS), scheduler.pending.values.toList())
+        scheduler.fireAll()
+        assertEquals(listOf(true), actions.nativeBacks)
+        machine.handleBack(release(startTime))
+        scheduler.fireAll()
+        assertEquals(0, actions.swapScreensCalls)
+        assertEquals(0, actions.onSingleTapCalls)
+        assertEquals(listOf(true), actions.nativeBacks)
+    }
+
+    @Test
+    fun `a combo cancels an excepted hold`() {
+        except(ExceptionControl.HOLD)
+        machine.handleBack(pressDown())
+        machine.markComboFired()
+        scheduler.fireAll()
+        machine.handleBack(release(startTime))
+        assertEquals(emptyList<Boolean>(), actions.nativeBacks)
+    }
+
+    @Test
+    fun `an excepted tap and hold falls back to the hold gesture`() {
+        except(ExceptionControl.TAP_HOLD)
+        machine.handleBack(pressDown())
+        machine.handleBack(release(startTime))
+        advanceBoth(100)
+        machine.handleBack(pressDown())
+        scheduler.fireAll()
+        assertEquals(0, actions.openTopRecentsCalls)
+        assertEquals(1, actions.swapScreensCalls)
+    }
+
+    @Test
+    fun `an inactive exception changes nothing`() {
+        except(*ExceptionControl.entries.toTypedArray(), active = false)
+        machine.handleBack(pressDown())
+        scheduler.fireAll()
+        assertEquals(1, actions.swapScreensCalls)
+        assertEquals(emptyList<Boolean>(), actions.nativeBacks)
+    }
+
+    private companion object {
+        const val NATIVE_LONG_PRESS_MS = 400L
+    }
 }

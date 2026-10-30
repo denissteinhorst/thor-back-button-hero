@@ -139,7 +139,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **295 JVM tests, 0 failures, 0 skipped** across 52 test classes (as of 2026-10-30). Count from
+- **316 JVM tests, 0 failures, 0 skipped** across 53 test classes (as of 2026-10-30). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -157,12 +157,12 @@ to record:
   | `LevelSteps` | 1.00 | 1.0000 |
   | `DpadDirection*` | 1.00 | 1.0000 |
   | `CardTouch` | 1.00 | 1.0000 |
-  | `BackGestureMachine` | 0.98 | 0.9865 |
+  | `BackGestureMachine` | 0.98 | 0.9890 |
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
 
-  A further 24 classes (settings, navigation, Recents routing/state, panels, key gate,
-  activation toggle) carry floors of 0.95–1.00 in a name→minimum map at the end of the
+  A further 26 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  key gate, activation toggle) carry floors of 0.95–1.00 in a name→minimum map at the end of the
   rules; see `app/build.gradle.kts`.
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
@@ -487,7 +487,8 @@ pages, and switches between a 240 dp left panel at ≥ 720 dp width and a menu d
 below that. Navigation icons are vector drawables `ic_settings_*` with SVG sources in
 `art/settings-icons/`. `SettingsChanges` builds before/after previews for per-page and
 whole-app defaults/unbind; `Prefs.applySettings` writes accepted plans atomically.
-`ExceptionSettingsPage` is a **WIP UI draft with no runtime effect**. The activity still
+`ExceptionSettingsPage` edits per-app exceptions (`AppException`); `SwitcherService` applies
+the one of the app with controller focus, see `docs/ARCHITECTURE.md`. The activity still
 shows service health and the "repair service" flow, because Android won't let an app
 re-enable its own accessibility service.
 

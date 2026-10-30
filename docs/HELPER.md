@@ -81,6 +81,17 @@ so toggling does not recreate the controller under a running game. The app retur
 to the ordinary navigation mode when reactivated and resends the current mode
 when the helper takes over a new pad.
 
+### App exceptions
+
+`PASS <mask>` (bits: up 1, down 2, left 4, right 8) lists the directions the focused app's
+exception keeps for itself. In the ordinary mode such a press is forwarded to the clone even
+while Back is held, and also reported, so the app treats the Back press as a combo rather than
+a tap; the switcher modes ignore the mask. The app keeps the mask current on
+window and setting changes and on every Back press, and resends it when the helper takes
+over a new pad. Without the helper, the focus-taking overlay is only attached when the app
+has at least one allowed D-pad shortcut; a blocked direction pressed alongside an allowed one
+is still swallowed by the overlay in that fallback.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one

@@ -168,8 +168,15 @@ own accessibility service.
   paused interception. Gesture timings and other settings
   stay as they are.
 - **Reset settings** restores every gesture timing, switch, button assignment,
-  and screen target to its default. Android permissions and the state of the
-  accessibility service are not changed.
+  and screen target to its default and removes all app exceptions. Android
+  permissions and the state of the accessibility service are not changed.
+- **Exceptions** decide per app which Back gestures, shoulder buttons and D-pad
+  directions Back Button Hero handles; the app on the screen with controller focus
+  counts. An unchecked action behaves as if the app were not installed: a single tap
+  becomes a normal Back, a hold the app's own long press, and a combo button reaches
+  the game. With all four Back gestures unchecked, Back and every combo go to that
+  app untouched. Each app can be switched off without losing its boxes, and
+  **Remove all exceptions** previews and clears the whole list.
 - **Check for updates** asks GitHub Releases for a newer version, in addition to
   the automatic background check. This is useful right after installing.
 

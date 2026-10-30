@@ -29,7 +29,6 @@ class SettingsActivity : Activity() {
     private lateinit var navigation: SettingsNavigation
     private val pages = mutableMapOf<SettingsSection, SettingsPage>()
     private var exceptionsPage: ExceptionSettingsPage? = null
-    private var exceptionDraft: Bundle? = null
     private lateinit var warnings: LinearLayout
     private var launcherChoices: List<Choice>? = null
     private val appLabels = mutableMapOf<String, String>()
@@ -47,7 +46,6 @@ class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = Prefs(this)
-        exceptionDraft = savedInstanceState?.getBundle("exception_ui_draft")
         title = getString(R.string.app_name)
         actionBar?.hide()
         warnings = LinearLayout(this).apply {
@@ -118,7 +116,6 @@ class SettingsActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         navigation.saveState(outState)
-        (exceptionsPage?.saveState() ?: exceptionDraft)?.let { outState.putBundle("exception_ui_draft", it) }
         super.onSaveInstanceState(outState)
     }
 
@@ -131,9 +128,19 @@ class SettingsActivity : Activity() {
     private fun buildPage(section: SettingsSection, content: LinearLayout) {
         val page = SettingsPage(this, content)
         pages[section] = page
-        page.introduction(section.hintRes, section != SettingsSection.HELP && section != SettingsSection.EXCEPTIONS) { action ->
-            showChanges(SettingsChangePlan.create(prefs.snapshot(), section, action))
+        fun change(action: SettingsChangeAction) = { showChanges(SettingsChangePlan.create(prefs.snapshot(), section, action)) }
+        val actions = when (section) {
+            SettingsSection.HELP -> emptyList()
+            SettingsSection.EXCEPTIONS -> listOf(
+                R.string.exceptions_add_app to { exceptionsPage?.addApp() ?: Unit },
+                R.string.exceptions_remove_all to change(SettingsChangeAction.PRESET),
+            )
+            else -> listOf(
+                R.string.settings_preset to change(SettingsChangeAction.PRESET),
+                R.string.settings_unbind to change(SettingsChangeAction.UNBIND),
+            )
         }
+        page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
         when (section) {
             SettingsSection.BASIC -> buildBasic(page)
             SettingsSection.SHOULDERS -> {
@@ -150,7 +157,7 @@ class SettingsActivity : Activity() {
                 buildShoulderRow(page, DpadDirection.LEFT, R.string.dpad_left)
                 buildShoulderRow(page, DpadDirection.RIGHT, R.string.dpad_right)
             }
-            SettingsSection.EXCEPTIONS -> exceptionsPage = ExceptionSettingsPage(this, page, exceptionDraft)
+            SettingsSection.EXCEPTIONS -> exceptionsPage = ExceptionSettingsPage(this, page, prefs)
             SettingsSection.SETTINGS -> buildSettings(page)
             SettingsSection.HELP -> buildHelp(page)
         }
@@ -727,6 +734,8 @@ class SettingsActivity : Activity() {
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
         addChange(getString(R.string.service_toggle_buttons), toggle(a.toggleButtons), toggle(b.toggleButtons))
         addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
+        fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
+        addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))
         val buttons = listOf(
             ShoulderButton.L1 to R.string.shoulder_l1, ShoulderButton.R1 to R.string.shoulder_r1,
             ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
@@ -753,7 +762,6 @@ class SettingsActivity : Activity() {
     }
 
     private fun invalidatePages() {
-        exceptionDraft = exceptionsPage?.saveState() ?: exceptionDraft
         exceptionsPage?.dispose()
         exceptionsPage = null
         pages.clear()

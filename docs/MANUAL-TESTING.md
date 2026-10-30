@@ -171,6 +171,25 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
 | C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
 
+### App exceptions
+
+Use S3 for changes to exceptions, `nativeBack` or the helper's `PASS` mask. Use a game or
+emulator with its own Back handling (e.g. RetroArch) as the excepted app.
+
+| # | Step | Expected |
+|---|---|---|
+| C18a | Add the game with *Allow everything*; play | Every gesture and combo behaves exactly as without an exception |
+| C18b | Uncheck *Single*; tap Back in the game | The game receives a normal Back (e.g. RetroArch menu); the bottom launcher does not open; no double-tap delay change for other apps |
+| C18c | Uncheck *Double*; double-tap Back | No bottom switcher; each tap runs the single action without waiting |
+| C18d | Uncheck *Hold*; hold Back | No screen swap; the game receives a long-press Back; releasing does not add a tap |
+| C18e | Uncheck *Tap+hold*; tap, then hold | No top Recents; the hold gesture runs instead |
+| C18f | Uncheck L1 and ↑; Back + L1, Back + ↑ | The game sees L1 and the D-pad press; no BBH action and no single-tap action on releasing Back; checked buttons still run their action; the game does not pause |
+| C18g | Uncheck all four Back columns | A hint dialog explains it; the combo boxes turn grey; Back, Back + shoulders and Back + D-pad all reach the game unchanged |
+| C18h | Switch the row off | The row fades; BBH behaves as if the app were not listed |
+| C18i | Route controller focus to the other screen with another app there | The other app's rules (or none) apply, not the game's |
+| C18j | L2 + R2 hold in the excepted game | Pausing/resuming BBH still works |
+| C18k | *Remove all exceptions*, then whole-app *Reset settings* with an exception present | Both previews list the apps; applying clears the list; *Clear bindings* never touches exceptions |
+
 ### Temporary activation toggle
 
 Use S3 for changes to the toggle or the helper's pass-through mode.

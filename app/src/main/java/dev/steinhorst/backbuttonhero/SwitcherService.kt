@@ -22,7 +22,9 @@ import android.util.Log
 import android.widget.Toast
 import android.view.Display
 import android.view.KeyEvent
+import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityWindowInfo
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
@@ -95,6 +97,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var switcherBackDeviceId = Int.MIN_VALUE
     private var topRecentsBackClosePending = false
     private val recentsConfirmKeys = mutableSetOf<Pair<Int, Int>>()
+    // The focused app's exception, latched at Back DOWN for that press and its combos.
+    private var backException: AppException? = null
+    // Back presses an exception hands to the app untouched, per device so mirrored ids stay paired.
+    private val nativeBackDevices = mutableSetOf<Int>()
+    // Back that nativeBack injects arrives here again with the virtual device id and must pass.
+    private var nativeBackInjections = 0
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -109,7 +117,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun hasCallbacks(runnable: Runnable) = handler.hasCallbacks(runnable)
     }
     private val backGesture by lazy {
-        BackGestureMachine(prefs, gestureClock, gestureScheduler, this, ::dlog)
+        BackGestureMachine(prefs, gestureClock, gestureScheduler, this, ::dlog,
+            { backException }, ViewConfiguration.getLongPressTimeout().toLong())
     }
 
     override fun onServiceConnected() {
@@ -160,6 +169,49 @@ class SwitcherService : AccessibilityService(), GestureActions {
         // Removing the only activation shortcut must not leave BBH stranded in pass-through.
         if (prefs.toggleButtons == Prefs.TOGGLE_NONE && !interceptionEnabled) toggleInterception()
         updatePadHelper()
+        updateDpadPassthrough(currentException())
+    }
+
+    /** The display AYN routes the controller to, which is where a native Back would go. */
+    private fun controllerDisplayId(): Int =
+        if (Settings.System.getString(contentResolver, ControllerFocus.FOCUS_SETTING) == ControllerFocus.BOTTOM_VALUE) {
+            bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY
+        } else Display.DEFAULT_DISPLAY
+
+    private fun currentException(): AppException? {
+        val exceptions = prefs.appExceptions
+        if (exceptions.none { it.active }) return null
+        val focused = windowsOnAllDisplays.get(controllerDisplayId()).orEmpty()
+            .filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
+            .sortedByDescending { it.layer }
+            .mapNotNull { it.root?.packageName?.toString() }
+            .firstOrNull { it != packageName }
+        return exceptions.firstOrNull { it.active && it.packageName == focused }
+    }
+
+    // The helper decides at the instant a direction is pressed, so it must already know the app.
+    private fun updateDpadPassthrough(exception: AppException?) {
+        if (!::padHelper.isInitialized) return
+        val passed = DpadDirection.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet()
+        if (padHelper.setPassthrough(passed)) dlog("DPAD   passthrough=$passed")
+    }
+
+    private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
+
+    override fun nativeBack(longPress: Boolean) {
+        val display = controllerDisplayId()
+        nativeBackInjections++
+        Thread {
+            val sent = PService.cachedAvailable() && ControllerFocus.commandSucceeded(
+                PService.exec("input -d $display keyevent ${if (longPress) "--longpress " else ""}4 && echo OK"),
+            )
+            handler.post {
+                dlog("ACTION nativeBack longPress=$longPress display=$display sent=$sent")
+                if (!sent) performGlobalAction(GLOBAL_ACTION_BACK)
+                // The injected pair reaches onKeyEvent asynchronously; keep it exempt a little longer.
+                handler.postDelayed({ nativeBackInjections-- }, NATIVE_BACK_SETTLE_MS)
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     private fun updatePadHelper() {
@@ -180,6 +232,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         switcherBackDeviceId = Int.MIN_VALUE
         topRecentsBackClosePending = false
         recentsConfirmKeys.clear()
+        nativeBackDevices.clear()
         padHelper.setSuspended(!interceptionEnabled)
         if (!interceptionEnabled) {
             cancelBottomSwitcherOpen()
@@ -212,8 +265,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return true
         }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
-            // Explicitly injected keyboard Back belongs to Quickstep, including its UP.
-            if (topRecentsExitRequested && event.deviceId == -1) return false
+            // Explicitly injected keyboard Back belongs to Quickstep or the excepted app, including its UP.
+            if ((topRecentsExitRequested || nativeBackInjections > 0) && event.deviceId == -1) {
+                dlog("BACK   injected passthrough action=${event.action} longPress=${event.isLongPress}")
+                return false
+            }
             if (switcherBackDown) {
                 // Root-injected Back uses a virtual device id and must reach Quickstep; only the
                 // physical press that requested the close belongs to this consumed key pair.
@@ -248,8 +304,20 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         handleRecentsControllerKey(event)?.let { return it }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                backException = currentException()
+                updateDpadPassthrough(backException)
+                dlog("EXCEPTION display=${controllerDisplayId()} rule=${backException?.let { "${it.packageName} allowed=${it.allowed} native=${it.backNative}" }}")
+                if (backException?.backNative == true) nativeBackDevices += event.deviceId
+            }
+            if (event.deviceId in nativeBackDevices) {
+                if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
+                dlog("BACK   native passthrough action=${event.action} device=${event.deviceId}")
+                return false
+            }
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
-            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active && prefs.hasDpadAction()) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active &&
+                DpadDirection.entries.any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
                 dpadOverlay.attach()
             }
             if (event.action == KeyEvent.ACTION_UP) {
@@ -346,6 +414,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (!backGesture.backDown) return
         val action = prefs.shoulderAction(direction)
         if (action.isEmpty()) return
+        if (!allowsCombo(direction)) {
+            // The helper already forwarded this press to the game; see handleShoulder.
+            backGesture.markComboFired()
+            dlog("DPAD   $direction passthrough action=$action")
+            return
+        }
         backGesture.markComboFired()
         pendingDpadFocus = null
         // Same firmware race as for the shoulder buttons (see handleShoulder): arm on press,
@@ -433,6 +507,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 // Outside an active Back combo the controller belongs entirely to the foreground
                 // app. Do not even track the key in that case, so its UP remains untouched too.
                 if (!backGesture.backDown || action.isEmpty()) return false
+                if (!allowsCombo(button)) {
+                    // The app gets the button, yet the press was still a combo: Back's release must
+                    // not turn into a tap that opens something on top of the app's own shortcut.
+                    backGesture.markComboFired()
+                    dlog("SHOULDER $button passthrough action=$action")
+                    return false
+                }
                 if (shoulderKeys.down(event.keyCode, event.deviceId) && event.repeatCount == 0) {
                     backGesture.markComboFired()
                     // Changing the controller route while its trigger is physically held is racy
@@ -697,6 +778,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         source.record(Display.DEFAULT_DISPLAY)
         bottomDisplay()?.let { source.record(it.displayId) }
+        updateDpadPassthrough(currentException())
         handler.removeCallbacks(panelStateRunnable)
         handler.postDelayed(panelStateRunnable, 400L)
         if (topRecentsControllerActive) {
@@ -897,14 +979,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** A normal app can only kill background processes, so leave the app first. With AYN's root
      *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
-     *  if that fails, the unprivileged kill below still runs. */
-    private fun killOnly(packages: List<String>, displays: Set<Int>) {
+     *  if that fails, the unprivileged kill below still runs. Our own package only loses its tasks:
+     *  this process hosts the service, so stopping it would end every gesture. */
+    private fun killOnly(closing: List<String>, displays: Set<Int>) {
         val activityManager = getSystemService(ActivityManager::class.java)
+        val closesOwn = packageName in closing
+        val packages = closing - packageName
         packages.forEach { pkg ->
             displays.forEach { d -> if (source.topApp(d) == pkg) goHome(d, dismissSwitcher = false) }
         }
         val rootable = if (PService.cachedAvailable()) packages.filter(Shell::isPkg) else emptyList()
         handler.postDelayed({
+            if (closesOwn) activityManager.appTasks.forEach { it.finishAndRemoveTask() }
             if (rootable.isEmpty()) {
                 packages.forEach { activityManager.killBackgroundProcesses(it) }
                 return@postDelayed
@@ -1464,6 +1550,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val THUMB_WIDTH = 480
         /** Minimum time to wait for a second, held-down press before firing a plain single tap. */
         const val TAP_HOLD_GRACE_MS = 600L
+        const val NATIVE_BACK_SETTLE_MS = 1_000L
         const val NAV_FLICK_DURATION_MS = 120L
         const val QUICKSTEP_STATE_COMMAND =
             "dumpsys activity com.android.launcher3 | " +

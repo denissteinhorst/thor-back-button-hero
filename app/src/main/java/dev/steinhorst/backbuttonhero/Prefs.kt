@@ -191,6 +191,15 @@ class Prefs(context: Context) {
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
     fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
 
+    /** Per-app opt-outs in the order the user added them. */
+    var appExceptions: List<AppException>
+        get() = AppException.decode(sp.getString("app_exceptions", null))
+        set(v) = sp.edit().putString("app_exceptions", AppException.encode(v)).apply()
+
+    /** The exception governing [packageName], or null when it has none or it is switched off. */
+    fun appException(packageName: String?): AppException? =
+        packageName?.let { pkg -> appExceptions.firstOrNull { it.packageName == pkg && it.active } }
+
     fun snapshot(): SettingsState = SettingsState(
         singleAction, doubleTapEnabled, doubleTapMs, tapHoldEnabled, tapHoldMs,
         holdEnabled, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
@@ -200,6 +209,7 @@ class Prefs(context: Context) {
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
             )
         },
+        appExceptions,
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -239,6 +249,7 @@ class Prefs(context: Context) {
             long("${key}_focus_duration_ms", old.duration, value.duration)
             string("${key}_focus_position", old.position, value.position)
         }
+        if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         edit.apply()
         return true
     }

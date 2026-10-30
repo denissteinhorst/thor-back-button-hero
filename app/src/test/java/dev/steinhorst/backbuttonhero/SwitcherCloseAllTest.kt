@@ -1,17 +1,20 @@
 package dev.steinhorst.backbuttonhero
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.os.Looper
 import android.view.Display
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowAppTask
 import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
@@ -68,5 +71,31 @@ class SwitcherCloseAllTest {
     @Test
     fun `both screens close all also includes observed top apps`() {
         verifyCloseAll(bothScreens = true)
+    }
+
+    @Test
+    fun `close all removes our own task but never kills the process hosting the service`() {
+        val service = Robolectric.buildService(SwitcherService::class.java).create().get()
+        val manager = service.getSystemService(ActivityManager::class.java)
+        val ownTask = ShadowAppTask.newInstance()
+        shadowOf(manager).setAppTasks(listOf(ownTask))
+        SwitcherService::class.java.getDeclaredMethod("closeAll", List::class.java, Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(service, listOf(service.packageName, "dev.example.other"), false)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(600))
+        assertTrue(shadowOf(ownTask).isFinishedAndRemoved)
+        assertEquals("dev.example.other", shadowOf(manager).backgroundPackage)
+    }
+
+    @Test
+    fun `closing other apps leaves our own task alone`() {
+        val service = Robolectric.buildService(SwitcherService::class.java).create().get()
+        val manager = service.getSystemService(ActivityManager::class.java)
+        val ownTask = ShadowAppTask.newInstance()
+        shadowOf(manager).setAppTasks(listOf(ownTask))
+        SwitcherService::class.java.getDeclaredMethod("closeAll", List::class.java, Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(service, listOf("dev.example.other"), false)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(600))
+        assertFalse(shadowOf(ownTask).isFinishedAndRemoved)
+        assertEquals("dev.example.other", shadowOf(manager).backgroundPackage)
     }
 }

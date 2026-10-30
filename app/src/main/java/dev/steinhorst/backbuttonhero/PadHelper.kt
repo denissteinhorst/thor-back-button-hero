@@ -37,6 +37,7 @@ class PadHelper(
     @Volatile private var closed = false
     @Volatile private var navigationMode = PadNavigationMode.OFF
     @Volatile private var suspended = false
+    @Volatile private var passthrough = 0
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -95,6 +96,21 @@ class PadHelper(
         setSwitcherNavigation(navigationMode)
     }
 
+    /** Directions the helper leaves to the game even while Back is held; see [AppException]. */
+    /** Returns whether the mask changed. */
+    fun setPassthrough(directions: Set<DpadDirection>): Boolean {
+        val mask = directions.sumOf { 1 shl it.ordinal }
+        if (mask == passthrough) return false
+        passthrough = mask
+        sendPassthrough()
+        return true
+    }
+
+    // Bits follow DpadDirection's order: up 1, down 2, left 4, right 8.
+    private fun sendPassthrough() {
+        runCatching { client?.outputStream?.write("PASS $passthrough\n".toByteArray()) }
+    }
+
     /** Linux key codes, emitted by the existing clone without another root-shell round trip. */
     fun navigateTop(direction: DpadDirection) = sendNavigation(when (direction) {
         DpadDirection.UP -> 103
@@ -141,6 +157,7 @@ class PadHelper(
                 setActive(true)
                 failedLaunches = 0
                 setSwitcherNavigation(navigationMode)
+                sendPassthrough()
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }

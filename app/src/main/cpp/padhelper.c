@@ -12,6 +12,7 @@
 //     number 1 again, so games and emulators keep their existing setup.
 //   * It forwards every event unchanged, except D-pad presses that start while Back is held or the
 //     app's own Recents overlay is open. Those go to the app over a socket ("HAT X -1") instead.
+//     "PASS <mask>" exempts directions the focused app's exception keeps for itself.
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
 //
@@ -268,6 +269,14 @@ static void navigation_key(int key) {
         write(ufd, &sync, sizeof sync) != sizeof sync) stop = 1;
 }
 
+// Directions the focused app keeps while Back is held (bits: up 1, down 2, left 4, right 8).
+static int pass_mask = 0;
+
+static int passes(int code, int value) {
+    int bit = code == ABS_HAT0X ? (value < 0 ? 4 : 8) : (value < 0 ? 1 : 2);
+    return (pass_mask & bit) != 0;
+}
+
 static int read_switcher_mode(char *buffer, size_t *used, int current) {
     ssize_t n = read(sock, buffer + *used, 127 - *used);
     if (n <= 0) return -1;
@@ -278,8 +287,9 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
     char *newline;
     while ((newline = strchr(line, '\n')) != NULL) {
         *newline = '\0';
-        int mode, key;
+        int mode, key, mask;
         if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
+        if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
         line = newline + 1;
     }
@@ -340,8 +350,12 @@ int main(int argc, char **argv) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
                 // A press that starts while Back is held is ours until it is released, even if Back
                 // goes first; a press that started before Back stays the game's. Mode 3 suspends
-                // all new captures without recreating the controller under a running game.
-                if (e->value != 0 && ((back && switcher == 0) || switcher == 1 || switcher == 2)) *cap = 1;
+                // all new captures without recreating the controller under a running game. An app
+                // exception passes chosen directions through a held Back; the switchers ignore it.
+                int passed = e->value != 0 && back && switcher == 0 && passes(e->code, e->value);
+                if (e->value != 0 && ((back && switcher == 0 && !passed) || switcher == 1 || switcher == 2)) *cap = 1;
+                // A passed press still reaches the game below; the app only learns it was a combo.
+                if (passed) report(e->code == ABS_HAT0X ? "X" : "Y", e->value);
                 if (*cap == 1) {
                     report(e->code == ABS_HAT0X ? "X" : "Y", e->value);
                     if (e->value == 0) *cap = 0;

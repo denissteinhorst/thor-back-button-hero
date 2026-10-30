@@ -148,6 +148,7 @@ class SwitcherOverlay(
         val current = panels.associateBy { it.key }
         val selectedKey = shownApps.getOrNull(selected)?.key
         val keep = shownApps.indices.filter { shownApps[it].panel == null || shownApps[it].key in current }
+        val expired = keep.size != shownApps.size
         shownApps.indices.filterNot { it in keep }.forEach { index ->
             val card = shownCards.getOrNull(index)
             card?.animate()?.cancel()
@@ -161,7 +162,8 @@ class SwitcherOverlay(
         }
         selected = shownApps.indexOfFirst { it.key == selectedKey }.takeIf { it >= 0 }
             ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
-        if (shownApps.isEmpty()) dismiss() else updateSelection(scrollToSelection = false)
+        // Only an expired last card closes the switcher; the empty state itself must stay open.
+        if (shownApps.isEmpty() && expired) dismiss() else updateSelection(scrollToSelection = false)
     }
 
     fun moveSelection(right: Boolean) {

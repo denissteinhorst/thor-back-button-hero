@@ -14,6 +14,7 @@ data class SettingsState(
     val toggleButtons: String = Prefs.DEFAULT_TOGGLE_BUTTONS,
     val toggleMs: Long = Prefs.DEFAULT_TOGGLE_HOLD_MS,
     val bindings: Map<String, BindingSettings> = factoryBindings(),
+    val exceptions: List<AppException> = emptyList(),
 )
 
 data class BindingSettings(
@@ -85,6 +86,8 @@ data class SettingsChangePlan(
                 toggleButtons = if (preset) factory.toggleButtons else Prefs.TOGGLE_NONE,
                 toggleMs = if (preset) factory.toggleMs else before.toggleMs,
             )
+            // Exceptions are not bindings: only factory settings, never Unbind, remove them.
+            if (preset && (section == null || section == SettingsSection.EXCEPTIONS)) after = after.copy(exceptions = factory.exceptions)
             return SettingsChangePlan(before, after, section, action)
         }
     }

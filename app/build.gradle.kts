@@ -256,7 +256,8 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // classes are not folded in. Same rule: raise, never lower.
         mapOf(
             "RecentsSelection" to "1.00", "ServiceToggleGesture" to "1.00",
-            "ExceptionSettingsPage" to "0.97", "PhysicalKeyTracker" to "1.00",
+            "ExceptionSettingsPage" to "0.98", "PhysicalKeyTracker" to "1.00",
+            "AppException" to "1.00", "ExceptionControl" to "1.00",
             "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
             "RecentTaskQuery" to "1.00", "PanelWindows" to "1.00",
             "RecentsBadges" to "1.00", "SettingsState" to "1.00",

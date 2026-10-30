@@ -104,6 +104,26 @@ class PanelCardsTest {
     }
 
     @Test
+    fun `a panel scan keeps the empty switcher open until the user closes it`() {
+        val f = Fixture()
+        f.field("shownApps", emptyList<RunningApp>())
+        f.field("shownCards", emptyList<Any>())
+        f.overlay.reconcilePanels(emptyList())
+        assertTrue(f.overlay.isShowing)
+        f.activity.finish()
+    }
+
+    @Test
+    fun `expiring the last panel card still closes the switcher`() {
+        val f = Fixture()
+        f.field("shownApps", listOf(f.panel))
+        f.field("shownCards", listOf(f.cards[1]))
+        f.overlay.reconcilePanels(emptyList())
+        assertFalse(f.overlay.isShowing)
+        f.activity.finish()
+    }
+
+    @Test
     fun `panel without an owner task is never matched to a system task thumbnail`() {
         val f = Fixture()
         f.overlay.reconcileTaskStates(emptyList())

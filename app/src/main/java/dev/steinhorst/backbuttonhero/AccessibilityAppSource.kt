@@ -23,13 +23,14 @@ class AccessibilityAppSource(private val service: AccessibilityService,
         "com.android.launcher3",
     )
 
-    /** Call on window changes; moves the apps currently visible on [displayId] to the front. */
+    /** Call on window changes; moves the apps currently visible on [displayId] to the front. Our own settings
+     *  count as an app here, as in top Recents; closing them must never stop this process (see killOnly). */
     fun record(displayId: Int) {
         val windows = service.windowsOnAllDisplays.get(displayId) ?: return
         val visible = windows
             .filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
             .mapNotNull { it.root?.packageName?.toString() }
-            .filter { it != service.packageName && it !in ignored }
+            .filter { it !in ignored }
         val set = history.getOrPut(displayId) { mutableListOf() }
         visible.asReversed().forEach { set.remove(it); set.add(0, it) }
     }

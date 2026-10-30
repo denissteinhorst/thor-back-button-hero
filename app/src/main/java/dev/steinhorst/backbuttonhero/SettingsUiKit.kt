@@ -89,7 +89,11 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
         }.also { content.addView(it) }
     }
 
-    fun introduction(hintRes: Int, showActions: Boolean, onAction: (SettingsChangeAction) -> Unit) {
+    fun introduction(
+        hintRes: Int,
+        actions: List<Pair<Int, () -> Unit>>,
+        primary: Int?,
+    ) {
         card(activity.settingsSurfaceColor(SettingsSurface.INTRODUCTION)) {
             textRow(activity.getString(hintRes), verticalPaddingDp = 16).apply {
                 tag = "settings_page_hint"
@@ -98,7 +102,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
                 setTypeface(typeface, Typeface.BOLD)
                 setLineSpacing(dp(2).toFloat(), 1f)
             }
-            if (showActions) settingsActions(true, onAction)
+            if (actions.isNotEmpty()) settingsActions(true, actions, primary)
         }
     }
 
@@ -193,7 +197,11 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
 
         fun customRow(view: View) = addRow(view)
 
-        fun settingsActions(enabled: Boolean, onAction: (SettingsChangeAction) -> Unit) {
+        fun settingsActions(
+            enabled: Boolean,
+            actions: List<Pair<Int, () -> Unit>>,
+            primary: Int?,
+        ) {
             val row = LinearLayout(activity).apply {
                 tag = "settings_page_actions"
                 isBaselineAligned = false
@@ -203,10 +211,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
                 arrayOf(intArrayOf(android.R.attr.state_enabled), intArrayOf()),
                 intArrayOf(accentColor(), secondaryTextColor()),
             )
-            listOf(
-                R.string.settings_preset to SettingsChangeAction.PRESET,
-                R.string.settings_unbind to SettingsChangeAction.UNBIND,
-            ).forEach { (label, action) ->
+            actions.forEach { (label, action) ->
                 row.addView(Button(activity, null, android.R.attr.borderlessButtonStyle).apply {
                     setText(label)
                     isAllCaps = false
@@ -216,9 +221,11 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
                     setPadding(dp(8), dp(8), dp(8), dp(8))
                     gravity = Gravity.CENTER
                     background = selectableBackground()
+                    // The page's main action stands out by weight alone.
+                    if (label == primary) setTypeface(typeface, Typeface.BOLD)
                     isEnabled = enabled
                     alpha = if (enabled) 1f else 0.5f
-                    setOnClickListener { onAction(action) }
+                    setOnClickListener { action() }
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             }
             addRow(row)
