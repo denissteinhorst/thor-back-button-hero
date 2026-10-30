@@ -185,7 +185,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.91".toBigDecimal()
+                minimum = "0.98".toBigDecimal()
             }
         }
         rule {
@@ -230,7 +230,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.60".toBigDecimal()
+                minimum = "0.61".toBigDecimal()
             }
         }
         rule {
@@ -248,7 +248,34 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.90".toBigDecimal()
+                minimum = "1.00".toBigDecimal()
+            }
+        }
+        // Classes already at (nearly) full coverage when the suite was extended for the
+        // grouped settings, Recents routing and panel work. Exact class names, so nested
+        // classes are not folded in. Same rule: raise, never lower.
+        mapOf(
+            "RecentsSelection" to "1.00", "ServiceToggleGesture" to "1.00",
+            "ExceptionSettingsPage" to "0.97", "PhysicalKeyTracker" to "1.00",
+            "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
+            "RecentTaskQuery" to "1.00", "PanelWindows" to "1.00",
+            "RecentsBadges" to "1.00", "SettingsState" to "1.00",
+            "PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
+            "TaskMovePolicy" to "1.00", "BindingSettings" to "1.00",
+            "SettingsNavigation" to "1.00", "ShoulderButton" to "1.00",
+            "SettingsPage" to "1.00", "SettingsChangesKt" to "1.00",
+            "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
+            "SettingsSection" to "1.00", "BottomPanels" to "0.98",
+            "GestureScheduler" to "1.00", "SettingsChangePlan" to "1.00",
+        ).forEach { (name, minimum) ->
+            rule {
+                element = "CLASS"
+                includes = listOf("dev.steinhorst.backbuttonhero.$name")
+                limit {
+                    counter = "LINE"
+                    value = "COVEREDRATIO"
+                    this.minimum = minimum.toBigDecimal()
+                }
             }
         }
     }
