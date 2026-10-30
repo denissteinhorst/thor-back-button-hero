@@ -65,6 +65,14 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
     data class ActionHandle(val row: View, val title: TextView)
     data class WarningHandle(val row: View, val label: TextView)
     data class FocusOptionsHandle(val row: View, val target: ChooserHandle, val position: ChooserHandle)
+    /** One branch holds every option, so its line stays unbroken whichever of the rows are shown. */
+    data class AppControlOptionsHandle(
+        val row: View,
+        val mode: ChooserHandle,
+        val screen: ChooserHandle,
+        val confirm: ToggleHandle,
+        val warning: TextView,
+    )
     data class SliderHandle(val bar: SeekBar, val label: TextView) {
         fun setEnabled(enabled: Boolean) {
             bar.isEnabled = enabled
@@ -175,6 +183,34 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             return FocusOptionsHandle(group, target, position)
         }
 
+        fun appControlOptions(
+            modeValue: String,
+            screenValue: String,
+            confirmed: Boolean,
+            onMode: () -> Unit,
+            onScreen: () -> Unit,
+            onConfirm: (Boolean) -> Unit,
+        ): AppControlOptionsHandle {
+            lateinit var mode: ChooserHandle
+            lateinit var screen: ChooserHandle
+            lateinit var confirm: ToggleHandle
+            lateinit var warning: TextView
+            val group = subOptions {
+                mode = chooserRow(R.string.app_control_mode_title, modeValue, onMode)
+                screen = chooserRow(R.string.level_target_title, screenValue, onScreen)
+                confirm = toggleRow(R.string.app_control_confirm_title, null, confirmed, onChange = onConfirm)
+                warning = textRow(activity.getString(R.string.app_control_force_close_warning), 6).apply {
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(errorColor())
+                    // A caution under the options, not an option: it gets no branch of its own.
+                    (parent as View).tag = NO_BRANCH
+                }
+            }.apply { tag = "settings_app_control_options" }
+            mode.row.tag = "settings_app_control_mode"
+            screen.row.tag = "settings_app_control_screen"
+            return AppControlOptionsHandle(group, mode, screen, confirm, warning)
+        }
+
         /** Dependent controls share the focus options' branches, spacing and trailing edge. */
         fun subOptions(endControl: View? = null, block: Card.() -> Unit): View {
             endControl?.let { control ->
@@ -185,7 +221,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             val children = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
             Card(children, subordinate = true).apply(block)
             val rows = (0 until children.childCount).map { children.getChildAt(it) }
-                .filter { it.layoutParams.height != dp(1) }
+                .filter { it.layoutParams.height != dp(1) && it.tag != NO_BRANCH }
             return SettingsOptionsTree(activity).apply {
                 tag = "settings_sub_options"
                 setPaddingRelative(dp(16), 0, 0, dp(8))
@@ -483,15 +519,16 @@ private class SettingsOptionsTree(context: Context) : FrameLayout(context) {
 
     override fun dispatchDraw(canvas: Canvas) {
         val children = getChildAt(0)
-        if (children != null && rows.isNotEmpty()) {
+        // Rows hidden by the page take their branch with them; the stem ends at the last one shown.
+        val shown = rows.filter { it.visibility != View.GONE }
+        if (children != null && shown.isNotEmpty()) {
             val rtl = layoutDirection == View.LAYOUT_DIRECTION_RTL
             val start = if (rtl) width - paddingRight.toFloat() else paddingLeft.toFloat()
             val stem = start + if (rtl) -stemInset else stemInset
             val end = start + if (rtl) -branchWidth else branchWidth
-            val last = rows.last()
+            val last = shown.last()
             canvas.drawLine(stem, paddingTop.toFloat(), stem, children.top + last.top + last.height / 2f, line)
-            for (i in rows.indices) {
-                val row = rows[i]
+            for (row in shown) {
                 val middle = children.top + row.top + row.height / 2f
                 canvas.drawLine(stem, middle, end, middle, line)
             }
@@ -499,6 +536,8 @@ private class SettingsOptionsTree(context: Context) : FrameLayout(context) {
         super.dispatchDraw(canvas)
     }
 }
+
+private const val NO_BRANCH = "settings_no_branch"
 
 const val POSITION_GRID_WIDTH_DP = 288
 const val POSITION_GRID_HEIGHT_DP = 162

@@ -26,6 +26,9 @@ data class BindingSettings(
     val indicator: Boolean = true,
     val duration: Long = Prefs.DEFAULT_FOCUS_DURATION_MS,
     val position: String = Prefs.DEFAULT_FOCUS_POSITION,
+    val appMode: String = Prefs.APP_MINIMIZE,
+    val appScreen: String = Prefs.APP_SCREEN_ASK,
+    val appConfirm: Boolean = false,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
     fun levelTarget(): String = targetOverride ?: Prefs.TARGET_BOTH

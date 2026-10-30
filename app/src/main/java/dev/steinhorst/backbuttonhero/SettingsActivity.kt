@@ -339,6 +339,7 @@ class SettingsActivity : Activity() {
         Choice(Prefs.SHOULDER_BRIGHTNESS_UP, getString(R.string.shoulder_brightness_up)),
         Choice(Prefs.SHOULDER_BRIGHTNESS_DOWN, getString(R.string.shoulder_brightness_down)),
         Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
+        Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
         Choice(Prefs.SHOULDER_QUICK_SETTINGS, getString(R.string.shoulder_quick_settings)),
         Choice(Prefs.SHOULDER_NOTIFICATIONS, getString(R.string.shoulder_notifications)),
         Choice(Prefs.SHOULDER_INTERNET, getString(R.string.shoulder_internet)),
@@ -366,6 +367,22 @@ class SettingsActivity : Activity() {
                 }.getOrDefault(getString(R.string.shoulder_launch_app))
         }
     }
+
+    private fun appModes(): List<Choice> = listOf(
+        Choice(Prefs.APP_MINIMIZE, getString(R.string.app_control_minimize)),
+        Choice(Prefs.APP_FORCE_CLOSE, getString(R.string.app_control_force_close)),
+    )
+
+    private fun appScreens(): List<Choice> = levelTargets().let { targets ->
+        // The same screens as everywhere else, in the order the shoulder rows use, plus the prompt.
+        listOf(targets[1], targets[2], targets[0], Choice(Prefs.APP_SCREEN_ASK, getString(R.string.app_control_screen_ask)))
+    }
+
+    private fun describeAppMode(button: ComboButton): String =
+        (appModes().firstOrNull { it.value == prefs.appMode(button) } ?: appModes().first()).label
+
+    private fun describeAppScreen(button: ComboButton): String =
+        (appScreens().firstOrNull { it.value == prefs.appScreen(button) } ?: appScreens().last()).label
 
     private fun levelTargets(): List<Choice> = listOf(
         Choice(Prefs.TARGET_BOTH, getString(R.string.level_target_both)),
@@ -520,6 +537,7 @@ class SettingsActivity : Activity() {
         val targetOptions: View,
     ) {
         var focusOptions: SettingsPage.FocusOptionsHandle? = null
+        var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
 
@@ -584,6 +602,40 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    private fun chooseAppControl(row: ComboRow, mode: Boolean) {
+        val choices = if (mode) appModes() else appScreens()
+        val selected = if (mode) prefs.appMode(row.button) else prefs.appScreen(row.button)
+        AlertDialog.Builder(this)
+            .setTitle(if (mode) R.string.app_control_mode_dialog_title else R.string.app_control_screen_dialog_title)
+            .setSingleChoiceItems(
+                choices.map { it.label }.toTypedArray(),
+                choices.indexOfFirst { it.value == selected }.coerceAtLeast(0),
+            ) { dialog, which ->
+                dialog.dismiss()
+                val value = choices[which].value
+                if (!mode) {
+                    prefs.setAppScreen(row.button, value)
+                    updateShoulderRow(row)
+                } else if (value == Prefs.APP_FORCE_CLOSE && prefs.appMode(row.button) != value) {
+                    // The close skips the app's own save path, so say so before it can be assigned.
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.app_control_force_close)
+                        .setMessage(R.string.app_control_force_close_warning)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.app_control_force_close_use) { _, _ ->
+                            prefs.setAppMode(row.button, value)
+                            updateShoulderRow(row)
+                        }
+                        .show()
+                } else {
+                    prefs.setAppMode(row.button, value)
+                    updateShoulderRow(row)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun buildShoulderRow(
         page: SettingsPage,
         button: ComboButton,
@@ -616,8 +668,9 @@ class SettingsActivity : Activity() {
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
         row.displayOptions.visibility = row.display.visibility
         row.targetOptions.visibility = row.target.row.visibility
+        val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || row.display.visibility == View.VISIBLE) 0 else 10))
+            dp(if (hasTarget || appControl || row.display.visibility == View.VISIBLE) 0 else 10))
         row.target.value.text = describeLevelTarget(row.button)
         row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
         if (focus && row.focusOptions == null) {
@@ -625,6 +678,29 @@ class SettingsActivity : Activity() {
                 describeFocusTarget(row.button), describeFocusPosition(row.button),
                 { chooseTarget(row) }, { choosePosition(row) },
             )
+        }
+        if (appControl && row.appOptions == null) {
+            row.appOptions = row.card.appControlOptions(
+                describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
+                { chooseAppControl(row, mode = true) }, { chooseAppControl(row, mode = false) },
+                { prefs.setAppConfirm(row.button, it) },
+            )
+        }
+        row.appOptions?.let { options ->
+            val close = prefs.appMode(row.button) == Prefs.APP_FORCE_CLOSE
+            options.row.visibility = if (appControl) View.VISIBLE else View.GONE
+            options.mode.value.text = describeAppMode(row.button)
+            options.screen.value.text = describeAppScreen(row.button)
+            options.mode.row.contentDescription = getString(R.string.app_control_mode_accessibility, row.label, options.mode.value.text)
+            options.screen.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.screen.value.text)
+            // Ask already is a confirmation; minimizing destroys nothing.
+            fun show(view: View, visible: Boolean) {
+                val state = if (visible) View.VISIBLE else View.GONE
+                view.visibility = state
+                dividerBefore(view)?.visibility = state
+            }
+            show(options.confirm.row, appControl && close && prefs.appScreen(row.button) != Prefs.APP_SCREEN_ASK)
+            show(options.warning.parent as View, appControl && close)
         }
         row.focusOptions?.let { options ->
             options.row.visibility = if (focus) View.VISIBLE else View.GONE
@@ -703,6 +779,8 @@ class SettingsActivity : Activity() {
         fun ms(value: Long) = getString(R.string.focus_duration, value)
         fun target(value: String) = levelTargets().first { it.value == value }.label
         fun focus(value: String) = focusTargets().first { it.value == value }.label
+        fun appMode(value: String) = appModes().first { it.value == value }.label
+        fun appScreen(value: String) = appScreens().first { it.value == value }.label
         fun position(value: String) = focusPositions().first { it.value == value }.label
         fun toggle(value: String) = when (value) {
             Prefs.TOGGLE_NONE -> getString(R.string.shoulder_none)
@@ -717,6 +795,7 @@ class SettingsActivity : Activity() {
                 value.action == Prefs.SHOULDER_SCREENSHOT -> target(value.screenshotTarget())
                 Prefs.isLevelAction(value.action) -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
+                value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
                 else -> return describeAction(value.action)
             }
             return getString(R.string.settings_action_detail, describeAction(value.action), detail)
@@ -755,6 +834,9 @@ class SettingsActivity : Activity() {
                 extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
             if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
                 extra(R.string.focus_target_title, focus(old.focusTarget), focus(new.focusTarget))
+            extra(R.string.app_control_mode_title, appMode(old.appMode), appMode(new.appMode))
+            extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
+            extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
             extra(R.string.focus_header_position, position(old.position), position(new.position))

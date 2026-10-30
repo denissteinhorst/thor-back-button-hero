@@ -160,6 +160,20 @@ class Prefs(context: Context) {
             ?: if (shoulderAction(button) == SHOULDER_SCREENSHOT) DISPLAY_TOP else TARGET_BOTH
     fun setLevelTarget(button: ComboButton, target: String) { sp.edit().putString("${button.prefKey}_target", target).apply() }
 
+    /** [APP_MINIMIZE] or [APP_FORCE_CLOSE] for the active-app-control action. */
+    fun appMode(button: ComboButton): String =
+        sp.getString("${button.prefKey}_app_mode", APP_MINIMIZE) ?: APP_MINIMIZE
+    fun setAppMode(button: ComboButton, mode: String) { sp.edit().putString("${button.prefKey}_app_mode", mode).apply() }
+
+    /** [DISPLAY_TOP], [DISPLAY_BOTTOM], [TARGET_BOTH] or [APP_SCREEN_ASK] - whose foreground app the action hits. */
+    fun appScreen(button: ComboButton): String =
+        sp.getString("${button.prefKey}_app_screen", APP_SCREEN_ASK) ?: APP_SCREEN_ASK
+    fun setAppScreen(button: ComboButton, screen: String) { sp.edit().putString("${button.prefKey}_app_screen", screen).apply() }
+
+    /** Whether a force-close with a fixed screen asks first. Off by default: the action is meant to be instant. */
+    fun appConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_app_confirm", false)
+    fun setAppConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_app_confirm", confirm).apply() }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -207,6 +221,7 @@ class Prefs(context: Context) {
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
+                appMode(button), appScreen(button), appConfirm(button),
             )
         },
         appExceptions,
@@ -248,6 +263,9 @@ class Prefs(context: Context) {
             boolean("${key}_focus_indicator", old.indicator, value.indicator)
             long("${key}_focus_duration_ms", old.duration, value.duration)
             string("${key}_focus_position", old.position, value.position)
+            string("${key}_app_mode", old.appMode, value.appMode)
+            string("${key}_app_screen", old.appScreen, value.appScreen)
+            boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         edit.apply()
@@ -348,6 +366,10 @@ class Prefs(context: Context) {
         const val SHOULDER_BRIGHTNESS_UP = "@brightness_up"
         const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
         const val SHOULDER_CONTROLLER_FOCUS = "@controller_focus"
+        const val SHOULDER_APP_CONTROL = "@app_control"
+        const val APP_MINIMIZE = "minimize"
+        const val APP_FORCE_CLOSE = "force_close"
+        const val APP_SCREEN_ASK = "ask"
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

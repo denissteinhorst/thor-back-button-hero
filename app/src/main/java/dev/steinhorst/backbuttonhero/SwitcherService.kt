@@ -46,6 +46,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var parking: FrontendParking
     private lateinit var padHelper: PadHelper
     private lateinit var dpadOverlay: DpadOverlay
+    private lateinit var appControlPrompt: AppControlPrompt
     private lateinit var levels: LevelControl
     private lateinit var controllerFocus: ControllerFocus
     private lateinit var focusIndicator: FocusIndicatorOverlay
@@ -171,6 +172,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::onPadHelperActiveChanged,
         )
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
+        appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
         updatePadHelper()
         handler.post(panelStateRunnable)
@@ -254,6 +256,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             overlay.dismiss()
             restoreRecentsFocus()
             dpadOverlay.detach()
+            appControlPrompt.dismiss()
             focusIndicator.dismiss()
             // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
@@ -354,9 +357,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /** The Thor's style switch swaps the confirm face button at runtime. */
-    private fun isRecentsConfirm(event: KeyEvent): Boolean = event.keyCode == if (
-        Settings.System.getInt(contentResolver, CONTROLLER_FLIP_SETTING, 0) != 0
-    ) KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
+    private fun isRecentsConfirm(event: KeyEvent): Boolean = event.keyCode == confirmKeyCode()
+
+    private fun confirmKeyCode(): Int = if (Settings.System.getInt(contentResolver, CONTROLLER_FLIP_SETTING, 0) != 0)
+        KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
     private fun handleRecentsControllerKey(event: KeyEvent): Boolean? {
         if (!prefs.switcherControllerEnabled) return null
@@ -600,6 +604,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
             Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
+            Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecents()
             Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
@@ -623,6 +628,66 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 dlog("COMBO ${button.name} + Back -> launching $action on display $displayId")
                 launchOn(action, displayId)
             }
+        }
+    }
+
+    /**
+     * Minimizes or force-closes the foreground app of the chosen screen. The apps are resolved
+     * before any prompt opens, so "the app behind the modal" is the one that gets hit even if the
+     * window state shifts while the user decides.
+     */
+    private fun runAppControl(button: ComboButton) {
+        val mode = prefs.appMode(button)
+        val screen = prefs.appScreen(button)
+        val bottomId = bottomDisplay()?.displayId
+        fun resolve(chosen: String) = AppControl.targets(chosen, Display.DEFAULT_DISPLAY, bottomId, source::topApp)
+        if (screen == Prefs.APP_SCREEN_ASK) {
+            val labels = mapOf(
+                Prefs.DISPLAY_TOP to getString(R.string.level_target_top),
+                Prefs.DISPLAY_BOTTOM to getString(R.string.level_target_bottom),
+                Prefs.TARGET_BOTH to getString(R.string.level_target_both),
+            )
+            val options = listOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH)
+                .map { AppControlPrompt.Option(it, labels.getValue(it)) }
+            // Resolved up front: the modal must not change which app counts as "in front".
+            val resolved = options.associate { it.value to resolve(it.value) }
+            appControlPrompt.show(promptDisplay(), getString(R.string.app_control_prompt_title), options) { chosen ->
+                applyAppControl(mode, resolved.getValue(chosen))
+            }
+            return
+        }
+        val targets = resolve(screen)
+        if (mode == Prefs.APP_FORCE_CLOSE && prefs.appConfirm(button) && targets.isNotEmpty()) {
+            val pm = packageManager
+            val names = targets.joinToString(", ") {
+                runCatching { pm.getApplicationInfo(it.packageName, 0).loadLabel(pm).toString() }.getOrDefault(it.packageName)
+            }
+            val options = listOf(
+                AppControlPrompt.Option("yes", getString(R.string.app_control_prompt_close_yes)),
+                AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
+            )
+            appControlPrompt.show(promptDisplay(), getString(R.string.app_control_prompt_close_title, names), options) {
+                if (it == "yes") applyAppControl(mode, targets)
+            }
+            return
+        }
+        applyAppControl(mode, targets)
+    }
+
+    /** The prompt belongs where the controller is, so its D-pad and buttons reach it. */
+    private fun promptDisplay(): Display = getSystemService(DisplayManager::class.java)
+        .getDisplay(controllerDisplayId()) ?: getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
+
+    private fun applyAppControl(mode: String, targets: List<AppControlTarget>) {
+        if (targets.isEmpty()) {
+            Toast.makeText(this, R.string.app_control_no_app, Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (mode == Prefs.APP_FORCE_CLOSE) {
+            // killOnly already leaves the app for Home first and falls back to an unprivileged kill.
+            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet())
+        } else {
+            targets.forEach { goHome(it.displayId, dismissSwitcher = false) }
         }
     }
 
@@ -746,6 +811,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingFocusTargets.clear()
         pendingDpadFocus = null
         stopDpad()
+        if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
         if (::parking.isInitialized) parking.close()
         handler.removeCallbacksAndMessages(null)
@@ -763,6 +829,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingFocusTargets.clear()
         pendingDpadFocus = null
         stopDpad()
+        if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
         if (::parking.isInitialized) parking.close()
         return super.onUnbind(intent)
