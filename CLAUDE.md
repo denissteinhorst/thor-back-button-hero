@@ -2,14 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Read `AGENTS.md` first.** It is the shared, owner-maintained instruction file for all
+coding agents and is updated more often than this one. This file adds Claude-specific
+operational detail. Where the two disagree, `AGENTS.md`, executable configuration, and
+current source win over prose here.
+
 ## What this is
 
 An Android `AccessibilityService` that overloads the hardware **Back** button on
-dual-screen handhelds (built for the AYN Thor) with extra gestures — double-tap
-app switcher, hold-to-swap-screens, tap-then-hold recents, and four
-reassignable shoulder-button (L1/L2/R1/R2) shortcuts. No root, no companion
-app. Single-module Kotlin app with JVM and instrumented tests, no DI framework,
-and no build variants beyond debug/release.
+dual-screen handhelds (built for the AYN Thor) with extra gestures — single tap
+(Back or bottom launcher), double-tap bottom Recents, hold-to-swap-screens,
+tap-then-hold top Recents, reassignable Back + L1/L2/R1/R2 and Back + D-pad
+shortcuts, and a configurable hold shortcut that pauses/resumes the app's key
+interception. Privileged operations go through AYN's preinstalled `pservice` root
+daemon; nothing extra is installed on the device. Single-module Kotlin app with JVM
+and instrumented tests, no DI framework, and no build variants beyond debug/release.
 
 **Features, layout, styling, and texts are final and validated.** The test suite,
 goldens, and gates described below exist to freeze exactly that state. Changes to
@@ -29,6 +36,23 @@ UX, stored data, architecture, security, releases, or maintainability. Ask the p
 owner and wait for the decision instead of guessing or making a consequential product
 decision autonomously. Routine, reversible implementation details within an agreed
 direction remain the senior developer's responsibility.
+
+**Ask questions directly in chat, with numbered answer choices (1–n), and wait for the
+owner's reply.** Do not use `AskUserQuestion` or any other follow-up input menu or
+asynchronous question tool — the owner easily overlooks them. The owner writes in
+German; answer in German, while code, comments, commits, and repo docs stay English.
+
+Untracked or modified files in the worktree belong to the owner (currently e.g.
+`site/` and `.github/workflows/pages.yml`). Preserve them and never fold them into a
+commit for unrelated work.
+
+**Self-contained compatibility.** Every compatibility fix must ship entirely in this
+APK and work automatically after normal setup. Never patch another app's APK, code,
+files, or settings. ADB probes are development verification only — never a
+prerequisite for users. Solve shared problems through general window/task/input
+behavior, not package-specific exceptions, unless an app-specific distinction is
+demonstrated and explicitly agreed. Other open-source projects may inform design, but
+never copy or transplant their implementation.
 
 The ongoing work is to implement features and fixes without lowering quality. Consider
 `FEEDBACK.md` relevant context, but do not treat it as a strict queue. When work touches
@@ -115,7 +139,8 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **146 JVM tests, 0 failures, 0 skipped** across 24 test classes.
+- **295 JVM tests, 0 failures, 0 skipped** across 52 test classes (as of 2026-10-30). Count from
+  `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency` — four androidTest/test libraries plus
@@ -131,10 +156,14 @@ to record:
   | `DoubleTapDetector` | 1.00 | 1.0000 |
   | `LevelSteps` | 1.00 | 1.0000 |
   | `DpadDirection*` | 1.00 | 1.0000 |
-  | `CardTouch` | 0.90 | 1.0000 |
-  | `BackGestureMachine` | 0.91 | 0.9130 |
-  | `AccessibilityAppSource` | 0.60 | 0.6000 |
-  | `UpdateChecker` | 0.46 | 0.4655 |
+  | `CardTouch` | 1.00 | 1.0000 |
+  | `BackGestureMachine` | 0.98 | 0.9865 |
+  | `AccessibilityAppSource` | 0.61 | 0.6250 |
+  | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
+
+  A further 24 classes (settings, navigation, Recents routing/state, panels, key gate,
+  activation toggle) carry floors of 0.95–1.00 in a name→minimum map at the end of the
+  rules; see `app/build.gradle.kts`.
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
@@ -144,11 +173,11 @@ to record:
   thread gets. The 0.46 floor is the deterministic part — never raise it on one lucky run.
 
   Read these numbers per JaCoCo **class**, which counts nested classes separately:
-  `UpdateChecker` is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a
-  class with its nested types overstates the figure the rule actually enforces.
-- **Release APK ~2.79 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
-  `lib/arm64-v8a/libpadhelper.so`. Debug is much larger
-  (~6.8 MB) because LeakCanary is bundled there.
+  `UpdateChecker$Version` is its own entry. Aggregating a class with its nested types
+  overstates the figure the rule actually enforces. Measured values come from
+  `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
+- **Release APK ~3.23 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
+  `lib/arm64-v8a/libpadhelper.so`. Debug is much larger because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
   ```sh
@@ -163,14 +192,15 @@ before trusting the suite:
 
 **Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
 `DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
-settings UI via **deterministic View-tree text snapshots** (golden files in
-`app/src/test/resources/golden/`) covering the main page across theme and locale,
-every shoulder-row state, three dialogs, and an accessibility inventory. These goldens
-genuinely bite: changing a single visible string turns 7 tests red.
+settings UI via **deterministic View-tree text snapshots** (44 golden files in
+`app/src/test/resources/golden/`) covering all six pages across theme, locale and
+compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, and an
+accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at **0 %** line coverage (0/145), `SwitcherService` at **4.7 %**
-(11/233) and `FocusIndicatorOverlay` at **0 %** (0/79). The entire switcher overlay UI, multi-display targeting, thumbnail capture,
+`SwitcherOverlay` is at about **34 %** line coverage (119/349), `SwitcherService` about **13 %**
+(123/946) and `FocusIndicatorOverlay` **0 %** (0/93). The panel host, Recents task
+routing, and top-Recents controller focus are likewise device-only. The entire switcher overlay UI, multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
 the extraction moved the *decisions* under test but left the Android side effects out.
@@ -252,8 +282,9 @@ Signing is env-only by design — no keystore is or should ever be committed
 (`*.keystore`/`*.jks` are gitignored).
 
 Before tagging: `./tools/verify.sh` green locally, CI green on `main`, `versionCode`
-bumped, tag name exactly `v<versionCode>`, `RELEASE_KEYSTORE_*` secrets present, and a
-device pass over the gestures and the switcher overlay (the part no test covers).
+bumped, tag name exactly `v<versionName>`, `RELEASE_KEYSTORE_*` secrets present, and the
+S4 device procedure from `docs/MANUAL-TESTING.md` (including certificate and in-place
+upgrade checks).
 
 ## The signing key — backup and disaster recovery
 
@@ -448,10 +479,33 @@ Shoulder actions are stored as either a bare package name (an app to launch)
 or an `@`-prefixed sentinel (`SHOULDER_HOME`, `SHOULDER_FLICK_LEFT`, etc.) —
 `isShoulderApp()` distinguishes the two.
 
-**`SettingsActivity`** is a single hand-built settings screen (no
-PreferenceFragment, no XML), built programmatically in `build()`. Shows
-accessibility-service health and has a "repair service" flow because Android
-won't let an app re-enable its own accessibility service.
+**`SettingsActivity`** + **`SettingsNavigation`** + **`SettingsUiKit`**: six hand-built
+pages (`SettingsSection`: Basic, Shoulders, D-pad, Exceptions, Settings, Help), no
+PreferenceFragment, no XML. `SettingsNavigation` owns the top bar (`settings_top_bar`:
+menu button, page title, accessibility warning on the right), lazily builds and caches
+pages, and switches between a 240 dp left panel at ≥ 720 dp width and a menu dialog
+below that. Navigation icons are vector drawables `ic_settings_*` with SVG sources in
+`art/settings-icons/`. `SettingsChanges` builds before/after previews for per-page and
+whole-app defaults/unbind; `Prefs.applySettings` writes accepted plans atomically.
+`ExceptionSettingsPage` is a **WIP UI draft with no runtime effect**. The activity still
+shows service health and the "repair service" flow, because Android won't let an app
+re-enable its own accessibility service.
+
+**Bottom-screen panels** (`BottomPanels`, `PanelWindows`, `PanelConnection`,
+`PanelWindowHost`): third-party frontends' full-screen presentation/overlay windows on
+the bottom display are captured, hidden through a root window host, shown as their own
+cards in bottom Recents, and restored on every exit path. **Recents task routing**
+(`RecentsTaskLauncher`, `RecentTaskQuery`, `TaskMovePolicy`, `TopRecents*`) moves
+existing tasks between displays via pservice instead of relaunching packages; this is
+also what hold-to-swap uses now. The `Recents*` styling classes copy the installed
+launcher's look for the bottom overlay. All device-only territory — read the matching
+sections of `docs/ARCHITECTURE.md` and `docs/THOR-RECENTS.md` before touching them.
+`WIP_BOTTOMSCREEN_OVERWRITES.md` documents a **rejected and reverted** attempt to raise
+our windows above AYN's assistant; do not retry it without first addressing its notes.
+
+**Activation toggle** (`ServiceToggleGesture`, `KeyInterceptionGate`): a configurable
+Back-hold shortcut pauses/resumes all key interception; an unassigned shortcut
+re-activates interception so the app can never stay stranded.
 
 **`UpdateChecker`** polls the GitHub Releases API directly (`HttpURLConnection`
 + manual JSON parsing, no HTTP/JSON library) and posts a notification linking
@@ -470,3 +524,17 @@ surface for a side-loaded single-user app).
   (top screen) from the dynamically-detected bottom display (see
   `bottomDisplay()`: the non-default display with the highest ID). Don't
   hardcode display IDs elsewhere.
+- Every package name passed to a privileged shell command goes through `Shell.isPkg`.
+
+## Definition of done
+
+1. The requested behavior is implemented with existing invariants preserved.
+2. Focused tests cover the change where practical.
+3. Goldens and baselines were not weakened to mask a regression; an approved visible
+   change re-records goldens and the diff is reviewed as product output.
+4. `./tools/verify.sh` passes.
+5. The applicable manual-test tier is reported and, with device access, completed —
+   debug build installed, prerequisites restored, **Test task for the project owner**
+   handed over.
+6. The handoff names changed files, verification performed, and any unrun device checks
+   or residual risk. Commit only after owner verification; never push.

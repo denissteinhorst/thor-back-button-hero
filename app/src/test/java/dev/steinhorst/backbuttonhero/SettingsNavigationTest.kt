@@ -100,6 +100,23 @@ class SettingsNavigationTest {
     }
 
     @Test
+    fun `decorative app icon sits directly before the page title in both layouts`() {
+        listOf(380, 1000).forEach { width ->
+            val activity = open().get()
+            layout(activity, width)
+            val icon = root(activity).findViewWithTag<android.widget.ImageView>("settings_app_icon")
+            assertNotNull(icon)
+            assertEquals(View.VISIBLE, icon.visibility)
+            assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO, icon.importantForAccessibility)
+            val row = icon.parent as ViewGroup
+            val title = row.getChildAt(row.indexOfChild(icon) + 1) as TextView
+            assertEquals(activity.getString(SettingsSection.BASIC.titleRes), title.text.toString())
+            selectSettingsPage(activity, SettingsSection.HELP)
+            assertEquals(activity.getString(SettingsSection.HELP.titleRes), title.text.toString())
+        }
+    }
+
+    @Test
     fun `compact menu cancels without navigation and selects all six pages`() {
         val activity = open().get()
         layout(activity, 380)

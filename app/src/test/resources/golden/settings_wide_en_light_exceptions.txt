@@ -3,6 +3,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
     LinearLayout visibility=VISIBLE minHeight=168 padding=[24,12,24,12] clickable=false focusable=false margin=[0,0,0,0]
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
         Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menu" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+        ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
         TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Exceptions" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
         TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=42.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
     LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]

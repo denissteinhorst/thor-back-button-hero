@@ -199,7 +199,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 
 Current expected baseline:
 
-- 138 JVM tests in 22 test classes; 0 failed, 0 skipped
+- 295 JVM tests in 52 test classes; 0 failed, 0 skipped
 - lint: 0 new findings; the checked-in baseline contains 18 intentional warnings
 - all per-class JaCoCo ratchets in `app/build.gradle.kts` pass
 - debug and unsigned local release APKs build
@@ -248,11 +248,6 @@ restart recreates the virtual pad and the game may need to be paused/resumed.
 A release requires both an increased `versionCode` and a semantic `versionName`. The tag
 must be exactly `v<versionName>` (for example `v1.3.0`). The release workflow enforces
 this and `UpdateChecker` compares the release tag with installed `versionName`.
-
-There are stale comments in two places: the header of `.github/workflows/release.yml`
-and one checklist sentence in `CLAUDE.md` still say `v<versionCode>`. The executable
-workflow check and the surrounding current documentation correctly require
-`v<versionName>`; do not follow the stale wording.
 
 Never commit a keystore, certificate, password, token, or signing environment value.
 Do not print secret values while diagnosing release builds. Local unsigned releases are

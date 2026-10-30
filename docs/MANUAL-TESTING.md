@@ -1,7 +1,7 @@
 # Manual testing procedures
 
 The automated gate cannot see most of what this app does. `SwitcherOverlay` has **0 %**
-line coverage and `SwitcherService` **4.7 %**, because an accessibility connection, a
+line coverage and `SwitcherService` about **13 %**, because an accessibility connection, a
 second display and real hardware key events are not reachable from Robolectric, and no
 emulator image exists for a dual-screen device.
 

@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -54,6 +55,12 @@ class SettingsNavigation(
         isAccessibilityHeading = true
         setPadding(activity.dp(8), activity.dp(8), activity.dp(8), activity.dp(8))
     }
+    // Decorative: the page title next to it already names the screen for TalkBack.
+    private val appIcon = ImageView(activity).apply {
+        tag = "settings_app_icon"
+        setImageResource(R.mipmap.ic_launcher)
+        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+    }
     private val menu = Button(activity).apply {
         setText(R.string.settings_menu)
         isAllCaps = false
@@ -76,7 +83,10 @@ class SettingsNavigation(
         bar.minimumHeight = activity.dp(56)
         bar.setPadding(activity.dp(8), activity.dp(4), activity.dp(8), activity.dp(4))
         titleRow.addView(menu)
-        titleRow.addView(title, LinearLayout.LayoutParams(0, wrap, 1f))
+        titleRow.addView(appIcon, LinearLayout.LayoutParams(activity.dp(32), activity.dp(32)).apply {
+            marginStart = activity.dp(8)
+        })
+        titleRow.addView(title,LinearLayout.LayoutParams(0, wrap, 1f))
         titleRow.addView(serviceWarning, LinearLayout.LayoutParams(0, wrap, 1f))
         bar.tag = "settings_top_bar"
         bar.setBackgroundColor(activity.settingsSurfaceColor(SettingsSurface.TOP_BAR))

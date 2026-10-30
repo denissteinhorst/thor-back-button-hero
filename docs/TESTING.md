@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 146 JVM tests pass |
+| `testDebugUnitTest` | All 295 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 24 classes, 146 tests
+### Base — JVM tests (Robolectric + JUnit), 52 classes, 295 tests
 
 Everything the gate can verify without hardware.
 
@@ -99,8 +99,8 @@ button states, change previews and accessibility. The main groups are:
 | `dialog_single_action_chooser`, `dialog_reset_settings_confirm`, `dialog_repair_service` | Three dialog flows |
 | `a11y_inventory` | Accessibility properties of every clickable row |
 
-These genuinely bite: changing a single visible string turns **7** tests red. That was
-verified by deliberately mutating one string and confirming the failures.
+These genuinely bite: a single visible top-bar change touches **38** of them at once
+(verified when the app icon was added to the top bar).
 
 To re-record after an approved visible change:
 
@@ -153,16 +153,20 @@ measures instructions instead, which is not what these numbers mean.
 | `DoubleTapDetector` | 1.00 | 1.0000 |
 | `LevelSteps` | 1.00 | 1.0000 |
 | `DpadDirection` (and its companion) | 1.00 | 1.0000 |
-| `CardTouch` | 0.90 | 1.0000 |
-| `BackGestureMachine` | 0.91 | 0.9130 |
-| `AccessibilityAppSource` | 0.60 | 0.6000 |
-| `UpdateChecker` | 0.46 | 0.4655 |
+| `CardTouch` | 1.00 | 1.0000 |
+| `BackGestureMachine` | 0.98 | 0.9865 |
+| `AccessibilityAppSource` | 0.61 | 0.6250 |
+| `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
+
+A further 24 classes (settings, navigation, Recents routing/state, panels, key gate,
+activation toggle) are ratcheted at 0.95–1.00 through a name→minimum map at the end of
+the rules in `app/build.gradle.kts`.
 
 Raise a minimum when tests grow; never lower one. Several sit exactly at the measured
 value, so coverage must not drop at all.
 
 Read these per JaCoCo **class**, which counts nested classes separately: `UpdateChecker`
-is 0.4655 while `UpdateChecker$Version` is its own entry. Aggregating a class with its
+is measured on its own while `UpdateChecker$Version` is its own entry. Aggregating a class with its
 nested types overstates what the rule actually enforces.
 
 Coverage requires `enableUnitTestCoverage = true` in the debug build type and
@@ -175,13 +179,13 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **0 %** (0/145 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **4.7 %** (11/233) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherOverlay` — **34 %** (119/349 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **13 %** (123/946) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
-| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (0/79) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
+| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (0/93) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.

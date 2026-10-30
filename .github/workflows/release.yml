@@ -1,8 +1,8 @@
 name: Release
 
-# Tag format is v<versionCode> (e.g. v2), matching defaultConfig.versionCode in
+# Tag format is v<versionName> (e.g. v1.3.0), matching defaultConfig.versionName in
 # app/build.gradle.kts - UpdateChecker.kt parses this tag to decide if a newer
-# release exists. Bump versionCode before tagging.
+# release exists. Bump versionName and versionCode before tagging.
 on:
   push:
     tags:
