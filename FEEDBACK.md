@@ -106,6 +106,11 @@ Diese Reihenfolge ist eine qualitative Einschätzung aus dem vollständigen Thre
 - **Stand 2026-10-30 (unveröffentlicht, für Changelog/Reddit):** Gelöst, allgemein ohne Paketliste. Reproduziert mit ES-DE oben, Companion unten, Super Mario (SNES, RetroArch): Hold-to-swap verschiebt heute schon die Tasks (Spiel unten, Companion oben über ES-DE); nach Spielende zeigte unten Home, oben verdeckte Companion weiter ES-DE. Jetzt merkt sich `SwapReturn` das getauschte Paar. Wird eine der beiden Apps geschlossen und ihr Bildschirm fällt auf Home zurück, wandert die andere automatisch auf ihren ursprünglichen Bildschirm zurück — oben liegt wieder ES-DE, unten Companion. Wird eine geswappte App nur verlassen (Home), bleibt alles, wie es ist; auch ein späteres Schließen über die Bottom-Recents löst die Rückkehr aus. Auf dem Gerät per emulierter Eingabe geprüft; Owner-Bestätigung steht aus.
 - **Quelle:** [ES-DE-/Companion-Ablauf](https://www.reddit.com/r/AynThor/comments/1xfj5ew/back_button_hero_130_one_button_many_possibilities/19ro34lzbhxb4/)
 
+## Bug — RetroArch verliert nach Swap + Fokuswechsel den Controller (intern gefunden, 2026-10-30)
+
+- **Ursache:** RetroArch setzt beim Fortsetzen (z. B. Swap zurück nach oben) seine Port-Zuordnung zurück und vergibt Port 1 an das erste Gerät, das sich meldet. AYNs Fokuswechsel schickt dabei ein künstliches Shift-rechts vom Android-Gerät „Virtual“. Kommt das zuerst an, meldet RetroArch „Virtual (0/0) not configured“, und das Pad landet auf Port 2 (keine Steuerung). Port-Reservierung in RetroArch brach Steuerkreuz und Stick; sichtbares Pausieren half, war aber zu störend.
+- **Stand (experimentell, `PadPortClaim.EXPERIMENTAL`, nur RetroArch, vom Owner freigegeben):** Hat RetroArch den Controller, wandert die Route beim Swap vorab mit (inkl. Fokus-Piktogramm), und der Pad-Helfer stupst den linken Stick innerhalb der Totzone an, sobald RetroArch vorne erscheint. Vom Owner auf dem Gerät bestätigt („klappt“); Piktogramm-Anzeige noch nicht bestätigt.
+
 ## Feature Request — Umschaltbarer Switcher-Inhalt: Bottom-only oder alle Apps (Priorität: mittel)
 
 **Was tun und warum:** Optional die auf beiden Displays beobachteten Apps im Bottom-Switcher anbieten, damit eine App nicht erst einmal auf dem unteren Screen geöffnet worden sein muss.

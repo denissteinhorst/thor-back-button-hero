@@ -7,6 +7,8 @@ import android.app.ActivityOptions
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import android.graphics.Path
 import android.os.SystemClock
 import android.content.ComponentName
@@ -71,6 +73,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var lastSwap: SwapReturn.Swap? = null
     private var swapReturnRunning = false
     private var swapReturnCheckedAt = 0L
+    private var retroArchDisplays = emptySet<Int>()
+    private val padNudgeRunnable = Runnable { if (::padHelper.isInitialized) padHelper.nudge() }
     private val swapReturnRunnable = Runnable { checkSwapReturn() }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
@@ -572,6 +576,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
         runCatching { startActivity(intent, options) }
     }
 
+    /** A route that follows a swap looks like the user's own controller-focus shortcut. */
+    private fun showRouteIndicator(top: Boolean) {
+        val button = (ShoulderButton.entries + DpadDirection.entries)
+            .firstOrNull { prefs.shoulderAction(it) == Prefs.SHOULDER_CONTROLLER_FOCUS }
+        if (button == null) {
+            focusIndicator.show(top, Prefs.DEFAULT_FOCUS_POSITION, Prefs.DEFAULT_FOCUS_DURATION_MS)
+            return
+        }
+        val position = prefs.focusPosition(button).takeIf { prefs.focusIndicator(button) }
+        focusIndicator.show(top, position, prefs.focusDuration(button)) { openIndicatorSettings(button) }
+    }
+
     private fun runControllerFocus(button: ComboButton) {
         showFocusIndicator(button)
         controllerFocus.run(prefs.focusTarget(button))
@@ -803,6 +819,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
             handler.removeCallbacks(swapReturnRunnable)
             handler.postDelayed(swapReturnRunnable, SWAP_RETURN_SETTLE_MS)
         }
+        val retroArch = listOfNotNull(Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId)
+            .filter { PadPortClaim.isRetroArch(source.topApp(it)) }.toSet()
+        if (PadPortClaim.EXPERIMENTAL && PadPortClaim.arrived(retroArchDisplays, retroArch)) {
+            handler.removeCallbacks(padNudgeRunnable)
+            PadPortClaim.NUDGE_DELAYS_MS.forEach { handler.postDelayed(padNudgeRunnable, it) }
+        }
+        retroArchDisplays = retroArch
         if (topRecentsControllerActive) {
             scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
         }
@@ -1069,12 +1092,22 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
                 return@refresh
             }
+            val route = PadPortClaim.routeBeforeSwap(controllerDisplayId() == top, topApp, bottomApp)
             Thread {
                 val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
                 val moves = TaskMovePolicy.planSwap(topApp, bottomApp, top, bottom, states, ::canRelaunch)
                 if (moves.isNullOrEmpty()) {
                     handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
                     return@Thread
+                }
+                if (route != null) {
+                    // Before the moves: the route's injected key must reach the app still in front.
+                    val routed = CountDownLatch(1)
+                    handler.post {
+                        showRouteIndicator(route == Prefs.DISPLAY_TOP)
+                        controllerFocus.run(route) { routed.countDown() }
+                    }
+                    routed.await(ROUTE_FOLLOW_TIMEOUT_MS, TimeUnit.MILLISECONDS)
                 }
                 val moved = moves.all { move -> launchTask(move.packageName, move.targetDisplay, move.taskId) }
                 // A fallback relaunch keeps no task identity; the return check then finds no partner.
@@ -1628,6 +1661,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val PARKING_RECLAIM_SETTLE_MS = 300L
         const val SWAP_RETURN_SETTLE_MS = 500L
         const val SWAP_RETURN_QUERY_GAP_MS = 2_000L
+        const val ROUTE_FOLLOW_TIMEOUT_MS = 3_000L
         const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
         const val COMBINED_DISPLAY_SHIFT = 12
         const val THUMB_WIDTH = 480
