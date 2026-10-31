@@ -134,8 +134,11 @@
     var stage = explainer.querySelector('.explainer-stage');
     var frame = stage.querySelector('iframe');
     // The explainer is laid out at a fixed 640×640, so it is scaled rather than reflowed.
+    // Full screen on small screens, where it may also grow past its own size.
+    var fullScreen = window.matchMedia('(max-width: 800px)');
     var fit = function () {
-      stage.style.setProperty('--s', Math.min(1, stage.clientWidth / 640, stage.clientHeight / 640));
+      var s = Math.min(stage.clientWidth / 640, stage.clientHeight / 640);
+      stage.style.setProperty('--s', fullScreen.matches ? s : Math.min(1, s));
     };
     if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
     else window.addEventListener('resize', fit);

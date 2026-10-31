@@ -295,6 +295,8 @@ nav a { min-height: 44px; display: inline-flex; align-items: center; }
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--fg);
   box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .7);
 }
+/* the page behind the open explainer stays put */
+html:has(.explainer[open]) { overflow: hidden; }
 .explainer::backdrop { background: rgba(10, 10, 10, .72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .explainer-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem .6rem .6rem 1.25rem; border-bottom: 1px solid var(--line); font-weight: 700; }
 .explainer-close {
@@ -686,12 +688,25 @@ footer .small { grid-column: 1 / -1; margin: 0; padding-top: 1rem; }
   .links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .25rem 1.25rem; }
   .gestures { grid-template-columns: 1fr; }
   .gestures > li.g-hold { grid-column: auto; grid-row: auto; padding-left: 0; border-left: 0; }
-  .gestures > li.g-double { grid-column: auto; grid-row: auto; margin: 1rem 0; padding: .25rem 0 .25rem 1.25rem; }
+  .gestures > li.g-double { grid-column: auto; grid-row: auto; padding-left: 0; border-left: 0; }
   .binds { grid-template-columns: 1fr; gap: 1.5rem; }
   /* the tooltip anchors to the whole heading, so it never runs off the screen */
   .sub { position: relative; }
   .tip { position: static; }
   .tip-body { width: auto; max-width: 100%; right: 0; }
+}
+/* Small screens: the explainer takes the whole screen, so it scales as large as it can. */
+@media (max-width: 800px) {
+  .explainer {
+    inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0;
+    border: 0; border-radius: 0; box-shadow: none;
+  }
+  .explainer[open] { display: flex; flex-direction: column; }
+  .explainer-bar { flex: none; padding: max(.5rem, env(safe-area-inset-top)) max(.6rem, env(safe-area-inset-right)) .5rem max(1rem, env(safe-area-inset-left)); }
+  .explainer-close { width: 44px; height: 44px; }
+  .explainer-bar > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .95rem; }
+  .explainer-stage { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; max-height: none; margin-bottom: env(safe-area-inset-bottom); }
+  .explainer-stage iframe { top: 50%; transform-origin: center; transform: translate(-50%, -50%) scale(var(--s, 1)); }
 }
 @media (max-width: 560px) {
   .sec { padding: 3.25rem 0; }
