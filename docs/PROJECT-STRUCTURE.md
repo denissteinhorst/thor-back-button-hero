@@ -85,7 +85,6 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `RecentTaskQuery.kt` | 23 | Recent-task query that includes tasks excluded from native Recents, such as companion apps. |
 | `RecentsTaskLauncher.kt` | 114 | *(root)* Resumes an existing task on the requested screen without relaunching it. |
 | `TaskMovePolicy.kt` | 34 | Rules for task moves: protected tasks and which app stays in front. |
-| `SwapReturn.kt` | 49 | Remembers the last swap and moves the partner app back when one of the two is closed. |
 | `TopRecentsFocus.kt` | 46 | *(root)* Completes AYN's paused Overview handoff so native controller navigation works in the top Recents. |
 | `TopRecentsNavigation.kt` | 45 | Buffers D-pad presses while top Recents initializes, then releases them. |
 | `TopRecentsState.kt` | 48 | The small subset of AYN Launcher3's dump needed to know the Overview state and card geometry. |
@@ -145,7 +144,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 56 test classes, **332 tests**. Run by the gate. By area:
+The automated safety net. 55 test classes, **326 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
@@ -154,7 +153,7 @@ The automated safety net. 56 test classes, **332 tests**. Run by the gate. By ar
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
-| Tasks, swap, frontends | `TaskMovePolicyTest`, `SwapReturnTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
+| Tasks, swap, frontends | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
 | Other | `ShellTest`, `UpdateCheckerParseTest` (release parsing, semver ordering, legacy tags, rejected inputs), `ResourceIntegrityTest` (EN/DE string parity), `SmokeTest` |
 | Support | `support/ViewTree.kt` renders a View hierarchy to deterministic text — the snapshot format, platform-independent unlike pixel screenshots. `support/Golden.kt` compares against a golden file, or rewrites it when `UPDATE_GOLDENS=1` (see the golden rule in [`TESTING.md`](TESTING.md)). `support/ViewTreeSmokeTest.kt` verifies the renderer itself. |

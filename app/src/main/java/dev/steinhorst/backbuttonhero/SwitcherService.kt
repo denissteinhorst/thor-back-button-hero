@@ -69,10 +69,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val reclaimRunnable = Runnable {
         bottomDisplay()?.let { parking.reclaimed(it, source.topApp(it.displayId)) }
     }
-    private var lastSwap: SwapReturn.Swap? = null
-    private var swapReturnRunning = false
-    private var swapReturnCheckedAt = 0L
-    private val swapReturnRunnable = Runnable { checkSwapReturn() }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
     private var topRecentsConfirmed = false
@@ -866,10 +862,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
             handler.removeCallbacks(reclaimRunnable)
             handler.postDelayed(reclaimRunnable, PARKING_RECLAIM_SETTLE_MS)
         }
-        if (lastSwap != null) {
-            handler.removeCallbacks(swapReturnRunnable)
-            handler.postDelayed(swapReturnRunnable, SWAP_RETURN_SETTLE_MS)
-        }
         if (topRecentsControllerActive) {
             scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
         }
@@ -1115,8 +1107,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (removed?.startsWith("OK") != true || !stopped.all { it }) {
                     handler.post { packages.forEach { activityManager.killBackgroundProcesses(it) } }
                 }
-                // Closing a swapped app that was already left for Home changes no window.
-                handler.post { if (lastSwap != null) { swapReturnCheckedAt = 0L; checkSwapReturn() } }
             }.start()
         }, 500)
     }
@@ -1143,39 +1133,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
                     return@Thread
                 }
-                val moved = moves.all { move -> launchTask(move.packageName, move.targetDisplay, move.taskId) }
-                // A fallback relaunch keeps no task identity; the return check then finds no partner.
-                val swap = if (moved) SwapReturn.swap(moves, top, bottom) else null
-                handler.post { lastSwap = swap }
+                for (move in moves) {
+                    if (!launchTask(move.packageName, move.targetDisplay, move.taskId)) break
+                }
             }.apply { isDaemon = true }.start()
         }
-    }
-
-    /** A swapped app was closed and its screen fell back to Home: move the other app back. */
-    private fun checkSwapReturn() {
-        val swap = lastSwap ?: return
-        if (swapReturnRunning || !PService.cachedAvailable()) return
-        val closed = SwapReturn.freed(swap) { source.topApp(it) } ?: return
-        // Browsing Home after merely leaving a swapped app keeps firing window events; query sparingly.
-        val wait = swapReturnCheckedAt + SWAP_RETURN_QUERY_GAP_MS - SystemClock.uptimeMillis()
-        if (wait > 0) { handler.postDelayed(swapReturnRunnable, wait); return }
-        swapReturnCheckedAt = SystemClock.uptimeMillis()
-        val partner = swap.partnerOf(closed)
-        swapReturnRunning = true
-        Thread {
-            fun query(member: SwapReturn.Member) =
-                PService.runEntryPoint(this, "TaskParker", "query", member.packageName, member.taskId.toString())
-            val decision = SwapReturn.decide(query(closed), partner, query(partner))
-            handler.post {
-                swapReturnRunning = false
-                if (!isConnected || lastSwap != swap || decision == SwapReturn.Decision.KEEP) return@post
-                lastSwap = null
-                if (decision == SwapReturn.Decision.RETURN) {
-                    Log.d(TAG, "swap return: ${partner.packageName} to ${partner.from}")
-                    Thread { launchTask(partner.packageName, partner.from, partner.taskId) }.apply { isDaemon = true }.start()
-                }
-            }
-        }.apply { isDaemon = true }.start()
     }
 
     private fun launchOn(pkg: String, displayId: Int) {
@@ -1693,8 +1655,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val MIN_CAPTURE_GAP_MS = 1100L
         const val SWITCHER_SCREENSHOT_DELAY_MS = 100L
         const val PARKING_RECLAIM_SETTLE_MS = 300L
-        const val SWAP_RETURN_SETTLE_MS = 500L
-        const val SWAP_RETURN_QUERY_GAP_MS = 2_000L
         const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
         const val COMBINED_DISPLAY_SHIFT = 12
         const val THUMB_WIDTH = 480

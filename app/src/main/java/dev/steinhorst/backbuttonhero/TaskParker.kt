@@ -8,8 +8,7 @@ import android.os.Looper
 
 /**
  * Root entry point: moves a frontend's standalone bottom task onto the private parking display and
- * back, and reports where a task runs ([SwapReturn] uses that too). Running root tasks are read
- * directly: recent-task queries may omit private displays and keep tasks whose app was closed.
+ * back. Running root tasks are read directly, since recent-task queries may omit private displays.
  */
 @SuppressLint("PrivateApi") // Task reparenting and moveTaskToFront have no public equivalents.
 object TaskParker {

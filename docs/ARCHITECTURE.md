@@ -415,13 +415,14 @@ Hold-to-swap captures both foreground packages and resolves both task IDs before
 either one, then uses this same move entry point sequentially. This preserves task identity
 and lets Android notify the launcher about display changes.
 
-`SwapReturn` remembers the last swap of two verified tasks. When one of them is closed and its
-screen falls back to Home, the other moves back to its original screen. A game launched from a
-frontend and swapped away then leaves the frontend in place on both screens, as if the user had
-swapped back first. Window events trigger the check only while a swapped screen shows no app;
-`TaskParker query` reads running root tasks, since recent tasks outlive a closed app. A failed
-query never counts as closed. An app merely left for Home keeps the swap. Closing it later
-from bottom Recents re-runs the check, because that changes no window.
+**The app never moves windows between the screens on the user's behalf.** A task changes
+screens only through a user action: hold-to-swap or picking a card in Recents. Closing,
+leaving or launching an app moves nothing else, even when that leaves a frontend covered (for
+example Companion over ES-DE after a swapped game is quit). An automatic return of the partner app
+after a swap (`SwapReturn`) shipped in 1.4.0 and was removed again in favor of this rule.
+`FrontendParking` is a deliberate exception: it never moves anything between the two screens,
+only keeps a covered frontend's bottom task out of sight on a private display while the user
+works there, and brings it back through its Recents card.
 
 `TopRecentsFocus` completes AYN's paused Overview handoff with a non-Home intent before
 keyboard initialization. A successful injection alone does not make navigation ready:

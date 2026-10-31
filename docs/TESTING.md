@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 332 JVM tests pass |
+| `testDebugUnitTest` | All 326 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 56 classes, 332 tests
+### Base — JVM tests (Robolectric + JUnit), 55 classes, 326 tests
 
 Everything the gate can verify without hardware.
 
@@ -76,7 +76,7 @@ Everything the gate can verify without hardware.
 | Active App Control: target resolution, defaults, snapshots | `AppControlTest` |
 | Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest` |
 | Top Recents navigation and state parsing | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
-| Task moves, swap return, frontend parking and bottom panels | `TaskMovePolicyTest`, `SwapReturnTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
+| Task moves, frontend parking and bottom panels | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper lifecycle, navigation mode | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
 | Shell quoting and package validation | `ShellTest` |
 | Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
