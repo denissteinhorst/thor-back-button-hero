@@ -78,6 +78,56 @@
     showShot(0);
   }
 
+  // Lightbox: a screenshot fills the screen, steps like the stepper (which follows along),
+  // and a tap zooms it to full height so a landscape shot is readable on a portrait phone.
+  var lightbox = document.getElementById('lightbox');
+  if (lightbox && shots.length && typeof lightbox.showModal === 'function') {
+    var lbImg = lightbox.querySelector('.lb-stage img');
+    var lbStage = lightbox.querySelector('.lb-stage');
+    var lbCaption = lightbox.querySelector('.lb-caption');
+    var lbCount = lightbox.querySelector('.lb-count');
+    var lbShow = function (index) {
+      showShot(index);
+      var img = shots[current].querySelector('img');
+      lightbox.classList.remove('zoomed');
+      lbImg.src = img.currentSrc || img.src;
+      lbCaption.textContent = shots[current].querySelector('figcaption').textContent;
+      lbCount.textContent = (current + 1) + ' / ' + shots.length;
+    };
+    shots.forEach(function (shot, i) {
+      var img = shot.querySelector('img');
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', 'Enlarge screenshot');
+      var open = function () { lbShow(i); lightbox.showModal(); };
+      img.addEventListener('click', open);
+      img.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+    });
+    lightbox.querySelector('.lb-prev').addEventListener('click', function () { lbShow(current - 1); });
+    lightbox.querySelector('.lb-next').addEventListener('click', function () { lbShow(current + 1); });
+    lightbox.querySelector('.lb-close').addEventListener('click', function () { lightbox.close(); });
+    lightbox.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') lbShow(current + 1);
+      if (e.key === 'ArrowLeft') lbShow(current - 1);
+    });
+    lbImg.addEventListener('click', function () {
+      var zoomed = lightbox.classList.toggle('zoomed');
+      // centre the zoomed shot instead of starting at its left edge
+      if (zoomed) lbStage.scrollLeft = (lbStage.scrollWidth - lbStage.clientWidth) / 2;
+    });
+    // A horizontal swipe steps through the shots; while zoomed the same gesture pans instead.
+    var touchX = null;
+    lbStage.addEventListener('touchstart', function (e) { touchX = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+    lbStage.addEventListener('touchend', function (e) {
+      if (touchX === null || lightbox.classList.contains('zoomed')) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) lbShow(current + (dx < 0 ? 1 : -1));
+      touchX = null;
+    });
+  }
+
   // Help tooltip: hover and focus work in CSS; this adds tap-to-toggle and Esc to dismiss.
   document.querySelectorAll('.tip').forEach(function (tip) {
     var btn = tip.querySelector('.tip-btn');

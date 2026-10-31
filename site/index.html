@@ -249,6 +249,20 @@
     </div>
     </div>
 
+    <dialog class="lightbox" id="lightbox" aria-label="Screenshot viewer">
+      <div class="lb-bar">
+        <span class="lb-count" aria-live="polite"></span>
+        <button type="button" class="lb-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="lb-stage"><img alt="" decoding="async"></div>
+      <p class="lb-caption"></p>
+      <div class="lb-nav">
+        <button type="button" class="lb-prev" aria-label="Previous screenshot">←</button>
+        <span class="lb-hint">Tap the image to zoom</span>
+        <button type="button" class="lb-next" aria-label="Next screenshot">→</button>
+      </div>
+    </dialog>
+
     <dialog class="explainer" id="explainer" aria-label="Interactive gesture explainer">
       <div class="explainer-bar">
         <span>Try the interactive gesture explainer</span>
@@ -286,7 +300,7 @@
       </ul>
       <div class="spot">
         <div>
-          <h3 class="sub">Hands off the screen <span class="ver new">v1.4.0</span></h3>
+          <h3 class="sub">Hands off the screen</h3>
           <p>No more letting go of the controller to tap the screen. <span class="mark">Both app switchers</span>, top and bottom, now follow the D-pad.</p>
           <ul class="pad-map">
             <li><svg class="mini-pad" viewBox="0 0 24 24" aria-hidden="true"><path class="pad" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/><path class="on" d="M2 9h7v6H2zM15 9h7v6h-7z"/></svg><span><span class="sr-only">D-pad left or right: </span>Browse through open apps</span></li>
@@ -295,7 +309,6 @@
             <li><svg class="mini-pad" viewBox="0 0 24 24" aria-hidden="true"><circle class="pad" cx="12" cy="12" r="8"/><circle class="on" cx="12" cy="12" r="4.5"/></svg><span><span class="sr-only">Confirm button: </span>Switch to the selected app</span></li>
           </ul>
           <p class="spot-note">The bottom switcher now matches the Recents you know from the top screen, with the same Screenshot button, memory display and Close all.</p>
-          <p class="spot-note"><span class="ver new">v1.4.1</span> The bottom switcher opens above AYN's panel. Closing it without picking anything brings the panel back, and AYN's button always does too. Both switchers hand the controller back exactly as it was, Auto-lock included.</p>
           <p class="spot-tip"><strong>Tip:</strong> In the top Recents, a picked app opens on the screen where Recents is shown.</p>
           <p class="spot-tip"><strong>Tip:</strong> You can also minimize or force-close the app in front directly with a hotkey of your choice: assign Active App Control to any shoulder button or D-pad direction.</p>
         </div>
@@ -329,7 +342,7 @@
 
     <div class="pause">
       <div>
-        <h3 class="sub">Pause it with two buttons <span class="ver new">v1.4.0</span>
+        <h3 class="sub">Pause it with two buttons
           <span class="tip">
             <button type="button" class="tip-btn" aria-label="More about pausing" aria-describedby="pause-tip">?</button>
             <span class="tip-body" role="tooltip" id="pause-tip"><strong>Optional, and yours to adjust.</strong> Choose another button pair (L3 + R3 or L1 + R1), or remove it. Set how long you hold, from 0.1 to 3 seconds. The default is L2 + R2 for 0.3 seconds.</span>
@@ -346,7 +359,7 @@
 
     <div class="pause exceptions">
       <div>
-        <h3 class="sub">Exceptions for single apps <span class="ver new">v1.4.0</span></h3>
+        <h3 class="sub">Exceptions for single apps</h3>
         <p class="intro">You don't need this. Back Button Hero works fine without it. But if you want, you can decide for every single app, one by one, which binds are allowed and which are blocked: each Back gesture, every shoulder button and every D-pad direction. Whatever you block behaves in that app as if Back Button Hero were not installed. For example, let an emulator keep L1 and the D-pad for itself while everything else keeps working. The app on the screen your controller is on decides.</p>
       </div>
     </div>
@@ -358,7 +371,7 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>Volume</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Brightness</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10c3 0 5 2.5 5.5 6l.5 3c.3 2-1 3.5-2.5 3.5-1 0-1.8-.5-2.5-1.5L16.5 16h-9L6 18c-.7 1-1.5 1.5-2.5 1.5C2 19.5.7 18 1 16l.5-3C2 9.5 4 7 7 7z"/><path d="M7.5 10.5v4M5.5 12.5h4"/></svg>Controller focus</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9.5 10l5 4M14.5 10l-5 4"/></svg>Active App Control: minimize or force-close the app in front <span class="ver new">v1.4.0</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9.5 10l5 4M14.5 10l-5 4"/></svg>Active App Control: minimize or force-close the app in front</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Home</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="8" width="12" height="13" rx="2"/><path d="M8 5h8M10 2h4"/></svg>Recents</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg>Previous / next app</li>
@@ -366,8 +379,8 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>Notifications</li>
         <li class="wide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg>Wi-Fi, Bluetooth, Night Light, Do Not Disturb and more</li>
       </ul>
-      <p class="small"><span class="ver new">v1.4.0</span> Screenshots use Android's own screenshot action. "Both screens" creates one image with the bottom screen centered below the top screen.</p>
-      <p class="small"><span class="ver new">v1.4.0</span> Active App Control acts on the top screen, the bottom screen, both, or asks each time with a small prompt you steer with the D-pad. Force-Close ends the app immediately and saves nothing for you, so unsaved progress can be lost.</p>
+      <p class="small">Screenshots use Android's own screenshot action. "Both screens" creates one image with the bottom screen centered below the top screen.</p>
+      <p class="small">Active App Control acts on the top screen, the bottom screen, both, or asks each time with a small prompt you steer with the D-pad. Force-Close ends the app immediately and saves nothing for you, so unsaved progress can be lost.</p>
     </details>
   </div>
 </section>
@@ -523,7 +536,7 @@
           <div class="fe-icons"><img class="fe-square" src="assets/frontends/neostation.png" alt="" width="48" height="48" loading="lazy"></div>
           <div><h3>NeoStation</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
-        <p><span class="ver new">v1.4.0</span> The bottom screen is finally yours again. NeoStation's panel normally can't be covered by anything, but Back Button Hero moves it aside whenever you open another app there, and its own card in bottom Recents brings it back exactly as it was.</p>
+        <p>The bottom screen is finally yours again. NeoStation's panel normally can't be covered by anything, but Back Button Hero moves it aside whenever you open another app there, and its own card in bottom Recents brings it back exactly as it was.</p>
         <p>The one limit: the panel can't move to the other screen, so hold-to-swap can't take NeoStation along. Instead of half-swapping, Back Button Hero leaves both screens as they are and shows a short message explaining why.</p>
       </article>
       <article class="fe-card">
@@ -531,7 +544,7 @@
           <div class="fe-icons"><img src="assets/frontends/cocoon.png" alt="" width="48" height="48" loading="lazy"></div>
           <div><h3>Cocoon</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
-        <p><span class="ver new">v1.4.0</span> Cocoon's bottom screen keeps running out of sight while you use another app there, so its top screen stays in the dual-screen layout. Its card in bottom Recents brings it back. If Cocoon reopens its bottom screen by itself, after standby or a game, it's moved away again.</p>
+        <p>Cocoon's bottom screen keeps running out of sight while you use another app there, so its top screen stays in the dual-screen layout. Its card in bottom Recents brings it back. If Cocoon reopens its bottom screen by itself, after standby or a game, it's moved away again.</p>
       </article>
       <article class="fe-card">
         <div class="fe-top">
@@ -590,7 +603,7 @@
         <details><summary>What leaves my device?</summary>
           <p>One HTTPS request to GitHub's Releases API to check for updates, containing no app data. Settings, app list and switcher previews stay on the device.</p></details>
         <details><summary>Does it interfere with my games or emulator bindings?</summary>
-          <p>Shoulder buttons and the D-pad only act while Back is held. Otherwise they reach the game as usual, and buttons without an assignment are left alone. <span class="ver new">v1.4.0</span> You can also pause it: hold two buttons for a moment, for example when an emulator needs Back for its own menu, and hold again to resume.</p></details>
+          <p>Shoulder buttons and the D-pad only act while Back is held. Otherwise they reach the game as usual, and buttons without an assignment are left alone. You can also pause it: hold two buttons for a moment, for example when an emulator needs Back for its own menu, and hold again to resume.</p></details>
         <details><summary>Does it work with ES-DE, NeoStation, Cocoon, RetroArch or iiSU?</summary>
           <p>ES-DE with Companion, NeoStation, Cocoon and RetroArch work and are in public testing. iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
         <details><summary>An app is missing from the switcher.</summary>
