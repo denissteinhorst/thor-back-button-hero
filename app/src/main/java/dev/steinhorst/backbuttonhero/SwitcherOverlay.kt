@@ -34,6 +34,7 @@ class SwitcherOverlay(
     private val onShown: (displayId: Int) -> Unit,
     private val onDismissed: () -> Unit,
     private val onPanelLaunch: (Int) -> Unit = {},
+    private val onCoveringClose: () -> Unit = {},
 ) {
     private var root: View? = null
     private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
@@ -399,24 +400,30 @@ class SwitcherOverlay(
         if (bulkClosing) return
         val openedRoot = root ?: return
         bulkClosing = true
-        val all = if (bothScreens) (apps + source.appsOnDisplay(Display.DEFAULT_DISPLAY)).distinctBy { it.packageName } else apps
+        // A covering panel belongs to AYN's system assistant, which must never be force-stopped.
+        val closable = apps.filterNot { it.panel?.covering == true }
+        val all = if (bothScreens) (closable + source.appsOnDisplay(Display.DEFAULT_DISPLAY)).distinctBy { it.packageName } else closable
         // This explicit Back Button Hero command overrides OEM locks. The badges still show
         // the shared launcher status; neither that status nor native Overview policy is changed.
         val packages = all.map { it.packageName }.distinct()
-        if (packages.isEmpty()) { bulkClosing = false; return }
+        val closesCovering = apps.any { it.panel?.covering == true }
+        if (packages.isEmpty() && !closesCovering) { bulkClosing = false; return }
         shownCards.forEach { card ->
             card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
         }
         row.postDelayed({
             if (root !== openedRoot) return@postDelayed
+            // First, so closing Recents does not bring the panel back before AYN closes it.
+            if (closesCovering) onCoveringClose()
             packages.forEach(source::forget)
-            onCloseAll(packages, bothScreens)
+            if (packages.isNotEmpty()) onCloseAll(packages, bothScreens)
             dismiss()
         }, 220)
     }
 
     private fun closeCard(card: View, app: RunningApp) {
-        if (app.panel != null) {
+        val covering = app.panel?.covering == true
+        if (app.panel != null && !covering) {
             // Dismissing the return card must not kill the owner's top-screen Activity.
             card.animate().translationY(0f).alpha(1f).setDuration(150).start()
             return
@@ -425,8 +432,10 @@ class SwitcherOverlay(
             val row = card.parent as? ViewGroup
             val lastCard = row?.childCount == 1
             row?.removeView(card)
-            source.forget(app.packageName)
-            onCloseApp(app.packageName)
+            if (covering) onCoveringClose() else {
+                source.forget(app.packageName)
+                onCloseApp(app.packageName)
+            }
             if (lastCard) {
                 dismiss()
             } else {

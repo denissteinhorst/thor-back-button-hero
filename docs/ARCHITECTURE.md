@@ -348,6 +348,21 @@ This path does not rewrite window types. Hold-to-swap is rejected
 with a localized explanation if either foreground app owns an observed bottom panel,
 including a hidden panel; neither task is moved in that case.
 
+**AYN's assistant panel** is the one system window treated as a panel, as an owner-approved
+exception: `com.odin.dualscreen.assistant`'s `BOOT_PROGRESS` window on the bottom screen. Its layer
+sits above every accessibility overlay, so it is a *covering* panel and behaves like a normal
+bottom window instead:
+- Opening bottom Recents captures and hides it, so Recents is seen. Closing Recents without a
+  choice shows it again; choosing an app or the launcher leaves it parked behind its card.
+- AYN's button arrives as a physical Home key from `gpio-keys`. While the panel is parked, AYN
+  still considers it open, so its own press would close it. The service consumes the whole press,
+  long ones included (the screen-off hold is only known after AYN missed the DOWN), and shows the
+  panel. This runs ahead of the interception gate. Unparked, the button reaches AYN untouched.
+- Closing its card (swipe, D-pad up, Close all) never force-stops AYN's system app. Root writes a
+  tap of the button's own key (`KEY_F24` on the device named `gpio-keys`), the service lets exactly
+  that press through, and AYN closes its panel itself; Recents closing afterwards does not reopen it.
+- Refreshes never re-hide it after a launch: AYN only shows a new panel when the user opens it.
+
 ### Parked frontend activities
 
 Some frontends (Cocoon) draw their bottom screen as an ordinary activity rather than a

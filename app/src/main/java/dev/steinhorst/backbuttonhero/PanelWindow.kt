@@ -2,10 +2,14 @@ package dev.steinhorst.backbuttonhero
 
 import org.json.JSONObject
 
-/** A panel is a window, not the owner's activity task. Never use its package as its card identity. */
-data class PanelWindow(val id: Int, val packageName: String, val displayId: Int, val hidden: Boolean) {
+/**
+ * A panel is a window, not the owner's activity task. Never use its package as its card identity.
+ * A [covering] panel sits above accessibility overlays, so bottom Recents must hide it to be seen.
+ */
+data class PanelWindow(val id: Int, val packageName: String, val displayId: Int, val hidden: Boolean,
+    val covering: Boolean = false) {
     fun json(): JSONObject = JSONObject().put("id", id).put("package", packageName)
-        .put("display", displayId).put("hidden", hidden)
+        .put("display", displayId).put("hidden", hidden).put("covering", covering)
 
     companion object {
         fun parse(item: JSONObject): PanelWindow {
@@ -13,7 +17,7 @@ data class PanelWindow(val id: Int, val packageName: String, val displayId: Int,
             val pkg = item.getString("package")
             val display = item.getInt("display")
             require(id >= 0 && Shell.isPkg(pkg) && display > 0)
-            return PanelWindow(id, pkg, display, item.getBoolean("hidden"))
+            return PanelWindow(id, pkg, display, item.getBoolean("hidden"), item.optBoolean("covering"))
         }
     }
 }
@@ -23,14 +27,21 @@ object PanelWindows {
     data class Window(val handle: String, val client: String, val packageName: String, val uid: Int,
         val displayId: Int, val type: String, val visible: Boolean,
         val left: Int, val top: Int, val right: Int, val bottom: Int) {
+        /** AYN's assistant panel: the one system window, agreed with the owner, that is treated as a panel. */
+        val isAynPanel: Boolean get() = packageName == AYN_PANEL_PACKAGE && type == AYN_PANEL_TYPE
+
         fun isPanel(display: Int, width: Int, height: Int): Boolean {
-            if (display <= 0 || displayId != display || uid % 100000 < 10000 || !Shell.isPkg(packageName)) return false
-            if (type !in setOf("PRESENTATION", "PRIVATE_PRESENTATION", "APPLICATION_OVERLAY")) return false
+            if (display <= 0 || displayId != display || !Shell.isPkg(packageName)) return false
+            if (!isAynPanel && (uid % 100000 < 10000 || type !in setOf("PRESENTATION", "PRIVATE_PRESENTATION", "APPLICATION_OVERLAY"))) return false
             val area = (minOf(right, width) - maxOf(left, 0)).coerceAtLeast(0).toLong() *
                 (minOf(bottom, height) - maxOf(top, 0)).coerceAtLeast(0)
             return width > 0 && height > 0 && area >= width.toLong() * height * 9 / 10
         }
     }
+
+    const val AYN_PANEL_PACKAGE = "com.odin.dualscreen.assistant"
+    // Its layer sits above every accessibility overlay, which is why Recents vanished behind it.
+    private const val AYN_PANEL_TYPE = "BOOT_PROGRESS"
 
     fun windows(dump: String): List<Window> {
         require(dump.startsWith("WINDOW MANAGER WINDOWS")) { "window snapshot unavailable" }

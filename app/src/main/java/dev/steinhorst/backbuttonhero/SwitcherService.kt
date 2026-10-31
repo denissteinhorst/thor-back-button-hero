@@ -62,6 +62,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
     @Volatile private var bottomStateSession = 0
     private var bottomStateQueryRunning = false
     private var bottomSwitcherOpening = false
+    private var bottomSwitcherChose = false
+    private var aynButtonDeviceId: Int? = null
+    // Our own root press of AYN's button must reach AYN instead of returning its panel.
+    private var aynButtonPresses = 0
+    private var aynButtonPassing: Int? = null
+    private val aynButtonPressExpiry = Runnable { aynButtonPresses = 0 }
     private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
     private val panelStateRunnable = Runnable {
         if (::panels.isInitialized) panels.refresh(bottomDisplay())
@@ -131,6 +137,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (::parking.isInitialized) parking.close()
         if (::padHelper.isInitialized) stopDpad()
         interceptionEnabled = true
+        aynButtonDeviceId = null
+        aynButtonPresses = 0
+        aynButtonPassing = null
         interceptionGate.clear()
         toggleGesture.reset()
         backGesture.reset()
@@ -153,6 +162,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::onBottomSwitcherShown,
             ::onBottomSwitcherDismissed,
             ::restorePanel,
+            ::closeAynPanel,
         )
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
@@ -265,8 +275,43 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        if (handleAynButton(event)) return true
         toggleGesture.handle(event)
         return interceptionGate.handle(event, interceptionEnabled, ::handleActiveKeyEvent)
+    }
+
+    /**
+     * AYN's button arrives as a physical Home key. While we hide AYN's panel, AYN still thinks it is
+     * open, so its own press would close it. The whole press is ours instead and returns the panel,
+     * a long one too: whether it becomes the screen-off hold is only known after AYN missed its DOWN.
+     * Runs ahead of the interception gate, because the panel must come back even while paused.
+     */
+    private fun handleAynButton(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_HOME) return false
+        aynButtonPassing?.let { passing ->
+            if (event.deviceId != passing) return@let
+            if (event.action == KeyEvent.ACTION_UP) aynButtonPassing = null
+            return false
+        }
+        val pressing = aynButtonDeviceId
+        if (pressing != null) {
+            if (event.deviceId != pressing) return false
+            if (event.action == KeyEvent.ACTION_UP) {
+                aynButtonDeviceId = null
+                if (overlay.isShowing) overlay.dismiss()
+                panels.showCovering()
+            }
+            return true
+        }
+        if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0 || event.deviceId < 0) return false
+        if (aynButtonPresses > 0) {
+            aynButtonPresses--
+            aynButtonPassing = event.deviceId
+            return false
+        }
+        if (!::panels.isInitialized || !panels.hasHiddenCovering) return false
+        aynButtonDeviceId = event.deviceId
+        return true
     }
 
     private fun handleActiveKeyEvent(event: KeyEvent): Boolean {
@@ -1008,6 +1053,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
         if (!Shell.isPkg(pkg)) return
+        if (overlay.isShowing) bottomSwitcherChose = true
         if (parking.parkedPackage == pkg) {
             // The ordinary mover would treat the parking display as a source screen needing a Home.
             prepareBottomLaunch(displayId) {
@@ -1054,7 +1100,24 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }, delay)
     }
 
+    /** Closing AYN's card closes its panel the way AYN does it: a press of its own button. */
+    private fun closeAynPanel() {
+        panels.closeCovering { done ->
+            aynButtonPresses++
+            handler.removeCallbacks(aynButtonPressExpiry)
+            handler.postDelayed(aynButtonPressExpiry, AYN_BUTTON_PRESS_EXPIRY_MS)
+            Thread {
+                val pressed = ControllerFocus.commandSucceeded(PService.exec(AYN_BUTTON_PRESS))
+                handler.post {
+                    if (!pressed) { aynButtonPresses = 0; toastUnavailable() }
+                    done()
+                }
+            }.apply { isDaemon = true }.start()
+        }
+    }
+
     private fun restorePanel(id: Int) {
+        if (overlay.isShowing) bottomSwitcherChose = true
         handler.postDelayed({
             if (isConnected) panels.show(id) { restored -> if (!restored) toastUnavailable() }
         }, SWITCHER_SCREENSHOT_DELAY_MS)
@@ -1301,6 +1364,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun onBottomSwitcherDismissed() {
         bottomStateSession++
         handler.removeCallbacks(bottomStateRunnable)
+        panels.switcherClosed(bottomSwitcherChose)
+        bottomSwitcherChose = false
         if (!prefs.switcherControllerEnabled) return
         padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
         dpadOverlay.detach()
@@ -1613,6 +1678,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { overlay.dismiss(); return }
         bottomSwitcherOpening = true
+        bottomSwitcherChose = false
         parking.verify()
         val session = ++bottomStateSession
         panels.prepareSwitcher(display) { captureFrontApp {
@@ -1656,6 +1722,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val SWITCHER_SCREENSHOT_DELAY_MS = 100L
         const val PARKING_RECLAIM_SETTLE_MS = 300L
         const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
+        const val AYN_BUTTON_PRESS_EXPIRY_MS = 2_000L
+        // AYN's button is KEY_F24 (194) on the gpio-keys device, found by name since event numbers can
+        // vary. Held about as long as a real tap, so AYN never mistakes it for its screen-off hold.
+        const val AYN_BUTTON_PRESS = "for d in /sys/class/input/event*; do " +
+            "if [ \"$(cat \$d/device/name)\" = gpio-keys ]; then e=/dev/input/\${d##*/}; " +
+            "sendevent \$e 1 194 1 && sendevent \$e 0 0 0 && sleep 0.1 && sendevent \$e 1 194 0 && sendevent \$e 0 0 0 && echo OK; break; fi; done"
         const val COMBINED_DISPLAY_SHIFT = 12
         const val THUMB_WIDTH = 480
         /** Minimum time to wait for a second, held-down press before firing a plain single tap. */

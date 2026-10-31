@@ -107,6 +107,11 @@ Diese Reihenfolge ist eine qualitative Einschätzung aus dem vollständigen Thre
 - **Stand 2026-10-31 (Owner-Entscheidung):** `SwapReturn` ist wieder ausgebaut (Hotfix 1.4.1). Die App verschiebt Fenster grundsätzlich nicht automatisch zwischen den Bildschirmen, siehe `docs/ARCHITECTURE.md` (Hold-to-swap). Nach Spielende bleibt Companion oben über ES-DE liegen; der Nutzer swappt selbst zurück.
 - **Quelle:** [ES-DE-/Companion-Ablauf](https://www.reddit.com/r/AynThor/comments/1xfj5ew/back_button_hero_130_one_button_many_possibilities/19ro34lzbhxb4/)
 
+## Bug — Bottom Recents liegt hinter dem AYN-Panel (intern gefunden, 2026-10-31)
+
+- **Ursache:** AYNs Assistentenpanel (`com.odin.dualscreen.assistant`, Typ `BOOT_PROGRESS`) liegt über jedem Accessibility-Overlay; System-Apps waren von der Panel-Behandlung ausgenommen.
+- **Stand 2026-10-31 (Owner-Entscheidung, auf dem Gerät bestätigt):** Das AYN-Panel ist die einzige System-Ausnahme und verhält sich wie ein normales Fenster unten: Recents versteckt es beim Öffnen und gibt es ohne Auswahl zurück; ein App-Start parkt es hinter seiner Karte. Der AYN-Button holt ein geparktes Panel immer mit einem Druck zurück (auch lang gedrückt). Karte schließen/„Alle schließen“ schließt es über einen Root-Druck auf AYNs eigene Taste, nie per force-stop. Teil des Hotfix 1.4.1.
+
 ## Bug — RetroArch verliert nach Swap + Fokuswechsel den Controller (intern gefunden, 2026-10-30)
 
 - **Ursache:** RetroArch setzt beim Fortsetzen (z. B. Swap zurück nach oben) seine Port-Zuordnung zurück und vergibt Port 1 an das erste Gerät, das sich meldet. AYNs Fokuswechsel schickt dabei ein künstliches Shift-rechts vom Android-Gerät „Virtual“. Kommt das zuerst an, meldet RetroArch „Virtual (0/0) not configured“, und das Pad landet auf Port 2 (keine Steuerung). Port-Reservierung in RetroArch brach Steuerkreuz und Stick; sichtbares Pausieren half, war aber zu störend.

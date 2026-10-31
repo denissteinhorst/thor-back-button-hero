@@ -46,6 +46,22 @@ WINDOW MANAGER WINDOWS (dumpsys window windows)
     }
 
     @Test
+    fun `AYN's assistant panel is the one system window treated as a panel`() {
+        val ayn = PanelWindows.windows(window("BOOT_PROGRESS", PanelWindows.AYN_PANEL_PACKAGE, uid = 1000)).single()
+        assertTrue(ayn.isAynPanel)
+        assertTrue(ayn.isPanel(17, 1240, 1080))
+        assertFalse(ayn.isPanel(0, 1240, 1080))
+        assertFalse(PanelWindows.windows(window("BOOT_PROGRESS", PanelWindows.AYN_PANEL_PACKAGE, uid = 1000,
+            frame = "[0,0][100,100]")).single().isPanel(17, 1240, 1080))
+        for (other in listOf(window("MAGNIFICATION_OVERLAY", PanelWindows.AYN_PANEL_PACKAGE, uid = 1000),
+            window("BOOT_PROGRESS", "com.odin.gameassistant", uid = 1000))) {
+            val window = PanelWindows.windows(other).single()
+            assertFalse(window.isAynPanel)
+            assertFalse(window.isPanel(17, 1240, 1080))
+        }
+    }
+
+    @Test
     fun `hidden window still has identity for restoration but a malformed block cannot claim an owner`() {
         val hidden = PanelWindows.windows(window(visible = false)).single()
         assertFalse(hidden.visible)

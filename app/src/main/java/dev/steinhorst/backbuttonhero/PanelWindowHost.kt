@@ -110,12 +110,14 @@ object PanelWindowHost {
                                 }
                                 windows.filter { it.visible && it.isPanel(display, width, height) }.forEach { window ->
                                     val info = runCatching { context.packageManager.getApplicationInfo(window.packageName, 0) }.getOrNull()
-                                    if (info == null || info.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 ||
-                                        window.packageName == app.packageName) return@forEach
+                                    if (info == null || window.packageName == app.packageName) return@forEach
+                                    if (!window.isAynPanel &&
+                                        info.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) return@forEach
                                     val id = ids[window.client] ?: return@forEach
                                     if (id !in held) {
                                         val token = windowToken(id) ?: return@forEach
-                                        held[id] = Held(PanelWindow(id, window.packageName, display, false), window.handle, token)
+                                        held[id] = Held(PanelWindow(id, window.packageName, display, false, window.isAynPanel),
+                                            window.handle, token)
                                     }
                                 }
                                 val ordered = held.values.sortedBy { entry -> windows.indexOfFirst { it.handle == entry.handle } }

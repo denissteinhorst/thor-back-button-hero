@@ -48,7 +48,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 
 | File | Lines | Purpose |
 |---|---|---|
-| `SwitcherService.kt` | 1761 | The accessibility service and runtime coordinator. Intercepts Back and the shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, controller focus, task-preserving screen swap, Active App Control, exceptions at runtime), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
+| `SwitcherService.kt` | 1759 | The accessibility service and runtime coordinator. Intercepts Back and the shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, controller focus, task-preserving screen swap, Active App Control, exceptions at runtime), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
 | `BackGestureMachine.kt` | 158 | The Back-press state machine, free of Android side effects: single tap vs. double tap vs. hold vs. tap-then-hold, including blocked gestures from app exceptions. Clock, scheduling and actions enter through small interfaces so the timing logic is unit-testable on the JVM. |
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
 | `PhysicalKeyTracker.kt` | 31 | Collapses duplicate shoulder-key events from the Thor's two mirrored controller input devices into one physical press/release cycle. |
@@ -70,7 +70,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 |---|---|---|
 | `AccessibilityAppSource.kt` | 100 | The only source of "which apps are running". A normal app cannot read other apps' tasks, so it reconstructs a most-recently-used list per display from the windows the accessibility service observes, filters a fixed ignore-set of launcher/system/OEM packages, and caches thumbnails in memory. |
 | `RunningApp.kt` | 15 | The `RunningApp` data class (package, label, icon, thumbnail) and the `AppSource` interface that `AccessibilityAppSource` implements. |
-| `SwitcherOverlay.kt` | 494 | The bottom-screen Recents, drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to a specific display. Carousel of cards, memory readout, Screenshot and Close all actions, empty state and controller navigation. Built from framework Views in code. |
+| `SwitcherOverlay.kt` | 503 | The bottom-screen Recents, drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window bound to a specific display. Carousel of cards, memory readout, Screenshot and Close all actions, empty state and controller navigation. Built from framework Views in code. |
 | `CardTouch.kt` | 45 | Touch arbitration for a switcher card: tap opens, upward swipe past a threshold closes, horizontal drags are handed to the scroller. Extracted so the gesture maths is testable without a window. |
 | `RecentsCarousel.kt` | 104 | Shared finger and controller paging with Quickstep's settling curve and velocity timing. |
 | `RecentsCardStyle.kt` | 72 | Card dimensions and corner radius read from the installed launcher, with local defaults. |
@@ -94,10 +94,10 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 
 | File | Lines | Purpose |
 |---|---|---|
-| `BottomPanels.kt` | 141 | Serializes capture, hide and show of full-screen frontend windows on the bottom display so a card always belongs to its panel. |
-| `PanelWindow.kt` | 66 | A panel as a window (id, owner, display, hidden), and the firmware dump parsing that finds it. |
+| `BottomPanels.kt` | 189 | Serializes capture, hide and show of full-screen frontend windows and AYN's assistant panel on the bottom display so a card always belongs to its panel. |
+| `PanelWindow.kt` | 77 | A panel as a window (id, owner, display, hidden), and the firmware dump parsing that finds it. |
 | `PanelConnection.kt` | 118 | Authenticated uid-0 socket to `PanelWindowHost`, started through `PService`. |
-| `PanelWindowHost.kt` | 238 | *(root)* Holds the panels' window binders and hides/restores them; an independent peer restores them if this process dies. |
+| `PanelWindowHost.kt` | 240 | *(root)* Holds the panels' window binders and hides/restores them; an independent peer restores them if this process dies. |
 | `FrontendParking.kt` | 188 | Parks a frontend's bottom activity on a private virtual display so it keeps running instead of being stopped. |
 | `ParkingPolicy.kt` | 17 | When to park, and the loop guard that leaves a frontend like iiSU alone. |
 | `TaskParker.kt` | 95 | *(root)* Moves the task onto the parking display and back, and reads running root tasks. |
@@ -144,7 +144,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 55 test classes, **328 tests**. Run by the gate. By area:
+The automated safety net. 55 test classes, **337 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|

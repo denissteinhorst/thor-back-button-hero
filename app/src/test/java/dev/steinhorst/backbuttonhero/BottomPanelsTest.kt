@@ -9,6 +9,7 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -105,6 +106,117 @@ class BottomPanelsTest {
         assertTrue(ready)
         assertEquals(listOf("list:-1", "capture:552"), f.events)
         assertFalse(requireNotNull(f.panels.cards(f.display.displayId).single().panel).hidden)
+    }
+
+    private fun Fixture.withAynPanel(): Fixture {
+        visible = listOf(PanelWindow(182, PanelWindows.AYN_PANEL_PACKAGE, display.displayId, false, covering = true)) + visible
+        return this
+    }
+
+    private fun Fixture.aynHidden() = requireNotNull(panels.cards(display.displayId).first { it.panel?.covering == true }.panel).hidden
+
+    @Test
+    fun `recents hides a covering panel to be seen and returns it when closed without a choice`() {
+        val f = Fixture().withAynPanel()
+        var ready = false
+        f.panels.prepareSwitcher(f.display) { ready = true }
+        assertTrue(ready)
+        assertEquals(listOf("list:-1", "capture:182", "hide:182", "capture:552"), f.events)
+        assertTrue(f.aynHidden())
+        assertTrue(f.panels.hasHiddenCovering)
+        assertNotNull(f.panels.cards(f.display.displayId).first().thumbnail)
+        f.events.clear()
+        f.panels.switcherClosed(chose = false)
+        assertEquals(listOf("show:182"), f.events)
+        assertFalse(f.aynHidden())
+        assertFalse(f.panels.hasHiddenCovering)
+    }
+
+    @Test
+    fun `a choice in recents keeps the covering panel parked until its button brings it back`() {
+        val f = Fixture().withAynPanel()
+        f.panels.prepareSwitcher(f.display) {}
+        f.panels.switcherClosed(chose = true)
+        f.panels.prepareLaunch(f.display) {}
+        assertTrue(f.aynHidden())
+        f.events.clear()
+        f.panels.showCovering()
+        assertEquals(listOf("show:182"), f.events)
+        assertFalse(f.aynHidden())
+        // The button's return ends suppression, so the next refresh leaves the panel visible.
+        f.events.clear()
+        f.panels.refresh(f.display)
+        assertEquals(listOf("list:-1"), f.events)
+        assertFalse(f.aynHidden())
+    }
+
+    @Test
+    fun `closing the covering card lets its owner close it and recents does not reopen it`() {
+        val f = Fixture().withAynPanel()
+        f.panels.prepareSwitcher(f.display) {}
+        var press: (() -> Unit)? = null
+        f.panels.closeCovering { done -> f.events += "press"; press = done }
+        f.panels.switcherClosed(chose = false)
+        assertEquals("press", f.events.last())
+        f.events.clear()
+        requireNotNull(press).invoke()
+        assertTrue(f.events.isEmpty())
+        assertTrue(f.aynHidden())
+    }
+
+    @Test
+    fun `a covering panel its owner reopens stays visible while launches keep other panels suppressed`() {
+        val f = Fixture()
+        f.panels.prepareLaunch(f.display) {}
+        f.withAynPanel()
+        f.visible = f.visible.map { if (it.id == 552) it.copy(hidden = false) else it }
+        f.events.clear()
+        f.panels.refresh(f.display)
+        assertEquals(listOf("list:-1", "capture:552", "hide:552"), f.events)
+        assertFalse(f.aynHidden())
+    }
+
+    @Test
+    fun `closing without a covering panel never presses its owner's button`() {
+        val f = Fixture()
+        f.panels.refresh(f.display)
+        f.panels.closeCovering { f.events += "press" }
+        f.panels.showCovering()
+        assertEquals(listOf("list:-1"), f.events)
+    }
+
+    @Test
+    fun `a panel already parked by a launch is not reopened when recents closes`() {
+        val f = Fixture().withAynPanel()
+        f.panels.prepareLaunch(f.display) {}
+        f.panels.prepareSwitcher(f.display) {}
+        f.events.clear()
+        f.panels.switcherClosed(chose = false)
+        assertTrue(f.events.isEmpty())
+        assertTrue(f.aynHidden())
+    }
+
+    @Test
+    fun `a failed hide or show stops without claiming the covering panel moved`() {
+        val f = Fixture().withAynPanel()
+        f.panels.refresh(f.display)
+        f.fail = true
+        f.panels.prepareSwitcher(f.display) { f.events += "ready" }
+        assertEquals("ready", f.events.last())
+        assertFalse(f.panels.hasHiddenCovering)
+        f.fail = false
+        f.panels.prepareSwitcher(f.display) {}
+        f.fail = true
+        f.panels.showCovering()
+        f.panels.switcherClosed(chose = false)
+        assertFalse(f.panels.hasPanels)
+    }
+
+    @Test
+    fun `the covering flag survives the root channel and older replies default to not covering`() {
+        val panel = PanelWindow(182, PanelWindows.AYN_PANEL_PACKAGE, 4, hidden = true, covering = true)
+        assertEquals(panel, PanelWindow.parse(panel.json()))
+        assertFalse(PanelWindow.parse(panel.json().apply { remove("covering") }).covering)
     }
 
     @Test
