@@ -165,6 +165,7 @@ nav a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 @media (max-width: 400px) {
   .brand { font-size: .95rem; gap: .5rem; }
+  .hero .cta .btn { font-size: .88rem; padding-inline: .5rem; }
 }
 
 /* buttons */
@@ -177,6 +178,8 @@ nav a { min-height: 44px; display: inline-flex; align-items: center; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--accent) 80%, transparent); }
 .btn.primary:hover { background: var(--accent); filter: brightness(1.08); box-shadow: 0 14px 32px -12px color-mix(in srgb, var(--accent) 90%, transparent); }
 #dl-version:not(:empty) { font-weight: 500; opacity: .85; }
+.btn-icon { justify-content: center; width: 52px; padding: 0; }
+.btn-icon svg { width: 24px; height: 24px; fill: currentColor; }
 
 /* hero */
 .hero-band { position: relative; overflow: hidden; }
@@ -716,7 +719,10 @@ footer .small { grid-column: 1 / -1; margin: 0; padding-top: 1rem; }
   .hero { padding-top: 2rem; gap: 1.5rem; }
   .hero-art { max-width: 112px; }
   .lead { font-size: 1.1rem; }
-  .cta .btn { flex: 1 1 100%; justify-content: center; }
+  .cta .btn { flex: 4 1 0; min-width: 0; justify-content: center; padding-inline: .75rem; white-space: nowrap; }
+  .cta .btn.primary { flex-basis: 100%; }
+  /* the explainer gets the room, GitHub keeps an icon: 80/20 */
+  .cta .btn-icon { flex: 1 1 0; width: auto; }
   #explainer-open { width: 100%; justify-content: center; text-align: center; padding-inline: 1rem; font-size: .95rem; }
   .show-tabs button { font-size: 1rem; padding: .5rem .9rem; white-space: nowrap; }
   .showcase { margin-bottom: 3rem; }

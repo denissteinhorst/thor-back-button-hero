@@ -166,10 +166,13 @@
     frame.addEventListener('load', fit);
     if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
     else window.addEventListener('resize', fit);
-    explainerOpen.addEventListener('click', function (e) {
-      e.preventDefault();
-      explainer.showModal();
-      fit();
+    // The header's Try button and the showcase button both open it.
+    document.querySelectorAll('[data-explainer]').forEach(function (trigger) {
+      trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        explainer.showModal();
+        fit();
+      });
     });
     explainer.querySelector('.explainer-close').addEventListener('click', function () { explainer.close(); });
     explainer.addEventListener('click', function (e) { if (e.target === explainer) explainer.close(); });
