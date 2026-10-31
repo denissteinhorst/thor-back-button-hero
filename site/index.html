@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Back Button Hero for the AYN Thor</title>
 <meta name="description" content="Give the Back button on your AYN Thor more tricks: a bottom-screen app switcher, screen swap and shortcuts on L1, L2, R1, R2 and the D-pad. Free, open source, no rooting needed.">
 <meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
@@ -24,7 +24,10 @@
   <div class="wrap bar">
     <a class="brand" href="#main" aria-label="Back Button Hero, top of page"><img src="assets/favicon.png" alt="" width="28" height="28"> Back Button Hero</a>
     <div class="bar-end">
-      <nav aria-label="Main">
+      <button class="menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="l1" d="M4 7h16"/><path class="l2" d="M4 12h16"/><path class="l3" d="M4 17h16"/></svg>
+      </button>
+      <nav aria-label="Main" id="site-nav">
         <a href="#features">Features</a>
         <a href="#changelog">Changelog</a>
         <a href="#install">Install</a>

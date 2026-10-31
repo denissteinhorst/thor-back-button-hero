@@ -4,8 +4,29 @@
 
   var REPO = 'denissteinhorst/thor-back-button-hero';
 
-  // Showcase tabs (video / screenshots) and the screenshot stepper.
   document.documentElement.classList.add('js');
+
+  // Narrow screens fold the navigation into a menu; without JavaScript it scrolls sideways instead.
+  var menuBtn = document.getElementById('menu-toggle');
+  var header = document.querySelector('.top');
+  if (menuBtn && header) {
+    menuBtn.hidden = false;
+    var setMenu = function (open) {
+      header.classList.toggle('menu-open', open);
+      menuBtn.setAttribute('aria-expanded', String(open));
+    };
+    menuBtn.addEventListener('click', function () { setMenu(!header.classList.contains('menu-open')); });
+    document.getElementById('site-nav').addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('click', function (e) { if (!header.contains(e.target)) setMenu(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.classList.contains('menu-open')) { setMenu(false); menuBtn.focus(); }
+    });
+    // Leaving the narrow layout must not strand an open menu.
+    var wide = window.matchMedia('(min-width: 861px)');
+    if (wide.addEventListener) wide.addEventListener('change', function () { setMenu(false); });
+  }
+
+  // Showcase tabs (video / screenshots) and the screenshot stepper.
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.show-tabs [role="tab"]'));
   function selectTab(tab, focus) {
     tabs.forEach(function (t) {
