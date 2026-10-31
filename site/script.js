@@ -136,20 +136,38 @@
     // The explainer is laid out at a fixed 640×640, so it is scaled rather than reflowed.
     // Full screen on small screens, where it may also grow past its own size.
     var fullScreen = window.matchMedia('(max-width: 800px)');
+    var frameH = 640;
+    // A tall portrait screen gets the explainer's touch layout: a page as tall as the screen
+    // allows, with controls sized for thumbs. The page's own light/dark choice wins over the
+    // system setting the explainer would otherwise follow.
+    var load = function () {
+      var w = stage.clientWidth, h = stage.clientHeight;
+      var touch = fullScreen.matches && w < 600 && h > w * 1.3;
+      frameH = touch ? Math.min(1200, Math.round(640 * h / w)) : 640;
+      frame.style.height = frameH + 'px';
+      var src = explainerOpen.getAttribute('href') + '?theme=' + currentTheme() + (touch ? '&touch' : '');
+      if (frame.getAttribute('src') !== src) frame.src = src;
+    };
     var fit = function () {
-      var s = Math.min(stage.clientWidth / 640, stage.clientHeight / 640);
+      if (!explainer.open) return;
+      load();
+      // The touch layout may need more height than the screen's shape gives it; the frame then
+      // takes the content's full height and scales down, so nothing is ever clipped or scrolled.
+      try {
+        var content = frame.contentDocument.querySelector('.touch .stage');
+        if (content && content.offsetHeight > frameH) {
+          frameH = content.offsetHeight;
+          frame.style.height = frameH + 'px';
+        }
+      } catch (err) { /* not loaded yet; the load event fits again */ }
+      var s = Math.min(stage.clientWidth / 640, stage.clientHeight / frameH);
       stage.style.setProperty('--s', fullScreen.matches ? s : Math.min(1, s));
     };
+    frame.addEventListener('load', fit);
     if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
     else window.addEventListener('resize', fit);
     explainerOpen.addEventListener('click', function (e) {
       e.preventDefault();
-      // The page's own light/dark choice wins over the system setting the explainer would otherwise follow.
-      var theme = currentTheme();
-      if (frame.getAttribute('data-theme') !== theme) {
-        frame.setAttribute('data-theme', theme);
-        frame.src = explainerOpen.getAttribute('href') + '?theme=' + theme;
-      }
       explainer.showModal();
       fit();
     });

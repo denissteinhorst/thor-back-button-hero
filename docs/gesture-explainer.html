@@ -13,6 +13,8 @@
       t = !q.has('autoplay') && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     document.documentElement.setAttribute('data-theme', t);
+    // ?touch: the landing page's full-screen phone view; a taller page with thumb-sized controls.
+    if (q.has('touch')) document.documentElement.classList.add('touch');
   })();
 </script>
 <style>
@@ -358,6 +360,23 @@
   .controls.compact { gap: 6px; }
   .controls.compact button { padding: 4px 9px; }
   .device + .controls { margin-top: 4px; }
+  /* Touch: the page takes the height of the frame it is shown in (taller than 640px, scaled
+     down to a phone's width), so caption and buttons are sized to stay readable and tappable. */
+  html.touch, html.touch body { height: 100vh; }
+  /* All buttons share one even two-column grid; the groups dissolve into it. */
+  /* The stage grows past the frame rather than clipping; the landing page measures it and scales to fit. */
+  .touch .stage {
+    display: grid; grid-template-columns: repeat(2, 296px); justify-content: center; align-content: center; gap: 10px 16px;
+    height: auto; min-height: 100vh; box-sizing: border-box; padding: 14px 0;
+  }
+  .touch .caption, .touch .sub, .touch .device { grid-column: 1 / -1; justify-self: center; }
+  .touch .caption { font-size: 36px; height: auto; }
+  .touch .sub { font-size: 25px; height: auto; margin: -6px 0 0; }
+  .touch .device { margin-bottom: 4px; }
+  .touch .controls { display: contents; }
+  .touch .controls button, .touch .controls.compact button {
+    min-height: 72px; padding: 6px 8px; font-size: 25px; border-width: 2px; border-radius: 16px;
+  }
   button {
     background: #f2f5fb; color: #1b2430; border: 1.5px solid #c9d3e6; border-radius: 8px;
     padding: 4px 11px; font-size: 13px; line-height: 1.2; font-weight: 600; cursor: pointer; font-family: inherit;
