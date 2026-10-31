@@ -15,6 +15,8 @@
     document.documentElement.setAttribute('data-theme', t);
     // ?touch: the landing page's full-screen phone view; a taller page with thumb-sized controls.
     if (q.has('touch')) document.documentElement.classList.add('touch');
+    // the recorded video stays exactly as it was: no hotkey drawer while recording
+    if (q.has('autoplay')) document.documentElement.classList.add('recording');
   })();
 </script>
 <style>
@@ -517,6 +519,77 @@
   .featureDesc { font-size: 16px; font-weight: 500; line-height: 1.4; color: #e4eaf7; max-width: 460px; margin-top: 6px; }
   .featureCount { font-size: 16px; font-weight: 600; color: #c9d7ef; letter-spacing: 0.4px; }
 
+  /* -- Available Hotkeys: a call-to-action bar under the controls; its drawer opens upward
+     over the device and the controls, from the top of the page down to the bar. -- */
+  .hotkeysToggle {
+    display: flex; align-items: center; justify-content: center; gap: 6px; width: 608px; margin-top: 4px; padding: 5px 11px;
+    background: #c4141a; color: #ffffff; border-color: #c4141a; font-size: 13px;
+    position: relative; z-index: 26; /* stays above the scrim, so it closes the drawer too */
+  }
+  html[data-theme="dark"] .hotkeysToggle { background: #ff5a5f; color: #111111; border-color: #ff5a5f; }
+  .hotkeysToggle:active { filter: brightness(1.08); }
+  .hotkeysToggle svg { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.25s; }
+  .hotkeysToggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .recording .hotkeysToggle { display: none; }
+  .hotkeys {
+    position: fixed; z-index: 25; left: 16px; right: 16px; bottom: var(--hk-bottom, 60px);
+    max-height: calc(100vh - var(--hk-bottom, 60px) - 12px); overflow-y: auto; box-sizing: border-box; padding: calc(2 * var(--u)); border-radius: 14px;
+    background: #ffffff; color: #1b2430; box-shadow: 0 -6px 30px rgba(10,20,50,0.28), 0 0 0 1px #d6deee;
+    clip-path: inset(100% 0 0 0 round 14px); transition: clip-path 0.3s ease;
+  }
+  .hotkeys.open { clip-path: inset(0 0 0 0 round 14px); }
+  .hotkeys[hidden], .hkScrim[hidden] { display: none; }
+  .hkScrim { position: fixed; inset: 0; z-index: 24; background: rgba(8, 11, 18, 0.55); opacity: 0; transition: opacity 0.3s; }
+  .hkScrim.open { opacity: 1; }
+  /* Drawer content on one spacing unit (--u): 1u between a heading and its text, 2u between blocks,
+     one left edge for everything; the touch layout only scales the unit and the type. */
+  .hotkeys { --u: 8px; }
+  .hkTitle { margin: 0 0 var(--u); font-size: 17px; line-height: 1.25; font-weight: 700; }
+  .hkIntro { margin: 0 0 calc(2 * var(--u)); max-width: 62ch; font-size: 13px; line-height: 1.45; color: #3a4658; }
+  .hkList {
+    list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: var(--u) calc(2 * var(--u)); font-size: 12px; line-height: 1.35;
+  }
+  .hkList li { position: relative; padding-left: calc(1.5 * var(--u)); }
+  /* the marker sits on the middle of the first line */
+  .hkList li::before {
+    content: ""; position: absolute; left: 0; top: calc(0.675em - 0.25em); width: 0.5em; height: 0.5em; border-radius: 0.15em; background: #c4141a;
+  }
+  /* the default for every button, so it stands slightly apart from the actions */
+  .hkList .hkNone {
+    grid-column: 1 / -1; justify-self: start; margin-bottom: var(--u); padding: calc(0.5 * var(--u)) calc(1.5 * var(--u)); border-radius: 999px;
+    font-weight: 700; background: rgba(196, 20, 26, 0.08); box-shadow: inset 0 0 0 1px rgba(196, 20, 26, 0.25);
+  }
+  .hkList .hkNone::before { content: none; }
+  .hkInfo {
+    margin: calc(2 * var(--u)) 0 0; padding: var(--u) calc(1.5 * var(--u)); border-radius: var(--u); font-size: 12px; line-height: 1.45;
+    background: rgba(47, 111, 237, 0.08); box-shadow: inset 3px 0 0 #2f6fed; color: #3a4658;
+  }
+  .hkInfo strong { display: block; margin-bottom: calc(0.5 * var(--u)); color: #1b2430; }
+  html[data-theme="dark"] .hkInfo { background: rgba(91, 141, 255, 0.12); box-shadow: inset 3px 0 0 #5b8dff; color: #b4bfd2; }
+  html[data-theme="dark"] .hkInfo strong { color: #e4eaf7; }
+  html[data-theme="dark"] .hkList .hkNone { background: rgba(255, 90, 95, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 90, 95, 0.35); }
+  html[data-theme="dark"] .hotkeys { background: #1a1d24; color: #e4eaf7; box-shadow: 0 -6px 30px rgba(0,0,0,0.6), 0 0 0 1px #343a48; }
+  html[data-theme="dark"] .hkIntro { color: #b4bfd2; }
+  html[data-theme="dark"] .hkList li::before { background: #ff5a5f; }
+  /* the 640px page makes room for the bar: slightly flatter buttons, a little less air (never while recording) */
+  html:not(.recording):not(.touch) .stage { gap: 2px; }
+  html:not(.recording):not(.touch) .device { margin: -12px 0 -12px; }
+  html:not(.recording):not(.touch) .controls button { padding-top: 2px; padding-bottom: 2px; }
+  /* the scaled device leaves about 14px of air above the controls; the bar keeps the same distance below them */
+  html:not(.recording):not(.touch) .hotkeysToggle { margin-top: 12px; padding-top: 3px; padding-bottom: 3px; }
+  /* touch: thumb-sized, and the other buttons give up a little height for the bar */
+  .touch .controls button, .touch .controls.compact button { min-height: 62px; font-size: 23px; }
+  .touch .hotkeysToggle { grid-column: 1 / -1; width: auto; min-height: 72px; margin-top: 6px; font-size: 26px; border-width: 2px; border-radius: 16px; }
+  /* 8px wider on each side than the 608px button grid, so no button peeks out behind it */
+  .touch .hotkeys { --u: 14px; left: 8px; right: 8px; padding: calc(2 * var(--u)); border-radius: 24px; }
+  .touch .hkTitle { font-size: 30px; }
+  .touch .hkIntro { font-size: 22px; }
+  .touch .hkList { grid-template-columns: repeat(2, 1fr); font-size: 21px; }
+  .touch .hkInfo { font-size: 20px; box-shadow: inset 5px 0 0 #2f6fed; }
+  html[data-theme="dark"].touch .hkInfo { box-shadow: inset 5px 0 0 #5b8dff; }
+  @media (prefers-reduced-motion: reduce) { .hotkeys, .hkScrim, .hotkeysToggle svg { transition: none; } }
+
   /* -- dark theme: the line art is inverted, the light surfaces become dark ones -- */
   html[data-theme="dark"], html[data-theme="dark"] body { background: #0f0f10; }
   html[data-theme="dark"] .device { background: #0f0f10; }
@@ -687,6 +760,44 @@
       <button id="btnCloseAll" onclick="playCloseAll()">Close all</button>
       <button id="btnPause" onclick="playPause()">L2 + R2</button>
     </div>
+    <button type="button" class="hotkeysToggle" id="hotkeysToggle" aria-expanded="false" aria-controls="hotkeys">
+      Available Hotkeys
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+    </button>
+  </div>
+
+  <div class="hkScrim" id="hkScrim" hidden></div>
+  <div class="hotkeys" id="hotkeys" role="region" aria-labelledby="hkTitle" hidden>
+    <h2 class="hkTitle" id="hkTitle">Available Hotkeys</h2>
+    <p class="hkIntro">Hold the Back Button and press a shoulder button (L1, L2, R1, R2) or a D-pad direction. You decide what each one does: every button and every direction can run any of these actions.</p>
+    <ul class="hkList">
+      <li class="hkNone">Do nothing (works as usual in your game) or:</li>
+      <li>Launch an app</li>
+      <li>Home</li>
+      <li>Recents (app switcher)</li>
+      <li>Take screenshot</li>
+      <li>Navigation-Flick Left</li>
+      <li>Navigation-Flick Right</li>
+      <li>Volume up</li>
+      <li>Volume down</li>
+      <li>Brightness up</li>
+      <li>Brightness down</li>
+      <li>Set controller focus</li>
+      <li>Active App Control</li>
+      <li>Open Quick Settings</li>
+      <li>Open notifications</li>
+      <li>Wi-Fi and internet controls</li>
+      <li>Bluetooth settings</li>
+      <li>Night Light settings</li>
+      <li>Extra dim settings</li>
+      <li>Display settings</li>
+      <li>Sound settings</li>
+      <li>Location settings</li>
+      <li>Cast settings</li>
+      <li>Do Not Disturb settings</li>
+      <li>Battery Saver settings</li>
+    </ul>
+    <p class="hkInfo"><strong>Granular per-app control, if you want it.</strong> You can even decide for every single app which hotkeys work there and which don't. Set it up under Exceptions in the app.</p>
   </div>
 
   <div class="featureIntro" id="featureIntro">
@@ -1761,6 +1872,36 @@
       setTimeout(playDpadBrightness, 100);
     }
   }
+</script>
+<script>
+  // Available Hotkeys: the drawer reaches from the top of the page down to its bar and
+  // unrolls upward from it. Esc or the bar closes it again.
+  (function () {
+    const toggle = document.getElementById('hotkeysToggle');
+    const drawer = document.getElementById('hotkeys');
+    const scrim = document.getElementById('hkScrim');
+    function place() {
+      drawer.style.setProperty('--hk-bottom', (window.innerHeight - toggle.getBoundingClientRect().top + 8) + 'px');
+    }
+    function setOpen(open) {
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        place();
+        drawer.hidden = scrim.hidden = false;
+        requestAnimationFrame(() => requestAnimationFrame(() => { drawer.classList.add('open'); scrim.classList.add('open'); }));
+      } else {
+        drawer.classList.remove('open');
+        scrim.classList.remove('open');
+        const done = () => { if (!drawer.classList.contains('open')) drawer.hidden = scrim.hidden = true; };
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) done();
+        else drawer.addEventListener('transitionend', done, { once: true });
+      }
+    }
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    scrim.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false); });
+    window.addEventListener('resize', place);
+  })();
 </script>
 </body>
 </html>

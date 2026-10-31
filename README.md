@@ -29,7 +29,7 @@
 >
 > I don't earn anything from this app and don't even know how many people use it. If it helps you, a [star on GitHub](https://github.com/denissteinhorst/thor-back-button-hero) would mean a lot.
 >
-> [Download the latest release][release-url] · [Try the interactive explainer][explainer-url]
+> [Download the latest release][release-url] · [Try the App-Simulation][explainer-url]
 >
 > **More information, the video and every settings page:** [the website][pages-url]
 
@@ -364,7 +364,7 @@ detail for people who want to understand or work on it:
   the optimizations that were tried and not kept.
 - [Thor system Recents reference](docs/THOR-RECENTS.md) — what the AYN launcher's
   Recents does, and how the bottom Recents copies it.
-- [Interactive gesture explainer][explainer-url] — a clickable device diagram
+- [App-Simulation][explainer-url] — a clickable device diagram
   showing what each Back-button gesture does. Self-contained; open the
   downloaded file in any browser.
 - [Architecture](docs/ARCHITECTURE.md) — the main components, how a gesture
