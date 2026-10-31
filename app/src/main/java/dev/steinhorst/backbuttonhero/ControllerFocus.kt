@@ -24,9 +24,16 @@ class ControllerFocus(
     /** True when [target] resolves to the top display, from the setting AYN's own tool keeps current. */
     fun targetIsTop(target: String): Boolean = resolveValue(target, requested ?: currentValue()) == TOP_VALUE
 
-    /** The current route, retained before Recents temporarily takes controller input. */
-    fun currentTarget(): String =
-        if ((requested ?: currentValue()) == TOP_VALUE) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM
+    /**
+     * The current route, retained before Recents temporarily takes controller input. AYN's
+     * Auto-lock must survive that round trip: restoring it as a fixed screen would lock the
+     * controller there until the user resets it in AYN's settings.
+     */
+    fun currentTarget(): String = when (requested ?: currentValue()) {
+        TOP_VALUE -> Prefs.DISPLAY_TOP
+        BOTTOM_VALUE -> Prefs.DISPLAY_BOTTOM
+        else -> AUTO_TARGET
+    }
 
     fun run(target: String, onComplete: ((Boolean) -> Unit)? = null) {
         if (!PService.cachedAvailable()) {
@@ -73,12 +80,17 @@ class ControllerFocus(
         const val FOCUS_SETTING = "screen_focus_lock"
         const val TOP_VALUE = "1"
         const val BOTTOM_VALUE = "2"
+        /** AYN's "Auto-lock": the route follows the screen last touched. */
+        const val AUTO_VALUE = "0"
+        /** Only a restore target; never stored in [Prefs]. */
+        const val AUTO_TARGET = "auto"
 
         fun commandSucceeded(output: String?): Boolean = output?.trim()?.endsWith("OK") == true
 
         fun resolveValue(target: String, current: String?): String = when (target) {
             Prefs.DISPLAY_TOP -> TOP_VALUE
             Prefs.DISPLAY_BOTTOM -> BOTTOM_VALUE
+            AUTO_TARGET -> AUTO_VALUE
             else -> if (current == TOP_VALUE) BOTTOM_VALUE else TOP_VALUE
         }
     }

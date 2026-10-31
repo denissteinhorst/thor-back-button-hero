@@ -18,6 +18,11 @@ class ControllerFocusTest {
     }
 
     @Test
+    fun `the auto-lock restore target resolves to AYN's auto-lock value`() {
+        assertEquals(ControllerFocus.AUTO_VALUE, ControllerFocus.resolveValue(ControllerFocus.AUTO_TARGET, "2"))
+    }
+
+    @Test
     fun `toggle flips known values and safely defaults to top`() {
         assertEquals(ControllerFocus.BOTTOM_VALUE, ControllerFocus.resolveValue(Prefs.FOCUS_TOGGLE, "1"))
         assertEquals(ControllerFocus.TOP_VALUE, ControllerFocus.resolveValue(Prefs.FOCUS_TOGGLE, "2"))
@@ -57,6 +62,18 @@ class ControllerFocusRoutingTest {
         assertTrue(focus.targetIsTop(Prefs.DISPLAY_TOP))
         routeIs(ControllerFocus.TOP_VALUE)
         assertFalse(focus.targetIsTop(Prefs.DISPLAY_BOTTOM))
+    }
+
+    @Test
+    fun `the retained route keeps fixed screens and auto-lock`() {
+        routeIs(ControllerFocus.TOP_VALUE)
+        assertEquals(Prefs.DISPLAY_TOP, focus.currentTarget())
+        routeIs(ControllerFocus.BOTTOM_VALUE)
+        assertEquals(Prefs.DISPLAY_BOTTOM, focus.currentTarget())
+        routeIs(ControllerFocus.AUTO_VALUE)
+        assertEquals(ControllerFocus.AUTO_TARGET, focus.currentTarget())
+        routeIs(null)
+        assertEquals(ControllerFocus.AUTO_TARGET, focus.currentTarget())
     }
 
     @Test

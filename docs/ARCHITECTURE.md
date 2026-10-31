@@ -137,7 +137,8 @@ the service may draw accessibility overlays.
 
 **The app never switches the controller focus on the user's behalf.** The route changes only
 when the user triggers it: an assigned controller-focus shortcut, or the opt-in controller
-navigation in Recents, which borrows the route and restores it on exit. Swaps, launches and window
+navigation in Recents, which borrows the route and restores it on exit, AYN's Auto-lock (`0`)
+included. Swaps, launches and window
 changes leave the route where it is, for every app. An automatic route-follows-swap for RetroArch
 (RetroArch hands port 1 to the first device it hears after a resume, and AYN's focus commit comes
 from Android's "Virtual" device) shipped as an experiment in 1.4.0 and was removed again in favor

@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 326 JVM tests pass |
+| `testDebugUnitTest` | All 328 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 55 classes, 326 tests
+### Base — JVM tests (Robolectric + JUnit), 55 classes, 328 tests
 
 Everything the gate can verify without hardware.
 
