@@ -111,7 +111,6 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `ControllerFocus.kt` | 85 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
 | `FocusIndicatorOverlay.kt` | 145 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
 | `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
-| `PadPortClaim.kt` | 39 | The experimental RetroArch controller-port measures (`EXPERIMENTAL`). |
 | `DpadOverlay.kt` | 81 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
 | `LevelSteps.kt` | 17 | Pure step arithmetic for volume and brightness (15 equal brightness steps). |
@@ -146,7 +145,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 57 test classes, **336 tests**. Run by the gate. By area:
+The automated safety net. 56 test classes, **332 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
@@ -156,7 +155,7 @@ The automated safety net. 57 test classes, **336 tests**. Run by the gate. By ar
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
 | Tasks, swap, frontends | `TaskMovePolicyTest`, `SwapReturnTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
-| Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest`, `PadPortClaimTest` |
+| Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
 | Other | `ShellTest`, `UpdateCheckerParseTest` (release parsing, semver ordering, legacy tags, rejected inputs), `ResourceIntegrityTest` (EN/DE string parity), `SmokeTest` |
 | Support | `support/ViewTree.kt` renders a View hierarchy to deterministic text — the snapshot format, platform-independent unlike pixel screenshots. `support/Golden.kt` compares against a golden file, or rewrites it when `UPDATE_GOLDENS=1` (see the golden rule in [`TESTING.md`](TESTING.md)). `support/ViewTreeSmokeTest.kt` verifies the renderer itself. |
 

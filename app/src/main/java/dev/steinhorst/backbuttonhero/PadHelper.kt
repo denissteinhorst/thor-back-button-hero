@@ -123,11 +123,6 @@ class PadHelper(
         runCatching { client?.outputStream?.write("NAV $key\n".toByteArray()) }
     }
 
-    /** A stick report inside the dead zone, so the pad is the first device a game hears from. */
-    fun nudge() {
-        runCatching { client?.outputStream?.write("NUDGE\n".toByteArray()) }
-    }
-
     private fun serve() {
         val listener = runCatching { LocalServerSocket(socketName) }.getOrElse {
             Log.w(TAG, "socket: ${it.javaClass.simpleName}")

@@ -135,6 +135,14 @@ window and opens `SettingsActivity` on the top screen inside the indicator popup
 The settings screen previews changes through `SwitcherService.previewFocusIndicator`, because only
 the service may draw accessibility overlays.
 
+**The app never switches the controller focus on the user's behalf.** The route changes only
+when the user triggers it: an assigned controller-focus shortcut, or the opt-in controller
+navigation in Recents, which borrows the route and restores it on exit. Swaps, launches and window
+changes leave the route where it is, for every app. An automatic route-follows-swap for RetroArch
+(RetroArch hands port 1 to the first device it hears after a resume, and AYN's focus commit comes
+from Android's "Virtual" device) shipped as an experiment in 1.4.0 and was removed again in favor
+of this rule.
+
 ### Active App Control — `AppControl` and `AppControlPrompt`
 
 A Back + button action that minimizes or force-closes the app in front. Per button it stores a mode
@@ -414,22 +422,6 @@ swapped back first. Window events trigger the check only while a swapped screen 
 `TaskParker query` reads running root tasks, since recent tasks outlive a closed app. A failed
 query never counts as closed. An app merely left for Home keeps the swap. Closing it later
 from bottom Recents re-runs the check, because that changes no window.
-
-**Experimental: RetroArch controller port (`PadPortClaim.EXPERIMENTAL`).** RetroArch resets its
-port assignment when Android resumes it, which happens on a swap back to the top screen, and
-gives port 1 to the first device it hears from. AYN's controller-focus commit (its own switch and
-`ControllerFocus`) injects a key from Android's "Virtual" device. If that key reaches RetroArch
-first, "Virtual (0/0)" takes port 1 and the pad is left unusable on port 2 until another reset.
-Two measures avoid that, RetroArch only, as an owner-approved app-specific exception:
-- When RetroArch is the controlled app, hold-to-swap first moves the controller route to the
-  screen RetroArch will land on, with the usual focus pictogram, then moves the tasks. The
-  route's injected key reaches RetroArch before its reset, and the user needs no focus switch.
-- When RetroArch newly comes to the front on a screen, the service sends the pad helper's
-  `NUDGE` after 0.6 s and 1.5 s ([`HELPER.md`](HELPER.md)), so the pad claims port 1.
-
-The injected "Virtual" key does not reach accessibility services, so it cannot be filtered.
-Visibly pausing RetroArch also re-assigns its ports, but that was rejected as too disruptive.
-Setting `EXPERIMENTAL` to false switches both measures off.
 
 `TopRecentsFocus` completes AYN's paused Overview handoff with a non-Home intent before
 keyboard initialization. A successful injection alone does not make navigation ready:

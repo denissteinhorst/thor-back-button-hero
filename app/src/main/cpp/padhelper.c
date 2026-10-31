@@ -269,26 +269,6 @@ static void navigation_key(int key) {
         write(ufd, &sync, sizeof sync) != sizeof sync) stop = 1;
 }
 
-// Last left-stick X the game received, so a nudge returns exactly to where the player holds it.
-static int stick_x = 0;
-
-// RetroArch gives port 1 to the first device it hears from after resetting its ports. AYN's
-// focus switch injects a key from Android's "Virtual" device, which would win that race and
-// leave the pad on port 2. One tiny stick report claims port 1 for the pad first. 200 of 32767
-// clears Android's flat range but stays far inside any game's dead zone.
-static void nudge_stick(void) {
-    if (ufd < 0) return;
-    struct input_event event = { .type = EV_ABS, .code = ABS_X, .value = stick_x > 0 ? stick_x - 200 : stick_x + 200 };
-    struct input_event sync = { .type = EV_SYN, .code = SYN_REPORT };
-    if (write(ufd, &event, sizeof event) != sizeof event ||
-        write(ufd, &sync, sizeof sync) != sizeof sync) { stop = 1; return; }
-    // Span two frames, as for navigation keys, so Android reports the change at all.
-    usleep(40000);
-    event.value = stick_x;
-    if (write(ufd, &event, sizeof event) != sizeof event ||
-        write(ufd, &sync, sizeof sync) != sizeof sync) stop = 1;
-}
-
 // Directions the focused app keeps while Back is held (bits: up 1, down 2, left 4, right 8).
 static int pass_mask = 0;
 
@@ -311,7 +291,6 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
-        if (strcmp(line, "NUDGE") == 0) nudge_stick();
         line = newline + 1;
     }
     size_t remaining = *used - (size_t)(line - buffer);
@@ -367,7 +346,6 @@ int main(int argc, char **argv) {
             struct input_event *e = &evs[i];
             if (e->type == EV_KEY && e->code == KEY_BACK) back = e->value != 0;
             if (e->type == EV_KEY && e->code == KEY_HOME) home = e->value != 0;
-            if (e->type == EV_ABS && e->code == ABS_X) stick_x = e->value;
             if (e->type == EV_ABS && (e->code == ABS_HAT0X || e->code == ABS_HAT0Y)) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
                 // A press that starts while Back is held is ours until it is released, even if Back

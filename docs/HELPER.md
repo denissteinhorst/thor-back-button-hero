@@ -92,15 +92,6 @@ over a new pad. Without the helper, the focus-taking overlay is only attached wh
 has at least one allowed D-pad shortcut; a blocked direction pressed alongside an allowed one
 is still swallowed by the overlay in that fallback.
 
-### RetroArch port nudge (experimental)
-
-`NUDGE` makes the clone report the left stick 200 (of 32767) away from where the player holds it,
-then back, two frames apart. That clears Android's flat range but stays inside any dead zone.
-RetroArch gives port 1 to the first device it hears from after Android resumes it. AYN's focus
-switch commits with a key from Android's "Virtual" device, which would otherwise win that race.
-The app sends `NUDGE` only when RetroArch comes to the front, behind `PadPortClaim.EXPERIMENTAL`;
-see [`ARCHITECTURE.md`](ARCHITECTURE.md). Without the helper there is no nudge.
-
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one
