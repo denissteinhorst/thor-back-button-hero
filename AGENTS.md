@@ -46,6 +46,20 @@ a feedback topic, remind the project owner about related open points and identif
 same-area synergies. Do not silently expand scope: propose the synergy and let the
 project owner decide whether it belongs in the current change.
 
+### Community feedback sources
+
+The official Reddit release posts are the primary community-feedback sources:
+
+- [v1.4.0](https://www.reddit.com/r/AynThor/comments/1xjw6mi/thor_back_button_hero_v140_out_now/)
+- [v1.3.0](https://www.reddit.com/r/AynThor/comments/1xfj5ew/back_button_hero_130_one_button_many_possibilities/)
+- [Initial release](https://www.reddit.com/r/AynThor/comments/1xf70dc/thor_back_button_hero/)
+
+Keep `FEEDBACK.md` concise: one bug/request per bullet, with the reporter and source.
+Keep open items above a separate implemented/resolved list. Check the current code
+and later reports before marking something resolved; a release announcement alone
+does not establish that a reported setup works. Label questions and unverified reports
+accordingly, and state any limitations of the retrieved Reddit comments.
+
 ## Development workflow with the project owner
 
 During development, the physical Android device is normally connected over USB with
