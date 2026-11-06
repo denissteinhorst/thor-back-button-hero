@@ -326,12 +326,11 @@ class BackGestureMachineTest {
 
     @Test
     fun `fully native Back can explain a hold without injecting or consuming a gesture`() {
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
         assertEquals(listOf(prefs.holdMs), scheduler.pending.values.toList())
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, repeat = 1))
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, repeat = 1), 1)
         scheduler.fireAll()
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP), 0)
         scheduler.fireAll()
         assertEquals(1, actions.blockedHoldNotices)
         assertEquals(emptyList<Boolean>(), actions.nativeBacks)
@@ -342,36 +341,44 @@ class BackGestureMachineTest {
 
     @Test
     fun `short fully native Back presses and reset cancel the notice`() {
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP), 0)
         scheduler.fireAll()
         assertEquals(0, actions.blockedHoldNotices)
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
         machine.reset()
         scheduler.fireAll()
         assertEquals(0, actions.blockedHoldNotices)
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
         scheduler.fireAll()
         assertEquals(1, actions.blockedHoldNotices)
     }
 
     @Test
     fun `mirrored native Back devices share one notice and release independently`() {
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 1))
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 2))
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 1))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 1), 1)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 2), 2)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 1), 1)
         scheduler.fireAll()
         assertEquals(1, actions.blockedHoldNotices)
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 2))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 2), 0)
         assertTrue(scheduler.pending.isEmpty())
+    }
+
+    @Test
+    fun `a native Back down after a reset still schedules exactly one notice`() {
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
+        machine.reset()
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
+        assertEquals(1, scheduler.pending.size)
     }
 
     @Test
     fun `a globally disabled hold has no native passthrough exception notice`() {
         prefs.holdEnabled = false
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN), 1)
         scheduler.fireAll()
-        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP), 0)
         assertEquals(0, actions.blockedHoldNotices)
     }
 

@@ -51,7 +51,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
     private val toggleGesture by lazy { ServiceToggleGesture(prefs, gestureScheduler, ::toggleInterception) }
-    private var toggleToast: Toast? = null
+    private var noticeToast: Toast? = null
+    private val autoControllerFocus by lazy { AutoControllerFocus(this) }
+    private var switchingActiveApp = false
+    @Volatile private var activeAppSwitchSession = 0
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private var pendingDpadFocus: DpadDirection? = null
@@ -114,7 +117,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val nativeBackDevices = mutableSetOf<Int>()
     // Back that nativeBack injects arrives here again with the virtual device id and must pass.
     private var nativeBackInjections = 0
-    private var swapBlockedToast: Toast? = null
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -218,8 +220,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
 
     override fun holdSwapBlocked() {
-        swapBlockedToast?.cancel()
-        swapBlockedToast = Toast.makeText(this, R.string.swap_blocked_by_exceptions, Toast.LENGTH_SHORT).also { it.show() }
+        noticeToast?.cancel()
+        noticeToast = Toast.makeText(this, R.string.swap_blocked_by_exceptions, Toast.LENGTH_SHORT).also { it.show() }
     }
 
     override fun nativeBack(longPress: Boolean) {
@@ -266,6 +268,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             dpadOverlay.detach()
             appControlPrompt.dismiss()
             focusIndicator.dismiss()
+            cancelActiveAppSwitch()
             // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
         }
@@ -274,10 +277,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.TOGGLE_L2_R2 -> "L2 + R2"
             else -> "L3 + R3"
         }
-        toggleToast?.cancel()
+        noticeToast?.cancel()
         val message = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) getString(R.string.service_toggle_no_shortcut)
         else getString(if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive, buttons)
-        toggleToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
+        noticeToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
@@ -373,8 +376,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (backException?.backNative == true) nativeBackDevices += event.deviceId
             }
             if (event.deviceId in nativeBackDevices) {
-                backGesture.observeNativeBack(event)
                 if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
+                backGesture.observeNativeBack(event, nativeBackDevices.size)
                 dlog("BACK   native passthrough action=${event.action} device=${event.deviceId}")
                 return false
             }
@@ -488,10 +491,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         pendingDpadFocus = null
         // Same firmware race as for the shoulder buttons (see handleShoulder): arm on press,
         // commit on release.
-        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) {
+        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
             pendingDpadFocus = direction
             pendingDpadReleased = false
-            showFocusIndicator(direction)
+            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(direction)
         } else {
             runComboAction(direction, action)
         }
@@ -556,7 +559,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val pending = pendingDpadFocus ?: return
         if (!pendingDpadReleased || dpadOverlay.attached) return
         pendingDpadFocus = null
-        runControllerFocus(pending)
+        runReleasedCombo(pending)
     }
 
     /** Holding Back and pressing a shoulder button runs that button's configured action
@@ -583,9 +586,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     // Changing the controller route while its trigger is physically held is racy
                     // in AYN's firmware: the setting changes, but the route can stay on the old
                     // display. Arm focus here and commit after both mirrored devices report UP.
-                    if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) {
+                    if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
                         pendingFocusTargets[event.keyCode] = button
-                        showFocusIndicator(button)
+                        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
                     } else {
                         runComboAction(button, action)
                     }
@@ -597,12 +600,17 @@ class SwitcherService : AccessibilityService(), GestureActions {
             KeyEvent.ACTION_UP -> {
                 val tracked = shoulderKeys.up(event.keyCode, event.deviceId)
                 if (tracked && !shoulderKeys.isDown(event.keyCode)) {
-                    pendingFocusTargets.remove(event.keyCode)?.let(::runControllerFocus)
+                    pendingFocusTargets.remove(event.keyCode)?.let(::runReleasedCombo)
                 }
                 tracked
             }
             else -> false
         }
+    }
+
+    private fun runReleasedCombo(button: ComboButton) {
+        if (prefs.shoulderAction(button) == Prefs.SHOULDER_SWITCH_APP) switchActiveApp(button)
+        else runControllerFocus(button)
     }
 
     private fun showFocusIndicator(button: ComboButton) {
@@ -636,6 +644,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
             Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
+            Prefs.SHOULDER_SWITCH_APP -> switchActiveApp(button)
             Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecents()
@@ -661,6 +670,89 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 launchOn(action, displayId)
             }
         }
+    }
+
+    private fun cancelActiveAppSwitch() {
+        activeAppSwitchSession++
+        switchingActiveApp = false
+        autoControllerFocus.dismiss()
+    }
+
+    private fun switchActiveApp(button: ComboButton) {
+        if (switchingActiveApp) return
+        val display = bottomDisplay() ?: return
+        val top = Display.DEFAULT_DISPLAY
+        val bottom = display.displayId
+        val route = controllerFocus.currentTarget()
+        val follow = prefs.switchAppFollowFocus(button)
+        val foreground = mapOf(top to source.topApp(top), bottom to source.topApp(bottom))
+        switchingActiveApp = true
+        val session = ++activeAppSwitchSession
+        fun active() = isConnected && interceptionEnabled && session == activeAppSwitchSession
+        Thread {
+            val from = when (route) {
+                Prefs.DISPLAY_TOP -> top
+                Prefs.DISPLAY_BOTTOM -> bottom
+                else -> AutoControllerFocus.focusedDisplay(PService.exec("dumpsys input | grep -m1 'FocusedDisplayId:'"))
+            }
+            val pkg = foreground[from]
+            val task = if (pkg == null) null else {
+                val tasks = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
+                tasks?.firstOrNull { it.packageName == pkg && it.displayId == from && it.movable }
+            }
+            handler.post resolved@ {
+                if (!active()) return@resolved
+                if (from != top && from != bottom) {
+                    switchingActiveApp = false
+                    toastUnavailable()
+                    return@resolved
+                }
+                val target = if (from == top) bottom else top
+                if (pkg == null) {
+                    switchingActiveApp = false
+                    Toast.makeText(this, R.string.app_control_no_app, Toast.LENGTH_SHORT).show()
+                    return@resolved
+                }
+                if (task == null) {
+                    switchingActiveApp = false
+                    toastUnavailable()
+                    return@resolved
+                }
+                cancelBottomSwitcherOpen()
+                overlay.dismiss()
+                panels.refresh(display) {
+                    if (!active()) return@refresh
+                    if (panels.preventsSwap(pkg, null)) {
+                        switchingActiveApp = false
+                        Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
+                        return@refresh
+                    }
+                    prepareBottomLaunch(target) {
+                        if (!active()) return@prepareBottomLaunch
+                        Thread {
+                            val moved = session == activeAppSwitchSession && launchTask(pkg, target, task.taskId, allowRelaunch = false)
+                            handler.post moved@ {
+                                if (!active()) return@moved
+                                switchingActiveApp = false
+                                if (!moved) return@moved
+                                if (route == ControllerFocus.AUTO_TARGET) {
+                                    switchingActiveApp = true
+                                    autoControllerFocus.run(if (follow) target else from) { ok ->
+                                        switchingActiveApp = false
+                                        if (active() && !ok) toastUnavailable()
+                                    }
+                                } else if (follow) {
+                                    switchingActiveApp = true
+                                    controllerFocus.run(if (target == top) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM) {
+                                        if (active()) switchingActiveApp = false
+                                    }
+                                }
+                            }
+                        }.apply { isDaemon = true }.start()
+                    }
+                }
+            }
+        }.apply { isDaemon = true }.start()
     }
 
     /**
@@ -835,7 +927,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
-        swapBlockedToast?.cancel()
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
@@ -854,7 +945,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        swapBlockedToast?.cancel()
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
@@ -874,7 +964,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         toggleGesture.reset()
         backGesture.reset()
         interceptionGate.clear()
-        toggleToast?.cancel()
+        noticeToast?.cancel()
+        cancelActiveAppSwitch()
         // isConnected is shared with a replacement service. Retire this instance's focus workers
         // explicitly so they cannot initialize an old Recents session after reconnection.
         topRecentsControllerActive = false
@@ -1139,13 +1230,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
 
     /** Runs on a worker; swap moves must use one ordered worker rather than competing launches. */
-    private fun launchTask(pkg: String, displayId: Int, taskId: Int?): Boolean {
+    private fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean = true): Boolean {
         val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
         val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
         Log.d(TAG, "Recents launch: $result")
         val launched = result?.startsWith("OK ") == true
         if (!launched) {
-            if (TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
+            if (allowRelaunch && TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
                 handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
                 return true
             }
