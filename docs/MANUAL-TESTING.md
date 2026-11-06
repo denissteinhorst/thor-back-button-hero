@@ -247,6 +247,10 @@ never one with unsaved work: Force-Close saves nothing.
 | C34 | Force-Close with a fixed screen and *Ask before closing* on | A confirmation prompt names the app first; cancelling leaves it running |
 | C35 | Open the prompt, then pause the service with the activation shortcut | The prompt closes and nothing is closed or minimized |
 | C36 | Back, double tap, hold, L1/R1 and R2 afterwards | Unchanged; the game receives its keys again and the prompt left no focus behind |
+| C37 | Assign Switch active app to a shoulder and a D-pad hotkey; change the follow sub-option, reopen settings, then restore it | Follow starts on, is retained independently per hotkey, and is only shown for this action; existing assignments stay unchanged |
+| C38 | With ordinary apps on both screens, switch the active app in both directions, with follow on and off; repeat for fixed top/bottom routing and Auto-lock | Only the input screen's foreground task moves, retaining its task ID; the other task stays on its display. Input follows only when enabled; Auto-lock remains Auto-lock and still follows subsequent real touches |
+| C39 | Repeat from a launcher/empty screen, with a blocked hotkey exception, and with a frontend/bottom panel present | No launcher or protected panel moves; a blocked hotkey passes through; normal frontend parking/panel preparation still works. Hold exclusions alone do not block the explicit hotkey |
+| C40 | After switching, test controller buttons/stick/D-pad, Back gestures, both Recents, existing focus hotkeys, then pause/resume interception | No stray touch/button, lingering shield, stuck key, or changed legacy routing; normal controls and service toggling work |
 
 C28 opens on the top screen on purpose: AYN's assistant permanently covers the bottom
 screen, so an activity started there would be invisible.

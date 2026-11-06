@@ -78,6 +78,8 @@
     <string name="shoulder_brightness_down">Brightness down</string>
     <string name="shoulder_controller_focus">Set controller focus</string>
     <string name="screenshot_saved">Screenshot saved</string>
+    <string name="shoulder_switch_app">Switch active app</string>
+    <string name="switch_app_follow_focus">Gamepad focus follows the app</string>
     <string name="shoulder_app_control">Active App Control</string>
     <string name="app_control_mode_title">Control</string>
     <string name="app_control_mode_dialog_title">What happens to the app?</string>
