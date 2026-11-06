@@ -11,7 +11,7 @@ gitignored and therefore absent here.
 | `README.md` | The user-facing page: what the app does, gestures, shortcuts, defaults, install steps, permissions and privacy, troubleshooting. |
 | `AGENTS.md` | The shared, owner-maintained instructions for every coding agent: invariants, working agreement and pointers into `docs/`. |
 | `CLAUDE.md` | Working instructions for Claude Code — gate command, expected results, toolchain traps, release and signing-key procedures. |
-| `FEEDBACK.md` | Community feedback on 1.3.0 and the follow-up status of each topic. Context, not a queue. |
+| `FEEDBACK.md` | Concise feedback from the three Reddit release posts, with reporters, sources and open/resolved status. Context, not a queue. |
 | `IMPROVMENTS.md` | Audit notes on memory, performance, code quality and docs. Context, not a queue. |
 | `WIP_BOTTOMSCREEN_OVERWRITES.md` | Investigation note on a rejected and reverted attempt to raise the app's windows above AYN's assistant. Read before retrying. |
 | `art/settings-icons/` | SVG sources of the settings navigation icons that became the `ic_settings_*` vector drawables. |

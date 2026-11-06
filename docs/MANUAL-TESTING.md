@@ -181,14 +181,16 @@ emulator with its own Back handling (e.g. RetroArch) as the excepted app.
 | C18a | Add the game with *Allow everything*; play | Every gesture and combo behaves exactly as without an exception |
 | C18b | Uncheck *Single*; tap Back in the game | The game receives a normal Back (e.g. RetroArch menu); the bottom launcher does not open; no double-tap delay change for other apps |
 | C18c | Uncheck *Double*; double-tap Back | No bottom switcher; each tap runs the single action without waiting |
-| C18d | Uncheck *Hold*; hold Back | No screen swap; the game receives a long-press Back; releasing does not add a tap |
+| C18d | Uncheck *Hold*; hold Back | No screen swap; a short message explains that app exceptions disable swapping. The game still receives a long-press Back; releasing does not add a tap. A short Back tap shows no message. |
 | C18e | Uncheck *Tap+hold*; tap, then hold | No top Recents; the hold gesture runs instead |
 | C18f | Uncheck L1 and ↑; Back + L1, Back + ↑ | The game sees L1 and the D-pad press; no BBH action and no single-tap action on releasing Back; checked buttons still run their action; the game does not pause |
-| C18g | Uncheck all four Back columns | A hint dialog explains it; the combo boxes turn grey; Back, Back + shoulders and Back + D-pad all reach the game unchanged |
+| C18g | Uncheck all four Back columns | A hint dialog explains it; the combo boxes turn grey; Back, Back + shoulders and Back + D-pad all reach the game unchanged. Holding Back past the configured swap timeout shows the exception message once without injecting another Back. |
 | C18h | Switch the row off | The row fades; BBH behaves as if the app were not listed |
 | C18i | Route controller focus to the other screen with another app there | The other app's rules (or none) apply, not the game's |
 | C18j | L2 + R2 hold in the excepted game | Pausing/resuming BBH still works |
 | C18k | *Remove all exceptions*, then whole-app *Reset settings* with an exception present | Both previews list the apps; applying clears the list; *Clear bindings* never touches exceptions |
+| C18l | Put an ordinary app on each screen, uncheck Hold for the app opposite controller focus, and hold Back. Repeat with top/bottom reversed, with all controls unchecked, and with the exception switched off. | The excepted app retains its task ID and display; only the other app moves over it, without a blocked-swap message. A fully unchecked row also protects its app. An inactive row allows the ordinary two-app swap again. Unrelated background exceptions do not block a swap. |
+| C18m | Cover an app whose Hold is unchecked, then select it from Recents on the other screen; repeat with bottom and top Recents. | The deliberate selection moves the same task to the selected screen. Hold exclusions do not prevent Recents selection. Existing controller-focus gesture passthrough remains intact. |
 
 ### Temporary activation toggle
 

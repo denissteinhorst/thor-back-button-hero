@@ -42,6 +42,7 @@
     <string name="bottom_panel_label">%1$s – bottom panel</string>
     <string name="panel_swap_unavailable">This app uses both screens and cannot be swapped externally.</string>
     <string name="swap_unavailable">These apps cannot be swapped.</string>
+    <string name="swap_blocked_by_exceptions">Screen swapping is disabled by app exceptions.</string>
     <string name="shoulder_l1">L1</string>
     <string name="shoulder_l2">L2</string>
     <string name="shoulder_r1">R1</string>

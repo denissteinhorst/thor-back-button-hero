@@ -22,6 +22,8 @@ interface GestureActions {
     fun onSingleTap()
     /** Delivers the Back an app would have received without Back Button Hero (see [AppException]). */
     fun nativeBack(longPress: Boolean)
+    /** Tells the user that an app exception keeps this hold from swapping the screens. */
+    fun holdSwapBlocked()
 }
 
 class BackGestureMachine(
@@ -63,8 +65,10 @@ class BackGestureMachine(
     private val nativeHoldRunnable = Runnable {
         holdFired = true
         dlog("RUNNABLE nativeHoldRunnable fired -> nativeBack(longPress)")
+        if (prefs.holdEnabled) actions.holdSwapBlocked()
         actions.nativeBack(longPress = true)
     }
+    private val nativeNotice = Runnable { actions.holdSwapBlocked() }
     private var lastTapAt: Long? = null
     private val singleTap = Runnable { tap() }
     private var rules: AppException? = null
@@ -95,6 +99,7 @@ class BackGestureMachine(
         scheduler.removeCallbacks(tapHoldRunnable)
         scheduler.removeCallbacks(nativeHoldRunnable)
         scheduler.removeCallbacks(singleTap)
+        scheduler.removeCallbacks(nativeNotice)
         rules = null
         backDown = false
         comboFired = false
@@ -103,6 +108,23 @@ class BackGestureMachine(
         firstDownAt = 0L
         lastTapAt = null
         pressFollowsTap = false
+    }
+
+    /**
+     * Observes fully excepted Back pairs without consuming or injecting any of their input.
+     * [heldDevices] is the caller's authoritative count of Back devices still down after [event],
+     * so mirrored devices share one notice and no second copy of that state can go stale.
+     */
+    fun observeNativeBack(event: KeyEvent, heldDevices: Int) {
+        when {
+            event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> {
+                if (heldDevices == 1) {
+                    scheduler.removeCallbacks(nativeNotice)
+                    if (prefs.holdEnabled) scheduler.postDelayed(nativeNotice, prefs.holdMs)
+                }
+            }
+            event.action == KeyEvent.ACTION_UP -> if (heldDevices == 0) scheduler.removeCallbacks(nativeNotice)
+        }
     }
 
     fun handleBack(event: KeyEvent): Boolean {

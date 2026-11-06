@@ -168,6 +168,11 @@ own accessibility service.
   becomes a normal Back, a hold the app's own long press, and a combo button reaches
   the game. With all four Back gestures unchecked, Back and every combo go to that
   app untouched. Each app can be switched off without losing its boxes, and
+  An unchecked **Hold** also keeps that app on its screen when a hold-to-swap is
+  triggered from the other screen: only the other app moves, covering it if needed.
+  Selecting the excepted app in Recents can still move it to the selected screen.
+  A short message explains when app exceptions block a hold-to-swap; native Back
+  handling stays intact, including when all four Back gestures are unchecked.
   **Remove all exceptions** previews and clears the whole list.
 - **Check for new version** asks GitHub Releases for a newer version, in addition to
   the automatic check when you open the app. This is useful right after installing.

@@ -7,6 +7,12 @@ object TaskMovePolicy {
 
     data class Move(val packageName: String, val targetDisplay: Int, val taskId: Int?)
 
+    /** Hold exclusions protect either swap partner, independently of controller focus. */
+    fun swapParticipant(packageName: String?, exceptions: List<AppException>): String? =
+        packageName?.takeUnless { pkg ->
+            exceptions.any { it.packageName == pkg && !it.allows(ExceptionControl.HOLD) }
+        }
+
     fun isMovable(activityType: Int, homeIntent: Boolean, secondaryHomeIntent: Boolean): Boolean =
         activityType == 1 && !homeIntent && !secondaryHomeIntent
 

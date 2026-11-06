@@ -51,7 +51,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
     private val toggleGesture by lazy { ServiceToggleGesture(prefs, gestureScheduler, ::toggleInterception) }
-    private var toggleToast: Toast? = null
+    private var noticeToast: Toast? = null
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
     private var pendingDpadFocus: DpadDirection? = null
@@ -216,6 +216,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
 
+    override fun holdSwapBlocked() {
+        noticeToast?.cancel()
+        noticeToast = Toast.makeText(this, R.string.swap_blocked_by_exceptions, Toast.LENGTH_SHORT).also { it.show() }
+    }
+
     override fun nativeBack(longPress: Boolean) {
         val display = controllerDisplayId()
         nativeBackInjections++
@@ -268,10 +273,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.TOGGLE_L2_R2 -> "L2 + R2"
             else -> "L3 + R3"
         }
-        toggleToast?.cancel()
+        noticeToast?.cancel()
         val message = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) getString(R.string.service_toggle_no_shortcut)
         else getString(if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive, buttons)
-        toggleToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
+        noticeToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
@@ -368,6 +373,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             if (event.deviceId in nativeBackDevices) {
                 if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
+                backGesture.observeNativeBack(event, nativeBackDevices.size)
                 dlog("BACK   native passthrough action=${event.action} device=${event.deviceId}")
                 return false
             }
@@ -865,7 +871,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         toggleGesture.reset()
         backGesture.reset()
         interceptionGate.clear()
-        toggleToast?.cancel()
+        noticeToast?.cancel()
         // isConnected is shared with a replacement service. Retire this instance's focus workers
         // explicitly so they cannot initialize an old Recents session after reconnection.
         topRecentsControllerActive = false
@@ -1183,8 +1189,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         overlay.dismiss()
         panels.refresh(display) {
             if (!isConnected) return@refresh
-            val topApp = source.topApp(top)
-            val bottomApp = source.topApp(bottom)
+            val exceptions = prefs.appExceptions
+            val topPackage = source.topApp(top)
+            val bottomPackage = source.topApp(bottom)
+            val topApp = TaskMovePolicy.swapParticipant(topPackage, exceptions)
+            val bottomApp = TaskMovePolicy.swapParticipant(bottomPackage, exceptions)
+            if (topApp == null && bottomApp == null &&
+                (topPackage != null || bottomPackage != null)) {
+                holdSwapBlocked()
+                return@refresh
+            }
             if (panels.preventsSwap(topApp, bottomApp)) {
                 Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
                 return@refresh

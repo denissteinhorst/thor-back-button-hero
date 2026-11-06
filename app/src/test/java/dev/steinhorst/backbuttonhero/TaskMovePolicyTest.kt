@@ -8,6 +8,46 @@ import org.junit.Test
 
 class TaskMovePolicyTest {
     @Test
+    fun `hold exclusion leaves either partner in place while the other task moves over it`() {
+        val top = RecentsTaskState("dev.example.game", 0, false, 55)
+        val bottom = RecentsTaskState("dev.example.launcher", 17, false, 56)
+        for (excluded in listOf(top, bottom)) {
+            val exceptions = listOf(AppException(excluded.packageName, "Excluded", ExceptionControl.ALL xor ExceptionControl.HOLD.bit))
+            val topPackage = TaskMovePolicy.swapParticipant(top.packageName, exceptions)
+            val bottomPackage = TaskMovePolicy.swapParticipant(bottom.packageName, exceptions)
+            // A protected or unrelaunchable excluded task must not cancel the remaining move.
+            val tasks = listOf(top, bottom).map { if (it == excluded) it.copy(movable = false) else it }
+            val other = if (excluded == top) bottom else top
+            assertEquals(listOf(TaskMovePolicy.Move(other.packageName, excluded.displayId, other.taskId)),
+                TaskMovePolicy.planSwap(topPackage, bottomPackage, 0, 17, tasks) { error("No relaunch expected") })
+        }
+    }
+
+    @Test
+    fun `fully blocked partners produce no swap and unrelated background exclusions do not block it`() {
+        val exceptions = listOf(AppException("dev.example.fixed", "Fixed", 0))
+        assertNull(TaskMovePolicy.swapParticipant("dev.example.fixed", exceptions))
+        assertNull(TaskMovePolicy.swapParticipant(null, exceptions))
+        assertEquals("dev.example.game", TaskMovePolicy.swapParticipant("dev.example.game", exceptions))
+        assertEquals(emptyList<TaskMovePolicy.Move>(), TaskMovePolicy.planSwap(
+            TaskMovePolicy.swapParticipant("dev.example.fixed", exceptions),
+            TaskMovePolicy.swapParticipant("dev.example.fixed", exceptions), 0, 17, null,
+        ) { error("Excluded packages must not be relaunched") })
+    }
+
+    @Test
+    fun `inactive exceptions and exclusions of other gestures still allow a swap`() {
+        val pkg = "dev.example.game"
+        val rules = listOf(
+            emptyList(),
+            listOf(AppException(pkg, "Game")),
+            listOf(AppException(pkg, "Game", 0, active = false)),
+            listOf(AppException(pkg, "Game", ExceptionControl.HOLD.bit)),
+        )
+        rules.forEach { assertEquals(pkg, TaskMovePolicy.swapParticipant(pkg, it)) }
+    }
+
+    @Test
     fun `standard app tasks are movable while Home secondary Home and other task types stay protected`() {
         assertTrue(TaskMovePolicy.isMovable(1, false, false))
         assertFalse(TaskMovePolicy.isMovable(1, true, false))

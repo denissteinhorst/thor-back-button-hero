@@ -24,7 +24,7 @@ enum class ExceptionControl {
     }
 }
 
-/** Which of Back Button Hero's gestures and combos stay active while [packageName] has controller focus. */
+/** Gestures and combos allowed with controller focus; a blocked Hold also keeps either swap partner in place. */
 data class AppException(
     val packageName: String,
     val name: String,

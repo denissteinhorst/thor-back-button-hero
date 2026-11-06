@@ -50,10 +50,16 @@ class SettingsActivitySmokeTest {
                     assertTrue(pageText.contains(activity.getString(section.hintRes)))
                     hasFocusOptions = page.findViewWithTag<android.view.View>("settings_focus_options") != null
                     val actions = page.findViewWithTag<android.view.ViewGroup>("settings_page_actions")
-                    if (section == SettingsSection.HELP || section == SettingsSection.EXCEPTIONS) {
+                    if (section == SettingsSection.HELP) {
                         assertTrue(actions == null)
                     } else {
                         assertTrue(actions.childCount == 2)
+                        val labels = if (section == SettingsSection.EXCEPTIONS) {
+                            listOf(R.string.exceptions_add_app, R.string.exceptions_remove_all)
+                        } else listOf(R.string.settings_preset, R.string.settings_unbind)
+                        labels.forEachIndexed { index, label ->
+                            assertTrue((actions.getChildAt(index) as android.widget.TextView).text.toString() == activity.getString(label))
+                        }
                         assertTrue(kotlin.math.abs(actions.getChildAt(0).width - actions.getChildAt(1).width) <= 1)
                         for (i in 0 until actions.childCount) assertTrue(actions.getChildAt(i).height >= activity.dp(48))
                     }
