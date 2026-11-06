@@ -174,6 +174,12 @@ class Prefs(context: Context) {
     fun appConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_app_confirm", false)
     fun setAppConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_app_confirm", confirm).apply() }
 
+    /** Whether switching the active app also sends controller input to its destination. */
+    fun switchAppFollowFocus(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_switch_app_follow", true)
+    fun setSwitchAppFollowFocus(button: ComboButton, follow: Boolean) {
+        sp.edit().putBoolean("${button.prefKey}_switch_app_follow", follow).apply()
+    }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -221,7 +227,7 @@ class Prefs(context: Context) {
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
-                appMode(button), appScreen(button), appConfirm(button),
+                appMode(button), appScreen(button), appConfirm(button), switchAppFollowFocus(button),
             )
         },
         appExceptions,
@@ -266,6 +272,7 @@ class Prefs(context: Context) {
             string("${key}_app_mode", old.appMode, value.appMode)
             string("${key}_app_screen", old.appScreen, value.appScreen)
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
+            boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         edit.apply()
@@ -366,6 +373,7 @@ class Prefs(context: Context) {
         const val SHOULDER_BRIGHTNESS_UP = "@brightness_up"
         const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
         const val SHOULDER_CONTROLLER_FOCUS = "@controller_focus"
+        const val SHOULDER_SWITCH_APP = "@switch_active_app"
         const val SHOULDER_APP_CONTROL = "@app_control"
         const val APP_MINIMIZE = "minimize"
         const val APP_FORCE_CLOSE = "force_close"
