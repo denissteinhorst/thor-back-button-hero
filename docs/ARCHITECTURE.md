@@ -238,6 +238,19 @@ D-pad directions are sent to the helper as a `PASS` mask; either still marks the
 combo, so its release is no tap. The mask is refreshed on window changes, setting
 changes and every Back DOWN. The activation toggle is global and unaffected.
 
+Hold-to-swap additionally checks both captured foreground packages against the current
+exception list, independently of controller focus. A package with Hold unchecked is
+removed from the move plan before panel and task protection checks; the other package
+can still move onto its screen. The excepted task is neither moved nor relaunched.
+Inactive exceptions do not protect a package. Explicit Recents selections retain their
+existing cross-display behavior and do not apply this Hold exclusion.
+An excepted hold shows a short notice when its native long press fires. With all
+four Back gestures excepted, the gesture machine only observes the physical Back
+pair and shows the notice after the configured hold time; it neither consumes nor
+injects input. Short presses, repeats and mirrored devices do not create extra
+notices. Resetting interception cancels a pending notice. A globally disabled Hold
+does not produce an exception notice, and an allowed partial swap remains silent.
+
 
 ### `UpdateChecker`
 

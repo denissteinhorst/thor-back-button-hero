@@ -40,11 +40,13 @@ private class RecordingActions : GestureActions {
     var showSwitcherCalls = 0
     var onSingleTapCalls = 0
     val nativeBacks = mutableListOf<Boolean>()
+    var blockedHoldNotices = 0
     override fun swapScreens() { swapScreensCalls++ }
     override fun openTopRecents() { openTopRecentsCalls++ }
     override fun showSwitcher() { showSwitcherCalls++ }
     override fun onSingleTap() { onSingleTapCalls++ }
     override fun nativeBack(longPress: Boolean) { nativeBacks += longPress }
+    override fun holdSwapBlocked() { blockedHoldNotices++ }
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -302,6 +304,75 @@ class BackGestureMachineTest {
         assertEquals(0, actions.swapScreensCalls)
         assertEquals(0, actions.onSingleTapCalls)
         assertEquals(listOf(true), actions.nativeBacks)
+        assertEquals(0, actions.blockedHoldNotices)
+    }
+
+    @Test
+    fun `an excepted hold explains the blocked swap once while preserving native Back`() {
+        except(ExceptionControl.HOLD)
+        machine.handleBack(pressDown())
+        scheduler.fireAll()
+        assertEquals(1, actions.blockedHoldNotices)
+        assertEquals(listOf(true), actions.nativeBacks)
+        machine.handleBack(release(startTime))
+        scheduler.fireAll()
+        assertEquals(1, actions.blockedHoldNotices)
+        assertEquals(0, actions.swapScreensCalls)
+        assertEquals(0, actions.onSingleTapCalls)
+    }
+
+    private fun nativeEvent(action: Int, device: Int = 1, repeat: Int = 0) =
+        KeyEvent(startTime, clock.now, action, KeyEvent.KEYCODE_BACK, repeat, 0, device, 0)
+
+    @Test
+    fun `fully native Back can explain a hold without injecting or consuming a gesture`() {
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        assertEquals(listOf(prefs.holdMs), scheduler.pending.values.toList())
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, repeat = 1))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        scheduler.fireAll()
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        scheduler.fireAll()
+        assertEquals(1, actions.blockedHoldNotices)
+        assertEquals(emptyList<Boolean>(), actions.nativeBacks)
+        assertEquals(0, actions.swapScreensCalls)
+        assertEquals(0, actions.onSingleTapCalls)
+        assertTrue(!machine.backDown)
+    }
+
+    @Test
+    fun `short fully native Back presses and reset cancel the notice`() {
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        scheduler.fireAll()
+        assertEquals(0, actions.blockedHoldNotices)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        machine.reset()
+        scheduler.fireAll()
+        assertEquals(0, actions.blockedHoldNotices)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        scheduler.fireAll()
+        assertEquals(1, actions.blockedHoldNotices)
+    }
+
+    @Test
+    fun `mirrored native Back devices share one notice and release independently`() {
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 1))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN, device = 2))
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 1))
+        scheduler.fireAll()
+        assertEquals(1, actions.blockedHoldNotices)
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP, device = 2))
+        assertTrue(scheduler.pending.isEmpty())
+    }
+
+    @Test
+    fun `a globally disabled hold has no native passthrough exception notice`() {
+        prefs.holdEnabled = false
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_DOWN))
+        scheduler.fireAll()
+        machine.observeNativeBack(nativeEvent(KeyEvent.ACTION_UP))
+        assertEquals(0, actions.blockedHoldNotices)
     }
 
     @Test

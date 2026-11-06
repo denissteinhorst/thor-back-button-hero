@@ -9,7 +9,7 @@ Quellen: [Initialer Release][initial] · [v1.3.0][v130] · [v1.4.0][v140]
 
 ## Offen / teilweise umgesetzt
 
-- Bug / Feature: Launcher beim Screen-Swap auf ihrem Display lassen. Trotz Ausnahmen wandert Jarngreipr nach Spielstart mit nach oben (Mjolnir, Beacon oben, Jarngreipr unten). Gesten-Ausnahmen existieren, schützen aber nicht den Swap-Partner. — **u/zerocean**, [v1.3.0][v130], [v1.4.0][v140].
+- Bug / Feature: Launcher beim Screen-Swap auf ihrem Display lassen. Trotz Ausnahmen wandert Jarngreipr nach Spielstart mit nach oben (Mjolnir, Beacon oben, Jarngreipr unten). **Fix unveröffentlicht:** Hold-Ausnahmen schützen jetzt beide Swap-Partner unabhängig vom Controller-Fokus; nur die andere App bewegt sich. Auf dem Thor mit gewöhnlichen App-Tasks geprüft; Originalsetup und Owner-Abnahme noch offen. Bewusste Recents-Auswahl bleibt erlaubt. — **u/zerocean**, [v1.3.0][v130], [v1.4.0][v140].
 - Bug: WatermelonDS/Azahar verlieren beim Spielstart den unteren Spielbildschirm an den Launcher; Swap wird anschließend als nicht möglich gemeldet. Ursache und genauer Launcher noch ungeklärt. — **u/cellobear**, [v1.4.0][v140].
 - Bug: App funktioniert trotz erteilter Accessibility-Berechtigung auf dem Thor nicht; konkrete Schritte, Version und Ursache fehlen. — **u/rtmish**, [initial][initial].
 - Bug / Kompatibilität: iiSU holt seinen unteren Bildschirm sofort zurück und verhindert den gewünschten Wechsel. Weiterhin nicht unterstützt. — **u/kekLawnn**, [v1.3.0][v130].

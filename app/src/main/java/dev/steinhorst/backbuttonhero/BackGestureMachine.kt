@@ -22,6 +22,7 @@ interface GestureActions {
     fun onSingleTap()
     /** Delivers the Back an app would have received without Back Button Hero (see [AppException]). */
     fun nativeBack(longPress: Boolean)
+    fun holdSwapBlocked()
 }
 
 class BackGestureMachine(
@@ -63,8 +64,11 @@ class BackGestureMachine(
     private val nativeHoldRunnable = Runnable {
         holdFired = true
         dlog("RUNNABLE nativeHoldRunnable fired -> nativeBack(longPress)")
+        if (prefs.holdEnabled) actions.holdSwapBlocked()
         actions.nativeBack(longPress = true)
     }
+    private val nativeNoticeDevices = mutableSetOf<Int>()
+    private val nativeNotice = Runnable { actions.holdSwapBlocked() }
     private var lastTapAt: Long? = null
     private val singleTap = Runnable { tap() }
     private var rules: AppException? = null
@@ -95,6 +99,8 @@ class BackGestureMachine(
         scheduler.removeCallbacks(tapHoldRunnable)
         scheduler.removeCallbacks(nativeHoldRunnable)
         scheduler.removeCallbacks(singleTap)
+        scheduler.removeCallbacks(nativeNotice)
+        nativeNoticeDevices.clear()
         rules = null
         backDown = false
         comboFired = false
@@ -103,6 +109,21 @@ class BackGestureMachine(
         firstDownAt = 0L
         lastTapAt = null
         pressFollowsTap = false
+    }
+
+    /** Observe fully excepted Back pairs without consuming or injecting any of their input. */
+    fun observeNativeBack(event: KeyEvent) {
+        when {
+            event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> {
+                if (nativeNoticeDevices.add(event.deviceId) && nativeNoticeDevices.size == 1 && prefs.holdEnabled) {
+                    scheduler.postDelayed(nativeNotice, prefs.holdMs)
+                }
+            }
+            event.action == KeyEvent.ACTION_UP -> {
+                nativeNoticeDevices.remove(event.deviceId)
+                if (nativeNoticeDevices.isEmpty()) scheduler.removeCallbacks(nativeNotice)
+            }
+        }
     }
 
     fun handleBack(event: KeyEvent): Boolean {

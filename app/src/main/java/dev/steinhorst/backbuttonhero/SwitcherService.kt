@@ -114,6 +114,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val nativeBackDevices = mutableSetOf<Int>()
     // Back that nativeBack injects arrives here again with the virtual device id and must pass.
     private var nativeBackInjections = 0
+    private var swapBlockedToast: Toast? = null
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -215,6 +216,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
+
+    override fun holdSwapBlocked() {
+        swapBlockedToast?.cancel()
+        swapBlockedToast = Toast.makeText(this, R.string.swap_blocked_by_exceptions, Toast.LENGTH_SHORT).also { it.show() }
+    }
 
     override fun nativeBack(longPress: Boolean) {
         val display = controllerDisplayId()
@@ -367,6 +373,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (backException?.backNative == true) nativeBackDevices += event.deviceId
             }
             if (event.deviceId in nativeBackDevices) {
+                backGesture.observeNativeBack(event)
                 if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
                 dlog("BACK   native passthrough action=${event.action} device=${event.deviceId}")
                 return false
@@ -828,6 +835,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        swapBlockedToast?.cancel()
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
@@ -846,6 +854,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        swapBlockedToast?.cancel()
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
@@ -1183,8 +1192,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         overlay.dismiss()
         panels.refresh(display) {
             if (!isConnected) return@refresh
-            val topApp = source.topApp(top)
-            val bottomApp = source.topApp(bottom)
+            val exceptions = prefs.appExceptions
+            val topPackage = source.topApp(top)
+            val bottomPackage = source.topApp(bottom)
+            val topApp = TaskMovePolicy.swapParticipant(topPackage, exceptions)
+            val bottomApp = TaskMovePolicy.swapParticipant(bottomPackage, exceptions)
+            if (topApp == null && bottomApp == null &&
+                (topPackage != null || bottomPackage != null)) {
+                holdSwapBlocked()
+                return@refresh
+            }
             if (panels.preventsSwap(topApp, bottomApp)) {
                 Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
                 return@refresh
