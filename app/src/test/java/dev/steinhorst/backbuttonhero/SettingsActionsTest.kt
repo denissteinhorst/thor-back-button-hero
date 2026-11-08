@@ -186,6 +186,34 @@ class SettingsActionsTest {
     }
 
     @Test
+    fun `switch active app offers a persistent follow toggle on shoulder and D-pad hotkeys`() {
+        val activity = open().get()
+        val prefs = Prefs(context)
+        for ((section, title, button) in listOf(
+            Triple(SettingsSection.SHOULDERS, "L1", ShoulderButton.L1),
+            Triple(SettingsSection.DPAD, activity.getString(R.string.dpad_up), DpadDirection.UP),
+        )) {
+            selectSettingsPage(activity, section)
+            chooseAction(activity, title, R.string.shoulder_switch_app)
+            assertEquals(Prefs.SHOULDER_SWITCH_APP, prefs.shoulderAction(button))
+            val root = activity.findViewById<View>(android.R.id.content)
+            val label = find(root) { it is TextView && it.text.toString() == activity.getString(R.string.switch_app_follow_focus) }!!
+            var row: View = label
+            while (!row.isClickable) row = row.parent as View
+            val toggle = find(row) { it is Switch } as Switch
+            assertTrue(toggle.isChecked)
+            row.performClick()
+            assertFalse(prefs.switchAppFollowFocus(button))
+            val group = row.parent.parent as View
+            chooseAction(activity, title, R.string.shoulder_screenshot)
+            assertEquals(View.GONE, group.visibility)
+            chooseAction(activity, title, R.string.shoulder_switch_app)
+            assertEquals(View.VISIBLE, group.visibility)
+            assertFalse(toggle.isChecked)
+        }
+    }
+
+    @Test
     fun `focus subtree hides for other actions and is reused when focus is selected again`() {
         val activity = open().get()
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
