@@ -14,8 +14,7 @@ class SettingsChangesTest {
 
     private fun customized(): SettingsState = SettingsState().let { factory ->
         factory.copy(
-            singleAction = Prefs.SINGLE_BACK, doubleEnabled = false, doubleMs = 550,
-            tapHoldEnabled = false, tapHoldMs = 1700, holdEnabled = false, holdMs = 1900,
+            doubleMs = 550, tapHoldMs = 1700, holdMs = 1900,
             allApps = true, controller = false, toggleButtons = Prefs.TOGGLE_L1_R1, toggleMs = 1300,
             bindings = factory.bindings.mapValues { (_, value) -> value.copy(
                 action = "com.example.game", display = Prefs.DISPLAY_TOP,
@@ -26,10 +25,10 @@ class SettingsChangesTest {
     }
 
     @Test
-    fun `factory plan agrees with fresh installs and existing full reset`() {
+    fun `factory state agrees with fresh installs and can be written back`() {
         assertEquals(SettingsState(), prefs.snapshot())
         assertTrue(prefs.applySettings(prefs.snapshot(), customized()))
-        prefs.resetToDefaults()
+        assertTrue(prefs.applySettings(prefs.snapshot(), SettingsState()))
         assertEquals(SettingsState(), prefs.snapshot())
     }
 
@@ -42,9 +41,10 @@ class SettingsChangesTest {
             val after = plan.after
             when (section) {
                 SettingsSection.BASIC -> assertEquals(before.copy(
-                    singleAction = factory.singleAction, doubleEnabled = factory.doubleEnabled,
-                    doubleMs = factory.doubleMs, tapHoldEnabled = factory.tapHoldEnabled,
-                    tapHoldMs = factory.tapHoldMs, holdEnabled = factory.holdEnabled, holdMs = factory.holdMs,
+                    bindings = before.bindings.mapValues { (key, value) ->
+                        if (BackGestureButton.entries.any { it.prefKey == key }) factory.bindings.getValue(key) else value
+                    },
+                    doubleMs = factory.doubleMs, tapHoldMs = factory.tapHoldMs, holdMs = factory.holdMs,
                 ), after)
                 SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS -> {
                     val keys = when (section) {
@@ -80,8 +80,9 @@ class SettingsChangesTest {
                 else -> emptyList()
             }
             val expected = when (section) {
-                SettingsSection.BASIC -> before.copy(singleAction = Prefs.SINGLE_BACK,
-                    doubleEnabled = false, tapHoldEnabled = false, holdEnabled = false)
+                SettingsSection.BASIC -> before.copy(bindings = before.bindings.mapValues { (key, value) ->
+                    if (BackGestureButton.entries.any { it.prefKey == key }) value.copy(action = "") else value
+                })
                 SettingsSection.SETTINGS -> before.copy(toggleButtons = Prefs.TOGGLE_NONE)
                 else -> before.copy(bindings = before.bindings.mapValues { (key, value) ->
                     if (key in keys) value.copy(action = "") else value
@@ -93,12 +94,13 @@ class SettingsChangesTest {
     }
 
     @Test
-    fun `whole app unbind removes nine optional bindings without changing primary gestures`() {
+    fun `whole app unbind removes the optional bindings without changing primary gestures`() {
         val before = customized()
         val plan = SettingsChangePlan.create(before, null, SettingsChangeAction.UNBIND)
         assertTrue(plan.removesToggle)
+        val primary = BackGestureButton.entries.map { it.prefKey }
         assertEquals(before.copy(toggleButtons = Prefs.TOGGLE_NONE,
-            bindings = before.bindings.mapValues { it.value.copy(action = "") }), plan.after)
+            bindings = before.bindings.mapValues { (key, value) -> if (key in primary) value else value.copy(action = "") }), plan.after)
         assertTrue(prefs.applySettings(prefs.snapshot(), before))
         assertTrue(prefs.applySettings(before, plan.after))
         assertEquals(plan.after, Prefs(ApplicationProvider.getApplicationContext()).snapshot())
@@ -130,9 +132,9 @@ class SettingsChangesTest {
         assertTrue(SettingsChangePlan.create(before, null, SettingsChangeAction.PRESET).isEmpty)
         assertTrue(prefs.applySettings(before, before))
         assertEquals(0, writes)
-        prefs.singleAction = Prefs.SINGLE_BACK
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_BACK)
         assertFalse(prefs.applySettings(before, customized()))
-        assertEquals(Prefs.SINGLE_BACK, prefs.singleAction)
+        assertEquals(Prefs.SHOULDER_BACK, prefs.shoulderAction(BackGestureButton.SINGLE))
         prefs.unregisterListener(listener)
     }
 

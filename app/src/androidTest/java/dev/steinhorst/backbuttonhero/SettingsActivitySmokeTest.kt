@@ -28,9 +28,8 @@ class SettingsActivitySmokeTest {
                 val allText = StringBuilder()
                 collectText(content, allText)
                 val text = allText.toString()
-                assertTrue(text.contains(activity.getString(R.string.single_title)))
+                assertTrue(text.contains(activity.getString(R.string.back_single_row)))
                 assertTrue(text.contains(activity.getString(R.string.nav_basic_hint)))
-                assertTrue(text.contains(activity.getString(R.string.settings_preset)))
                 assertTrue(text.contains(activity.getString(R.string.settings_unbind)))
             }
             SettingsSection.entries.forEach { section ->
@@ -53,14 +52,14 @@ class SettingsActivitySmokeTest {
                     if (section == SettingsSection.HELP) {
                         assertTrue(actions == null)
                     } else {
-                        assertTrue(actions.childCount == 2)
                         val labels = if (section == SettingsSection.EXCEPTIONS) {
                             listOf(R.string.exceptions_add_app, R.string.exceptions_remove_all)
-                        } else listOf(R.string.settings_preset, R.string.settings_unbind)
+                        } else listOf(R.string.settings_unbind)
+                        assertTrue(actions.childCount == labels.size)
                         labels.forEachIndexed { index, label ->
                             assertTrue((actions.getChildAt(index) as android.widget.TextView).text.toString() == activity.getString(label))
                         }
-                        assertTrue(kotlin.math.abs(actions.getChildAt(0).width - actions.getChildAt(1).width) <= 1)
+                        for (i in 1 until actions.childCount) assertTrue(kotlin.math.abs(actions.getChildAt(0).width - actions.getChildAt(i).width) <= 1)
                         for (i in 0 until actions.childCount) assertTrue(actions.getChildAt(i).height >= activity.dp(48))
                     }
                     val topBar = activity.findViewById<android.view.View>(android.R.id.content)

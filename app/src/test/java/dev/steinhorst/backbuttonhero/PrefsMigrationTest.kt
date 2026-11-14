@@ -55,14 +55,45 @@ class PrefsMigrationTest {
     }
 
     @Test
-    fun `fresh install applies v1 navigation-flick defaults and marks both migrations done`() {
+    fun `a fresh install starts with nothing assigned and every migration marked done`() {
         val ctx = context()
         val prefs = Prefs(ctx)
 
-        assertTrue(rawPrefs(ctx).getBoolean("navigation_flick_defaults_v1", false))
-        assertEquals(Prefs.SHOULDER_FLICK_LEFT, prefs.shoulderAction(ShoulderButton.L1))
-        assertEquals(Prefs.SHOULDER_FLICK_RIGHT, prefs.shoulderAction(ShoulderButton.R1))
-        assertTrue(rawPrefs(ctx).getBoolean("navigation_flick_directions_v2", false))
+        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries +
+            StickClickButton.entries + BackGestureButton.entries).forEach {
+            assertEquals(it.name, "", prefs.shoulderAction(it))
+        }
+        assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
+        assertEquals(SettingsState(), prefs.snapshot())
+        listOf("navigation_flick_defaults_v1", "navigation_flick_directions_v2", "shoulder_defaults_v3",
+            "back_gestures_v1", "toggle_pairs_v1", "toggle_default_v2", "unassigned_defaults_v1")
+            .forEach { assertTrue(it, rawPrefs(ctx).getBoolean(it, false)) }
+    }
+
+    @Test
+    fun `an update pins the D-pad shortcuts and the activation pair it was running on`() {
+        val ctx = context()
+        rawPrefs(ctx).edit()
+            .putBoolean("navigation_flick_defaults_v1", true)
+            .putBoolean("navigation_flick_directions_v2", true)
+            .putBoolean("shoulder_defaults_v3", true)
+            .putBoolean("back_gestures_v1", true)
+            .putBoolean("toggle_pairs_v1", true)
+            .putBoolean("toggle_default_v2", true)
+            .putString("dpad_left_package", "")
+            .apply()
+
+        val prefs = Prefs(ctx)
+
+        assertEquals(Prefs.SHOULDER_BRIGHTNESS_UP, prefs.shoulderAction(DpadDirection.UP))
+        assertEquals(Prefs.SHOULDER_BRIGHTNESS_DOWN, prefs.shoulderAction(DpadDirection.DOWN))
+        assertEquals("", prefs.shoulderAction(DpadDirection.LEFT))
+        assertEquals(Prefs.SHOULDER_VOLUME_UP, prefs.shoulderAction(DpadDirection.RIGHT))
+        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
+        assertTrue(rawPrefs(ctx).getBoolean("unassigned_defaults_v1", false))
+        // Pinned once: a later user choice is never replaced.
+        prefs.setShoulderAction(DpadDirection.UP, "")
+        assertEquals("", Prefs(ctx).shoulderAction(DpadDirection.UP))
     }
 
     @Test
@@ -112,56 +143,11 @@ class PrefsMigrationTest {
     @Test
     fun `constructing Prefs a second time does not override an explicit user value`() {
         val ctx = context()
-        Prefs(ctx).apply { singleAction = Prefs.SINGLE_BACK }
+        Prefs(ctx).apply { setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_BACK) }
 
         val second = Prefs(ctx)
 
-        assertEquals(Prefs.SINGLE_BACK, second.singleAction)
-    }
-
-    @Test
-    fun `resetToDefaults restores every property to its default, including unset shoulder buttons`() {
-        val ctx = context()
-        val prefs = Prefs(ctx)
-
-        prefs.doubleTapEnabled = false
-        prefs.doubleTapMs = 450L
-        prefs.switcherShowsAllApps = true
-        prefs.switcherControllerEnabled = false
-        prefs.holdEnabled = false
-        prefs.holdMs = 1500L
-        prefs.tapHoldEnabled = false
-        prefs.tapHoldMs = 1700L
-        prefs.singleAction = Prefs.SINGLE_BACK
-        prefs.setShoulderAction(ShoulderButton.L1, "com.other.app")
-        prefs.setShoulderAction(ShoulderButton.R2, "com.other.app")
-
-        prefs.resetToDefaults()
-
-        assertEquals(Prefs.DEFAULT_DOUBLE_TAP_ENABLED, prefs.doubleTapEnabled)
-        assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.doubleTapMs)
-        assertEquals(Prefs.DEFAULT_SWITCHER_SHOWS_ALL_APPS, prefs.switcherShowsAllApps)
-        assertEquals(Prefs.DEFAULT_SWITCHER_CONTROLLER_ENABLED, prefs.switcherControllerEnabled)
-        assertEquals(Prefs.DEFAULT_HOLD_ENABLED, prefs.holdEnabled)
-        assertEquals(Prefs.DEFAULT_HOLD_MS, prefs.holdMs)
-        assertEquals(Prefs.DEFAULT_TAP_HOLD_ENABLED, prefs.tapHoldEnabled)
-        assertEquals(Prefs.DEFAULT_TAP_HOLD_MS, prefs.tapHoldMs)
-        assertEquals(Prefs.SINGLE_LAUNCHER, prefs.singleAction)
-        assertEquals(Prefs.SHOULDER_FLICK_LEFT, prefs.shoulderAction(ShoulderButton.L1))
-        assertEquals(Prefs.SHOULDER_FLICK_RIGHT, prefs.shoulderAction(ShoulderButton.R1))
-        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
-    }
-
-    @Test
-    fun `fresh install starts with the screenshot on L2 and controller focus on R2`() {
-        val prefs = Prefs(context())
-
-        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
-        assertEquals(Prefs.DISPLAY_TOP, prefs.levelTarget(ShoulderButton.L2))
-        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
-        assertEquals(Prefs.FOCUS_TOGGLE, prefs.focusTarget(ShoulderButton.R2))
-        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(ShoulderButton.R2))
-        assertEquals(500L, prefs.focusDuration(ShoulderButton.R2))
+        assertEquals(Prefs.SHOULDER_BACK, second.shoulderAction(BackGestureButton.SINGLE))
     }
 
     @Test
@@ -204,25 +190,52 @@ class PrefsMigrationTest {
     }
 
     @Test
-    fun `reset restores the factory shoulder defaults`() {
-        val prefs = Prefs(context())
-        prefs.setShoulderAction(ShoulderButton.R2, "")
-        prefs.setFocusPosition(ShoulderButton.R2, Prefs.FOCUS_POS_TOP_LEFT)
+    fun `an update carries the old Back gesture switches and single choice over unchanged`() {
+        val ctx = context()
+        rawPrefs(ctx).edit()
+            .putBoolean("navigation_flick_defaults_v1", true)
+            .putBoolean("navigation_flick_directions_v2", true)
+            .putBoolean("shoulder_defaults_v3", true)
+            .putString("single_action", "back")
+            .putBoolean("double_enabled", false)
+            .putBoolean("tap_hold_enabled", true)
+            .putBoolean("hold_enabled", false)
+            .apply()
 
-        prefs.resetToDefaults()
+        val prefs = Prefs(ctx)
 
-        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
-        assertEquals(Prefs.FOCUS_POS_CENTER_RIGHT, prefs.focusPosition(ShoulderButton.R2))
-        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
+        assertEquals(Prefs.SHOULDER_BACK, prefs.shoulderAction(BackGestureButton.SINGLE))
+        assertEquals("", prefs.shoulderAction(BackGestureButton.DOUBLE))
+        assertEquals(Prefs.SHOULDER_RECENTS, prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals("", prefs.shoulderAction(BackGestureButton.HOLD))
     }
 
     @Test
-    fun `unbind optionals clears every shoulder button and D-pad direction`() {
-        val prefs = Prefs(context())
+    fun `an update with the old defaults, or a custom launcher, ends up on Home and the old gestures`() {
+        val ctx = context()
+        rawPrefs(ctx).edit()
+            .putBoolean("navigation_flick_defaults_v1", true)
+            .putBoolean("navigation_flick_directions_v2", true)
+            .putBoolean("shoulder_defaults_v3", true)
+            .putString("single_action", "com.example.launcher/com.example.launcher.Main")
+            .apply()
 
-        prefs.unbindOptionals()
+        val prefs = Prefs(ctx)
 
-        ShoulderButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
-        DpadDirection.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
+        assertEquals(Prefs.SHOULDER_HOME, prefs.shoulderAction(BackGestureButton.SINGLE))
+        assertEquals(Prefs.SHOULDER_SWITCHER, prefs.shoulderAction(BackGestureButton.DOUBLE))
+        assertEquals(Prefs.SHOULDER_RECENTS, prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals(Prefs.SHOULDER_SWAP_APPS, prefs.shoulderAction(BackGestureButton.HOLD))
+    }
+
+    @Test
+    fun `the Back gesture migration runs once and never overrides a later choice`() {
+        val ctx = context()
+        rawPrefs(ctx).edit().putBoolean("hold_enabled", false).apply()
+        val first = Prefs(ctx)
+        assertEquals("", first.shoulderAction(BackGestureButton.HOLD))
+        first.setShoulderAction(BackGestureButton.HOLD, Prefs.SHOULDER_SCREENSHOT)
+        rawPrefs(ctx).edit().putBoolean("hold_enabled", false).apply()
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, Prefs(ctx).shoulderAction(BackGestureButton.HOLD))
     }
 }

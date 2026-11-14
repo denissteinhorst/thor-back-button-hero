@@ -92,7 +92,7 @@ durations are part of the test.
 | B7 | Disable double tap, then single tap | Fires immediately, with no waiting delay |
 | B8 | Disable hold, then hold Back | Nothing happens on hold; Back is processed normally on release |
 
-Restore any settings you changed afterwards (or use **Reset settings**).
+Restore any settings you changed afterwards (for example from a backup).
 
 B6 is the one most likely to regress and the easiest to misread. If it swaps instead of
 showing Recents, that is the `pressFollowsTap` latching behavior breaking — see
@@ -173,6 +173,9 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17j | Push left, sweep to up without passing the centre, return, push up | The sweep fires nothing; only the fresh deflection after the stick was neutral fires |
 | C17k | Push the stick first, then press Back; also push the stick without Back | No BBH action; the game keeps the stick in both cases. A stick without any action is never withheld |
 | C17l | Hold a stepping direction, then release Back before the stick | The repeat stops with Back; the right stick behaves the same with its own bindings |
+| C17p | Settings → Backup → Save backup, then Load backup with that file; also with a file renamed to another version inside the JSON, and with a text file | The file is named `back-button-hero-backup_v<version>_<date>.json`; loading shows the change preview ("matches" when nothing differs); another version first shows the incompatibility hint; a non-backup is refused and nothing changes |
+| C17q | Fresh install (or cleared app data) | Every Back gesture, hotkey, stick control and the on/off shortcut is unassigned; an update keeps the previous settings including the old D-pad shortcuts |
+| C17o | Assign other actions to Back's single, double, tap-and-hold and hold; clear them | Each gesture runs its action; timing sliders only show for assigned gestures; unassigned does nothing (Back is swallowed) and Back + button hotkeys still work; an update keeps the old behavior |
 | C17m | Assign press / double press / tap and hold of a stick (L3/R3), hold Back | Timed exactly like Back's own gestures: press fires after the double-press window (at once without a double press); a quick second press fires only the double press; pressing again right after a tap and holding fires tap and hold while held (a volume/brightness action keeps repeating); the settings page has the same three sections as Basic Controls; without Back the game gets L3/R3 untouched |
 | C17n | Hold a volume or brightness shortcut (stick direction, stick hold, D-pad) | One step, then repeats after 0.25 s, getting faster for about 1.1 s up to ~40 ms; stops on release; brightness does not keep moving afterwards |
 | C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
@@ -194,7 +197,7 @@ emulator with its own Back handling (e.g. RetroArch) as the excepted app.
 | C18h | Switch the row off | The row fades; BBH behaves as if the app were not listed |
 | C18i | Route controller focus to the other screen with another app there | The other app's rules (or none) apply, not the game's |
 | C18j | L2 + R2 hold in the excepted game | Pausing/resuming BBH still works |
-| C18k | *Remove all exceptions*, then whole-app *Reset settings* with an exception present | Both previews list the apps; applying clears the list; *Clear bindings* never touches exceptions |
+| C18k | *Remove all exceptions* with an exception present | The preview lists the apps; applying clears the list; *Clear bindings* never touches exceptions |
 | C18l | Put an ordinary app on each screen, uncheck Hold for the app opposite controller focus, and hold Back. Repeat with top/bottom reversed, with all controls unchecked, and with the exception switched off. | The excepted app retains its task ID and display; only the other app moves over it, without a blocked-swap message. A fully unchecked row also protects its app. An inactive row allows the ordinary two-app swap again. Unrelated background exceptions do not block a swap. |
 | C18m | Cover an app whose Hold is unchecked, then select it from Recents on the other screen; repeat with bottom and top Recents. | The deliberate selection moves the same task to the selected screen. Hold exclusions do not prevent Recents selection. Existing controller-focus gesture passthrough remains intact. |
 
@@ -231,7 +234,7 @@ assigned). R2 is the focus button at the factory defaults.
 
 | # | Step | Expected |
 |---|---|---|
-| C23 | "Reset settings", then look at L2 and R2 | L2 is *Take screenshot* (top screen only); R2 is *Set controller focus* (toggle), indicator appearance *Center right*, 500 ms |
+| C23 | Assign *Set controller focus* to R2 | Target toggles between the screens, indicator appearance *Center right*, 500 ms |
 | C24 | Hold Back and press R2, ten times in a row, both directions | The pictogram appears **when R2 goes down**, not after release, and shows the screen that gets the controller. Menu navigation with the pad follows to that screen every time |
 | C25 | Open *Indicator appearance* and tap each of the nine dots | The pictogram previews at that position on the top screen; in the corners and edges it is half size with the same distance to both adjacent edges; the centre dot shows it full size |
 | C26 | Switch *Show indicator* off in the popup | The dots dim and ignore taps; switching with R2 shows no pictogram, but the controller still moves |
@@ -264,7 +267,7 @@ screen, so an activity started there would be invisible.
 | C18 | Turn the accessibility service off in Android settings | Warning row appears, status switches to **off**; the root input helper exits and restores the original controller |
 | C19 | Tap "Repair service" → "Open accessibility settings" | Lands on the correct system screen |
 | C20 | Turn it back on; repeat off/on three times | Status returns to **on**, gestures work again, exactly one root input helper runs, and top Recents has no extra navigation from the retired service |
-| C21 | "Reset settings", confirm | Every timing, switch, shoulder and D-pad assignment back to default (including the factory shortcuts of C23); confirmation toast appears |
+| C21 | Load a backup made earlier (see C17p) | Every timing, switch, assignment and exception returns as saved; confirmation toast appears |
 | C22 | Switch the system language to German, reopen the app | All sections, dialogs and toasts in German; no English remnants, no clipped labels |
 
 ## Procedure D — Release acceptance

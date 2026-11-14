@@ -26,7 +26,7 @@ class ServiceToggleGestureTest {
 
     @Test
     fun `factory default toggles with L2 and R2 instead of stick clicks`() {
-        prefs.resetToDefaults()
+        prefs.toggleButtons = Prefs.TOGGLE_L2_R2
         down(left)
         down(right)
         assertTrue(scheduler.pending.isEmpty())

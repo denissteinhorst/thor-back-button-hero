@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 
 import androidx.test.core.app.ApplicationProvider
@@ -14,6 +15,11 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")
 class ShoulderRowSnapshotTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
 
     /** Starts from L2 and R2 unassigned, as before they got factory shortcuts, unless [factory]. */
     private fun snapshotWith(name: String, factory: Boolean = false, configure: Prefs.() -> Unit) {

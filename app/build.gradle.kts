@@ -271,6 +271,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "StickDetector" to "1.00", "LevelRepeater" to "1.00", "RepeatCurve" to "1.00",
             "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
             "StickButton" to "1.00", "Stick" to "1.00",
+            "SettingsBackup" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

@@ -208,6 +208,10 @@ same decisions) and only while Back is held. Stepping actions repeat on `RepeatC
 hold and the D-pad alike; `LevelControl` drops repeat steps while root work is still queued.
 Sticks have no exception column: they follow Back, so a native-Back exception releases them.
 
+`SettingsBackup` writes and reads the backup JSON (format marker and version, app version, date, then the same values `SettingsState` holds). Reading is defensive by construction: unknown fields are ignored, missing ones keep the factory value, each value is validated and clamped on its own, and only a non-backup is refused. The result is a `SettingsState` that goes through the normal preview and the atomic `Prefs.applySettings`; the file is picked and saved through the system file picker, so no storage permission is needed. Everything starts unassigned; `unassigned_defaults_v1` pins the earlier D-pad shortcuts and activation pair for existing installs.
+
+The four Back gestures are `BackGestureButton`s: `BackGestureMachine` still decides timing and exceptions and reports which gesture fired, `SwitcherService.runBackGesture` runs the bound action (new actions: `@back`, `@switcher`, `@swap_apps`). `Prefs.doubleTapEnabled`/`tapHoldEnabled`/`holdEnabled` are derived from whether the gesture has an action; `back_gestures_v1` migrates the old switches and single choice once.
+
 `ShoulderButton`, `DpadDirection` and `StickButton` all implement `ComboButton`, so `Prefs` stores every combo
 button's action, launch screen and level target the same way.
 
@@ -314,7 +318,7 @@ The five outcomes and their triggers:
 
 | Gesture | Outcome |
 |---|---|
-| Single tap | `GLOBAL_ACTION_BACK`, or the bottom screen's launcher — user's choice |
+| Single tap | Its assigned action (default: Home on the bottom screen; "Regular Back press" is `GLOBAL_ACTION_BACK`) |
 | Double tap within the window | Switcher overlay on the bottom screen |
 | Hold for the configured duration | Swap the apps on the top and bottom screens |
 | Tap, then hold again within the tap-hold window | System Recents on the **top** screen instead of a swap |

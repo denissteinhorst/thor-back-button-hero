@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
@@ -66,6 +67,7 @@ class BackGestureMachineTest {
     @Before
     fun setUp() {
         prefs = Prefs(ApplicationProvider.getApplicationContext())
+        prefs.useEarlierDefaults()
         clock = FakeClock(startTime)
         scheduler = FakeScheduler()
         actions = RecordingActions()

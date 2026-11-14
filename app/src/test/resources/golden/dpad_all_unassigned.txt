@@ -23,7 +23,6 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                 TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a D-pad direction to use its action. Unassigned directions work as usual." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
-                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Load defaults" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
                 Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
             TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad Binds" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]

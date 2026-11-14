@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 
 import android.app.Dialog
@@ -15,6 +16,11 @@ import org.robolectric.shadows.ShadowDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")
 class SettingsDialogSnapshotTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
 
     private fun buildActivity() = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
 
@@ -28,18 +34,10 @@ class SettingsDialogSnapshotTest {
     }
 
     @Test
-    fun `single-tap action chooser dialog`() {
+    fun `Back press action chooser dialog`() {
         val activity = buildActivity()
-        clickRowWithText(activity, activity.getString(R.string.single_title))
-        snapshotDialog("dialog_single_action_chooser")
-    }
-
-    @Test
-    fun `reset settings confirmation dialog`() {
-        val activity = buildActivity()
-        selectSettingsPage(activity, SettingsSection.SETTINGS)
-        clickRowWithText(activity, activity.getString(R.string.reset_settings))
-        snapshotDialog("dialog_reset_settings_confirm")
+        clickRowWithText(activity, activity.getString(R.string.back_single_row))
+        snapshotDialog("dialog_back_single_action_chooser")
     }
 
     @Test
@@ -56,14 +54,6 @@ class SettingsDialogSnapshotTest {
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         clickRowWithText(activity, activity.getString(R.string.settings_unbind))
         snapshotDialog("dialog_unbind_shoulders")
-    }
-
-    @Test
-    fun `preset previews current and factory values`() {
-        val activity = buildActivity()
-        Prefs(activity).doubleTapMs = 500L
-        clickRowWithText(activity, activity.getString(R.string.settings_preset))
-        snapshotDialog("dialog_preset_basic")
     }
 
     private fun clickRowWithText(activity: SettingsActivity, text: String) {

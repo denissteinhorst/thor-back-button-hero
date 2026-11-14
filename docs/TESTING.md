@@ -63,12 +63,13 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| Backup file: round trip, robustness against invalid/unknown/hostile content, file name, version comparison, picker intents and the restore flow | `SettingsBackupTest`, `SettingsBackupUiTest` |
 | Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
 | Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
 | Top-Recents helper protocol and Quickstep state/TaskView geometry parsing | `PadNavigationModeTest`, `TopRecentsStateTest` |
 | Duplicate shoulder-key events from the two mirrored devices | `PhysicalKeyTrackerTest` |
-| Settings actions: Unbind optionals, the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
+| Settings actions: the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |

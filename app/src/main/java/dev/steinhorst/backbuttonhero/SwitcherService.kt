@@ -768,7 +768,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
             Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
-            Prefs.SHOULDER_RECENTS -> openTopRecents()
+            Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
+            Prefs.SHOULDER_SWITCHER -> showSwitcherNow()
+            Prefs.SHOULDER_SWAP_APPS -> swapScreensNow()
+            Prefs.SHOULDER_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
             Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
             Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             Prefs.SHOULDER_NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
@@ -1315,7 +1318,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /** Move the two captured foreground tasks; the first move must not change the second target. */
-    override fun swapScreens() {
+    // The Back gestures are assignable: the machine reports which gesture fired, the bound action runs.
+    override fun swapScreens() = runBackGesture(BackGestureButton.HOLD)
+    override fun openTopRecents() = runBackGesture(BackGestureButton.TAP_HOLD)
+    override fun showSwitcher() = runBackGesture(BackGestureButton.DOUBLE)
+
+    private fun runBackGesture(gesture: BackGestureButton) {
+        val action = prefs.shoulderAction(gesture)
+        dlog("BACK   gesture $gesture action=${action.ifEmpty { "(none)" }}")
+        if (action.isNotEmpty()) runComboAction(gesture, action)
+    }
+
+    private fun swapScreensNow() {
         cancelBottomSwitcherOpen()
         val display = bottomDisplay() ?: return
         val bottom = display.displayId
@@ -1363,7 +1377,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
      * a dedicated Overview button or the recents gesture would show. GLOBAL_ACTION_RECENTS
      * always targets the default display, which is exactly the top screen in this setup.
      */
-    override fun openTopRecents() {
+    private fun openTopRecentsNow() {
         cancelBottomSwitcherOpen()
         overlay.dismiss()
         val session = ++topLaunchSession
@@ -1802,11 +1816,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onSingleTap() {
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { dlog("ACTION onSingleTap: overlay was showing -> dismiss only"); overlay.dismiss(); return }
-        dlog("ACTION onSingleTap: singleAction=${prefs.singleAction}")
-        when (prefs.singleAction) {
-            Prefs.SINGLE_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
-            else -> goHome(component = prefs.singleLauncher)
-        }
+        runBackGesture(BackGestureButton.SINGLE)
     }
 
     private fun goHome(displayId: Int? = null, dismissSwitcher: Boolean = true, component: ComponentName? = null) {
@@ -1820,7 +1830,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    override fun showSwitcher() {
+    private fun showSwitcherNow() {
         cancelTopRecentsLaunch()
         val display = bottomDisplay() ?: return
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }

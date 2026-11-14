@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 
 import android.app.AlertDialog
@@ -31,6 +32,11 @@ import org.robolectric.shadows.ShadowDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")
 class SettingsActionsTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
 
     private val context: Context get() = ApplicationProvider.getApplicationContext()
 
@@ -81,35 +87,6 @@ class SettingsActionsTest {
         val slider = find(root) { it is SeekBar && it.max == 29 } as SeekBar
         shadowOf(slider).onSeekBarChangeListener.onProgressChanged(slider, 16, true)
         assertEquals(1700L, Prefs(context).toggleHoldMs)
-    }
-
-    @Test
-    fun `unbind optionals clears every button after confirming`() {
-        val activity = open().get()
-        selectSettingsPage(activity, SettingsSection.SETTINGS)
-
-        clickRow(activity, activity.getString(R.string.unbind_optionals))
-        val dialog = ShadowAlertDialog.getLatestAlertDialog()
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
-        shadowOf(android.os.Looper.getMainLooper()).idle()
-
-        val prefs = Prefs(context)
-        ShoulderButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
-        DpadDirection.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
-    }
-
-    @Test
-    fun `cancelling unbind optionals leaves every assignment alone`() {
-        val activity = open().get()
-        selectSettingsPage(activity, SettingsSection.SETTINGS)
-
-        clickRow(activity, activity.getString(R.string.unbind_optionals))
-        ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
-        shadowOf(android.os.Looper.getMainLooper()).idle()
-
-        val prefs = Prefs(context)
-        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
-        assertEquals(Prefs.SHOULDER_FLICK_LEFT, prefs.shoulderAction(ShoulderButton.L1))
     }
 
     @Test

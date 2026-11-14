@@ -30,13 +30,11 @@ class SettingsActivity : Activity() {
     private val pages = mutableMapOf<SettingsSection, SettingsPage>()
     private var exceptionsPage: ExceptionSettingsPage? = null
     private lateinit var warnings: LinearLayout
-    private var launcherChoices: List<Choice>? = null
     private val appLabels = mutableMapOf<String, String>()
     private lateinit var serviceWarning: TextView
     private lateinit var rootWarning: SettingsPage.WarningHandle
     private var toggleButtonsValue: TextView? = null
     private var toggleDuration: SettingsPage.SliderHandle? = null
-    private var singleValue: TextView? = null
     private var statusLabel: TextView? = null
     private lateinit var openA11yHandle: SettingsPage.ActionHandle
     private val comboRows = mutableMapOf<String, ComboRow>()
@@ -89,12 +87,13 @@ class SettingsActivity : Activity() {
     private fun openIndicatorFromIntent() {
         val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
         intent.removeExtra(EXTRA_INDICATOR_BUTTON)
-        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries).firstOrNull { it.prefKey == key } ?: return
+        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries).firstOrNull { it.prefKey == key } ?: return
         if (prefs.shoulderAction(button) != Prefs.SHOULDER_CONTROLLER_FOCUS) return
         when (button) {
             is ShoulderButton -> navigation.show(SettingsSection.SHOULDERS)
             is StickButton -> showStickButton(button.stick)
             is StickClickButton -> showStickButton(button.stick)
+            is BackGestureButton -> navigation.show(SettingsSection.BASIC)
             else -> navigation.show(SettingsSection.DPAD)
         }
         val row = comboRows.getValue(key)
@@ -115,7 +114,6 @@ class SettingsActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        launcherChoices = null
         appLabels.clear()
         refresh()
         // A service rebind can finish just after the activity resumes.
@@ -144,10 +142,7 @@ class SettingsActivity : Activity() {
                 R.string.exceptions_add_app to { exceptionsPage?.addApp() ?: Unit },
                 R.string.exceptions_remove_all to change(SettingsChangeAction.PRESET),
             )
-            else -> listOf(
-                R.string.settings_preset to change(SettingsChangeAction.PRESET),
-                R.string.settings_unbind to change(SettingsChangeAction.UNBIND),
-            )
+            else -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND))
         }
         page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
         when (section) {
@@ -239,42 +234,26 @@ class SettingsActivity : Activity() {
     }
 
     private fun buildBasic(page: SettingsPage) {
-        page.sectionHeader(R.string.single_section_title)
-        page.card {
-            singleValue = chooserRow(R.string.single_title, describeSingleAction()) { chooseSingleAction() }.value
+        // Every gesture takes any action; its timing only shows once it has one.
+        fun gesture(section: Int, button: BackGestureButton, row: Int, slider: (SettingsPage.Card.() -> View)? = null) {
+            page.sectionHeader(section)
+            buildShoulderRow(page, button, row, slider)
         }
-
-        page.sectionHeader(R.string.double_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.double_enabled, R.string.double_title, prefs.doubleTapEnabled, readValue = { prefs.doubleTapEnabled }) { prefs.doubleTapEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint, readValue = { prefs.doubleTapMs }) { prefs.doubleTapMs = it }
-            }
+        gesture(R.string.single_section_title, BackGestureButton.SINGLE, R.string.back_single_row)
+        gesture(R.string.double_section_title, BackGestureButton.DOUBLE, R.string.back_double_row) {
+            subOptions { sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint, readValue = { prefs.doubleTapMs }) { prefs.doubleTapMs = it } }
         }
-
-        page.sectionHeader(R.string.tap_hold_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.tap_hold_enabled, R.string.tap_hold_title, prefs.tapHoldEnabled, readValue = { prefs.tapHoldEnabled }) { prefs.tapHoldEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.tap_hold_speed, 500, 2000, 100, prefs.tapHoldMs, R.string.tap_hold_hint, readValue = { prefs.tapHoldMs }) { prefs.tapHoldMs = it }
-            }
+        gesture(R.string.tap_hold_section_title, BackGestureButton.TAP_HOLD, R.string.back_tap_hold_row) {
+            subOptions { sliderRow(R.string.tap_hold_speed, 500, 2000, 100, prefs.tapHoldMs, R.string.tap_hold_hint, readValue = { prefs.tapHoldMs }) { prefs.tapHoldMs = it } }
         }
-
-        page.sectionHeader(R.string.hold_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.hold_enabled, R.string.hold_title, prefs.holdEnabled, readValue = { prefs.holdEnabled }) { prefs.holdEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it }
-            }
+        gesture(R.string.hold_section_title, BackGestureButton.HOLD, R.string.back_hold_row) {
+            subOptions { sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it } }
         }
     }
 
     private fun buildSettings(page: SettingsPage) {
         page.sectionHeader(R.string.settings_switcher)
         page.card {
-            toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
-                prefs.switcherShowsAllApps = it
-            }
             toggleRow(R.string.switcher_controller, R.string.switcher_controller_hint, prefs.switcherControllerEnabled, readValue = { prefs.switcherControllerEnabled }) {
                 prefs.switcherControllerEnabled = it
             }
@@ -290,10 +269,10 @@ class SettingsActivity : Activity() {
             }
         }
 
-        page.sectionHeader(R.string.settings_reset)
+        page.sectionHeader(R.string.backup_section)
         page.card {
-            actionRow(R.string.unbind_optionals, R.string.settings_unbind_scope) { confirmUnbindOptionals() }
-            actionRow(R.string.reset_settings, R.string.settings_reset_scope) { confirmResetSettings() }
+            actionRow(R.string.backup_save, R.string.backup_save_hint) { startBackupSave() }
+            actionRow(R.string.backup_load, R.string.backup_load_hint) { startBackupLoad() }
         }
     }
 
@@ -357,7 +336,6 @@ class SettingsActivity : Activity() {
             else -> R.string.dpad_root_missing
         })
         rootWarning.row.visibility = if ((dpadNeeds || sticksNeed) && !PService.cachedAvailable()) View.VISIBLE else View.GONE
-        singleValue?.text = describeSingleAction()
         statusLabel?.text = serviceStatusText(status)
         val enabled = isAccessibilityServiceEnabled()
         openA11yHandle.row.visibility = if (enabled) View.GONE else View.VISIBLE
@@ -368,42 +346,9 @@ class SettingsActivity : Activity() {
 
     private data class Choice(val value: String, val label: String)
 
-    private fun launchers(): List<Choice> {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_SECONDARY_HOME)
-        launcherChoices?.let { return it }
-        return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL).map {
-            Choice(
-                "${it.activityInfo.packageName}/${it.activityInfo.name}",
-                getString(R.string.single_launcher_named, it.loadLabel(packageManager)),
-            )
-        }.distinctBy { it.value }.also { launcherChoices = it }
-    }
-
-    private fun describeSingleAction(action: String = prefs.singleAction): String = when (action) {
-        Prefs.SINGLE_BACK -> getString(R.string.single_back)
-        Prefs.SINGLE_LAUNCHER -> getString(R.string.single_launcher_default)
-        else -> launchers().firstOrNull { it.value == action }?.label ?: getString(R.string.single_launcher_default)
-    }
-
-    private fun chooseSingleAction() {
-        val choices = listOf(
-            Choice(Prefs.SINGLE_BACK, getString(R.string.single_back)),
-            Choice(Prefs.SINGLE_LAUNCHER, getString(R.string.single_launcher_default)),
-        ) + launchers()
-        AlertDialog.Builder(this)
-            .setTitle(R.string.single_dialog_title)
-            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == prefs.singleAction }) { dialog, which ->
-                prefs.singleAction = choices[which].value
-                dialog.dismiss()
-                refresh()
-            }
-            .show()
-    }
-
     /** Every launchable app on the device, shown only after choosing "Launch app". */
     private fun allApps(): List<Choice> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        launcherChoices?.let { return it }
         return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL).map {
             Choice(it.activityInfo.packageName, it.loadLabel(packageManager).toString())
         }.distinctBy { it.value }.sortedBy { it.label }
@@ -413,6 +358,9 @@ class SettingsActivity : Activity() {
         Choice("", getString(R.string.shoulder_none)),
         Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
         Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
+        Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
+        Choice(Prefs.SHOULDER_SWITCHER, getString(R.string.shoulder_switcher)),
+        Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
         Choice(Prefs.SHOULDER_RECENTS, getString(R.string.shoulder_recents)),
         Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
         Choice(Prefs.SHOULDER_FLICK_LEFT, getString(R.string.shoulder_flick_left)),
@@ -622,6 +570,8 @@ class SettingsActivity : Activity() {
         val timingOptions: View? = null,
     ) {
         var focusOptions: SettingsPage.FocusOptionsHandle? = null
+        /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
+        var switcherOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
@@ -755,6 +705,15 @@ class SettingsActivity : Activity() {
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
         row.displayOptions.visibility = row.display.visibility
         row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
+        val switcher = action == Prefs.SHOULDER_SWITCHER
+        if (switcher && row.switcherOptions == null) {
+            row.switcherOptions = row.card.subOptions {
+                toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
+                    prefs.switcherShowsAllApps = it
+                }
+            }
+        }
+        row.switcherOptions?.visibility = if (switcher) View.VISIBLE else View.GONE
         row.targetOptions.visibility = row.target.row.visibility
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
@@ -814,16 +773,103 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun confirmUnbindOptionals() = showChanges(
-        SettingsChangePlan.create(prefs.snapshot(), null, SettingsChangeAction.UNBIND),
-    )
+    // The file picker is the whole permission model: the user hands over one file, nothing else.
+    private fun startBackupSave() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("application/json").putExtra(Intent.EXTRA_TITLE, SettingsBackup.fileName(appVersionName()))
+        runCatching { startActivityForResult(intent, REQUEST_BACKUP_SAVE) }
+            .onFailure { Toast.makeText(this, R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
+    }
 
-    private fun confirmResetSettings() = showChanges(
-        SettingsChangePlan.create(prefs.snapshot(), null, SettingsChangeAction.PRESET),
-    )
+    private fun startBackupLoad() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
+            .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/plain", "application/octet-stream"))
+        runCatching { startActivityForResult(intent, REQUEST_BACKUP_LOAD) }
+            .onFailure { Toast.makeText(this, R.string.backup_read_failed, Toast.LENGTH_LONG).show() }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data?.takeIf { resultCode == RESULT_OK } ?: return
+        when (requestCode) {
+            REQUEST_BACKUP_SAVE -> saveBackup(uri)
+            REQUEST_BACKUP_LOAD -> loadBackup(uri)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun saveBackup(uri: Uri) {
+        val json = SettingsBackup.write(prefs.snapshot(), appVersionName(),
+            packageManager.getPackageInfo(packageName, 0).let { it.longVersionCode })
+        Thread {
+            val saved = runCatching {
+                contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+            }.isSuccess
+            runOnUiThread { if (!isFinishing && !isDestroyed) Toast.makeText(this, if (saved) R.string.backup_saved else R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun loadBackup(uri: Uri) {
+        Thread {
+            // One byte over the limit is enough to tell a file is too large, without reading all of it.
+            val bytes = runCatching {
+                contentResolver.openInputStream(uri)!!.use { input ->
+                    val out = java.io.ByteArrayOutputStream()
+                    val chunk = ByteArray(8192)
+                    while (out.size() <= SettingsBackup.MAX_BYTES) {
+                        val n = input.read(chunk, 0, minOf(chunk.size, SettingsBackup.MAX_BYTES + 1 - out.size()))
+                        if (n < 0) break
+                        out.write(chunk, 0, n)
+                    }
+                    out.toByteArray()
+                }
+            }.getOrNull()
+            runOnUiThread { if (!isFinishing && !isDestroyed) offerBackup(bytes) }
+        }.apply { isDaemon = true }.start()
+    }
+
+    /** What a picked file leads to: a refusal, or the version hint and the preview of every change. */
+    internal fun offerBackup(bytes: ByteArray?) {
+        if (bytes == null) { showBackupProblem(R.string.backup_read_failed); return }
+        when (val result = SettingsBackup.read(String(bytes, Charsets.UTF_8))) {
+            is SettingsBackup.Result.Rejected -> showBackupProblem(when (result.reason) {
+                SettingsBackup.Rejection.TOO_LARGE -> R.string.backup_too_large
+                SettingsBackup.Rejection.NOT_JSON -> R.string.backup_not_json
+                SettingsBackup.Rejection.NOT_A_BACKUP -> R.string.backup_not_a_backup
+            })
+            is SettingsBackup.Result.Loaded -> confirmBackup(result)
+        }
+    }
+
+    private fun showBackupProblem(message: Int) {
+        AlertDialog.Builder(this).setTitle(R.string.backup_problem_title).setMessage(message)
+            .setPositiveButton(android.R.string.ok, null).show()
+    }
+
+    /** A backup from another version is allowed, but says so first: it may not fit, and that is all it says. */
+    private fun confirmBackup(loaded: SettingsBackup.Result.Loaded) {
+        val plan = SettingsChangePlan(prefs.snapshot(), loaded.state, null, SettingsChangeAction.RESTORE)
+        val version = appVersionName()
+        val compatibility = SettingsBackup.compatibility(loaded.info, version)
+        if (compatibility == SettingsBackup.Compatibility.SAME) { showChanges(plan); return }
+        val message = when (compatibility) {
+            SettingsBackup.Compatibility.OLDER -> R.string.backup_version_older
+            SettingsBackup.Compatibility.NEWER -> R.string.backup_version_newer
+            else -> R.string.backup_version_unknown
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.backup_version_title)
+            .setMessage(if (compatibility == SettingsBackup.Compatibility.UNKNOWN) getString(message, version)
+                else getString(message, loaded.info.appVersion ?: "?", version))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.backup_continue) { _, _ -> showChanges(plan) }
+            .show()
+    }
 
     private fun showChanges(plan: SettingsChangePlan) {
         val scope = getString(plan.section?.titleRes ?: R.string.settings_entire_app)
+        val restore = plan.action == SettingsChangeAction.RESTORE
         val preset = plan.action == SettingsChangeAction.PRESET
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -836,24 +882,37 @@ class SettingsActivity : Activity() {
                 setPadding(0, dp(8), 0, dp(8))
             })
         }
-        if (plan.isEmpty) line(getString(if (preset) R.string.settings_already_preset else R.string.settings_already_unbound))
+        if (plan.isEmpty) line(getString(when {
+            restore -> R.string.backup_matches
+            preset -> R.string.settings_already_preset
+            else -> R.string.settings_already_unbound
+        }))
         else {
             line(getString(R.string.settings_changes_scope, scope))
             changeLines(plan).forEach(::line)
             if (plan.removesToggle) line(getString(R.string.settings_unbind_reactivates))
         }
         val builder = AlertDialog.Builder(this)
-            .setTitle(getString(if (preset) R.string.settings_preset_title else R.string.settings_unbind_title, scope))
+            .setTitle(when {
+                restore -> getString(R.string.backup_restore_title)
+                preset -> getString(R.string.settings_preset_title, scope)
+                else -> getString(R.string.settings_unbind_title, scope)
+            })
             .setView(ScrollView(this).apply { addView(content) })
         if (plan.isEmpty) builder.setPositiveButton(android.R.string.ok, null)
         else builder.setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.settings_apply) { _, _ ->
                 if (prefs.applySettings(plan.before, plan.after)) {
                     invalidatePages()
-                    Toast.makeText(this, if (preset) R.string.reset_settings_done else R.string.unbind_optionals_done, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, when {
+                        restore -> R.string.backup_restored
+                        preset -> R.string.reset_settings_done
+                        else -> R.string.unbind_optionals_done
+                    }, Toast.LENGTH_SHORT).show()
                 } else {
                     // A preview is a promise: changed preferences require a new confirmation.
-                    showChanges(SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action))
+                    showChanges(if (restore) plan.copy(before = prefs.snapshot())
+                    else SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action))
                 }
             }
         builder.show()
@@ -890,12 +949,8 @@ class SettingsActivity : Activity() {
         }
         val a = plan.before
         val b = plan.after
-        addChange(getString(R.string.single_section_title), describeSingleAction(a.singleAction), describeSingleAction(b.singleAction))
-        addChange(getString(R.string.double_enabled), onOff(a.doubleEnabled), onOff(b.doubleEnabled))
         addChange(getString(R.string.settings_double_time), ms(a.doubleMs), ms(b.doubleMs))
-        addChange(getString(R.string.tap_hold_enabled), onOff(a.tapHoldEnabled), onOff(b.tapHoldEnabled))
         addChange(getString(R.string.settings_tap_hold_time), ms(a.tapHoldMs), ms(b.tapHoldMs))
-        addChange(getString(R.string.hold_enabled), onOff(a.holdEnabled), onOff(b.holdEnabled))
         addChange(getString(R.string.settings_hold_time), ms(a.holdMs), ms(b.holdMs))
         addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
@@ -904,6 +959,8 @@ class SettingsActivity : Activity() {
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
         addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))
         val buttons = listOf(
+            BackGestureButton.SINGLE to R.string.back_single_row, BackGestureButton.DOUBLE to R.string.back_double_row,
+            BackGestureButton.TAP_HOLD to R.string.back_tap_hold_row, BackGestureButton.HOLD to R.string.back_hold_row,
             ShoulderButton.L1 to R.string.shoulder_l1, ShoulderButton.R1 to R.string.shoulder_r1,
             ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
             DpadDirection.UP to R.string.dpad_up, DpadDirection.DOWN to R.string.dpad_down,
@@ -953,7 +1010,6 @@ class SettingsActivity : Activity() {
         stickBoxes.clear()
         stickTabBar = null
         comboRows.clear()
-        singleValue = null
         toggleButtonsValue = null
         toggleDuration = null
         statusLabel = null
@@ -1007,6 +1063,8 @@ class SettingsActivity : Activity() {
     companion object {
         const val EXTRA_INDICATOR_BUTTON = "indicator_button"
         private const val REQUEST_NOTIFICATIONS = 1
+        private const val REQUEST_BACKUP_SAVE = 2
+        private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
     }
 }

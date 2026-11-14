@@ -23,7 +23,6 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                 TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a shoulder button to use its action. Unassigned buttons work as usual." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
-                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Load defaults" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
                 Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
             TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Shoulder Button Binds" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
@@ -78,10 +77,10 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                     Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
               SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                 LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L2 screen: Top screen. Double-tap to change."
+                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L2 screen: Both screens. Double-tap to change."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Top screen" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
               LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R2 action: Not set. Double-tap to change."

@@ -8,7 +8,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
         TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=42.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
     LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
         View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]

@@ -8,7 +8,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
         TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=42.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
     LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
         View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
@@ -32,7 +32,6 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                 TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and push a stick in a direction to use its action. Each push runs the action once; return the stick to the center before the next one. Pressing a stick in works too. Volume and brightness repeat while you hold, and get faster the longer you do. A stick without any action works as usual." textSizePx=48.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
-                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Load defaults" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
                 Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
             LinearLayout visibility=VISIBLE minHeight=0 padding=[12,12,12,12] clickable=false focusable=false margin=[0,48,0,0]
               TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Left stick" textSizePx=45.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false

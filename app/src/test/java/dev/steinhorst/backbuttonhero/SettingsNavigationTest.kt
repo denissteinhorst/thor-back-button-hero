@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.content.Intent
 import android.os.Looper
 import android.view.View
@@ -22,6 +23,11 @@ import org.robolectric.shadows.ShadowDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")
 class SettingsNavigationTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
     private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible()
 
     private fun layout(activity: SettingsActivity, width: Int = 1000, height: Int = 600) {
@@ -86,7 +92,6 @@ class SettingsNavigationTest {
         assertEquals(activity.serviceStatusText(ServiceStatus.OFF), warning.text.toString())
         assertEquals(android.view.Gravity.END, warning.gravity and android.view.Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK)
         assertNotNull(actions)
-        assertNull(find(topBar) { it is TextView && it.text.toString() == activity.getString(R.string.settings_preset) })
         assertNull(find(topBar) { it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) })
         val navigation = root(activity).findViewWithTag<View>("settings_navigation")
         val content = root(activity) as ViewGroup
@@ -94,7 +99,7 @@ class SettingsNavigationTest {
             .map { (it as android.graphics.drawable.ColorDrawable).color }
         assertEquals(3, colors.toSet().size)
         selectSettingsPage(activity, SettingsSection.HELP)
-        listOf(R.string.settings_preset, R.string.settings_unbind).forEach { label ->
+        listOf(R.string.settings_unbind).forEach { label ->
             assertNull(find(root(activity)) { it is TextView && it.text.toString() == activity.getString(label) })
         }
     }
@@ -162,42 +167,65 @@ class SettingsNavigationTest {
         val activity = controller.get()
         val prefs = Prefs(activity)
         val double = find(page(activity, SettingsSection.BASIC)) {
-            it is Switch && it.contentDescription == activity.getString(R.string.double_enabled)
-        } as Switch
+            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_switcher)
+        } as TextView
         controller.pause()
         prefs.doubleTapEnabled = false
         controller.resume()
-        assertFalse(double.isChecked)
+        assertEquals(activity.getString(R.string.shoulder_none), double.text.toString())
         assertFalse(prefs.doubleTapEnabled)
     }
 
     @Test
-    fun `reset invalidates both visited and unvisited pages and keeps current destination`() {
+    fun `the both-screens switch lives on the app switcher action, not on the Settings page`() {
+        val controller = open()
+        val activity = controller.get()
+        val prefs = Prefs(activity)
+        fun switch(section: SettingsSection) = find(page(activity, section)) {
+            it is Switch && it.contentDescription == activity.getString(R.string.switcher_all_apps)
+        } as Switch?
+        // The factory double press opens the switcher, so its row carries the switch.
+        val onRow = switch(SettingsSection.BASIC)!!
+        assertTrue(onRow.isShown)
+        assertFalse(onRow.isChecked)
+        onRow.performClick()
+        assertTrue(prefs.switcherShowsAllApps)
+        selectSettingsPage(activity, SettingsSection.SETTINGS)
+        assertNull(switch(SettingsSection.SETTINGS))
+        // Another action hides it; the preference itself stays as it was.
+        selectSettingsPage(activity, SettingsSection.BASIC)
+        controller.pause()
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, Prefs.SHOULDER_HOME)
+        controller.resume()
+        assertFalse(onRow.isShown)
+        assertTrue(prefs.switcherShowsAllApps)
+        // Any row can take the action and gets its own switch, kept in step with the preference.
+        prefs.setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_SWITCHER)
+        controller.pause()
+        controller.resume()
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        assertTrue(switch(SettingsSection.SHOULDERS)!!.isChecked)
+    }
+
+    @Test
+    fun `an applied change invalidates both visited and unvisited pages and keeps current destination`() {
         val activity = open().get()
         Prefs(activity).apply {
-            doubleTapEnabled = false
-            setShoulderAction(ShoulderButton.L1, "")
+            toggleButtons = Prefs.TOGGLE_L2_R2
+            setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_FLICK_LEFT)
         }
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         selectSettingsPage(activity, SettingsSection.SETTINGS)
-        var reset = find(root(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.reset_settings) }!!
-        while (!reset.isClickable) reset = reset.parent as View
-        reset.performClick()
+        var unbind = find(root(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) }!!
+        while (!unbind.isClickable) unbind = unbind.parent as View
+        unbind.performClick()
         ShadowAlertDialog.getLatestAlertDialog().getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(Prefs(activity).doubleTapEnabled)
+        assertEquals(Prefs.TOGGLE_NONE, Prefs(activity).toggleButtons)
         assertNotNull(page(activity, SettingsSection.SETTINGS))
-        selectSettingsPage(activity, SettingsSection.BASIC)
-        assertTrue((find(page(activity, SettingsSection.BASIC)) {
-            it is Switch && it.contentDescription == activity.getString(R.string.double_enabled)
-        } as Switch).isChecked)
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         assertNotNull(find(page(activity, SettingsSection.SHOULDERS)) {
             it is TextView && it.text.toString() == activity.getString(R.string.shoulder_flick_left)
-        })
-        selectSettingsPage(activity, SettingsSection.DPAD)
-        assertNotNull(find(page(activity, SettingsSection.DPAD)) {
-            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_brightness_up)
         })
     }
 
@@ -284,10 +312,23 @@ class SettingsNavigationTest {
         for (width in listOf(1000, 380)) {
             selectSettingsPage(activity, SettingsSection.BASIC)
             layout(activity, width)
-            listOf(R.string.double_enabled, R.string.tap_hold_enabled, R.string.hold_enabled).forEach { title ->
-                check(find(root(activity)) {
-                    it is Switch && it.contentDescription == activity.getString(title)
-                }!!)
+            // The three timing sliders (shown while their gesture has an action) share one set of edges.
+            val sliders = mutableListOf<android.widget.SeekBar>()
+            fun collectSliders(view: View) {
+                if (view is android.widget.SeekBar && view.isShown) sliders += view
+                if (view is ViewGroup) for (i in 0 until view.childCount) collectSliders(view.getChildAt(i))
+            }
+            collectSliders(page(activity, SettingsSection.BASIC))
+            assertEquals(3, sliders.size)
+            sliders.forEach { slider ->
+                val column = slider.parent as ViewGroup
+                val label = column.getChildAt(0)
+                val hint = column.getChildAt(2)
+                assertEquals(left(label), left(slider))
+                assertEquals(left(label), left(hint))
+                assertEquals(left(label) + label.width, left(slider) + slider.width)
+                assertEquals(0, slider.paddingStart)
+                assertEquals(0, slider.paddingEnd)
             }
             selectSettingsPage(activity, SettingsSection.SETTINGS)
             layout(activity, width)

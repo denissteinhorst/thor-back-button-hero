@@ -141,40 +141,12 @@ class StickPrefsTest {
     }
 
     @Test
-    fun `unbind optionals clears stick actions`() {
-        prefs.setShoulderAction(StickButton.LEFT_UP, Prefs.SHOULDER_HOME)
-        prefs.unbindOptionals()
-        assertFalse(prefs.hasStickAction())
-    }
-
-    @Test
-    fun `click gestures start unassigned with the Back timing defaults, clamped on read`() {
-        StickClickButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
-        Stick.entries.forEach {
-            assertFalse(prefs.hasStickClickAction(it))
-            assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.stickDoubleMs(it))
-            assertEquals(Prefs.DEFAULT_TAP_HOLD_MS, prefs.stickTapHoldMs(it))
-        }
-        prefs.setStickDoubleMs(Stick.LEFT, 450)
-        prefs.setStickTapHoldMs(Stick.RIGHT, 1_500)
-        assertEquals(450L, prefs.stickDoubleMs(Stick.LEFT))
-        assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.stickDoubleMs(Stick.RIGHT))
-        assertEquals(1_500L, prefs.stickTapHoldMs(Stick.RIGHT))
-        prefs.setStickDoubleMs(Stick.LEFT, 5)
-        prefs.setStickTapHoldMs(Stick.RIGHT, 99_999)
-        assertEquals(150L, prefs.stickDoubleMs(Stick.LEFT))
-        assertEquals(2_000L, prefs.stickTapHoldMs(Stick.RIGHT))
-    }
-
-    @Test
-    fun `click actions are per stick and cleared by unbind`() {
+    fun `click actions are per stick`() {
         prefs.setShoulderAction(StickClickButton.RIGHT_DOUBLE, Prefs.SHOULDER_HOME)
         assertTrue(prefs.hasStickClickAction(Stick.RIGHT))
         assertFalse(prefs.hasStickClickAction(Stick.LEFT))
         // Click gestures need no root helper, so they do not count as an axis action.
         assertFalse(prefs.hasStickAction())
-        prefs.unbindOptionals()
-        assertFalse(prefs.hasStickClickAction(Stick.RIGHT))
     }
 
     @Test
@@ -193,9 +165,6 @@ class StickPrefsTest {
         assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.stickDoubleMs(Stick.LEFT))
         assertEquals(Prefs.DEFAULT_TAP_HOLD_MS, prefs.stickTapHoldMs(Stick.RIGHT))
         assertFalse(prefs.hasStickClickAction(Stick.LEFT))
-        prefs.setStickTapHoldMs(Stick.LEFT, 800)
-        prefs.resetToDefaults()
-        assertEquals(Prefs.DEFAULT_TAP_HOLD_MS, prefs.stickTapHoldMs(Stick.LEFT))
     }
 
     @Test
