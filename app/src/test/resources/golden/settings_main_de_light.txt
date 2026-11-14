@@ -5,120 +5,123 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
         Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menü" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
         ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
         TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
-        TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Bedienungshilfen-Dienst ist aus. Back Button Hero braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen." textSizePx=42.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
-    LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
-      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
-          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
-        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
-          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bedienungshilfen-Dienst einschalten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
-          LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Lege fest, was kurzes Drücken, Doppeldrücken und Halten der Back-Taste auslösen." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
-              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-              LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
-                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Belegungen lösen" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
-            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Einfacher Tastendruck" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste drücken: Nicht belegt. Zum Ändern doppeltippen."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+        TextView visibility=VISIBLE minHeight=0 padding=[36,12,36,12] clickable=false focusable=false margin=[24,0,24,0] contentDescription="Bedienungshilfen-Dienst ist inaktiv. Back Button Hero braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen." text="Dienst inaktiv" textSizePx=39.0 textColor=#FFFF5722 maxLines=1 bold=false
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+            LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Lege fest, was kurzes Drücken, Doppeldrücken und Halten der Back-Taste auslösen." textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                  View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
+                    Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Belegungen lösen" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Einfacher Tastendruck" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste drücken: Nicht belegt. Zum Ändern doppeltippen."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste drücken: Beide Bildschirme. Zum Ändern doppeltippen."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Doppelter Tastendruck" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste doppelt drücken: Nicht belegt. Zum Ändern doppeltippen."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste doppelt drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Doppeltipp-Tempo: 300 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Doppeltipp-Tempo: 300 ms" max=9 progress=3
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst, wenn ein Doppeldruck belegt ist. Standard: 300 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste drücken: Beide Bildschirme. Zum Ändern doppeltippen."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Doppelter Tastendruck" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste doppelt drücken: Nicht belegt. Zum Ändern doppeltippen."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste doppelt drücken: Beide Bildschirme. Zum Ändern doppeltippen."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste doppelt drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Tippen und halten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste tippen und halten: Nicht belegt. Zum Ändern doppeltippen."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste tippen und halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tipp-und-Haltezeit: 1000 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Tipp-und-Haltezeit: 1000 ms" max=15 progress=5
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Back einmal drücken, dann erneut drücken und halten. Ein einfacher Tipp wartet etwas länger, solange ein Doppeldruck belegt ist. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Doppeltipp-Tempo: 300 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Doppeltipp-Tempo: 300 ms" max=9 progress=3
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst, wenn ein Doppeldruck belegt ist. Standard: 300 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste doppelt drücken: Beide Bildschirme. Zum Ändern doppeltippen."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Tippen und halten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste tippen und halten: Nicht belegt. Zum Ändern doppeltippen."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste tippen und halten: Beide Bildschirme. Zum Ändern doppeltippen."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste tippen und halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Halten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste halten: Nicht belegt. Zum Ändern doppeltippen."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Haltedauer: 1000 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Haltedauer: 1000 ms" max=15 progress=5
-                    TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Wie lange Back gehalten werden muss. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tipp-und-Haltezeit: 1000 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Tipp-und-Haltezeit: 1000 ms" max=15 progress=5
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Back einmal drücken, dann erneut drücken und halten. Ein einfacher Tipp wartet etwas länger, solange ein Doppeldruck belegt ist. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste tippen und halten: Beide Bildschirme. Zum Ändern doppeltippen."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="Halten" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste halten: Nicht belegt. Zum Ändern doppeltippen."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste halten: Beide Bildschirme. Zum Ändern doppeltippen."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Nicht belegt" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Haltedauer: 1000 ms" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,12,0,0] contentDescription="Haltedauer: 1000 ms" max=15 progress=5
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Wie lange Back gehalten werden muss. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste halten: Beide Bildschirme. Zum Ändern doppeltippen."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Bildschirme" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[72,72,72,72] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back Button Hero benötigt die Berechtigung „Bedienungshilfen“, um arbeiten zu können." textSizePx=54.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0] text="Tippe auf den Button, aktiviere Back Button Hero in den Bedienungshilfen und kehre danach zur App zurück." textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,60,0,0] text="Bedienungshilfen-Dienst einschalten" textSizePx=45.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false

@@ -305,4 +305,8 @@
     <string name="exceptions_modal_native">All four Back gestures are off for this app, so these shortcuts cannot be reached.</string>
     <string name="exceptions_modal_inactive">This exception is switched off. Switch it on to change these settings.</string>
     <string name="exceptions_done">Done</string>
+    <string name="status_chip_off">Service off</string>
+    <string name="status_chip_unresponsive">No response</string>
+    <string name="service_blocker_title">%1$s needs the accessibility permission to work.</string>
+    <string name="service_blocker_hint">Tap the button, switch on %1$s in the accessibility settings, then come back to this app.</string>
 </resources>

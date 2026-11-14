@@ -53,6 +53,13 @@ fun Activity.serviceStatusText(status: ServiceStatus): String = when (status) {
     ServiceStatus.OFF -> getString(R.string.status_off, getString(R.string.app_name))
 }
 
+/** The short form for the top bar, where the full sentence would push the layout around. */
+fun Activity.serviceChipText(status: ServiceStatus): String = when (status) {
+    ServiceStatus.ON -> getString(R.string.status_on)
+    ServiceStatus.UNRESPONSIVE -> getString(R.string.status_chip_unresponsive)
+    ServiceStatus.OFF -> getString(R.string.status_chip_off)
+}
+
 /**
  * Shared row/card builder for the settings screens: a grouped list of cards, each holding
  * related rows with consistent spacing, touch targets and light/dark-aware colors. Plain

@@ -5,108 +5,111 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
         Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menu" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
         ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
         TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad Binds" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-        TextView visibility=VISIBLE minHeight=0 padding=[36,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." textSizePx=42.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
-    LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
-      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-        LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
-          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
-        View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-        LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
-          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Turn on accessibility service" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-      ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
-        LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Basic Controls" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Shoulder Button Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Analog Stick Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="D-Pad Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Exceptions" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Settings" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,0] text="Update & Help" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
-          LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a D-pad direction to use its action. Unassigned directions work as usual." textSizePx=48.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
-              LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
-                Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
-            TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad Binds" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up action: Not set. Double-tap to change."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad up" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+        TextView visibility=VISIBLE minHeight=0 padding=[36,12,36,12] clickable=false focusable=false margin=[24,0,24,0] contentDescription="Accessibility service is off. Back Button Hero needs it to read the Back button and show the switcher." text="Service off" textSizePx=39.0 textColor=#FFFF7043 maxLines=1 bold=false
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+            LinearLayout visibility=GONE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable." textSizePx=45.0 textColor=#FFFF7043 maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Basic Controls" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Shoulder Button Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Analog Stick Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="D-Pad Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Exceptions" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Settings" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,0] text="Update & Help" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=144 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold Back and press a D-pad direction to use its action. Unassigned directions work as usual." textSizePx=48.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+                  View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[12,0,12,12] clickable=false focusable=false margin=[0,0,0,0]
+                    Button visibility=VISIBLE minHeight=144 padding=[24,24,24,24] clickable=true focusable=true margin=[0,0,0,0] text="Clear bindings" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad Binds" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up action: Not set. Double-tap to change."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up screen: Both screens. Double-tap to change."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad up" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down action: Not set. Double-tap to change."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad down" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up screen: Both screens. Double-tap to change."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down action: Not set. Double-tap to change."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down screen: Both screens. Double-tap to change."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad down" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left action: Not set. Double-tap to change."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down screen: Both screens. Double-tap to change."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left action: Not set. Double-tap to change."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left screen: Both screens. Double-tap to change."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
-              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right action: Not set. Double-tap to change."
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad right" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
-                ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left screen: Both screens. Double-tap to change."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right action: Not set. Double-tap to change."
                     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
-              SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                  LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right screen: Both screens. Double-tap to change."
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad right" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                     ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                        Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
+                      LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right screen: Both screens. Double-tap to change."
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                          TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Both screens" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[72,72,72,72] clickable=false focusable=false margin=[0,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back Button Hero needs the accessibility permission to work." textSizePx=54.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0] text="Tap the button, switch on Back Button Hero in the accessibility settings, then come back to this app." textSizePx=45.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,60,0,0] text="Turn on accessibility service" textSizePx=45.0 textColor=#FF000000 maxLines=2147483647 bold=false

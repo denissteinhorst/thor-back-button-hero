@@ -1,6 +1,5 @@
 Page: BASIC
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Back button press action: Not set. Double-tap to change.
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
@@ -18,9 +17,10 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Back but
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Back button hold screen: Both screens. Double-tap to change.
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SHOULDERS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L1 action: Not set. Double-tap to change.
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
@@ -38,9 +38,10 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=R2 actio
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=R2 screen: Both screens. Double-tap to change.
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: STICKS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=TextView minHeightDp=0 focusable=true contentDescription=(none)
 clickable=TextView minHeightDp=0 focusable=true contentDescription=(none)
@@ -100,9 +101,10 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Right st
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Right stick tap and hold screen: Both screens. Double-tap to change.
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: DPAD
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad up action: Not set. Double-tap to change.
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
@@ -120,24 +122,29 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad ri
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad right screen: Both screens. Double-tap to change.
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: EXCEPTIONS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SETTINGS
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Control Recents with the controller
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: HELP
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
-clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Open GitHub repository
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)

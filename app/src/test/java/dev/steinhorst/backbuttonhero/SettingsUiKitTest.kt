@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,5 +62,16 @@ class SettingsUiKitTest {
         val activity = activity()
         val expected = activity.getString(R.string.status_off, activity.getString(R.string.app_name))
         assertEquals(expected, activity.serviceStatusText(ServiceStatus.OFF))
+    }
+
+    @Test
+    fun `the top bar pill is short for every status`() {
+        val activity = activity()
+        assertEquals(activity.getString(R.string.status_on), activity.serviceChipText(ServiceStatus.ON))
+        assertEquals(activity.getString(R.string.status_chip_unresponsive), activity.serviceChipText(ServiceStatus.UNRESPONSIVE))
+        assertEquals(activity.getString(R.string.status_chip_off), activity.serviceChipText(ServiceStatus.OFF))
+        listOf(ServiceStatus.UNRESPONSIVE, ServiceStatus.OFF).forEach {
+            assertTrue(activity.serviceChipText(it).length < activity.serviceStatusText(it).length / 2)
+        }
     }
 }

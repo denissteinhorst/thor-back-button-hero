@@ -36,7 +36,6 @@ class SettingsActivity : Activity() {
     private var toggleButtonsValue: TextView? = null
     private var toggleDuration: SettingsPage.SliderHandle? = null
     private var statusLabel: TextView? = null
-    private lateinit var openA11yHandle: SettingsPage.ActionHandle
     private val comboRows = mutableMapOf<String, ComboRow>()
     private val stickPages = mutableListOf<SettingsPage>()
     private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
@@ -54,23 +53,27 @@ class SettingsActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), 0, dp(16), 0)
         }
+        // A compact pill: one short line of fixed height, so it appearing never moves the bar.
         serviceWarning = TextView(this).apply {
             tag = "settings_service_warning"
-            textSize = 14f
-            setTextColor(themedColor(android.R.attr.colorError, Color.parseColor("#B3261E")))
+            val error = themedColor(android.R.attr.colorError, Color.parseColor("#B3261E"))
+            textSize = 13f
+            setTextColor(error)
             setTypeface(typeface, Typeface.BOLD)
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            textAlignment = View.TEXT_ALIGNMENT_VIEW_END
-            setPadding(dp(12), dp(8), dp(8), dp(8))
+            gravity = Gravity.CENTER
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(dp(12), dp(4), dp(12), dp(4))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.argb(36, Color.red(error), Color.green(error), Color.blue(error)))
+                cornerRadius = dp(14).toFloat()
+            }
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         SettingsPage(this, warnings).card {
             rootWarning = warningRow(getString(R.string.dpad_root_missing))
-            openA11yHandle = actionRow(R.string.enable_service) {
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-            }
         }
-        navigation = SettingsNavigation(this, savedInstanceState, warnings, serviceWarning, ::buildPage, ::refresh)
+        navigation = SettingsNavigation(this, savedInstanceState, warnings, serviceWarning, serviceBlockerCard(), ::buildPage, ::refresh)
         setContentView(navigation.view)
         openIndicatorFromIntent()
         ensureNotificationPermission()
@@ -318,6 +321,50 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    /** What stands in the middle of the scrim while the service is off: why, and the one thing to do. */
+    private fun serviceBlockerCard(): View {
+        val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
+        val surface = settingsSurfaceColor(SettingsSurface.INTRODUCTION)
+        return LinearLayout(this).apply {
+            tag = "settings_service_blocker_card"
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(24), dp(24), dp(24))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(surface)
+                cornerRadius = dp(24).toFloat()
+            }
+            elevation = dp(8).toFloat()
+            addView(TextView(this@SettingsActivity).apply {
+                tag = "settings_service_blocker_title"
+                text = getString(R.string.service_blocker_title, getString(R.string.app_name))
+                textSize = 18f
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(themedColor(android.R.attr.textColorPrimary, Color.BLACK))
+                gravity = Gravity.CENTER
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(TextView(this@SettingsActivity).apply {
+                text = getString(R.string.service_blocker_hint, getString(R.string.app_name))
+                textSize = 15f
+                setTextColor(themedColor(android.R.attr.textColorSecondary, Color.GRAY))
+                gravity = Gravity.CENTER
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
+            addView(android.widget.Button(this@SettingsActivity).apply {
+                tag = "settings_service_blocker_button"
+                setText(R.string.enable_service)
+                isAllCaps = false
+                textSize = 15f
+                // Dark theme accents are light; the label takes whichever of black and white reads on it.
+                setTextColor(if (Color.luminance(accent) > 0.5f) Color.BLACK else Color.WHITE)
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(accent)
+                    cornerRadius = dp(24).toFloat()
+                }
+                minimumHeight = dp(48)
+                setOnClickListener { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48)).apply { topMargin = dp(20) })
+        }
+    }
+
     private fun refresh() {
         pages.values.forEach { it.refresh() }
         stickPages.forEach { it.refresh() }
@@ -325,7 +372,8 @@ class SettingsActivity : Activity() {
         toggleButtonsValue?.text = toggleButtonsLabel()
         toggleDuration?.setEnabled(prefs.toggleButtons != Prefs.TOGGLE_NONE)
         val status = currentServiceStatus()
-        serviceWarning.text = serviceStatusText(status)
+        serviceWarning.text = serviceChipText(status)
+        serviceWarning.contentDescription = serviceStatusText(status)
         serviceWarning.visibility = if (status == ServiceStatus.ON) View.GONE else View.VISIBLE
         // Without pservice, Back + D-pad has to take window focus (DpadOverlay) and games may pause.
         val dpadNeeds = prefs.hasDpadAction()
@@ -338,10 +386,10 @@ class SettingsActivity : Activity() {
         rootWarning.row.visibility = if ((dpadNeeds || sticksNeed) && !PService.cachedAvailable()) View.VISIBLE else View.GONE
         statusLabel?.text = serviceStatusText(status)
         val enabled = isAccessibilityServiceEnabled()
-        openA11yHandle.row.visibility = if (enabled) View.GONE else View.VISIBLE
-        dividerBefore(openA11yHandle.row)?.visibility = if (!enabled) View.VISIBLE else View.GONE
+        // The navigation selects its first page while it is still being built, before it can be asked.
+        if (::navigation.isInitialized) navigation.setBlocked(!enabled)
         repairHandle?.row?.visibility = if (enabled) View.VISIBLE else View.GONE
-        warnings.visibility = if (rootWarning.row.visibility == View.VISIBLE || !enabled) View.VISIBLE else View.GONE
+        warnings.visibility = if (rootWarning.row.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
 
     private data class Choice(val value: String, val label: String)

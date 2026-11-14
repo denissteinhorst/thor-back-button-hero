@@ -89,8 +89,10 @@ class SettingsNavigationTest {
         val topBar = root(activity).findViewWithTag<ViewGroup>("settings_top_bar")
         val warning = topBar.findViewWithTag<TextView>("settings_service_warning")
         assertNotNull(warning)
-        assertEquals(activity.serviceStatusText(ServiceStatus.OFF), warning.text.toString())
-        assertEquals(android.view.Gravity.END, warning.gravity and android.view.Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK)
+        // A short pill in the bar; the full sentence lives in the blocker card and on the Help page.
+        assertEquals(activity.serviceChipText(ServiceStatus.OFF), warning.text.toString())
+        assertEquals(activity.serviceStatusText(ServiceStatus.OFF), warning.contentDescription.toString())
+        assertEquals(1, warning.maxLines)
         assertNotNull(actions)
         assertNull(find(topBar) { it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) })
         val navigation = root(activity).findViewWithTag<View>("settings_navigation")

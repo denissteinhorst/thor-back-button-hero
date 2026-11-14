@@ -6,7 +6,7 @@
     <string name="no_recent_apps">Keine kürzlich verwendeten Elemente</string>
     <string name="status_on">Bedienungshilfen-Dienst ist aktiv</string>
     <string name="status_unresponsive">Bedienungshilfen-Dienst ist aktiviert, reagiert aber nicht.</string>
-    <string name="status_off">Bedienungshilfen-Dienst ist aus. %1$s braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen.</string>
+    <string name="status_off">Bedienungshilfen-Dienst ist inaktiv. %1$s braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen.</string>
     <string name="enable_service">Bedienungshilfen-Dienst einschalten</string>
     <string name="open_a11y">Bedienungshilfen öffnen</string>
     <string name="repair_service">Dienst reparieren</string>
@@ -302,6 +302,10 @@
     <string name="exceptions_chip_accessibility">%1$s, %2$s. Von Back Button Hero behandelt: %3$d/%4$d. Zum Ändern doppeltippen.</string>
     <string name="exceptions_modal_hint">An: Back Button Hero behandelt es. Aus: Die App bekommt es unverändert, als wäre Back Button Hero nicht installiert.</string>
     <string name="exceptions_modal_native">Alle vier Back-Gesten sind für diese App aus, deshalb sind diese Shortcuts nicht erreichbar.</string>
-    <string name="exceptions_modal_inactive">Diese Ausnahme ist ausgeschaltet. Schalte sie ein, um diese Einstellungen zu ändern.</string>
+    <string name="exceptions_modal_inactive">Diese Ausnahme ist inaktiv. Aktiviere sie, um diese Einstellungen zu ändern.</string>
     <string name="exceptions_done">Fertig</string>
+    <string name="status_chip_off">Dienst inaktiv</string>
+    <string name="status_chip_unresponsive">Reagiert nicht</string>
+    <string name="service_blocker_title">%1$s benötigt die Berechtigung „Bedienungshilfen“, um arbeiten zu können.</string>
+    <string name="service_blocker_hint">Tippe auf den Button, aktiviere %1$s in den Bedienungshilfen und kehre danach zur App zurück.</string>
 </resources>
