@@ -28,32 +28,4 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
             TextView visibility=VISIBLE minHeight=0 padding=[12,72,12,24] clickable=false focusable=false margin=[0,0,0,0] text="App exceptions" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
               LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                      TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,24] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Active" text="Active" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,24] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Remove" text="Remove" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                      TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,24] clickable=false focusable=false margin=[0,0,0,0] contentDescription="App" text="App" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                    View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                  HorizontalScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
-                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,144,0] clickable=false focusable=false margin=[0,0,0,0]
-                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                        TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Back" text="Back" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Shoulder buttons" text="Shoulder buttons" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[6,12,6,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="D-pad" text="D-pad" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=1 bold=false
-                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Single button press" text="Single" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Double button press" text="Double" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Tap and hold" text="Tap+hold" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="Hold" text="Hold" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="L1" text="L1" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="R1" text="R1" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="L2" text="L2" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="R2" text="R2" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="D-pad up" text="↑" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="D-pad down" text="↓" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="D-pad left" text="←" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,12] clickable=false focusable=false margin=[0,0,0,0] contentDescription="D-pad right" text="→" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                        DiagonalLabel visibility=VISIBLE minHeight=0 padding=[0,0,0,18] clickable=false focusable=false margin=[0,0,0,0] contentDescription="All" text="All" textSizePx=36.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-                      View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                 TextView visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0] text="No apps added yet." textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false

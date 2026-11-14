@@ -107,6 +107,13 @@ over a new pad. Without the helper, the focus-taking overlay is only attached wh
 has at least one allowed D-pad shortcut; a blocked direction pressed alongside an allowed one
 is still swallowed by the overlay in that fallback.
 
+`SPASS <mask>` (bits: stick index × 4 + up 0, down 1, left 2, right 3) does the same for stick
+directions. A stick is still withheld from its first movement while Back is held, because the
+direction is only known once a deflection passes 0.6. If that direction is in the mask, the helper
+stops withholding, tells the game where the stick now stands and reports nothing; the game missed
+only the swing up to the threshold, and the stick is its own again until it returns to neutral.
+With an empty mask the behaviour is unchanged. The mask is resent when the helper takes over a new pad.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one

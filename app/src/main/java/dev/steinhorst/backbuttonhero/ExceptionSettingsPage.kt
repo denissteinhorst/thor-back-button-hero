@@ -2,68 +2,50 @@ package dev.steinhorst.backbuttonhero
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.GradientDrawable
 import android.text.Editable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.text.TextUtils
 import android.text.TextWatcher
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.BaseAdapter
-import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.HorizontalScrollView
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
-import kotlin.math.sqrt
 
-/** Per-app exceptions; every change is written to [Prefs] at once, so the service follows immediately. */
+/**
+ * Per-app exceptions; every change is written to [Prefs] at once, so the service follows immediately.
+ * Each app is one row with its active switch and four group buttons (Back, shoulder buttons, D-pad,
+ * analog sticks); a button opens [ExceptionGroupDialog] with that group's controls.
+ */
 class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, private val prefs: Prefs) {
     private data class App(val name: String, val packageName: String, val system: Boolean = false)
-    private data class Column(val control: ExceptionControl, val label: Int, val description: Int)
-    private class RowViews(val texts: List<TextView>, val checks: List<CheckBox>, val all: CheckBox)
+    private class ChipViews(val view: View, val count: TextView, val background: GradientDrawable)
+    private class RowViews(val texts: List<TextView>, val chips: Map<ExceptionGroup, ChipViews>)
 
-    private val columns = listOf(
-        Column(ExceptionControl.SINGLE, R.string.exceptions_single_column, R.string.single_section_title),
-        Column(ExceptionControl.DOUBLE, R.string.exceptions_double_column, R.string.double_section_title),
-        Column(ExceptionControl.TAP_HOLD, R.string.exceptions_tap_hold_column, R.string.tap_hold_section_title),
-        Column(ExceptionControl.HOLD, R.string.exceptions_hold_column, R.string.hold_section_title),
-        Column(ExceptionControl.L1, R.string.shoulder_l1, R.string.shoulder_l1),
-        Column(ExceptionControl.R1, R.string.shoulder_r1, R.string.shoulder_r1),
-        Column(ExceptionControl.L2, R.string.shoulder_l2, R.string.shoulder_l2),
-        Column(ExceptionControl.R2, R.string.shoulder_r2, R.string.shoulder_r2),
-        Column(ExceptionControl.UP, R.string.exceptions_dpad_up_column, R.string.dpad_up),
-        Column(ExceptionControl.DOWN, R.string.exceptions_dpad_down_column, R.string.dpad_down),
-        Column(ExceptionControl.LEFT, R.string.exceptions_dpad_left_column, R.string.dpad_left),
-        Column(ExceptionControl.RIGHT, R.string.exceptions_dpad_right_column, R.string.dpad_right),
-    )
-    private val groups = listOf(
-        R.string.exceptions_group_back, R.string.exceptions_group_shoulders, R.string.exceptions_group_dpad,
-    )
     private val full = ViewGroup.LayoutParams.MATCH_PARENT
     private val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
     private var exceptions = prefs.appExceptions
     private val rows = mutableMapOf<String, RowViews>()
-    // Rows are refreshed in place, so their own listeners must not see those programmatic changes.
-    private var binding = false
     private val matrix = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
-    private var horizontal: HorizontalScrollView? = null
     private var picker: AlertDialog? = null
     private var dialog: AlertDialog? = null
-    private val cell = dp(48)
-    private val activeSlot = dp(64)
-    private val removeSlot = dp(64)
-    private val groupHeight = dp((32 * activity.resources.configuration.fontScale.coerceAtLeast(1f)).toInt())
-    private val rowHeight = dp((56 * activity.resources.configuration.fontScale.coerceAtLeast(1f)).toInt())
+    private var groupDialog: ExceptionGroupDialog? = null
+    private val accent = activity.themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
 
     init {
         page.sectionHeader(R.string.exceptions_apps_title)
@@ -71,13 +53,20 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
         render()
     }
 
+    private companion object {
+        /** The switch's track starts this far inside its view, so it lines up with the group buttons below. */
+        const val SWITCH_INSET_DP = 10
+    }
+
     private fun dp(value: Int) = activity.dp(value)
     private fun primary() = activity.themedColor(android.R.attr.textColorPrimary, Color.BLACK)
     private fun secondary() = activity.themedColor(android.R.attr.textColorSecondary, Color.GRAY)
+    private fun tint(color: Int, alpha: Int) = Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
 
     fun dispose() {
         picker?.dismiss()
         dialog?.dismiss()
+        groupDialog?.dismiss()
     }
 
     private fun save(updated: List<AppException>) {
@@ -90,7 +79,8 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
         val after = change(before)
         save(exceptions.map { if (it.packageName == pkg) after else it })
         bind(after)
-        // Telling the user once, at the moment it happens, explains why the other boxes went grey.
+        groupDialog?.refresh()
+        // Telling the user once, at the moment it happens, explains why the other groups went grey.
         if (after.backNative && !before.backNative) explainNativeBack(after)
     }
 
@@ -116,219 +106,121 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
             .show()
     }
 
-    private fun separator(column: LinearLayout) {
-        column.addView(View(activity).apply { setBackgroundColor(secondary()); alpha = 0.12f }, LinearLayout.LayoutParams(full, dp(1)))
+    private fun openGroup(pkg: String, group: ExceptionGroup) {
+        groupDialog?.dismiss()
+        val modal = ExceptionGroupDialog(
+            activity, group, pkg,
+            current = { exceptions.firstOrNull { it.packageName == pkg } },
+            onChange = { allowed -> update(pkg) { it.copy(allowed = allowed) } },
+        )
+        groupDialog = modal
+        modal.show().setOnDismissListener { if (groupDialog === modal) groupDialog = null }
     }
 
-    private fun header(text: String, description: String = text) = TextView(activity).apply {
-        this.text = text
-        textSize = 12f
-        setTypeface(typeface, Typeface.BOLD)
-        setTextColor(primary())
-        gravity = Gravity.CENTER
-        setPadding(dp(2), dp(4), dp(2), dp(4))
-        contentDescription = description
-        tooltipText = description
-    }
-
-    /** Column labels rise at 45 degrees from their cell, so every column stays one checkbox wide. */
-    /** Paints full-height backgrounds behind the column groups without covering the tilted labels. */
-    private class GroupBands(private val width: Int, private val colors: List<Int>) : android.graphics.drawable.Drawable() {
-        private val paint = android.graphics.Paint()
-        override fun draw(canvas: Canvas) {
-            colors.forEachIndexed { index, color ->
-                paint.color = color
-                canvas.drawRect((bounds.left + index * width).toFloat(), bounds.top.toFloat(),
-                    (bounds.left + (index + 1) * width).toFloat(), bounds.bottom.toFloat(), paint)
-            }
+    /** One tonal button per group: its glyph, name and how many of its controls the app still lets us handle. */
+    private fun chip(exception: AppException, group: ExceptionGroup): ChipViews {
+        val box = GradientDrawable().apply { cornerRadius = dp(12).toFloat() }
+        val count = TextView(activity).apply { textSize = 13f }
+        val view = LinearLayout(activity).apply {
+            tag = "exception_group_${exception.packageName}_${group.name}"
+            gravity = Gravity.CENTER_VERTICAL
+            minimumHeight = dp(48)
+            setPadding(dp(16), dp(4), dp(16), dp(4))
+            background = box
+            isClickable = true
+            isFocusable = true
+            val ripple = TypedValue()
+            activity.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true)
+            foreground = activity.getDrawable(ripple.resourceId)
+            addView(ImageView(activity).apply {
+                setImageDrawable(activity.getDrawable(group.iconRes)!!.mutate().apply { setTint(primary()) })
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }, LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginEnd = dp(10) })
+            addView(TextView(activity).apply {
+                setText(group.titleRes)
+                textSize = 14f
+                setTextColor(primary())
+                maxLines = 1
+                ellipsize = TextUtils.TruncateAt.END
+            }, LinearLayout.LayoutParams(0, wrap, 1f))
+            addView(count, LinearLayout.LayoutParams(wrap, wrap).apply { marginStart = dp(8) })
+            setOnClickListener { openGroup(exception.packageName, group) }
         }
-        override fun setAlpha(alpha: Int) { paint.alpha = alpha }
-        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
-        @Deprecated("Deprecated in Java")
-        override fun getOpacity() = android.graphics.PixelFormat.TRANSLUCENT
-    }
-
-    private class DiagonalLabel(context: Context) : TextView(context) {
-        override fun onDraw(canvas: Canvas) {
-            paint.color = currentTextColor
-            canvas.save()
-            canvas.translate(width / 2f - textSize / 3f, height - paddingBottom.toFloat())
-            canvas.rotate(-45f)
-            canvas.drawText(text.toString(), 0f, 0f, paint)
-            canvas.restore()
-        }
-    }
-
-    private fun diagonal(text: String, description: String) = DiagonalLabel(activity).apply {
-        this.text = text
-        textSize = 12f
-        setTypeface(typeface, Typeface.BOLD)
-        setTextColor(primary())
-        setPadding(0, 0, 0, dp(6))
-        contentDescription = description
-        tooltipText = description
-    }
-
-    private fun arrow(text: String, description: String) = TextView(activity).apply {
-        this.text = text
-        textSize = 20f
-        setTypeface(typeface, Typeface.BOLD)
-        // Arrow glyphs have no bold weight in the system font; a stroke gives them one.
-        paint.style = android.graphics.Paint.Style.FILL_AND_STROKE
-        paint.strokeWidth = dp(1).toFloat()
-        setTextColor(primary())
-        gravity = Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM
-        setPadding(0, 0, 0, dp(4))
-        contentDescription = description
-        tooltipText = description
+        return ChipViews(view, count, box)
     }
 
     private fun render() {
-        val oldScroll = horizontal?.scrollX ?: 0
         matrix.removeAllViews()
         rows.clear()
-        val labels = columns.filter { it.control !in DPAD_CONTROLS }.map { activity.getString(it.label) } +
-            activity.getString(R.string.exceptions_all_column)
-        val probe = diagonal("", "")
-        val diagonalHeight = (labels.maxOf { probe.paint.measureText(it) } / sqrt(2f) + probe.textSize + dp(12)).toInt()
-        val names = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
-        val cells = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            // Diagonal labels lean into the neighbouring columns; the trailing padding keeps the last one visible.
-            clipChildren = false
-            setPadding(0, 0, dp(48), 0)
-            // One soft band per group, fading from Back to the D-pad; the text colour keeps it subtle in both themes.
-            background = GroupBands(cell * 4, listOf(0.10f, 0.065f, 0.035f).map {
-                Color.argb((it * 255).toInt(), Color.red(primary()), Color.green(primary()), Color.blue(primary()))
-            })
-        }
-        // Each label sits right above its column, at the baseline the diagonal labels rise from.
-        names.addView(LinearLayout(activity).apply {
-            gravity = Gravity.BOTTOM
-            fun label(res: Int) = header(activity.getString(res)).apply {
-                maxLines = 1
-                setPadding(dp(2), dp(4), dp(2), dp(8))
-            }
-            addView(label(R.string.exceptions_active_column), LinearLayout.LayoutParams(activeSlot, wrap))
-            addView(label(R.string.exceptions_remove_column), LinearLayout.LayoutParams(removeSlot, wrap))
-            addView(label(R.string.exceptions_app_column).apply { gravity = Gravity.START },
-                LinearLayout.LayoutParams(0, wrap, 1f))
-        }, LinearLayout.LayoutParams(full, groupHeight + diagonalHeight))
-        cells.addView(LinearLayout(activity).apply {
-            groups.forEach {
-                addView(header(activity.getString(it)).apply {
-                    gravity = Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM
-                    maxLines = 1
-                }, LinearLayout.LayoutParams(cell * 4, groupHeight))
-            }
-        })
-        cells.addView(LinearLayout(activity).apply {
-            clipChildren = false
-            // Baseline alignment would push the tilted labels down to the arrows' bottom baseline.
-            isBaselineAligned = false
-            columns.forEach { column ->
-                val label = activity.getString(column.label)
-                val description = activity.getString(column.description)
-                // Arrows already point somewhere; tilting them would change what they say.
-                val view = if (column.control in DPAD_CONTROLS) arrow(label, description) else diagonal(label, description)
-                addView(view, LinearLayout.LayoutParams(cell, diagonalHeight))
-            }
-            addView(diagonal(activity.getString(R.string.exceptions_all_column), activity.getString(R.string.exceptions_all_column)),
-                LinearLayout.LayoutParams(cell, diagonalHeight))
-        })
-        separator(names)
-        separator(cells)
-        exceptions.forEach { exception ->
+        exceptions.forEachIndexed { index, exception ->
+            if (index > 0) matrix.addView(View(activity).apply { setBackgroundColor(secondary()); alpha = 0.12f },
+                LinearLayout.LayoutParams(full, dp(1)).apply { setMargins(dp(16), 0, dp(16), 0) })
             val app = exception.name
             val pkg = exception.packageName
             val texts = mutableListOf<TextView>()
-            names.addView(LinearLayout(activity).apply {
-                gravity = Gravity.CENTER_VERTICAL
-                setPadding(0, 0, dp(8), 0)
-                addView(android.widget.FrameLayout(activity).apply { addView(Switch(activity).apply {
-                    tag = "exception_active_$pkg"
-                    contentDescription = activity.getString(R.string.exceptions_active, app)
-                    tooltipText = contentDescription
-                    isChecked = exception.active
-                    minimumHeight = dp(48)
-                    setOnCheckedChangeListener { _, checked -> if (!binding) update(pkg) { it.copy(active = checked) } }
-                }, android.widget.FrameLayout.LayoutParams(wrap, wrap, Gravity.CENTER)) }, LinearLayout.LayoutParams(activeSlot, wrap))
-                addView(ImageButton(activity).apply {
-                    tag = "exception_remove_$pkg"
-                    contentDescription = activity.getString(R.string.exceptions_remove_app, app)
-                    tooltipText = contentDescription
-                    setImageDrawable(activity.getDrawable(R.drawable.ic_settings_remove)!!.mutate().apply { setTint(activity.getColor(R.color.settings_destructive)) })
-                    val value = android.util.TypedValue()
-                    activity.theme.resolveAttribute(android.R.attr.selectableItemBackground, value, true)
-                    background = activity.getDrawable(value.resourceId)
-                    setPadding(dp(12), dp(12), dp(12), dp(12))
-                    setOnClickListener { confirmRemove(exception) }
-                }, LinearLayout.LayoutParams(dp(48), dp(48)).apply {
-                    marginStart = (removeSlot - dp(48)) / 2
-                    marginEnd = (removeSlot - dp(48)) / 2
-                })
+            val chips = ExceptionGroup.values().associateWith { chip(exception, it) }
+            matrix.addView(LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL
+                // One grid: 16 dp at the sides, 8 dp between the group buttons. Counting the air the 48 dp header
+                // row carries around its text, the package line, the divider and the next name are each 16 dp
+                // apart from what they separate: 8 dp margin under the header, 6 dp above it, 16 dp below the buttons.
+                setPadding(dp(16), dp(6), dp(16), dp(16))
                 addView(LinearLayout(activity).apply {
-                    orientation = LinearLayout.VERTICAL
-                    tooltipText = "$app\n$pkg"
-                    addView(TextView(activity).apply {
-                        text = app
-                        textSize = 14f
-                        setTextColor(primary())
-                        maxLines = 1
-                        ellipsize = TextUtils.TruncateAt.END
-                    }.also(texts::add))
-                    addView(TextView(activity).apply {
-                        text = pkg
-                        textSize = 11f
-                        setTextColor(secondary())
-                        maxLines = 1
-                        ellipsize = TextUtils.TruncateAt.END
-                    }.also(texts::add))
-                }, LinearLayout.LayoutParams(0, wrap, 1f))
-            }, LinearLayout.LayoutParams(full, rowHeight))
-            val row = LinearLayout(activity).apply { gravity = Gravity.CENTER_VERTICAL }
-            fun checkBox(tag: String, description: String) = CheckBox(activity).apply {
-                this.tag = tag
-                contentDescription = description
-                minimumWidth = cell
-                minimumHeight = cell
-                gravity = Gravity.CENTER_VERTICAL
-                buttonDrawable?.let { drawable ->
-                    val inset = ((cell - drawable.intrinsicWidth) / 2).coerceAtLeast(0)
-                    buttonDrawable = InsetDrawable(drawable, inset, 0, inset, 0)
-                }
-            }.also { row.addView(it, LinearLayout.LayoutParams(cell, rowHeight)) }
-            val checks = columns.map { column ->
-                checkBox("exception_${pkg}_${column.control.ordinal}",
-                    activity.getString(R.string.exceptions_cell, app, activity.getString(column.description))).apply {
-                    setOnCheckedChangeListener { _, checked ->
-                        if (!binding) update(pkg) {
-                            it.copy(allowed = if (checked) it.allowed or column.control.bit else it.allowed and column.control.bit.inv())
+                    gravity = Gravity.CENTER_VERTICAL
+                    addView(Switch(activity).apply {
+                        tag = "exception_active_$pkg"
+                        contentDescription = activity.getString(R.string.exceptions_active, app)
+                        tooltipText = contentDescription
+                        isChecked = exception.active
+                        minimumHeight = dp(48)
+                        setOnCheckedChangeListener { _, checked -> update(pkg) { it.copy(active = checked) } }
+                    }, LinearLayout.LayoutParams(wrap, wrap).apply { marginStart = -dp(SWITCH_INSET_DP); marginEnd = dp(16) })
+                    addView(LinearLayout(activity).apply {
+                        orientation = LinearLayout.VERTICAL
+                        tooltipText = "$app\n$pkg"
+                        addView(TextView(activity).apply {
+                            text = app
+                            textSize = 15f
+                            setTypeface(typeface, Typeface.BOLD)
+                            setTextColor(primary())
+                            maxLines = 1
+                            ellipsize = TextUtils.TruncateAt.END
+                        }.also(texts::add))
+                        addView(TextView(activity).apply {
+                            text = pkg
+                            textSize = 11f
+                            setTextColor(secondary())
+                            maxLines = 1
+                            ellipsize = TextUtils.TruncateAt.END
+                        }.also(texts::add))
+                    }, LinearLayout.LayoutParams(0, wrap, 1f))
+                    addView(ImageButton(activity).apply {
+                        tag = "exception_remove_$pkg"
+                        contentDescription = activity.getString(R.string.exceptions_remove_app, app)
+                        tooltipText = contentDescription
+                        setImageDrawable(activity.getDrawable(R.drawable.ic_settings_remove)!!.mutate().apply { setTint(activity.getColor(R.color.settings_destructive)) })
+                        val value = TypedValue()
+                        activity.theme.resolveAttribute(android.R.attr.selectableItemBackground, value, true)
+                        background = activity.getDrawable(value.resourceId)
+                        setPadding(dp(12), dp(12), dp(12), dp(12))
+                        setOnClickListener { confirmRemove(exception) }
+                    // Its glyph sits 16 dp inside the 48 dp target (12 padding plus the drawable's own margin); pull it out so it meets the chips' edge.
+                    }, LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginEnd = -dp(16) })
+                }, LinearLayout.LayoutParams(full, wrap))
+                // Two by two, so the names stay readable on a narrow screen and the buttons stay big.
+                ExceptionGroup.values().toList().chunked(2).forEach { pair ->
+                    addView(LinearLayout(activity).apply {
+                        pair.forEachIndexed { i, group ->
+                            addView(chips.getValue(group).view, LinearLayout.LayoutParams(0, wrap, 1f).apply {
+                                if (i == 0) marginEnd = dp(8)
+                            })
                         }
-                    }
+                    }, LinearLayout.LayoutParams(full, wrap).apply { topMargin = dp(8) })
                 }
-            }
-            val all = checkBox("exception_all_$pkg", activity.getString(R.string.exceptions_all_cell, app)).apply {
-                setOnCheckedChangeListener { _, checked ->
-                    if (!binding) update(pkg) { it.copy(allowed = if (checked) ExceptionControl.ALL else 0) }
-                }
-            }
-            rows[pkg] = RowViews(texts, checks, all)
+            }, LinearLayout.LayoutParams(full, wrap))
+            rows[pkg] = RowViews(texts, chips)
             bind(exception)
-            cells.addView(row)
-            separator(names)
-            separator(cells)
         }
-        val scroll = HorizontalScrollView(activity).apply {
-            tag = "exceptions_matrix_scroll"
-            addView(cells, android.widget.FrameLayout.LayoutParams(wrap, wrap))
-        }
-        horizontal = scroll
-        matrix.addView(LinearLayout(activity).apply {
-            addView(names, LinearLayout.LayoutParams(dp(288), wrap))
-            addView(scroll, LinearLayout.LayoutParams(0, wrap, 1f))
-        }, LinearLayout.LayoutParams(full, wrap))
-        scroll.post { scroll.scrollTo(oldScroll, 0) }
         if (exceptions.isEmpty()) matrix.addView(TextView(activity).apply {
             setText(R.string.exceptions_empty)
             textSize = 14f
@@ -337,19 +229,33 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
         })
     }
 
-    /** An inactive row fades out; with every Back gesture off only the Back columns stay editable. */
+    /** An inactive row fades out; a group with controls switched off is tinted, one Back made unreachable is dimmed. */
     private fun bind(exception: AppException) {
         val views = rows[exception.packageName] ?: return
-        binding = true
         views.texts.forEach { it.alpha = if (exception.active) 1f else 0.38f }
-        views.checks.forEachIndexed { index, box ->
-            val control = columns[index].control
-            box.isChecked = exception.allowed and control.bit != 0
-            box.isEnabled = exception.active && (control in ExceptionControl.BACK || !exception.backNative)
+        views.chips.forEach { (group, chip) ->
+            val on = group.allowedCount(exception)
+            val total = group.controls.size
+            // Some controls left to the app: the button is tinted. None left: it looks like any other and only
+            // the zero turns red, so the state reads without the button changing character.
+            val partial = on in 1 until total
+            val none = on == 0
+            val counts = activity.getString(R.string.exceptions_count, on, total)
+            chip.count.text = SpannableString(counts).apply {
+                if (none) {
+                    setSpan(ForegroundColorSpan(activity.getColor(R.color.settings_destructive)), 0, on.toString().length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    setSpan(StyleSpan(Typeface.BOLD), 0, on.toString().length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+            chip.count.setTextColor(if (partial) accent else secondary())
+            chip.count.setTypeface(null, if (partial) Typeface.BOLD else Typeface.NORMAL)
+            chip.background.setColor(if (partial) tint(accent, 30) else Color.TRANSPARENT)
+            chip.background.setStroke(dp(1), if (partial) accent else tint(secondary(), 90))
+            chip.view.alpha = if (!exception.active) 0.38f else if (group.editable(exception)) 1f else 0.55f
+            chip.view.contentDescription = activity.getString(
+                R.string.exceptions_chip_accessibility, exception.name, activity.getString(group.titleRes), on, total,
+            )
         }
-        views.all.isChecked = exception.allowed == ExceptionControl.ALL
-        views.all.isEnabled = exception.active
-        binding = false
     }
 
     private inner class AppsAdapter : BaseAdapter() {
@@ -383,7 +289,7 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
             override fun onLayoutChange(view: View, left: Int, top: Int, right: Int, bottom: Int,
                 oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                 view.removeOnLayoutChangeListener(this)
-                view.requestRectangleOnScreen(android.graphics.Rect(0, (view.height - rowHeight).coerceAtLeast(0), view.width, view.height), true)
+                view.requestRectangleOnScreen(android.graphics.Rect(0, (view.height - dp(200)).coerceAtLeast(0), view.width, view.height), true)
             }
         })
         picker.dismiss()
@@ -489,9 +395,5 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
                 filter()
             }
         }, "ExceptionAppPicker").apply { isDaemon = true }.start()
-    }
-
-    private companion object {
-        val DPAD_CONTROLS = setOf(ExceptionControl.UP, ExceptionControl.DOWN, ExceptionControl.LEFT, ExceptionControl.RIGHT)
     }
 }

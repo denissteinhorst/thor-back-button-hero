@@ -206,7 +206,7 @@ A stick's click (L3/R3) has press, double press and tap-and-hold gestures with t
 double-press and tap-and-hold times, timed exactly like Back's (`StickClickMachine`, a port of the
 same decisions) and only while Back is held. Stepping actions repeat on `RepeatCurve` (slow start, easing to ~40 ms) for sticks, stick
 hold and the D-pad alike; `LevelControl` drops repeat steps while root work is still queued.
-Sticks have no exception column: they follow Back, so a native-Back exception releases them.
+Every stick direction and click gesture has its own exception column (seven per stick). An unchecked direction is listed in `SPASS`: the helper hands such a deflection back to the game as soon as it recognises it, and a stick with no direction left for BBH is no longer listed in `STICKS`; an unchecked click stays unconsumed. A native-Back exception still releases all of them, like every other combo. Exceptions stored before the sticks existed were migrated once (`exception_sticks_v2`) with every stick column on; backups carry the stick columns as `sticksAllowed` and read a missing field as all on.
 
 `SettingsBackup` writes and reads the backup JSON (format marker and version, app version, date, then the same values `SettingsState` holds). Reading is defensive by construction: unknown fields are ignored, missing ones keep the factory value, each value is validated and clamped on its own, and only a non-backup is refused. The result is a `SettingsState` that goes through the normal preview and the atomic `Prefs.applySettings`; the file is picked and saved through the system file picker, so no storage permission is needed. Everything starts unassigned; `unassigned_defaults_v1` pins the earlier D-pad shortcuts and activation pair for existing installs.
 
@@ -235,9 +235,12 @@ shortcut reactivates temporarily paused interception so the app cannot remain st
 `ExceptionSettingsPage` edits per-app exceptions (`AppException`, stored by `Prefs` as
 `app_exceptions`): installed-app search (system apps hidden unless toggled on or
 searched for), a start choice (allow or block everything), and a
-twelve-column matrix (Back single/double/tap-and-hold/hold, L1–R2, four D-pad directions)
-under group headers with diagonal labels (D-pad arrows stay upright). Rows have an active switch, a trash button (with confirmation) and an
-all-box; every change is written at once. Help has no page actions; Exceptions offers **Add app** and
+list of apps. Each row has an active switch, a trash button (with confirmation) and four group buttons
+(Back, shoulder buttons, D-pad, analog sticks) that show how many of the group's controls Back Button Hero
+still handles; a button opens `ExceptionGroupDialog`, a modal with a glyph, name and switch per control
+(26 in all: four Back gestures, L1–R2, four D-pad directions, and per stick four directions plus
+press/double/tap-and-hold), an all-switch and, for the sticks, one all-switch per stick. The group model is
+`ExceptionGroup`; every change is written at once. Help has no page actions; Exceptions offers **Add app** and
 **Remove all exceptions** (a `PRESET` plan for that section) in its introduction. Whole-app factory settings also
 clear exceptions; Unbind never does.
 

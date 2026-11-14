@@ -167,7 +167,7 @@ class SettingsNavigationTest {
         val activity = controller.get()
         val prefs = Prefs(activity)
         val double = find(page(activity, SettingsSection.BASIC)) {
-            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_switcher)
+            it is TextView && it.text.toString() == activity.getString(R.string.group_app_switcher)
         } as TextView
         controller.pause()
         prefs.doubleTapEnabled = false
@@ -225,7 +225,7 @@ class SettingsNavigationTest {
         assertNotNull(page(activity, SettingsSection.SETTINGS))
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         assertNotNull(find(page(activity, SettingsSection.SHOULDERS)) {
-            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_flick_left)
+            it is TextView && it.text.toString() == activity.getString(R.string.group_flick)
         })
     }
 

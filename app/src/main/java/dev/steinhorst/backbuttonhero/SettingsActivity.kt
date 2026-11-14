@@ -354,43 +354,51 @@ class SettingsActivity : Activity() {
         }.distinctBy { it.value }.sortedBy { it.label }
     }
 
-    private fun shoulderActions(): List<Choice> = listOf(
-        Choice("", getString(R.string.shoulder_none)),
-        Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
-        Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
-        Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
-        Choice(Prefs.SHOULDER_SWITCHER, getString(R.string.shoulder_switcher)),
-        Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
-        Choice(Prefs.SHOULDER_RECENTS, getString(R.string.shoulder_recents)),
-        Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
-        Choice(Prefs.SHOULDER_FLICK_LEFT, getString(R.string.shoulder_flick_left)),
-        Choice(Prefs.SHOULDER_FLICK_RIGHT, getString(R.string.shoulder_flick_right)),
-        Choice(Prefs.SHOULDER_VOLUME_UP, getString(R.string.shoulder_volume_up)),
-        Choice(Prefs.SHOULDER_VOLUME_DOWN, getString(R.string.shoulder_volume_down)),
-        Choice(Prefs.SHOULDER_BRIGHTNESS_UP, getString(R.string.shoulder_brightness_up)),
-        Choice(Prefs.SHOULDER_BRIGHTNESS_DOWN, getString(R.string.shoulder_brightness_down)),
-        Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
-        Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
-        Choice(Prefs.SHOULDER_QUICK_SETTINGS, getString(R.string.shoulder_quick_settings)),
-        Choice(Prefs.SHOULDER_NOTIFICATIONS, getString(R.string.shoulder_notifications)),
-        Choice(Prefs.SHOULDER_INTERNET, getString(R.string.shoulder_internet)),
-        Choice(Prefs.SHOULDER_BLUETOOTH, getString(R.string.shoulder_bluetooth)),
-        Choice(Prefs.SHOULDER_NIGHT_LIGHT, getString(R.string.shoulder_night_light)),
-        Choice(Prefs.SHOULDER_EXTRA_DIM, getString(R.string.shoulder_extra_dim)),
-        Choice(Prefs.SHOULDER_DISPLAY_SETTINGS, getString(R.string.shoulder_display_settings)),
-        Choice(Prefs.SHOULDER_SOUND_SETTINGS, getString(R.string.shoulder_sound_settings)),
-        Choice(Prefs.SHOULDER_LOCATION_SETTINGS, getString(R.string.shoulder_location_settings)),
-        Choice(Prefs.SHOULDER_CAST_SETTINGS, getString(R.string.shoulder_cast_settings)),
-        Choice(Prefs.SHOULDER_DND_SETTINGS, getString(R.string.shoulder_dnd_settings)),
-        Choice(Prefs.SHOULDER_BATTERY_SAVER, getString(R.string.shoulder_battery_saver)),
-    )
+    private fun shoulderActions(): List<Choice> {
+        fun group(g: ActionGroups.Group) = Choice(g.entry, getString(g.titleRes))
+        return listOf(
+            Choice("", getString(R.string.shoulder_none)),
+            Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
+            Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
+            Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
+            group(ActionGroups.Group.APP_SWITCHER),
+            Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
+            Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
+            group(ActionGroups.Group.FLICK),
+            group(ActionGroups.Group.VOLUME),
+            group(ActionGroups.Group.BRIGHTNESS),
+            Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
+            Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
+        ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
+    }
+
+    /** One entry per AYN tile; its options are chosen on the row, like a volume action's screen. */
+    private fun aynChoices(): List<Choice> =
+        Ayn.Group.values().map { Choice(it.action, getString(it.titleRes)) } +
+            Ayn.Toggle.values().map { Choice(it.action, getString(it.titleRes)) }
+
+    private fun aynOptions(group: Ayn.Group): List<Choice> =
+        (if (group.hasModal) listOf(Choice(Ayn.MODAL, getString(R.string.ayn_modal))) else emptyList()) +
+            group.options.map { Choice(it.key, getString(it.labelRes)) }
+
+    private fun describeOption(button: ComboButton): String {
+        val action = prefs.shoulderAction(button)
+        ActionGroups.groupOf(action)?.let { group -> return getString(checkNotNull(group.option(action)).labelRes) }
+        return describeAynOption(button)
+    }
+
+    private fun describeAynOption(button: ComboButton): String {
+        val group = Ayn.groupOf(prefs.shoulderAction(button)) ?: return ""
+        val chosen = prefs.aynOption(button, group)
+        return aynOptions(group).first { it.value == chosen }.label
+    }
 
     private fun describeShoulderAction(button: ComboButton): String = describeAction(prefs.shoulderAction(button))
 
     private fun describeAction(action: String): String {
         return when (action) {
             "" -> getString(R.string.shoulder_none)
-            else -> shoulderActions().firstOrNull { it.value == action }?.label
+            else -> ActionGroups.groupOf(action)?.let { getString(it.titleRes) } ?: shoulderActions().firstOrNull { it.value == action }?.label
                 ?: runCatching {
                     appLabels.getOrPut(action) {
                         getString(R.string.shoulder_launch_app_named, packageManager.getApplicationInfo(action, 0).loadLabel(packageManager))
@@ -429,6 +437,7 @@ class SettingsActivity : Activity() {
         Choice(Prefs.FOCUS_TOGGLE, getString(R.string.focus_target_toggle)),
         Choice(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
         Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+        Choice(Prefs.FOCUS_MODAL, getString(R.string.ayn_modal)),
     )
 
     private fun describeFocusTarget(button: ComboButton): String = focusTargets().let { targets ->
@@ -570,6 +579,9 @@ class SettingsActivity : Activity() {
         val timingOptions: View? = null,
     ) {
         var focusOptions: SettingsPage.FocusOptionsHandle? = null
+        /** The choice below a grouped action, built when first needed so unassigned rows stay as they were. */
+        var option: SettingsPage.ChooserHandle? = null
+        var optionOptions: View? = null
         /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
         var switcherOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
@@ -579,7 +591,7 @@ class SettingsActivity : Activity() {
     private fun chooseShoulderAction(row: ComboRow) {
         val choices = shoulderActions()
         val stored = prefs.shoulderAction(row.button)
-        val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else stored
+        val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.shoulder_choose_action_title, row.label))
             .setSingleChoiceItems(
@@ -591,7 +603,12 @@ class SettingsActivity : Activity() {
                 if (action == ACTION_APP) {
                     chooseShoulderApp(row)
                 } else {
-                    prefs.setShoulderAction(row.button, action)
+                    // A group stores its option's own action; re-picking the group keeps the option.
+                    val group = ActionGroups.groupOfEntry(action)
+                    prefs.setShoulderAction(
+                        row.button,
+                        if (group == null) action else if (group.option(stored) != null) stored else group.options.first().action,
+                    )
                     updateShoulderRow(row)
                     refresh()
                 }
@@ -613,6 +630,37 @@ class SettingsActivity : Activity() {
                 dialog.dismiss()
                 updateShoulderRow(row)
                 refresh()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun chooseOption(row: ComboRow) {
+        val action = prefs.shoulderAction(row.button)
+        Ayn.groupOf(action)?.let { return chooseAynOption(row, it) }
+        val group = ActionGroups.groupOf(action) ?: return
+        val labels = group.options.map { getString(it.labelRes) }
+        AlertDialog.Builder(this)
+            .setTitle(group.titleRes)
+            .setSingleChoiceItems(labels.toTypedArray(), group.options.indexOfFirst { it.action == action }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setShoulderAction(row.button, group.options[which].action)
+                dialog.dismiss()
+                updateShoulderRow(row)
+                refresh()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun chooseAynOption(row: ComboRow, group: Ayn.Group) {
+        val choices = aynOptions(group)
+        val selected = prefs.aynOption(row.button, group)
+        AlertDialog.Builder(this)
+            .setTitle(group.titleRes)
+            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == selected }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setAynOption(row.button, choices[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -700,6 +748,7 @@ class SettingsActivity : Activity() {
         row.action.value.text = describeShoulderAction(row.button)
         val action = prefs.shoulderAction(row.button)
         row.display.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
+        val hasOption = Ayn.groupOf(action) != null || ActionGroups.groupOf(action) != null
         val hasTarget = Prefs.hasScreenTarget(action)
         val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
@@ -717,7 +766,26 @@ class SettingsActivity : Activity() {
         row.targetOptions.visibility = row.target.row.visibility
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || appControl || row.display.visibility == View.VISIBLE) 0 else 10))
+            dp(if (hasTarget || hasOption || appControl || row.display.visibility == View.VISIBLE) 0 else 10))
+        if (hasOption && row.option == null) {
+            lateinit var created: SettingsPage.ChooserHandle
+            val options = row.card.subOptions {
+                created = chooserRow(R.string.ayn_option_title, describeOption(row.button)) { chooseOption(row) }
+            }
+            // Built last, but it belongs right above the screen row.
+            (options.parent as ViewGroup).let { parent ->
+                parent.removeView(options)
+                parent.addView(options, parent.indexOfChild(row.targetOptions))
+            }
+            row.option = created
+            row.optionOptions = options
+        }
+        row.option?.let { option ->
+            option.row.visibility = if (hasOption) View.VISIBLE else View.GONE
+            row.optionOptions?.visibility = option.row.visibility
+            option.value.text = describeOption(row.button)
+            option.row.contentDescription = getString(R.string.ayn_option_accessibility, row.label, option.value.text)
+        }
         row.target.value.text = describeLevelTarget(row.button)
         row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
         if (focus && row.focusOptions == null) {
@@ -935,6 +1003,11 @@ class SettingsActivity : Activity() {
             Prefs.TOGGLE_L2_R2 -> "L2 + R2"
             else -> "L3 + R3"
         }
+        fun aynOption(value: BindingSettings): String {
+            val group = checkNotNull(Ayn.groupOf(value.action))
+            val chosen = value.aynOption?.takeIf(group::isValid) ?: group.defaultOption
+            return aynOptions(group).first { it.value == chosen }.label
+        }
         fun launches(value: BindingSettings) = Prefs.isShoulderApp(value.action) || value.action == Prefs.SHOULDER_HOME
         fun binding(value: BindingSettings): String {
             val detail = when {
@@ -943,6 +1016,11 @@ class SettingsActivity : Activity() {
                 Prefs.isLevelAction(value.action) -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
+                Ayn.groupOf(value.action) != null -> aynOption(value)
+                ActionGroups.groupOf(value.action) != null -> return getString(
+                    R.string.settings_action_detail, describeAction(value.action),
+                    getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes),
+                )
                 else -> return describeAction(value.action)
             }
             return getString(R.string.settings_action_detail, describeAction(value.action), detail)

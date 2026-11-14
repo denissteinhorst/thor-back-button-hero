@@ -1,0 +1,149 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false
+  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      AlertDialogLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=GONE minHeight=0 padding=[72,54,72,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+            DialogTitle visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=60.0 textColor=#FF191C1E maxLines=1 bold=false
+          Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=GONE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              Space visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=GONE minHeight=0 padding=[72,0,72,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[24,12,24,24] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Analog sticks" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Alpha Emulator" textSizePx=39.0 textColor=#FF40484D maxLines=1 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[48,12,48,24] clickable=false focusable=false margin=[0,0,0,0] text="On: Back Button Hero handles it. Off: the app receives it unchanged, as if Back Button Hero were not installed." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                TextView visibility=GONE minHeight=0 padding=[36,30,36,30] clickable=false focusable=false margin=[24,0,24,24] text="All four Back gestures are off for this app, so these shortcuts cannot be reached." textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="All" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,36,0] clickable=false focusable=false margin=[0,0,0,0] text="14/14" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="All" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                  View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,42,36,6] clickable=true focusable=true margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,36,0] clickable=false focusable=false margin=[0,0,0,0] text="7/7" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick up" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick up" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick up" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick down" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick down" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick down" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick left" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick left" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick left" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick right" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick right" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick right" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick press" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick press" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick press" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick double press" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick double press" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick double press" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Left stick tap and hold" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Left stick tap and hold" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick tap and hold" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,42,36,6] clickable=true focusable=true margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,36,0] clickable=false focusable=false margin=[0,0,0,0] text="7/7" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick up" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick up" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick up" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick down" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick down" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick down" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick left" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick left" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick left" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick right" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick right" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick right" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick press" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick press" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick press" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick double press" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick double press" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick double press" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+                LinearLayout visibility=VISIBLE minHeight=168 padding=[48,18,36,18] clickable=true focusable=true margin=[0,0,0,0]
+                  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0]
+                    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Right stick tap and hold" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back + Right stick tap and hold" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick tap and hold" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          ButtonBarLayout visibility=VISIBLE minHeight=0 padding=[36,12,36,12] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Space visibility=INVISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Done" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]

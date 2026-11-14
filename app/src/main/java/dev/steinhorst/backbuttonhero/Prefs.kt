@@ -81,6 +81,21 @@ class Prefs(context: Context) {
             gestures.putString("${BackGestureButton.HOLD.prefKey}_package", legacy("hold_enabled", true, SHOULDER_SWAP_APPS))
             gestures.putBoolean("back_gestures_v1", true).apply()
         }
+        // The sticks got their own exception columns. Until now their shortcuts were active in every
+        // listed app, so existing exceptions keep them on instead of silently handing the sticks over.
+        if (!sp.getBoolean("exception_sticks_v2", false)) {
+            val migrated = sp.edit()
+            sp.getString("app_exceptions", null)?.let { stored ->
+                migrated.putString("app_exceptions", stored.lineSequence().joinToString("\n") { line ->
+                    val parts = line.split('\t', limit = 4)
+                    val allowed = parts.getOrNull(1)?.toIntOrNull()
+                    if (parts.size == 4 && allowed != null) {
+                        (parts.take(1) + (allowed or (ExceptionControl.STICK_BITS shl 12)) + parts.drop(2)).joinToString("\t")
+                    } else line
+                })
+            }
+            migrated.putBoolean("exception_sticks_v2", true).apply()
+        }
         // Single-stick toggles were offered in development builds; keep their replacement usable.
         if (!sp.getBoolean("toggle_pairs_v1", false)) {
             val toggle = sp.edit()
@@ -188,6 +203,14 @@ class Prefs(context: Context) {
     fun appConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_app_confirm", false)
     fun setAppConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_app_confirm", confirm).apply() }
 
+    /** The stored option of an [Ayn] hotkey, or null until chosen. */
+    private fun aynOptionRaw(button: ComboButton): String? = sp.getString("${button.prefKey}_ayn_option", null)
+
+    /** The option [button] applies for [group]; a value left over from another action counts as unchosen. */
+    fun aynOption(button: ComboButton, group: Ayn.Group): String =
+        aynOptionRaw(button)?.takeIf(group::isValid) ?: group.defaultOption
+    fun setAynOption(button: ComboButton, option: String) { sp.edit().putString("${button.prefKey}_ayn_option", option).apply() }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -252,7 +275,7 @@ class Prefs(context: Context) {
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
-                appMode(button), appScreen(button), appConfirm(button),
+                appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button),
             )
         },
         appExceptions,
@@ -294,6 +317,7 @@ class Prefs(context: Context) {
             string("${key}_app_mode", old.appMode, value.appMode)
             string("${key}_app_screen", old.appScreen, value.appScreen)
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
+            string("${key}_ayn_option", old.aynOption, value.aynOption)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -341,6 +365,8 @@ class Prefs(context: Context) {
         const val DISPLAY_BOTTOM = "bottom"
         const val TARGET_BOTH = "both"
         const val FOCUS_TOGGLE = "toggle"
+        /** Asks which screen to focus instead of choosing it in advance. */
+        const val FOCUS_MODAL = "modal"
         const val FOCUS_POS_CENTER = "center"
         const val DEFAULT_FOCUS_DURATION_MS = 500L
         const val MIN_FOCUS_DURATION_MS = 200L
@@ -392,7 +418,7 @@ class Prefs(context: Context) {
             SHOULDER_LOCATION_SETTINGS, SHOULDER_CAST_SETTINGS, SHOULDER_DND_SETTINGS, SHOULDER_BATTERY_SAVER,
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_APP_CONTROL,
-        )
+        ) + Ayn.ACTIONS
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

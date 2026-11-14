@@ -238,4 +238,25 @@ class PrefsMigrationTest {
         rawPrefs(ctx).edit().putBoolean("hold_enabled", false).apply()
         assertEquals(Prefs.SHOULDER_SCREENSHOT, Prefs(ctx).shoulderAction(BackGestureButton.HOLD))
     }
+
+    @Test
+    fun `existing exceptions keep their stick shortcuts on once, malformed lines stay as they are`() {
+        val ctx = context()
+        rawPrefs(ctx).edit().clear()
+            .putString("app_exceptions", "com.a\t5\t1\tA\nbroken line\ncom.b\t4095\t0\tB").apply()
+        val exceptions = Prefs(ctx).appExceptions
+        assertEquals(listOf(5 or (ExceptionControl.STICK_BITS shl 12), 4095 or (ExceptionControl.STICK_BITS shl 12)), exceptions.map { it.allowed })
+        assertTrue(rawPrefs(ctx).getBoolean("exception_sticks_v2", false))
+        // A stick the user switched off afterwards is not switched back on by a later start.
+        Prefs(ctx).appExceptions = exceptions.map { it.copy(allowed = 5) }
+        assertEquals(listOf(5, 5), Prefs(ctx).appExceptions.map { it.allowed })
+    }
+
+    @Test
+    fun `a fresh install has nothing to migrate`() {
+        val ctx = context()
+        rawPrefs(ctx).edit().clear().apply()
+        assertEquals(emptyList<AppException>(), Prefs(ctx).appExceptions)
+        assertTrue(rawPrefs(ctx).getBoolean("exception_sticks_v2", false))
+    }
 }

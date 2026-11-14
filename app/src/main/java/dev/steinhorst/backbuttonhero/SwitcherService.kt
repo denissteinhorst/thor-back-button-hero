@@ -47,6 +47,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var appControlPrompt: AppControlPrompt
     private lateinit var levels: LevelControl
     private lateinit var controllerFocus: ControllerFocus
+    private lateinit var aynControls: AynControls
     private lateinit var focusIndicator: FocusIndicatorOverlay
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
@@ -192,6 +193,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
+        aynControls = AynControls(this)
         padHelper = PadHelper(
             this,
             ::handleDpad,
@@ -241,16 +243,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         updateStickCapture(exception)
     }
 
-    // A native-Back app never sees a Back combo, so its sticks must not be withheld either.
+    // The helper takes a stick only when one of its directions is ours to act on; a direction the app
+    // keeps for itself is handed back to the game the moment that deflection is recognised.
     private fun updateStickCapture(exception: AppException?) {
         if (!::padHelper.isInitialized) return
-        padHelper.setSticks(if (exception?.backNative == true) emptySet() else Stick.entries.filter(prefs::hasStickAction).toSet())
+        fun ours(button: StickButton) = prefs.shoulderAction(button).isNotEmpty() && exception?.allows(ExceptionControl.of(button)) != false
+        padHelper.setSticks(Stick.entries.filter { stick -> StickButton.entries.any { it.stick == stick && ours(it) } }.toSet())
+        padHelper.setStickPassthrough(StickButton.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet())
     }
 
-    // Sticks have no exception column; they follow Back, which a native-Back exception never turns into a combo.
-    private fun allowsCombo(button: ComboButton) =
-        if (button is StickButton || button is StickClickButton) backException?.backNative != true
-        else backException?.allows(ExceptionControl.of(button)) ?: true
+    private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
 
     override fun holdSwapBlocked() {
         noticeToast?.cancel()
@@ -735,10 +737,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    private fun showFocusIndicator(button: ComboButton) {
+    private fun showFocusIndicator(button: ComboButton, target: String = prefs.focusTarget(button)) {
+        // The modal has no target yet; the indicator follows once a screen is chosen.
+        if (target == Prefs.FOCUS_MODAL) return
         val position = prefs.focusPosition(button).takeIf { prefs.focusIndicator(button) }
         focusIndicator.show(
-            controllerFocus.targetIsTop(prefs.focusTarget(button)),
+            controllerFocus.targetIsTop(target),
             position,
             prefs.focusDuration(button),
         ) { openIndicatorSettings(button) }
@@ -755,8 +759,35 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun runControllerFocus(button: ComboButton) {
-        showFocusIndicator(button)
-        controllerFocus.run(prefs.focusTarget(button))
+        if (prefs.focusTarget(button) != Prefs.FOCUS_MODAL) {
+            showFocusIndicator(button)
+            controllerFocus.run(prefs.focusTarget(button))
+            return
+        }
+        val options = listOf(
+            AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
+            AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+        )
+        appControlPrompt.show(promptDisplay(), getString(R.string.focus_target_dialog_title), options) { chosen ->
+            showFocusIndicator(button, chosen)
+            controllerFocus.run(chosen)
+        }
+    }
+
+    /** The AYN tiles as hotkeys: a toggle flips, an option applies at once, "modal" asks first. */
+    private fun runAynAction(button: ComboButton, action: String) {
+        Ayn.toggleOf(action)?.let { return aynControls.toggle(it) }
+        val group = Ayn.groupOf(action) ?: return
+        val chosen = prefs.aynOption(button, group)
+        fun apply(key: String) {
+            group.options.firstOrNull { it.key == key }?.let { aynControls.apply(group, it) }
+        }
+        if (chosen != Ayn.MODAL) {
+            apply(chosen)
+            return
+        }
+        val options = group.options.map { AppControlPrompt.Option(it.key, getString(it.labelRes)) }
+        appControlPrompt.show(promptDisplay(), getString(group.titleRes), options) { apply(it) }
     }
 
     private fun runComboAction(button: ComboButton, action: String) {
@@ -767,6 +798,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
             Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
+            in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
             Prefs.SHOULDER_SWITCHER -> showSwitcherNow()

@@ -24,6 +24,7 @@ class SettingsBackupTest {
                     "dpad_up" -> value.copy(action = Prefs.SHOULDER_BRIGHTNESS_UP, targetOverride = Prefs.DISPLAY_BOTTOM)
                     "r2" -> value.copy(action = Prefs.SHOULDER_CONTROLLER_FOCUS, focusTarget = Prefs.DISPLAY_TOP,
                         indicator = false, duration = 900, position = Prefs.FOCUS_POS_TOP_LEFT)
+                    "l2" -> value.copy(action = Ayn.Group.FAN.action, aynOption = "smart")
                     "lstick_press" -> value.copy(action = Prefs.SHOULDER_APP_CONTROL, appMode = Prefs.APP_FORCE_CLOSE,
                         appScreen = Prefs.DISPLAY_TOP, appConfirm = true)
                     else -> value
@@ -44,6 +45,21 @@ class SettingsBackupTest {
         val result = loaded(text)
         assertEquals(state, result.state)
         assertEquals(SettingsBackup.Info("1.5.0", SettingsBackup.FORMAT_VERSION, "2026-11-14T10:00:00Z"), result.info)
+    }
+
+    @Test
+    fun `an unknown AYN option in a backup is dropped`() {
+        val text = """{"format":"${SettingsBackup.FORMAT}","settings":{"bindings":{"l1":{"action":"@fan","aynOption":"turbo"}}}}"""
+        assertEquals(null, loaded(text).state.bindings.getValue("l1").aynOption)
+    }
+
+    @Test
+    fun `stick columns round trip, and an older backup keeps the sticks on`() {
+        val state = SettingsState(exceptions = listOf(AppException("com.a", "A", ExceptionControl.BEFORE_STICKS or ExceptionControl.RIGHT_STICK_UP.bit or ExceptionControl.LEFT_STICK_TAP_HOLD.bit)))
+        val back = (SettingsBackup.read(SettingsBackup.write(state, "1.5.0", 15)) as SettingsBackup.Result.Loaded).state
+        assertEquals(state.exceptions, back.exceptions)
+        val old = """{"format":"${SettingsBackup.FORMAT}","settings":{"exceptions":[{"package":"com.a","allowed":5}]}}"""
+        assertEquals(5 or (ExceptionControl.STICK_BITS shl 12), loaded(old).state.exceptions.single().allowed)
     }
 
     @Test
@@ -135,8 +151,9 @@ class SettingsBackupTest {
         assertEquals(listOf("com.ok.app", "com.two.app"), state.exceptions.map { it.packageName })
         assertEquals("com.ok.app", state.exceptions[0].name)
         assertEquals("Two", state.exceptions[1].name)
-        // Undefined bits are dropped, like when the app reads its own stored exceptions.
-        assertEquals(999999 and ExceptionControl.ALL, state.exceptions[1].allowed)
+        // Undefined bits are dropped, like when the app reads its own stored exceptions; a backup
+        // from before the sticks has no stick field and keeps their shortcuts on.
+        assertEquals((999999 and ExceptionControl.BEFORE_STICKS) or (ExceptionControl.STICK_BITS shl 12), state.exceptions[1].allowed)
         assertTrue(state.exceptions[1].active)
         // Whatever came out is a state the app can store as it is.
         assertNotNull(SettingsBackup.write(state, "1.5.0", 15))

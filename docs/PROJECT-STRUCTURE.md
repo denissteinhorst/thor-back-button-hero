@@ -61,7 +61,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
 | `SettingsNavigation.kt` | 221 | Adaptive six-page navigation (left panel from 720 dp, menu dialog below), top bar, lazy page cache and scroll state. |
 | `SettingsChanges.kt` | 97 | Immutable settings snapshots and scoped defaults/unbind change plans. |
-| `ExceptionSettingsPage.kt` | 497 | Per-app exception editor: app search, allow/block start choice, twelve-column matrix with diagonal labels, active switch, trash and all-box. |
+| `ExceptionGroups.kt` | 41 | The four input groups of an exception and their controls. |
+| `ExceptionGroupDialog.kt` | 288 | The modal of one group: glyph, name and switch per control, all-switches. |
+| `ExceptionSettingsPage.kt` | 377 | Per-app exception editor: app search, allow/block start choice, one row per app with active switch, trash and four group buttons that open the group modal. |
 | `UpdateChecker.kt` | 141 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, and posts a notification. No in-app APK install by design. |
 
 **Recent apps and the switchers**

@@ -59,6 +59,7 @@ object SettingsBackup {
         val bindings = JSONObject()
         state.bindings.toSortedMap().forEach { (key, value) ->
             bindings.put(key, JSONObject()
+                .apply { value.aynOption?.let { put("aynOption", it) } }
                 .put("action", value.action)
                 .put("display", value.display)
                 .put("target", value.targetOverride ?: JSONObject.NULL)
@@ -77,7 +78,8 @@ object SettingsBackup {
         val exceptions = JSONArray()
         state.exceptions.forEach {
             exceptions.put(JSONObject().put("package", it.packageName).put("name", it.name)
-                .put("allowed", it.allowed).put("active", it.active))
+                .put("allowed", it.allowed and ExceptionControl.BEFORE_STICKS)
+                .put("sticksAllowed", it.allowed shr 12).put("active", it.active))
         }
         return JSONObject()
             .put("format", FORMAT)
@@ -127,7 +129,7 @@ object SettingsBackup {
     private val TOGGLE_VALUES = setOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, "l3_r3")
     private val SCREENS = setOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM)
     private val TARGETS = SCREENS + Prefs.TARGET_BOTH
-    private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE
+    private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_MODAL
     private val APP_MODES = setOf(Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE)
     private val APP_SCREENS = TARGETS + Prefs.APP_SCREEN_ASK
     private val POSITIONS = setOf(
@@ -151,6 +153,7 @@ object SettingsBackup {
                 appMode = entry.stringOrNull("appMode")?.takeIf { it in APP_MODES } ?: default.appMode,
                 appScreen = entry.stringOrNull("appScreen")?.takeIf { it in APP_SCREENS } ?: default.appScreen,
                 appConfirm = entry.booleanOrNull("appConfirm") ?: default.appConfirm,
+                aynOption = entry.stringOrNull("aynOption")?.takeIf { it in Ayn.OPTION_KEYS },
             )
         }
 
@@ -171,7 +174,9 @@ object SettingsBackup {
             val pkg = entry.stringOrNull("package")?.takeIf(Shell::isPkg) ?: continue
             if (pkg in result) continue
             val name = entry.stringOrNull("name")?.filterNot { it.isISOControl() }?.trim()?.take(MAX_NAME)
-            val allowed = (entry.intOrNull("allowed") ?: ExceptionControl.ALL) and ExceptionControl.ALL
+            // Backups from before the sticks have no such field; their shortcuts were active then.
+            val allowed = ((entry.intOrNull("allowed") ?: ExceptionControl.ALL) and ExceptionControl.BEFORE_STICKS) or
+                (((entry.intOrNull("sticksAllowed") ?: ExceptionControl.STICK_BITS) and ExceptionControl.STICK_BITS) shl 12)
             result[pkg] = AppException(pkg, name?.ifEmpty { null } ?: pkg, allowed, entry.booleanOrNull("active") ?: true)
         }
         return result.values.toList()

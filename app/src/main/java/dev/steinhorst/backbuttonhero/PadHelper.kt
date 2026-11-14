@@ -41,6 +41,7 @@ class PadHelper(
     @Volatile private var suspended = false
     @Volatile private var passthrough = 0
     @Volatile private var stickMask = 0
+    @Volatile private var stickPassthrough = 0
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -122,6 +123,21 @@ class PadHelper(
         sendSticks()
     }
 
+    /**
+     * Stick directions the helper leaves to the game even while Back is held; see [AppException].
+     * Bits are the stick's index times four plus [DpadDirection]'s order, like [setPassthrough].
+     */
+    fun setStickPassthrough(buttons: Set<StickButton>) {
+        val mask = buttons.sumOf { 1 shl (it.stick.ordinal * 4 + it.direction.ordinal) }
+        if (mask == stickPassthrough) return
+        stickPassthrough = mask
+        sendStickPassthrough()
+    }
+
+    private fun sendStickPassthrough() {
+        runCatching { client?.outputStream?.write("SPASS $stickPassthrough\n".toByteArray()) }
+    }
+
     private fun sendSticks() {
         runCatching { client?.outputStream?.write("STICKS $stickMask\n".toByteArray()) }
     }
@@ -174,6 +190,7 @@ class PadHelper(
                 setSwitcherNavigation(navigationMode)
                 sendPassthrough()
                 sendSticks()
+                sendStickPassthrough()
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }

@@ -15,7 +15,9 @@
 //     "PASS <mask>" exempts directions the focused app's exception keeps for itself.
 //     Analog sticks work the same way for the sticks the app lists in "STICKS <mask>": a deflection
 //     that starts while Back is held is withheld (the game sees a centred stick) and reported as
-//     "STICK L U" once, then "STICK L N" when the stick is neutral again.
+//     "STICK L U" once, then "STICK L N" when the stick is neutral again. "SPASS <mask>" lists stick
+//     directions the focused app keeps: such a deflection is handed back to the game as soon as it
+//     is recognised instead of being reported.
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
 //
@@ -85,6 +87,7 @@ struct stick {
 };
 static struct stick sticks[2];
 static int stick_mask = 0;  // bit 0 left, bit 1 right: sticks the app has actions for
+static int stick_pass_mask = 0;  // bit stick*4 + (U0 D1 L2 R3): directions the focused app keeps for itself
 
 static int ufd = -1, sock = -1;
 static volatile sig_atomic_t stop;
@@ -339,8 +342,19 @@ static void stick_frame(void) {
         if (!st->withheld) { st->rest = neutral; continue; }
         float ax = fabsf_(st->value[0]), ay = fabsf_(st->value[1]);
         if (!st->engaged && (ax >= STICK_ENGAGE || ay >= STICK_ENGAGE)) {
+            char direction = ax >= ay ? (st->value[0] < 0 ? 'L' : 'R') : (st->value[1] < 0 ? 'U' : 'D');
+            int slot = direction == 'U' ? 0 : direction == 'D' ? 1 : direction == 'L' ? 2 : 3;
+            if (stick_pass_mask & (1 << (s * 4 + slot))) {
+                // The app keeps this direction: hand the stick back where it now stands. The game
+                // missed only the swing up to the threshold; once released the stick is its own again.
+                st->withheld = 0;
+                st->rest = 0;
+                emit(EV_ABS, st->code[0], st->center[0] + (int)(st->value[0] * (float)st->half[0]));
+                emit(EV_ABS, st->code[1], st->center[1] + (int)(st->value[1] * (float)st->half[1]));
+                continue;
+            }
             st->engaged = 1;
-            report_stick(s, ax >= ay ? (st->value[0] < 0 ? 'L' : 'R') : (st->value[1] < 0 ? 'U' : 'D'));
+            report_stick(s, direction);
         }
         if (neutral) {
             if (st->engaged) report_stick(s, 'N');
@@ -398,6 +412,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "STICKS %d", &mask) == 1 && mask >= 0 && mask <= 3) stick_mask = mask;
         if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
+        if (sscanf(line, "SPASS %d", &mask) == 1 && mask >= 0 && mask <= 255) stick_pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
         line = newline + 1;
     }
