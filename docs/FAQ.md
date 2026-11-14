@@ -55,29 +55,23 @@ distribution model.
 
 ### Why do I have to enable the accessibility service myself?
 
-Android does not permit an app to enable its own accessibility service — by design,
-since that permission is powerful. The app can only take you to the right screen, which
-is what the button in its settings does. The same restriction is why there is a "Repair
-service" shortcut instead of an automatic fix.
+Android requires you to enable the accessibility service yourself. If it is inactive,
+Back Button Hero shows a prompt that opens the right Android setting. Once the service
+is active, return to the app to set up your bindings.
 
-### How does the update check work?
+### How do I update Back Button Hero?
 
-When you open the app, it asks the GitHub Releases API once whether a newer version
-exists, and posts a notification if so. Worth knowing:
+The app checks GitHub when you open it. Starting with version 1.5.0, tap
+**Check for new version** to download an available release inside the app. On your first
+in-app update, allow Android to install apps from Back Button Hero, then return and start
+the update again. Android asks you to confirm the installation each time. Developer builds
+link to the GitHub release page because they use a different signing key.
 
-- **There is no background check.** No scheduled job, no check after booting. The check
-  runs when you open the app, and when you tap "Check for new version".
-- **It is a single attempt, with no retry.** If it fails — no network yet after a
-  reboot, for instance — nothing happens until the next time you open the app.
-- **Updates are never installed automatically.** The notification links to the release
-  page; downloading and installing stays your decision.
+### Why did the update check fail?
 
-### Why does the update check fail even though I have internet?
-
-Most often one of two reasons: the network was not up yet when you opened the app
-(the check happens immediately, with a 5-second timeout and no retry), or GitHub's limit of
-60 unauthenticated API requests per hour per IP was reached. Opening the app again, or
-tapping "Check for new version", is enough in both cases.
+The app tells you when it could not connect, when GitHub has temporarily limited update
+checks, or when GitHub sent a response the app could not use. If GitHub gives a wait time,
+try again after that time.
 
 ### Can I install an update over an existing version?
 
@@ -97,8 +91,8 @@ A fair question, and the honest answer is that you should verify rather than tru
 - The release APK contains **no third-party runtime dependencies** at all. Its classpath
   resolves to the Kotlin standard library and nothing else, which you can check yourself
   with `./gradlew :app:dependencies --configuration releaseRuntimeClasspath`.
-- There is no analytics, no telemetry, and the only network request it ever makes is the
-  update check against GitHub.
+- There is no analytics or telemetry. The app contacts GitHub to check for releases
+  and to download the APK when you choose to install an update.
 
 The README's [permissions section](../README.md#accessibility-permissions--privacy)
 explains what each capability is used for.
@@ -107,19 +101,18 @@ explains what each capability is used for.
 
 No, the device is not rooted and the app is not installed with root rights. Some features
 use the root service that the Thor's firmware ships (`pservice`, the backend of Settings →
-Thor → "Run Script as Root"): the Back + D-pad shortcuts without pausing the game, brightness
-and bottom-screen volume, controller focus, moving apps between the screens, force-closing
-apps, and the frontend compatibility. It works while the Thor's SELinux is permissive, which
+Thor → "Run Script as Root"): Back + D-pad and stick shortcuts without pausing the game, brightness and bottom-screen
+volume, controller focus, AYN hardware controls, moving apps between screens, force-closing
+apps and frontend compatibility. It works while the Thor's SELinux is permissive, which
 is AYN's factory default. Without it the app falls back to a simpler method where one exists
 and otherwise reports the action as unavailable; the settings screen warns when a D-pad
 shortcut cannot use it. [`HELPER.md`](HELPER.md) explains the D-pad part in detail.
 
 ### What leaves my device?
 
-One HTTPS request to GitHub's Releases API, containing no app data. GitHub sees the usual
-connection metadata such as your IP address. Your settings, your app list and the
-switcher's screenshots never leave the device — the screenshots are held in memory for
-the switcher and are not written to storage.
+Update checks and optional APK downloads go to GitHub over HTTPS. GitHub sees the usual
+connection metadata, such as your IP address. Your settings, app list and switcher previews
+stay on your device. You can also save a settings backup to a location you choose.
 
 ### What happens if I turn the accessibility service off?
 
@@ -173,5 +166,6 @@ using the releases. [`MAINTENANCE.md`](MAINTENANCE.md) covers the full setup.
 
 Yes. Preference changes that could affect existing installs go through guarded one-time
 migrations, which are covered by tests precisely because getting them wrong would silently
-alter someone's configuration. New defaults only apply to a fresh install or after **Reset
-settings**: a button you assigned, or deliberately left empty, keeps its state through an update.
+alter someone's configuration. A fresh install starts with empty bindings. Updating keeps your existing choices, including
+any inputs you deliberately left empty. Use **Settings → Backup** to export your setup to a
+JSON file or load it again. The app previews the changes before you apply them.
