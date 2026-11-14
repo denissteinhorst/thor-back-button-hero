@@ -209,6 +209,26 @@
     explainer.addEventListener('click', function (e) { if (e.target === explainer) explainer.close(); });
   }
 
+  // Screenshot gallery in a modal like the App-Simulation. Without <dialog> support (or without
+  // JavaScript) it stays the inline section the links point to.
+  var gallery = document.getElementById('gallery');
+  var galleryInline = document.getElementById('screenshots');
+  if (gallery && galleryInline && typeof gallery.showModal === 'function') {
+    gallery.querySelector('.gallery-stage').appendChild(galleryInline.querySelector('.shots'));
+    galleryInline.hidden = true;
+    var openGallery = function () { if (!gallery.open) gallery.showModal(); };
+    document.querySelectorAll('[data-gallery]').forEach(function (trigger) {
+      trigger.addEventListener('click', function (e) { e.preventDefault(); openGallery(); });
+    });
+    gallery.querySelector('.explainer-close').addEventListener('click', function () { gallery.close(); });
+    gallery.addEventListener('click', function (e) { if (e.target === gallery) gallery.close(); });
+    if (location.hash === '#screenshots') openGallery();
+  } else {
+    document.querySelectorAll('[data-gallery]').forEach(function (trigger) {
+      trigger.addEventListener('click', function () { galleryInline.open = true; });
+    });
+  }
+
   // YouTube loads only after a click, from the cookie-less domain.
   var yt = document.getElementById('yt');
   if (yt) {
