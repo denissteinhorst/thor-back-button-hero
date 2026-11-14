@@ -560,6 +560,7 @@ const Thor = (() => {
     { id: 'recents', v: 1, cat: 'apps', icon: 'stack', name: 'Top-screen Recents', desc: 'Android’s Recents on the top screen, steered with the controller.', fx: 'recents' },
     { id: 'switcher', v: 1, cat: 'apps', icon: 'cards', name: 'Bottom-screen app switcher', desc: 'Every app from both screens as cards on the bottom screen.', fx: 'switcher' },
     { id: 'swap', v: 1, cat: 'screens', icon: 'swap', name: 'Switch both apps', desc: 'The top app goes down, the bottom app comes up.', fx: 'swap' },
+    { id: 'move', v: 1, cat: 'screens', icon: 'move', name: 'Switch active app', desc: 'The app you are playing moves to the other screen; the controller can follow it.', fx: 'move' },
     { id: 'shot', v: 3, cat: 'screens', icon: 'camera', name: 'Take screenshot', desc: 'Capture the top screen, the bottom screen, or both in one image.', fx: 'shot', opts: ['Top', 'Bottom', 'Both'] },
     { id: 'focus', v: 4, cat: 'screens', icon: 'pad', name: 'Controller focus', desc: 'Switch the controller between the screens, send it to the top or bottom one, or pick from a prompt.', fx: 'focus' },
     { id: 'appctl', v: 8, cat: 'screens', icon: 'close', name: 'Minimize or force-close', desc: 'Minimize or force-close the app in front: on the top screen, the bottom screen, both, or ask each time.', fx: 'close', opts: ['Minimize', 'Force-close'] },
@@ -1135,7 +1136,7 @@ const Thor = (() => {
   // short labels so the whole catalogue fits on one card
   const SHORT = {
     launch: 'Launch app', home: 'Home', back: 'Back', flick: 'Prev / next app', recents: 'Top Recents', switcher: 'App switcher',
-    swap: 'Swap apps', move: 'Move app', shot: 'Screenshot', focus: 'Controller focus', appctl: 'Minimize / close',
+    swap: 'Swap apps', move: 'Switch active app', shot: 'Screenshot', focus: 'Controller focus', appctl: 'Minimize / close',
     volume: 'Volume', bright: 'Brightness', qs: 'Quick Settings', notif: 'Notifications',
     perf: 'Performance', fan: 'Fan', vib: 'Vibration', style: 'Controller style', dps: 'Direct power', display: 'Display power', land: 'Force landscape',
     's-dnd': 'DND', 's-wifi': 'Wi-Fi',
