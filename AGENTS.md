@@ -192,6 +192,29 @@ and explicitly agreed. Keep effects on other apps and existing workflows in view
 Implement our own solutions. Other open-source projects may inform investigation and
 design, but never copy their implementation verbatim or transplant it into this app.
 
+### 0BSD licensing and independent implementation
+
+The project owner's standing requirement is that project-owned work can be distributed
+under 0BSD and that nothing is shipped unless its provenance, license, and distribution
+obligations are compatible with that requirement. Never assume third-party material can
+be relicensed as 0BSD merely because it is public, open source, AI-generated, or found in
+a paper. This applies to code, assets, documentation, generated output, bundled libraries,
+and transitive dependencies. Check the actual license and notices before incorporating or
+shipping third-party material; preserve applicable notices and do not represent separately
+licensed components as 0BSD. If compatibility, provenance, attribution, patent terms, or
+other obligations are unclear, do not incorporate or ship the material; surface the
+specific uncertainty to the project owner for a decision.
+
+Papers, specifications, and general ideas may inform an independently written solution.
+Understand the concepts and implement them in our own words and code; do not copy or
+closely translate a paper's or another project's protected text, code, pseudocode, assets,
+or distinctive implementation. AI output is subject to the same provenance and license
+checks. Existing third-party components retain their own licenses: the release currently
+includes the Apache-2.0 Kotlin standard library. Do not infer from its existing inclusion
+that it or any new dependency is relicensed as 0BSD, or that an unresolved compatibility
+question has been approved; flag any issue to the owner. Test-only and debug-only tools
+must likewise be checked according to what is actually distributed in each artifact.
+
 ## Build and verification
 
 Use the wrapper, never a system Gradle. The canonical post-change gate is:
