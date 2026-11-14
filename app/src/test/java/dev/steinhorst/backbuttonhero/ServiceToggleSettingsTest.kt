@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.os.Looper
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -12,6 +13,11 @@ import org.robolectric.util.ReflectionHelpers
 
 @RunWith(RobolectricTestRunner::class)
 class ServiceToggleSettingsTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
     private fun withSuspendedService(check: (SwitcherService, Prefs, PadHelper) -> Unit) {
         val service = Robolectric.buildService(SwitcherService::class.java).create().get()
         val helper = PadHelper(service, {}, {}, {})
@@ -48,11 +54,10 @@ class ServiceToggleSettingsTest {
     }
 
     @Test
-    fun `whole app preset preserves temporary deactivation when a shortcut remains assigned`() = withSuspendedService { service, prefs, helper ->
+    fun `an applied settings change preserves temporary deactivation when a shortcut remains assigned`() = withSuspendedService { service, prefs, helper ->
         prefs.toggleButtons = Prefs.TOGGLE_L1_R1
         val before = prefs.snapshot()
-        val plan = SettingsChangePlan.create(before, null, SettingsChangeAction.PRESET)
-        assertTrue(prefs.applySettings(before, plan.after))
+        assertTrue(prefs.applySettings(before, before.copy(allApps = true)))
         shadowOf(Looper.getMainLooper()).idle()
         assertFalse(ReflectionHelpers.getField(service, "interceptionEnabled"))
         assertTrue(ReflectionHelpers.getField(helper, "suspended"))

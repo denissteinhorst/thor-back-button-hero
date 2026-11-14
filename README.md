@@ -37,11 +37,13 @@
 
 <div align="center">
 
-[▶ Watch the video (about 2½ minutes)][video-url]
+[▶ Watch the video (about 45 seconds)][video-url]
 
 </div>
 
-**Single tap:** Sends a regular Back or opens the launcher on the bottom screen.
+**Every Back gesture is freely assignable** (single tap, double tap, tap then hold and hold), with the same action list as the shoulder buttons, including *Regular Back press*, *App switcher (bottom screen)* and *Switch both apps*. A gesture's timing is only shown once it has an action. An unassigned gesture does nothing, and Back + button hotkeys keep working. The defaults below are what each gesture does out of the box.
+
+**Single tap:** Opens the launcher on the bottom screen (or any action you choose).
 
 **Double tap:** Opens an app switcher on the bottom screen, which the Thor does not have on its own. It shows a card for every app opened there, the available memory, and actions for a bottom-screen screenshot or closing all bottom-screen apps. Tap a card to open the app or swipe it up to close it. *(Timing adjustable.)*
 
@@ -55,7 +57,7 @@ Hold **L2 + R2 together for 300 ms** to deactivate all Back gestures and shortcu
 
 ## Shoulder buttons and D-pad
 
-Hold Back and press another button to run a shortcut. The shoulder buttons **L1, L2, R1, R2** and the four D-pad directions **D-pad left, D-pad up, D-pad right, D-pad down** can each be assigned any action from the list below. A button without an assignment is left alone, so games and apps still receive its normal input.
+Hold Back and press another button to run a shortcut. The shoulder buttons **L1, L2, R1, R2** and the four D-pad directions **D-pad left, D-pad up, D-pad right, D-pad down** can each be assigned any action from the list below. A button without an assignment is left alone, so games and apps still receive its normal input. The four directions of the **left and right analog stick** can be assigned the same way, starting unassigned: each push runs its action once, the stick has to return to the centre before the next one, and pressing a stick in (L3/R3) offers press, double press and tap and hold, timed and set up like the Back button's own gestures. Volume and brightness repeat while you hold, and get faster the longer you do (also on the D-pad).
 
 **Available actions:**
 
@@ -75,20 +77,9 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 
 ## Your default Settings and Binds
 
-On a fresh install, or after **Reset settings**, a single tap opens the launcher on the bottom screen, a double tap opens the app switcher (300 ms window), tap then hold opens Recents on the top screen (1000 ms), and hold swaps both screens (1000 ms).
+Nothing is assigned on a fresh install: no Back gesture, no shoulder button, no D-pad direction, no stick direction or press, and no on/off shortcut. Back Button Hero does nothing until you assign something, and an unassigned Back gesture does nothing (a single press of Back is simply swallowed). Back + button hotkeys work whether or not the Back gestures are assigned. Updating from an earlier version keeps the settings you had.
 
-The optional hotkeys start out like this. You can change or remove any of them, and **Unbind optionals** clears all of them at once.
-
-| Button | Default action |
-|---|---|
-| **L1** | Navigation flick left |
-| **R1** | Navigation flick right |
-| **L2** | Screenshot, top screen only |
-| **R2** | Set controller focus: toggle between the screens |
-| **D-pad up** | Brightness up, both screens |
-| **D-pad down** | Brightness down, both screens |
-| **D-pad left** | Volume down, both screens |
-| **D-pad right** | Volume up, both screens |
+Pick what you want on each page of the app. **Clear bindings** on a page previews and then removes that page's assignments, and **Settings → Backup** saves everything to a file you can load again.
 
 The controller-focus pictogram appears at the center right of the top screen for 500 ms, unless you change this for a button.
 
@@ -154,15 +145,17 @@ gestures stop responding, **Repair service** takes you straight to the right
 toggle in Android's settings, because Android does not let an app re-enable its
 own accessibility service.
 
-- **Clear bindings** on a page previews the bindings it will remove; **Load defaults**
-  previews that page's factory settings. Under **Settings → Reset**, the whole-app
-  unbind clears all four shoulder buttons, all four D-pad directions and the activation
-  shortcut in one step. Removing the activation shortcut also resumes temporarily
-  paused interception. Gesture timings and other settings
-  stay as they are.
-- **Reset settings** restores every gesture timing, switch, button assignment,
-  and screen target to its default and removes all app exceptions. Android
-  permissions and the state of the accessibility service are not changed.
+- **Clear bindings** on a page previews the bindings it will remove. Removing the
+  activation shortcut also resumes temporarily paused interception. Gesture timings
+  and other settings stay as they are.
+- **Backup** (Settings page) saves all bindings, timings, switches, the activation
+  shortcut and the app exceptions as one JSON file, named
+  `back-button-hero-backup_v<version>_<date>.json`, through Android's file picker, so
+  the app needs no storage permission. **Load backup** shows every change first and
+  only then applies it. A backup from another app version gets a hint that it may cause
+  incompatibilities, but doesn't have to. Unknown parts of a file are ignored, missing
+  ones keep their default, every value is checked on its own, and a file that is not a
+  backup is refused without changing anything.
 - **Exceptions** decide per app which Back gestures, shoulder buttons and D-pad
   directions Back Button Hero handles; the app on the screen with controller focus
   counts. An unchecked action behaves as if the app were not installed: a single tap
@@ -326,9 +319,7 @@ no analytics or telemetry.
 
 **Removing it completely:** turn the service off in Android's Accessibility
 settings, then uninstall the app. Settings live only in the app's private
-storage and go with it. The app's **Reset settings** action clears its saved
-gesture and button preferences, but does not change Android permissions or the
-service state.
+storage and go with it. Uninstalling clears them; use **Backup** first if you want to keep them.
 
 ## Troubleshooting & support
 
@@ -426,7 +417,7 @@ never in release.
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
 [explainer-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest/download/gesture-explainer.html
 [pages-url]: https://denissteinhorst.github.io/thor-back-button-hero/
-[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.4.0.mp4
+[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.5.0.mp4
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
 [platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white

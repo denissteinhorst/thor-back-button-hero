@@ -1,0 +1,25 @@
+LinearLayout visibility=VISIBLE minHeight=0 padding=[48,18,48,48] clickable=false focusable=false margin=[0,0,0,0]
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[-30,0,48,0] contentDescription="Alpha Emulator: exception active" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=true
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Alpha Emulator" textSizePx=45.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="org.example.alpha" textSizePx=33.0 textColor=#FF40484D maxLines=1 bold=false
+    ImageButton visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,-48,0] contentDescription="Remove Alpha Emulator"
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0]
+    LinearLayout visibility=VISIBLE minHeight=144 padding=[48,12,48,12] clickable=true focusable=true margin=[0,0,24,0] contentDescription="Alpha Emulator, Back. Handled by Back Button Hero: 4/4. Double-tap to change."
+      ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back" textSizePx=42.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0] text="4/4" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=144 padding=[48,12,48,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Alpha Emulator, Shoulder buttons. Handled by Back Button Hero: 3/4. Double-tap to change."
+      ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Shoulder buttons" textSizePx=42.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0] text="3/4" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0]
+    LinearLayout visibility=VISIBLE minHeight=144 padding=[48,12,48,12] clickable=true focusable=true margin=[0,0,24,0] contentDescription="Alpha Emulator, D-pad. Handled by Back Button Hero: 4/4. Double-tap to change."
+      ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad" textSizePx=42.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0] text="4/4" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=144 padding=[48,12,48,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Alpha Emulator, Analog sticks. Handled by Back Button Hero: 13/14. Double-tap to change."
+      ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Analog sticks" textSizePx=42.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0] text="13/14" textSizePx=39.0 textColor=#FF00668B maxLines=2147483647 bold=false

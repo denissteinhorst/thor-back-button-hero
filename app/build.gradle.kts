@@ -78,8 +78,8 @@ android {
         applicationId = "dev.steinhorst.backbuttonhero"
         minSdk = 30
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.4.2"
+        versionCode = 10
+        versionName = "1.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -268,6 +268,10 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
             "SettingsSection" to "1.00", "BottomPanels" to "0.98",
             "GestureScheduler" to "1.00", "SettingsChangePlan" to "1.00",
+            "StickDetector" to "1.00", "LevelRepeater" to "1.00", "RepeatCurve" to "1.00",
+            "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
+            "StickButton" to "1.00", "Stick" to "1.00",
+            "SettingsBackup" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"
@@ -284,6 +288,8 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    // Stays on 4.17: 4.18 fails 89 tests with NoClassDefFoundError (VirtualDeviceManager$VirtualDeviceListener) on SDK 34,
+    // and SDK 35 changes the framework output the goldens freeze. The lint hint is baselined; see docs/MAINTENANCE.md.
     testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")

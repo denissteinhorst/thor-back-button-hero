@@ -63,11 +63,13 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| Backup file: round trip, robustness against invalid/unknown/hostile content, file name, version comparison, picker intents and the restore flow | `SettingsBackupTest`, `SettingsBackupUiTest` |
+| Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
 | Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
 | Top-Recents helper protocol and Quickstep state/TaskView geometry parsing | `PadNavigationModeTest`, `TopRecentsStateTest` |
 | Duplicate shoulder-key events from the two mirrored devices | `PhysicalKeyTrackerTest` |
-| Settings actions: Unbind optionals, the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
+| Settings actions: the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
@@ -82,7 +84,8 @@ Everything the gate can verify without hardware.
 | Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
 | Card touch arbitration | `CardTouchTest` |
 | Recent-app bookkeeping, thumbnail cache | `AccessibilityAppSourceTest` |
-| Release parsing, semver ordering, legacy tags | `UpdateCheckerParseTest` |
+| Release parsing, semver ordering, legacy tags, APK asset selection, failure classification | `UpdateCheckerParseTest` |
+| In-app update: streaming, checksum, installer session against a local server, status receiver | `UpdateInstallerTest` |
 | UI-kit helpers | `SettingsUiKitTest` |
 | EN/DE string parity | `ResourceIntegrityTest` |
 | Infrastructure itself | `SmokeTest`, `support/ViewTreeSmokeTest` |
@@ -163,6 +166,7 @@ measures instructions instead, which is not what these numbers mean.
 | `LevelSteps` | 1.00 | 1.0000 |
 | `DpadDirection` (and its companion) | 1.00 | 1.0000 |
 | `CardTouch` | 1.00 | 1.0000 |
+| `StickDetector`, `LevelRepeater`, `RepeatCurve`, `StickClickMachine`, `StickButton`, `StickClickButton`, `Stick`, `StickClick` | 1.00 | 1.0000 |
 | `BackGestureMachine` | 0.98 | 0.9890 |
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |

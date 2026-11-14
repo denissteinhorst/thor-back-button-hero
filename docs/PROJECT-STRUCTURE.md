@@ -22,7 +22,7 @@ gitignored and therefore absent here.
 | `build.gradle.kts` | Root build file. Declares the AGP/Kotlin plugin versions, the **`verify`** aggregate task (the one quality gate), and the `installGitHooks` task. |
 | `gradle.properties` | JVM and Gradle flags for the build (heap, AndroidX, caching). |
 | `gradlew`, `gradlew.bat` | Gradle wrapper launchers. Always build through these, never a system Gradle. |
-| `gradle/wrapper/gradle-wrapper.properties` | Pins the Gradle version (9.9.0). |
+| `gradle/wrapper/gradle-wrapper.properties` | Pins the Gradle version (9.9.1). |
 | `gradle/wrapper/gradle-wrapper.jar` | The wrapper bootstrap jar. |
 
 ## `app/` — the single module
@@ -61,8 +61,11 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
 | `SettingsNavigation.kt` | 221 | Adaptive six-page navigation (left panel from 720 dp, menu dialog below), top bar, lazy page cache and scroll state. |
 | `SettingsChanges.kt` | 97 | Immutable settings snapshots and scoped defaults/unbind change plans. |
-| `ExceptionSettingsPage.kt` | 497 | Per-app exception editor: app search, allow/block start choice, twelve-column matrix with diagonal labels, active switch, trash and all-box. |
-| `UpdateChecker.kt` | 141 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, and posts a notification. No in-app APK install by design. |
+| `ExceptionGroups.kt` | 41 | The four input groups of an exception and their controls. |
+| `ExceptionGroupDialog.kt` | 288 | The modal of one group: glyph, name and switch per control, all-switches. |
+| `ExceptionSettingsPage.kt` | 377 | Per-app exception editor: app search, allow/block start choice, one row per app with active switch, trash and four group buttons that open the group modal. |
+| `UpdateInstaller.kt` | 139 | Streams the release APK into an Android `PackageInstaller` session, checks length and checksum, and lets Android confirm; its receiver opens that confirmation or names a refusal. |
+| `UpdateChecker.kt` | 203 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, posts a notification, and names the failure (rate limit, connection, unusable answer). |
 
 **Recent apps and the switchers**
 
@@ -109,6 +112,10 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. |
 | `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
 | `FocusIndicatorOverlay.kt` | 145 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `SettingsBackup.kt` | 160 | The backup file: JSON writer, defensive reader (validates and clamps every value, ignores the unknown), file name and version comparison. |
+| `StickButton.kt` | 70 | The two sticks, their eight direction buttons and `StickDetector`, the engage/neutral state machine shared with the overlay fallback. |
+| `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |
+| `LevelRepeater.kt` | 60 | `RepeatCurve` and the repeater that steps a held volume/brightness shortcut faster over time. |
 | `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
 | `DpadOverlay.kt` | 81 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
@@ -213,7 +220,7 @@ first build, so they work right after a clone without a manual step.
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |
 | `hardening/` | The historical, German-language pre-release hardening plan: its 38 step files, reports and checklists. Frozen record, not current instructions. |
-| `gesture-explainer.html` | Interactive page demonstrating each gesture on a device diagram. Fully self-contained: `thor-base.png` is embedded as a base64 data URI so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. |
+| `gesture-explainer.html` | The App-Simulation: an intro that shows every shortcut on a device diagram, then every function to try out. Fully self-contained: `thor-base.png` and the app icon are embedded as base64 data URIs so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. `?autoplay` is the recording mode (light theme, no Skip button). |
 
 ### `docs/assets/`
 
@@ -223,7 +230,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `Back Button Hero 1.4.0.mp4` | Source of the 60 fps video (about 2.5 minutes), recorded frame by frame from `gesture-explainer.html?autoplay`. The README and the landing page link to the copy published with the site, `site/assets/back-button-hero-1.4.0.mp4`; keep the two files identical. |
+| `Back Button Hero 1.4.0.mp4` | The previous 1.4.0 video. The current one, `back-button-hero-1.5.0.mp4` (60 fps, 1200×1500, about 45 seconds), lives only in `site/assets/`; it is recorded frame by frame from `gesture-explainer.html?autoplay`, and the README links to the copy published with the site. |
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |

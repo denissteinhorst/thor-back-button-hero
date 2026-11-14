@@ -53,6 +53,21 @@ behavior, not package-specific exceptions, unless an app-specific distinction is
 demonstrated and explicitly agreed. Other open-source projects may inform design, but
 never copy or transplant their implementation.
 
+**0BSD licensing and independent implementation.** Apply the standing 0BSD rule in
+`AGENTS.md` to all project-owned code, assets, documentation and generated output, and
+check provenance, licenses, notices and other obligations for everything actually
+distributed, including bundled and transitive dependencies. Public, open-source,
+paper-derived or AI-generated material is not automatically eligible for 0BSD; never
+relicense third-party work by assumption. Papers and specifications may inform an
+independently written implementation, without copying or closely translating protected
+text, code, pseudocode or distinctive implementation. Preserve any applicable third-party
+notices. If compatibility or rights are unclear, do not incorporate or ship the material;
+raise the specific issue with the owner. Existing separately licensed components remain
+under their own licenses, including the Apache-2.0 Kotlin standard library in the release
+APK; their existing presence does not resolve an outstanding compatibility question or
+approve additional dependencies. Check debug and test artifacts according to what they
+actually distribute.
+
 The ongoing work is to implement features and fixes without lowering quality. Consider
 `FEEDBACK.md` relevant context, but do not treat it as a strict queue. When work touches
 a feedback topic, remind the project owner about related open points and identify useful

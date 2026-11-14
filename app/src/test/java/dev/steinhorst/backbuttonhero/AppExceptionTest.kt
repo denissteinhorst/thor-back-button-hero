@@ -22,12 +22,12 @@ class AppExceptionTest {
     @Test
     fun `decoding skips malformed lines, unsafe packages and duplicates`() {
         val stored = listOf(
-            "org.example.alpha\t4095\t1\tAlpha",
+            "org.example.alpha\t67108863\t1\tAlpha",
             "org.example.alpha\t0\t1\tDuplicate",
             "not a package\t1\t1\tBad",
             "org.example.beta\tx\t1\tBad mask",
             "org.example.gamma\t1",
-            "org.example.delta\t65535\t0\t",
+            "org.example.delta\t134217727\t0\t",
         ).joinToString("\n")
         assertEquals(listOf(
             AppException("org.example.alpha", "Alpha"),
@@ -51,8 +51,24 @@ class AppExceptionTest {
 
     @Test
     fun `every combo button maps to its own column`() {
-        val buttons: List<ComboButton> = ShoulderButton.entries + DpadDirection.entries
+        val buttons: List<ComboButton> = ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries
         assertEquals(ExceptionControl.entries - ExceptionControl.BACK.toSet(),
-            buttons.map(ExceptionControl::of).sortedBy { it.ordinal })
+            buttons.map(ExceptionControl::of).distinct().sortedBy { it.ordinal })
+        // Every stick direction and click gesture has a column of its own.
+        assertEquals(14, (StickButton.entries + StickClickButton.entries).map(ExceptionControl::of).toSet().size)
+        assertEquals(ExceptionControl.LEFT_STICK_UP, ExceptionControl.of(StickButton.LEFT_UP))
+        assertEquals(ExceptionControl.RIGHT_STICK_LEFT, ExceptionControl.of(StickButton.RIGHT_LEFT))
+        assertEquals(ExceptionControl.LEFT_STICK_DOUBLE, ExceptionControl.of(StickClickButton.LEFT_DOUBLE))
+        assertEquals(ExceptionControl.RIGHT_STICK_TAP_HOLD, ExceptionControl.of(StickClickButton.RIGHT_TAP_HOLD))
+    }
+
+    @Test
+    fun `each stick control follows its own column and a native-Back app releases them all`() {
+        val oneOff = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.LEFT_STICK_UP.bit.inv())
+        assertEquals(false, oneOff.allows(ExceptionControl.LEFT_STICK_UP))
+        assertEquals(true, oneOff.allows(ExceptionControl.LEFT_STICK_DOWN))
+        assertEquals(true, oneOff.allows(ExceptionControl.RIGHT_STICK_UP))
+        val nativeBack = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.BACK.sumOf { it.bit }.inv())
+        assertEquals(false, nativeBack.allows(ExceptionControl.RIGHT_STICK_TAP_HOLD))
     }
 }

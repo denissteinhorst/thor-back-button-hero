@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -30,18 +31,20 @@ class SettingsActivity : Activity() {
     private val pages = mutableMapOf<SettingsSection, SettingsPage>()
     private var exceptionsPage: ExceptionSettingsPage? = null
     private lateinit var warnings: LinearLayout
-    private var launcherChoices: List<Choice>? = null
     private val appLabels = mutableMapOf<String, String>()
     private lateinit var serviceWarning: TextView
     private lateinit var rootWarning: SettingsPage.WarningHandle
     private var toggleButtonsValue: TextView? = null
     private var toggleDuration: SettingsPage.SliderHandle? = null
-    private var singleValue: TextView? = null
     private var statusLabel: TextView? = null
-    private lateinit var openA11yHandle: SettingsPage.ActionHandle
     private val comboRows = mutableMapOf<String, ComboRow>()
+    private val stickPages = mutableListOf<SettingsPage>()
+    private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
+    private var stickTabBar: LinearLayout? = null
+    private var stickTab = Stick.LEFT
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
+    private var updateDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,23 +55,27 @@ class SettingsActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), 0, dp(16), 0)
         }
+        // A compact pill: one short line of fixed height, so it appearing never moves the bar.
         serviceWarning = TextView(this).apply {
             tag = "settings_service_warning"
-            textSize = 14f
-            setTextColor(themedColor(android.R.attr.colorError, Color.parseColor("#B3261E")))
+            val error = themedColor(android.R.attr.colorError, Color.parseColor("#B3261E"))
+            textSize = 13f
+            setTextColor(error)
             setTypeface(typeface, Typeface.BOLD)
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            textAlignment = View.TEXT_ALIGNMENT_VIEW_END
-            setPadding(dp(12), dp(8), dp(8), dp(8))
+            gravity = Gravity.CENTER
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(dp(12), dp(4), dp(12), dp(4))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.argb(36, Color.red(error), Color.green(error), Color.blue(error)))
+                cornerRadius = dp(14).toFloat()
+            }
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         SettingsPage(this, warnings).card {
             rootWarning = warningRow(getString(R.string.dpad_root_missing))
-            openA11yHandle = actionRow(R.string.enable_service) {
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-            }
         }
-        navigation = SettingsNavigation(this, savedInstanceState, warnings, serviceWarning, ::buildPage, ::refresh)
+        navigation = SettingsNavigation(this, savedInstanceState, warnings, serviceWarning, serviceBlockerCard(), ::buildPage, ::refresh)
         setContentView(navigation.view)
         openIndicatorFromIntent()
         ensureNotificationPermission()
@@ -85,9 +92,15 @@ class SettingsActivity : Activity() {
     private fun openIndicatorFromIntent() {
         val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
         intent.removeExtra(EXTRA_INDICATOR_BUTTON)
-        val button = (ShoulderButton.entries + DpadDirection.entries).firstOrNull { it.prefKey == key } ?: return
+        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries).firstOrNull { it.prefKey == key } ?: return
         if (prefs.shoulderAction(button) != Prefs.SHOULDER_CONTROLLER_FOCUS) return
-        navigation.show(if (button is ShoulderButton) SettingsSection.SHOULDERS else SettingsSection.DPAD)
+        when (button) {
+            is ShoulderButton -> navigation.show(SettingsSection.SHOULDERS)
+            is StickButton -> showStickButton(button.stick)
+            is StickClickButton -> showStickButton(button.stick)
+            is BackGestureButton -> navigation.show(SettingsSection.BASIC)
+            else -> navigation.show(SettingsSection.DPAD)
+        }
         val row = comboRows.getValue(key)
         row.position.row.post {
             if (isFinishing || isDestroyed) return@post
@@ -106,7 +119,6 @@ class SettingsActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        launcherChoices = null
         appLabels.clear()
         refresh()
         // A service rebind can finish just after the activity resumes.
@@ -121,6 +133,7 @@ class SettingsActivity : Activity() {
 
     override fun onDestroy() {
         navigation.dismiss()
+        updateDialog?.dismiss()
         exceptionsPage?.dispose()
         super.onDestroy()
     }
@@ -135,10 +148,7 @@ class SettingsActivity : Activity() {
                 R.string.exceptions_add_app to { exceptionsPage?.addApp() ?: Unit },
                 R.string.exceptions_remove_all to change(SettingsChangeAction.PRESET),
             )
-            else -> listOf(
-                R.string.settings_preset to change(SettingsChangeAction.PRESET),
-                R.string.settings_unbind to change(SettingsChangeAction.UNBIND),
-            )
+            else -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND))
         }
         page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
         when (section) {
@@ -150,6 +160,7 @@ class SettingsActivity : Activity() {
                 buildShoulderRow(page, ShoulderButton.L2, R.string.shoulder_l2)
                 buildShoulderRow(page, ShoulderButton.R2, R.string.shoulder_r2)
             }
+            SettingsSection.STICKS -> buildSticks(content)
             SettingsSection.DPAD -> {
                 page.sectionHeader(R.string.dpad_bindings_section)
                 buildShoulderRow(page, DpadDirection.UP, R.string.dpad_up)
@@ -163,43 +174,92 @@ class SettingsActivity : Activity() {
         }
     }
 
+    /** One page per stick behind two tabs; both are built up front so their rows stay in [comboRows]. */
+    private fun buildSticks(content: LinearLayout) {
+        stickPages.clear()
+        stickBoxes.clear()
+        val tabs = tabBar(listOf(R.string.stick_tab_left, R.string.stick_tab_right), Stick.entries.indexOf(stickTab)) {
+            stickTab = Stick.entries[it]
+            showStickTab()
+        }
+        stickTabBar = tabs
+        content.addView(tabs, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(16)
+        })
+        val titles = mapOf(
+            StickButton.LEFT_UP to R.string.stick_left_up, StickButton.LEFT_DOWN to R.string.stick_left_down,
+            StickButton.LEFT_LEFT to R.string.stick_left_left, StickButton.LEFT_RIGHT to R.string.stick_left_right,
+            StickButton.RIGHT_UP to R.string.stick_right_up, StickButton.RIGHT_DOWN to R.string.stick_right_down,
+            StickButton.RIGHT_LEFT to R.string.stick_right_left, StickButton.RIGHT_RIGHT to R.string.stick_right_right,
+        )
+        val clickTitles = mapOf(
+            StickClickButton.LEFT_PRESS to R.string.stick_left_press, StickClickButton.LEFT_DOUBLE to R.string.stick_left_double,
+            StickClickButton.LEFT_TAP_HOLD to R.string.stick_left_tap_hold, StickClickButton.RIGHT_PRESS to R.string.stick_right_press,
+            StickClickButton.RIGHT_DOUBLE to R.string.stick_right_double, StickClickButton.RIGHT_TAP_HOLD to R.string.stick_right_tap_hold,
+        )
+        Stick.entries.forEach { stick ->
+            val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; tag = "settings_stick_${stick.name}" }
+            content.addView(box, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val page = SettingsPage(this, box)
+            stickPages += page
+            stickBoxes[stick] = box
+            page.sectionHeader(if (stick == Stick.LEFT) R.string.stick_left_bindings_section else R.string.stick_right_bindings_section)
+            StickButton.entries.filter { it.stick == stick }.forEach { buildShoulderRow(page, it, titles.getValue(it)) }
+            // Same three sections, in the same order, as the Back page: the action replaces the switch.
+            fun clickRow(click: StickClick, extra: (SettingsPage.Card.() -> View)? = null) {
+                val button = StickClickButton.of(stick, click)
+                buildShoulderRow(page, button, clickTitles.getValue(button), extra)
+            }
+            page.sectionHeader(R.string.single_section_title)
+            clickRow(StickClick.PRESS)
+            page.sectionHeader(R.string.double_section_title)
+            clickRow(StickClick.DOUBLE) {
+                subOptions {
+                    sliderRow(R.string.stick_double_speed, 150, 600, 50, prefs.stickDoubleMs(stick), R.string.stick_double_hint, readValue = { prefs.stickDoubleMs(stick) }) { prefs.setStickDoubleMs(stick, it) }
+                }
+            }
+            page.sectionHeader(R.string.tap_hold_section_title)
+            clickRow(StickClick.TAP_HOLD) {
+                subOptions {
+                    sliderRow(R.string.stick_tap_hold_speed, 500, 2000, 100, prefs.stickTapHoldMs(stick), R.string.stick_tap_hold_hint, readValue = { prefs.stickTapHoldMs(stick) }) { prefs.setStickTapHoldMs(stick, it) }
+                }
+            }
+        }
+        showStickTab()
+    }
+
+    private fun showStickButton(stick: Stick) {
+        stickTab = stick
+        navigation.show(SettingsSection.STICKS)
+        showStickTab()
+    }
+
+    private fun showStickTab() {
+        stickBoxes.forEach { (stick, box) -> box.visibility = if (stick == stickTab) View.VISIBLE else View.GONE }
+        stickTabBar?.let { selectTab(it, Stick.entries.indexOf(stickTab)) }
+    }
+
     private fun buildBasic(page: SettingsPage) {
-        page.sectionHeader(R.string.single_section_title)
-        page.card {
-            singleValue = chooserRow(R.string.single_title, describeSingleAction()) { chooseSingleAction() }.value
+        // Every gesture takes any action; its timing only shows once it has one.
+        fun gesture(section: Int, button: BackGestureButton, row: Int, slider: (SettingsPage.Card.() -> View)? = null) {
+            page.sectionHeader(section)
+            buildShoulderRow(page, button, row, slider)
         }
-
-        page.sectionHeader(R.string.double_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.double_enabled, R.string.double_title, prefs.doubleTapEnabled, readValue = { prefs.doubleTapEnabled }) { prefs.doubleTapEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint, readValue = { prefs.doubleTapMs }) { prefs.doubleTapMs = it }
-            }
+        gesture(R.string.single_section_title, BackGestureButton.SINGLE, R.string.back_single_row)
+        gesture(R.string.double_section_title, BackGestureButton.DOUBLE, R.string.back_double_row) {
+            subOptions { sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint, readValue = { prefs.doubleTapMs }) { prefs.doubleTapMs = it } }
         }
-
-        page.sectionHeader(R.string.tap_hold_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.tap_hold_enabled, R.string.tap_hold_title, prefs.tapHoldEnabled, readValue = { prefs.tapHoldEnabled }) { prefs.tapHoldEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.tap_hold_speed, 500, 2000, 100, prefs.tapHoldMs, R.string.tap_hold_hint, readValue = { prefs.tapHoldMs }) { prefs.tapHoldMs = it }
-            }
+        gesture(R.string.tap_hold_section_title, BackGestureButton.TAP_HOLD, R.string.back_tap_hold_row) {
+            subOptions { sliderRow(R.string.tap_hold_speed, 500, 2000, 100, prefs.tapHoldMs, R.string.tap_hold_hint, readValue = { prefs.tapHoldMs }) { prefs.tapHoldMs = it } }
         }
-
-        page.sectionHeader(R.string.hold_section_title)
-        page.card {
-            val enabled = toggleRow(R.string.hold_enabled, R.string.hold_title, prefs.holdEnabled, readValue = { prefs.holdEnabled }) { prefs.holdEnabled = it }
-            subOptions(endControl = enabled.switch) {
-                sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it }
-            }
+        gesture(R.string.hold_section_title, BackGestureButton.HOLD, R.string.back_hold_row) {
+            subOptions { sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it } }
         }
     }
 
     private fun buildSettings(page: SettingsPage) {
         page.sectionHeader(R.string.settings_switcher)
         page.card {
-            toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
-                prefs.switcherShowsAllApps = it
-            }
             toggleRow(R.string.switcher_controller, R.string.switcher_controller_hint, prefs.switcherControllerEnabled, readValue = { prefs.switcherControllerEnabled }) {
                 prefs.switcherControllerEnabled = it
             }
@@ -215,10 +275,10 @@ class SettingsActivity : Activity() {
             }
         }
 
-        page.sectionHeader(R.string.settings_reset)
+        page.sectionHeader(R.string.backup_section)
         page.card {
-            actionRow(R.string.unbind_optionals, R.string.settings_unbind_scope) { confirmUnbindOptionals() }
-            actionRow(R.string.reset_settings, R.string.settings_reset_scope) { confirmResetSettings() }
+            actionRow(R.string.backup_save, R.string.backup_save_hint) { startBackupSave() }
+            actionRow(R.string.backup_load, R.string.backup_load_hint) { startBackupLoad() }
         }
     }
 
@@ -264,103 +324,133 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    /** What stands in the middle of the scrim while the service is off: why, and the one thing to do. */
+    private fun serviceBlockerCard(): View {
+        val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
+        val surface = settingsSurfaceColor(SettingsSurface.INTRODUCTION)
+        return LinearLayout(this).apply {
+            tag = "settings_service_blocker_card"
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(24), dp(24), dp(24))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(surface)
+                cornerRadius = dp(24).toFloat()
+            }
+            elevation = dp(8).toFloat()
+            addView(TextView(this@SettingsActivity).apply {
+                tag = "settings_service_blocker_title"
+                text = getString(R.string.service_blocker_title, getString(R.string.app_name))
+                textSize = 18f
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(themedColor(android.R.attr.textColorPrimary, Color.BLACK))
+                gravity = Gravity.CENTER
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(TextView(this@SettingsActivity).apply {
+                text = getString(R.string.service_blocker_hint, getString(R.string.app_name))
+                textSize = 15f
+                setTextColor(themedColor(android.R.attr.textColorSecondary, Color.GRAY))
+                gravity = Gravity.CENTER
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
+            addView(android.widget.Button(this@SettingsActivity).apply {
+                tag = "settings_service_blocker_button"
+                setText(R.string.enable_service)
+                isAllCaps = false
+                textSize = 15f
+                // Dark theme accents are light; the label takes whichever of black and white reads on it.
+                setTextColor(if (Color.luminance(accent) > 0.5f) Color.BLACK else Color.WHITE)
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(accent)
+                    cornerRadius = dp(24).toFloat()
+                }
+                minimumHeight = dp(48)
+                setOnClickListener { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48)).apply { topMargin = dp(20) })
+        }
+    }
+
     private fun refresh() {
         pages.values.forEach { it.refresh() }
+        stickPages.forEach { it.refresh() }
         comboRows.values.forEach { updateShoulderRow(it) }
         toggleButtonsValue?.text = toggleButtonsLabel()
         toggleDuration?.setEnabled(prefs.toggleButtons != Prefs.TOGGLE_NONE)
         val status = currentServiceStatus()
-        serviceWarning.text = serviceStatusText(status)
+        serviceWarning.text = serviceChipText(status)
+        serviceWarning.contentDescription = serviceStatusText(status)
         serviceWarning.visibility = if (status == ServiceStatus.ON) View.GONE else View.VISIBLE
         // Without pservice, Back + D-pad has to take window focus (DpadOverlay) and games may pause.
-        rootWarning.row.visibility = if (prefs.hasDpadAction() && !PService.cachedAvailable()) View.VISIBLE else View.GONE
-        singleValue?.text = describeSingleAction()
+        val dpadNeeds = prefs.hasDpadAction()
+        val sticksNeed = prefs.hasStickAction()
+        rootWarning.label.setText(when {
+            dpadNeeds && sticksNeed -> R.string.dpad_stick_root_missing
+            sticksNeed -> R.string.stick_root_missing
+            else -> R.string.dpad_root_missing
+        })
+        rootWarning.row.visibility = if ((dpadNeeds || sticksNeed) && !PService.cachedAvailable()) View.VISIBLE else View.GONE
         statusLabel?.text = serviceStatusText(status)
         val enabled = isAccessibilityServiceEnabled()
-        openA11yHandle.row.visibility = if (enabled) View.GONE else View.VISIBLE
-        dividerBefore(openA11yHandle.row)?.visibility = if (!enabled) View.VISIBLE else View.GONE
+        // The navigation selects its first page while it is still being built, before it can be asked.
+        if (::navigation.isInitialized) navigation.setBlocked(!enabled)
         repairHandle?.row?.visibility = if (enabled) View.VISIBLE else View.GONE
-        warnings.visibility = if (rootWarning.row.visibility == View.VISIBLE || !enabled) View.VISIBLE else View.GONE
+        warnings.visibility = if (rootWarning.row.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
 
     private data class Choice(val value: String, val label: String)
 
-    private fun launchers(): List<Choice> {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_SECONDARY_HOME)
-        launcherChoices?.let { return it }
-        return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL).map {
-            Choice(
-                "${it.activityInfo.packageName}/${it.activityInfo.name}",
-                getString(R.string.single_launcher_named, it.loadLabel(packageManager)),
-            )
-        }.distinctBy { it.value }.also { launcherChoices = it }
-    }
-
-    private fun describeSingleAction(action: String = prefs.singleAction): String = when (action) {
-        Prefs.SINGLE_BACK -> getString(R.string.single_back)
-        Prefs.SINGLE_LAUNCHER -> getString(R.string.single_launcher_default)
-        else -> launchers().firstOrNull { it.value == action }?.label ?: getString(R.string.single_launcher_default)
-    }
-
-    private fun chooseSingleAction() {
-        val choices = listOf(
-            Choice(Prefs.SINGLE_BACK, getString(R.string.single_back)),
-            Choice(Prefs.SINGLE_LAUNCHER, getString(R.string.single_launcher_default)),
-        ) + launchers()
-        AlertDialog.Builder(this)
-            .setTitle(R.string.single_dialog_title)
-            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == prefs.singleAction }) { dialog, which ->
-                prefs.singleAction = choices[which].value
-                dialog.dismiss()
-                refresh()
-            }
-            .show()
-    }
-
     /** Every launchable app on the device, shown only after choosing "Launch app". */
     private fun allApps(): List<Choice> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        launcherChoices?.let { return it }
         return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL).map {
             Choice(it.activityInfo.packageName, it.loadLabel(packageManager).toString())
         }.distinctBy { it.value }.sortedBy { it.label }
     }
 
-    private fun shoulderActions(): List<Choice> = listOf(
-        Choice("", getString(R.string.shoulder_none)),
-        Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
-        Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
-        Choice(Prefs.SHOULDER_RECENTS, getString(R.string.shoulder_recents)),
-        Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
-        Choice(Prefs.SHOULDER_FLICK_LEFT, getString(R.string.shoulder_flick_left)),
-        Choice(Prefs.SHOULDER_FLICK_RIGHT, getString(R.string.shoulder_flick_right)),
-        Choice(Prefs.SHOULDER_VOLUME_UP, getString(R.string.shoulder_volume_up)),
-        Choice(Prefs.SHOULDER_VOLUME_DOWN, getString(R.string.shoulder_volume_down)),
-        Choice(Prefs.SHOULDER_BRIGHTNESS_UP, getString(R.string.shoulder_brightness_up)),
-        Choice(Prefs.SHOULDER_BRIGHTNESS_DOWN, getString(R.string.shoulder_brightness_down)),
-        Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
-        Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
-        Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
-        Choice(Prefs.SHOULDER_QUICK_SETTINGS, getString(R.string.shoulder_quick_settings)),
-        Choice(Prefs.SHOULDER_NOTIFICATIONS, getString(R.string.shoulder_notifications)),
-        Choice(Prefs.SHOULDER_INTERNET, getString(R.string.shoulder_internet)),
-        Choice(Prefs.SHOULDER_BLUETOOTH, getString(R.string.shoulder_bluetooth)),
-        Choice(Prefs.SHOULDER_NIGHT_LIGHT, getString(R.string.shoulder_night_light)),
-        Choice(Prefs.SHOULDER_EXTRA_DIM, getString(R.string.shoulder_extra_dim)),
-        Choice(Prefs.SHOULDER_DISPLAY_SETTINGS, getString(R.string.shoulder_display_settings)),
-        Choice(Prefs.SHOULDER_SOUND_SETTINGS, getString(R.string.shoulder_sound_settings)),
-        Choice(Prefs.SHOULDER_LOCATION_SETTINGS, getString(R.string.shoulder_location_settings)),
-        Choice(Prefs.SHOULDER_CAST_SETTINGS, getString(R.string.shoulder_cast_settings)),
-        Choice(Prefs.SHOULDER_DND_SETTINGS, getString(R.string.shoulder_dnd_settings)),
-        Choice(Prefs.SHOULDER_BATTERY_SAVER, getString(R.string.shoulder_battery_saver)),
-    )
+    private fun shoulderActions(): List<Choice> {
+        fun group(g: ActionGroups.Group) = Choice(g.entry, getString(g.titleRes))
+        return listOf(
+            Choice("", getString(R.string.shoulder_none)),
+            Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
+            Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
+            Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
+            group(ActionGroups.Group.APP_SWITCHER),
+            Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
+            Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
+            group(ActionGroups.Group.FLICK),
+            group(ActionGroups.Group.VOLUME),
+            group(ActionGroups.Group.BRIGHTNESS),
+            Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
+            Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
+            Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
+        ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
+    }
+
+    /** One entry per AYN tile; its options are chosen on the row, like a volume action's screen. */
+    private fun aynChoices(): List<Choice> =
+        Ayn.Group.values().map { Choice(it.action, getString(it.titleRes)) } +
+            Ayn.Toggle.values().map { Choice(it.action, getString(it.titleRes)) }
+
+    private fun aynOptions(group: Ayn.Group): List<Choice> =
+        (if (group.hasModal) listOf(Choice(Ayn.MODAL, getString(R.string.ayn_modal))) else emptyList()) +
+            group.options.map { Choice(it.key, getString(it.labelRes)) }
+
+    private fun describeOption(button: ComboButton): String {
+        val action = prefs.shoulderAction(button)
+        ActionGroups.groupOf(action)?.let { group -> return getString(checkNotNull(group.option(action)).labelRes) }
+        return describeAynOption(button)
+    }
+
+    private fun describeAynOption(button: ComboButton): String {
+        val group = Ayn.groupOf(prefs.shoulderAction(button)) ?: return ""
+        val chosen = prefs.aynOption(button, group)
+        return aynOptions(group).first { it.value == chosen }.label
+    }
 
     private fun describeShoulderAction(button: ComboButton): String = describeAction(prefs.shoulderAction(button))
 
     private fun describeAction(action: String): String {
         return when (action) {
             "" -> getString(R.string.shoulder_none)
-            else -> shoulderActions().firstOrNull { it.value == action }?.label
+            else -> ActionGroups.groupOf(action)?.let { getString(it.titleRes) } ?: shoulderActions().firstOrNull { it.value == action }?.label
                 ?: runCatching {
                     appLabels.getOrPut(action) {
                         getString(R.string.shoulder_launch_app_named, packageManager.getApplicationInfo(action, 0).loadLabel(packageManager))
@@ -399,6 +489,7 @@ class SettingsActivity : Activity() {
         Choice(Prefs.FOCUS_TOGGLE, getString(R.string.focus_target_toggle)),
         Choice(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
         Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+        Choice(Prefs.FOCUS_MODAL, getString(R.string.ayn_modal)),
     )
 
     private fun describeFocusTarget(button: ComboButton): String = focusTargets().let { targets ->
@@ -536,8 +627,15 @@ class SettingsActivity : Activity() {
         val target: SettingsPage.ChooserHandle,
         val displayOptions: View,
         val targetOptions: View,
+        /** A timing slider that only means something once the row has an action. */
+        val timingOptions: View? = null,
     ) {
         var focusOptions: SettingsPage.FocusOptionsHandle? = null
+        /** The choice below a grouped action, built when first needed so unassigned rows stay as they were. */
+        var option: SettingsPage.ChooserHandle? = null
+        var optionOptions: View? = null
+        /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
+        var switcherOptions: View? = null
         var switchAppOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
@@ -546,7 +644,7 @@ class SettingsActivity : Activity() {
     private fun chooseShoulderAction(row: ComboRow) {
         val choices = shoulderActions()
         val stored = prefs.shoulderAction(row.button)
-        val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else stored
+        val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.shoulder_choose_action_title, row.label))
             .setSingleChoiceItems(
@@ -558,7 +656,12 @@ class SettingsActivity : Activity() {
                 if (action == ACTION_APP) {
                     chooseShoulderApp(row)
                 } else {
-                    prefs.setShoulderAction(row.button, action)
+                    // A group stores its option's own action; re-picking the group keeps the option.
+                    val group = ActionGroups.groupOfEntry(action)
+                    prefs.setShoulderAction(
+                        row.button,
+                        if (group == null) action else if (group.option(stored) != null) stored else group.options.first().action,
+                    )
                     updateShoulderRow(row)
                     refresh()
                 }
@@ -580,6 +683,37 @@ class SettingsActivity : Activity() {
                 dialog.dismiss()
                 updateShoulderRow(row)
                 refresh()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun chooseOption(row: ComboRow) {
+        val action = prefs.shoulderAction(row.button)
+        Ayn.groupOf(action)?.let { return chooseAynOption(row, it) }
+        val group = ActionGroups.groupOf(action) ?: return
+        val labels = group.options.map { getString(it.labelRes) }
+        AlertDialog.Builder(this)
+            .setTitle(group.titleRes)
+            .setSingleChoiceItems(labels.toTypedArray(), group.options.indexOfFirst { it.action == action }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setShoulderAction(row.button, group.options[which].action)
+                dialog.dismiss()
+                updateShoulderRow(row)
+                refresh()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun chooseAynOption(row: ComboRow, group: Ayn.Group) {
+        val choices = aynOptions(group)
+        val selected = prefs.aynOption(row.button, group)
+        AlertDialog.Builder(this)
+            .setTitle(group.titleRes)
+            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == selected }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setAynOption(row.button, choices[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -642,10 +776,12 @@ class SettingsActivity : Activity() {
         page: SettingsPage,
         button: ComboButton,
         titleRes: Int,
+        extra: (SettingsPage.Card.() -> View)? = null,
     ) {
         val card = page.card {}
         lateinit var row: ComboRow
         val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
+        val timing = extra?.let { card.it() }
         lateinit var display: SettingsPage.ToggleHandle
         val displayOptions = card.subOptions {
             display = toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP, readValue = { prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP }) {
@@ -656,7 +792,7 @@ class SettingsActivity : Activity() {
         val targetOptions = card.subOptions {
             target = chooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
         }
-        row = ComboRow(card, button, getString(titleRes), action, display.row, target, displayOptions, targetOptions)
+        row = ComboRow(card, button, getString(titleRes), action, display.row, target, displayOptions, targetOptions, timing)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
@@ -665,15 +801,45 @@ class SettingsActivity : Activity() {
         row.action.value.text = describeShoulderAction(row.button)
         val action = prefs.shoulderAction(row.button)
         row.display.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
+        val hasOption = Ayn.groupOf(action) != null || ActionGroups.groupOf(action) != null
         val hasTarget = Prefs.hasScreenTarget(action)
         val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
         row.displayOptions.visibility = row.display.visibility
+        row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
+        val switcher = action == Prefs.SHOULDER_SWITCHER
+        if (switcher && row.switcherOptions == null) {
+            row.switcherOptions = row.card.subOptions {
+                toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
+                    prefs.switcherShowsAllApps = it
+                }
+            }
+        }
+        row.switcherOptions?.visibility = if (switcher) View.VISIBLE else View.GONE
         row.targetOptions.visibility = row.target.row.visibility
         val switchApp = action == Prefs.SHOULDER_SWITCH_APP
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || appControl || switchApp || row.display.visibility == View.VISIBLE) 0 else 10))
+            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.visibility == View.VISIBLE) 0 else 10))
+        if (hasOption && row.option == null) {
+            lateinit var created: SettingsPage.ChooserHandle
+            val options = row.card.subOptions {
+                created = chooserRow(R.string.ayn_option_title, describeOption(row.button)) { chooseOption(row) }
+            }
+            // Built last, but it belongs right above the screen row.
+            (options.parent as ViewGroup).let { parent ->
+                parent.removeView(options)
+                parent.addView(options, parent.indexOfChild(row.targetOptions))
+            }
+            row.option = created
+            row.optionOptions = options
+        }
+        row.option?.let { option ->
+            option.row.visibility = if (hasOption) View.VISIBLE else View.GONE
+            row.optionOptions?.visibility = option.row.visibility
+            option.value.text = describeOption(row.button)
+            option.row.contentDescription = getString(R.string.ayn_option_accessibility, row.label, option.value.text)
+        }
         row.target.value.text = describeLevelTarget(row.button)
         row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
         if (focus && row.focusOptions == null) {
@@ -738,16 +904,103 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun confirmUnbindOptionals() = showChanges(
-        SettingsChangePlan.create(prefs.snapshot(), null, SettingsChangeAction.UNBIND),
-    )
+    // The file picker is the whole permission model: the user hands over one file, nothing else.
+    private fun startBackupSave() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("application/json").putExtra(Intent.EXTRA_TITLE, SettingsBackup.fileName(appVersionName()))
+        runCatching { startActivityForResult(intent, REQUEST_BACKUP_SAVE) }
+            .onFailure { Toast.makeText(this, R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
+    }
 
-    private fun confirmResetSettings() = showChanges(
-        SettingsChangePlan.create(prefs.snapshot(), null, SettingsChangeAction.PRESET),
-    )
+    private fun startBackupLoad() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
+            .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/plain", "application/octet-stream"))
+        runCatching { startActivityForResult(intent, REQUEST_BACKUP_LOAD) }
+            .onFailure { Toast.makeText(this, R.string.backup_read_failed, Toast.LENGTH_LONG).show() }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data?.takeIf { resultCode == RESULT_OK } ?: return
+        when (requestCode) {
+            REQUEST_BACKUP_SAVE -> saveBackup(uri)
+            REQUEST_BACKUP_LOAD -> loadBackup(uri)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun saveBackup(uri: Uri) {
+        val json = SettingsBackup.write(prefs.snapshot(), appVersionName(),
+            packageManager.getPackageInfo(packageName, 0).let { it.longVersionCode })
+        Thread {
+            val saved = runCatching {
+                contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+            }.isSuccess
+            runOnUiThread { if (!isFinishing && !isDestroyed) Toast.makeText(this, if (saved) R.string.backup_saved else R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun loadBackup(uri: Uri) {
+        Thread {
+            // One byte over the limit is enough to tell a file is too large, without reading all of it.
+            val bytes = runCatching {
+                contentResolver.openInputStream(uri)!!.use { input ->
+                    val out = java.io.ByteArrayOutputStream()
+                    val chunk = ByteArray(8192)
+                    while (out.size() <= SettingsBackup.MAX_BYTES) {
+                        val n = input.read(chunk, 0, minOf(chunk.size, SettingsBackup.MAX_BYTES + 1 - out.size()))
+                        if (n < 0) break
+                        out.write(chunk, 0, n)
+                    }
+                    out.toByteArray()
+                }
+            }.getOrNull()
+            runOnUiThread { if (!isFinishing && !isDestroyed) offerBackup(bytes) }
+        }.apply { isDaemon = true }.start()
+    }
+
+    /** What a picked file leads to: a refusal, or the version hint and the preview of every change. */
+    internal fun offerBackup(bytes: ByteArray?) {
+        if (bytes == null) { showBackupProblem(R.string.backup_read_failed); return }
+        when (val result = SettingsBackup.read(String(bytes, Charsets.UTF_8))) {
+            is SettingsBackup.Result.Rejected -> showBackupProblem(when (result.reason) {
+                SettingsBackup.Rejection.TOO_LARGE -> R.string.backup_too_large
+                SettingsBackup.Rejection.NOT_JSON -> R.string.backup_not_json
+                SettingsBackup.Rejection.NOT_A_BACKUP -> R.string.backup_not_a_backup
+            })
+            is SettingsBackup.Result.Loaded -> confirmBackup(result)
+        }
+    }
+
+    private fun showBackupProblem(message: Int) {
+        AlertDialog.Builder(this).setTitle(R.string.backup_problem_title).setMessage(message)
+            .setPositiveButton(android.R.string.ok, null).show()
+    }
+
+    /** A backup from another version is allowed, but says so first: it may not fit, and that is all it says. */
+    private fun confirmBackup(loaded: SettingsBackup.Result.Loaded) {
+        val plan = SettingsChangePlan(prefs.snapshot(), loaded.state, null, SettingsChangeAction.RESTORE)
+        val version = appVersionName()
+        val compatibility = SettingsBackup.compatibility(loaded.info, version)
+        if (compatibility == SettingsBackup.Compatibility.SAME) { showChanges(plan); return }
+        val message = when (compatibility) {
+            SettingsBackup.Compatibility.OLDER -> R.string.backup_version_older
+            SettingsBackup.Compatibility.NEWER -> R.string.backup_version_newer
+            else -> R.string.backup_version_unknown
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.backup_version_title)
+            .setMessage(if (compatibility == SettingsBackup.Compatibility.UNKNOWN) getString(message, version)
+                else getString(message, loaded.info.appVersion ?: "?", version))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.backup_continue) { _, _ -> showChanges(plan) }
+            .show()
+    }
 
     private fun showChanges(plan: SettingsChangePlan) {
         val scope = getString(plan.section?.titleRes ?: R.string.settings_entire_app)
+        val restore = plan.action == SettingsChangeAction.RESTORE
         val preset = plan.action == SettingsChangeAction.PRESET
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -760,24 +1013,37 @@ class SettingsActivity : Activity() {
                 setPadding(0, dp(8), 0, dp(8))
             })
         }
-        if (plan.isEmpty) line(getString(if (preset) R.string.settings_already_preset else R.string.settings_already_unbound))
+        if (plan.isEmpty) line(getString(when {
+            restore -> R.string.backup_matches
+            preset -> R.string.settings_already_preset
+            else -> R.string.settings_already_unbound
+        }))
         else {
             line(getString(R.string.settings_changes_scope, scope))
             changeLines(plan).forEach(::line)
             if (plan.removesToggle) line(getString(R.string.settings_unbind_reactivates))
         }
         val builder = AlertDialog.Builder(this)
-            .setTitle(getString(if (preset) R.string.settings_preset_title else R.string.settings_unbind_title, scope))
+            .setTitle(when {
+                restore -> getString(R.string.backup_restore_title)
+                preset -> getString(R.string.settings_preset_title, scope)
+                else -> getString(R.string.settings_unbind_title, scope)
+            })
             .setView(ScrollView(this).apply { addView(content) })
         if (plan.isEmpty) builder.setPositiveButton(android.R.string.ok, null)
         else builder.setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.settings_apply) { _, _ ->
                 if (prefs.applySettings(plan.before, plan.after)) {
                     invalidatePages()
-                    Toast.makeText(this, if (preset) R.string.reset_settings_done else R.string.unbind_optionals_done, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, when {
+                        restore -> R.string.backup_restored
+                        preset -> R.string.reset_settings_done
+                        else -> R.string.unbind_optionals_done
+                    }, Toast.LENGTH_SHORT).show()
                 } else {
                     // A preview is a promise: changed preferences require a new confirmation.
-                    showChanges(SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action))
+                    showChanges(if (restore) plan.copy(before = prefs.snapshot())
+                    else SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action))
                 }
             }
         builder.show()
@@ -800,6 +1066,11 @@ class SettingsActivity : Activity() {
             Prefs.TOGGLE_L2_R2 -> "L2 + R2"
             else -> "L3 + R3"
         }
+        fun aynOption(value: BindingSettings): String {
+            val group = checkNotNull(Ayn.groupOf(value.action))
+            val chosen = value.aynOption?.takeIf(group::isValid) ?: group.defaultOption
+            return aynOptions(group).first { it.value == chosen }.label
+        }
         fun launches(value: BindingSettings) = Prefs.isShoulderApp(value.action) || value.action == Prefs.SHOULDER_HOME
         fun binding(value: BindingSettings): String {
             val detail = when {
@@ -808,18 +1079,19 @@ class SettingsActivity : Activity() {
                 Prefs.isLevelAction(value.action) -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
+                Ayn.groupOf(value.action) != null -> aynOption(value)
+                ActionGroups.groupOf(value.action) != null -> return getString(
+                    R.string.settings_action_detail, describeAction(value.action),
+                    getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes),
+                )
                 else -> return describeAction(value.action)
             }
             return getString(R.string.settings_action_detail, describeAction(value.action), detail)
         }
         val a = plan.before
         val b = plan.after
-        addChange(getString(R.string.single_section_title), describeSingleAction(a.singleAction), describeSingleAction(b.singleAction))
-        addChange(getString(R.string.double_enabled), onOff(a.doubleEnabled), onOff(b.doubleEnabled))
         addChange(getString(R.string.settings_double_time), ms(a.doubleMs), ms(b.doubleMs))
-        addChange(getString(R.string.tap_hold_enabled), onOff(a.tapHoldEnabled), onOff(b.tapHoldEnabled))
         addChange(getString(R.string.settings_tap_hold_time), ms(a.tapHoldMs), ms(b.tapHoldMs))
-        addChange(getString(R.string.hold_enabled), onOff(a.holdEnabled), onOff(b.holdEnabled))
         addChange(getString(R.string.settings_hold_time), ms(a.holdMs), ms(b.holdMs))
         addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
@@ -828,11 +1100,27 @@ class SettingsActivity : Activity() {
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
         addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))
         val buttons = listOf(
+            BackGestureButton.SINGLE to R.string.back_single_row, BackGestureButton.DOUBLE to R.string.back_double_row,
+            BackGestureButton.TAP_HOLD to R.string.back_tap_hold_row, BackGestureButton.HOLD to R.string.back_hold_row,
             ShoulderButton.L1 to R.string.shoulder_l1, ShoulderButton.R1 to R.string.shoulder_r1,
             ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
             DpadDirection.UP to R.string.dpad_up, DpadDirection.DOWN to R.string.dpad_down,
             DpadDirection.LEFT to R.string.dpad_left, DpadDirection.RIGHT to R.string.dpad_right,
+            StickButton.LEFT_UP to R.string.stick_left_up, StickButton.LEFT_DOWN to R.string.stick_left_down,
+            StickButton.LEFT_LEFT to R.string.stick_left_left, StickButton.LEFT_RIGHT to R.string.stick_left_right,
+            StickButton.RIGHT_UP to R.string.stick_right_up, StickButton.RIGHT_DOWN to R.string.stick_right_down,
+            StickButton.RIGHT_LEFT to R.string.stick_right_left, StickButton.RIGHT_RIGHT to R.string.stick_right_right,
+            StickClickButton.LEFT_PRESS to R.string.stick_left_press, StickClickButton.LEFT_DOUBLE to R.string.stick_left_double,
+            StickClickButton.LEFT_TAP_HOLD to R.string.stick_left_tap_hold, StickClickButton.RIGHT_PRESS to R.string.stick_right_press,
+            StickClickButton.RIGHT_DOUBLE to R.string.stick_right_double, StickClickButton.RIGHT_TAP_HOLD to R.string.stick_right_tap_hold,
         )
+        Stick.entries.forEach { stick ->
+            val old = a.stickTimings.getValue(stick.prefix)
+            val new = b.stickTimings.getValue(stick.prefix)
+            val side = getString(if (stick == Stick.LEFT) R.string.stick_tab_left else R.string.stick_tab_right)
+            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_double_title)), ms(old.doubleMs), ms(new.doubleMs))
+            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_tap_hold_title)), ms(old.tapHoldMs), ms(new.tapHoldMs))
+        }
         buttons.forEach { (button, labelRes) ->
             val old = a.bindings.getValue(button.prefKey)
             val new = b.bindings.getValue(button.prefKey)
@@ -860,8 +1148,10 @@ class SettingsActivity : Activity() {
         exceptionsPage?.dispose()
         exceptionsPage = null
         pages.clear()
+        stickPages.clear()
+        stickBoxes.clear()
+        stickTabBar = null
         comboRows.clear()
-        singleValue = null
         toggleButtonsValue = null
         toggleDuration = null
         statusLabel = null
@@ -882,14 +1172,27 @@ class SettingsActivity : Activity() {
             updateHandle.row.alpha = 1f
             updateHandle.title.setText(R.string.check_for_updates)
             when (result.status) {
-                UpdateChecker.Status.UPDATE_AVAILABLE -> AlertDialog.Builder(this)
-                    .setTitle(R.string.update_found_title)
-                    .setMessage(getString(R.string.update_found_message, result.tagName.orEmpty()))
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(R.string.open_release) { _, _ ->
-                        result.htmlUrl?.let { openUrl(it) }
+                UpdateChecker.Status.UPDATE_AVAILABLE -> {
+                    val apk = result.apk
+                    val developerBuild = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+                    val offerInstall = UpdateInstaller.canOfferInstall(apk, developerBuild)
+                    val found = getString(R.string.update_found_message, result.tagName.orEmpty())
+                    val builder = AlertDialog.Builder(this)
+                        .setTitle(R.string.update_found_title)
+                        .setMessage(when {
+                            offerInstall -> "$found\n\n${getString(R.string.update_install_hint)}"
+                            apk != null -> "$found\n\n${getString(R.string.update_developer_build_hint)}"
+                            else -> found
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                    if (offerInstall && apk != null) {
+                        builder.setPositiveButton(R.string.update_install_action) { _, _ -> startUpdate(apk) }
+                        builder.setNeutralButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
+                    } else {
+                        builder.setPositiveButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
                     }
-                    .show()
+                    builder.show()
+                }
                 UpdateChecker.Status.UP_TO_DATE -> AlertDialog.Builder(this)
                     .setTitle(R.string.no_update_title)
                     .setMessage(R.string.no_update_message)
@@ -897,11 +1200,82 @@ class SettingsActivity : Activity() {
                     .show()
                 UpdateChecker.Status.ERROR -> AlertDialog.Builder(this)
                     .setTitle(R.string.update_check_failed_title)
-                    .setMessage(R.string.update_check_failed_message)
+                    .setMessage(updateFailureMessage(result))
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
         }
+    }
+
+    /** Downloads the release into Android's installer; Android then asks for the final confirmation itself. */
+    private fun startUpdate(apk: UpdateChecker.Asset) {
+        val installer = UpdateInstaller(this)
+        if (!installer.canInstall()) return explainInstallPermission()
+        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
+        val label = TextView(this).apply { textSize = 14f; text = getString(R.string.update_installing_progress, 0) }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(16), dp(24), dp(8))
+            addView(bar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
+        }
+        updateDialog?.dismiss()
+        val progress = AlertDialog.Builder(this)
+            .setTitle(R.string.update_installing_title)
+            .setView(content)
+            .setCancelable(false)
+            .setNegativeButton(android.R.string.cancel) { _, _ -> installer.cancel() }
+            .show()
+        updateDialog = progress
+        installer.install(apk, object : UpdateInstaller.Listener {
+            override fun onProgress(done: Long, total: Long) {
+                val percent = (done * 100 / total).toInt().coerceIn(0, 100)
+                bar.progress = percent
+                label.text = getString(R.string.update_installing_progress, percent)
+            }
+
+            override fun onHandedOver() {
+                progress.dismiss()
+            }
+
+            override fun onFailed(failure: UpdateInstaller.Failure) {
+                progress.dismiss()
+                if (isFinishing || isDestroyed) return
+                if (failure == UpdateInstaller.Failure.NOT_ALLOWED) return explainInstallPermission()
+                AlertDialog.Builder(this@SettingsActivity)
+                    .setTitle(R.string.update_failed_title)
+                    .setMessage(when (failure) {
+                        UpdateInstaller.Failure.NETWORK -> R.string.update_failed_network
+                        UpdateInstaller.Failure.CORRUPT -> R.string.update_failed_corrupt
+                        else -> R.string.update_failed_session
+                    })
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
+        })
+    }
+
+    /** Installing from an app is something Android asks the user to allow per app, once. */
+    private fun explainInstallPermission() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.update_allow_title)
+            .setMessage(R.string.update_allow_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.update_allow_open) { _, _ ->
+                runCatching {
+                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                }
+            }
+            .show()
+    }
+
+    /** Names what actually went wrong; "check your connection" is only true when no answer came at all. */
+    private fun updateFailureMessage(result: UpdateChecker.CheckResult): String = when (result.failure) {
+        UpdateChecker.Failure.RATE_LIMITED -> result.retryMinutes
+            ?.let { resources.getQuantityString(R.plurals.update_rate_limited_minutes, it, it) }
+            ?: getString(R.string.update_rate_limited_message)
+        UpdateChecker.Failure.UNEXPECTED -> getString(R.string.update_check_unexpected_message)
+        else -> getString(R.string.update_check_failed_message)
     }
 
     @Suppress("DEPRECATION")
@@ -915,6 +1289,8 @@ class SettingsActivity : Activity() {
     companion object {
         const val EXTRA_INDICATOR_BUTTON = "indicator_button"
         private const val REQUEST_NOTIFICATIONS = 1
+        private const val REQUEST_BACKUP_SAVE = 2
+        private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
     }
 }

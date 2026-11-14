@@ -2,12 +2,8 @@ package dev.steinhorst.backbuttonhero
 
 /** A value snapshot lets the confirmation preview and the eventual write share one plan. */
 data class SettingsState(
-    val singleAction: String = Prefs.SINGLE_LAUNCHER,
-    val doubleEnabled: Boolean = Prefs.DEFAULT_DOUBLE_TAP_ENABLED,
     val doubleMs: Long = Prefs.DEFAULT_DOUBLE_TAP_MS,
-    val tapHoldEnabled: Boolean = Prefs.DEFAULT_TAP_HOLD_ENABLED,
     val tapHoldMs: Long = Prefs.DEFAULT_TAP_HOLD_MS,
-    val holdEnabled: Boolean = Prefs.DEFAULT_HOLD_ENABLED,
     val holdMs: Long = Prefs.DEFAULT_HOLD_MS,
     val allApps: Boolean = Prefs.DEFAULT_SWITCHER_SHOWS_ALL_APPS,
     val controller: Boolean = Prefs.DEFAULT_SWITCHER_CONTROLLER_ENABLED,
@@ -15,6 +11,13 @@ data class SettingsState(
     val toggleMs: Long = Prefs.DEFAULT_TOGGLE_HOLD_MS,
     val bindings: Map<String, BindingSettings> = factoryBindings(),
     val exceptions: List<AppException> = emptyList(),
+    /** Per stick (keyed by [Stick.prefix]): its double-press and hold times. */
+    val stickTimings: Map<String, StickTimings> = Stick.entries.associate { it.prefix to StickTimings() },
+)
+
+data class StickTimings(
+    val doubleMs: Long = Prefs.DEFAULT_DOUBLE_TAP_MS,
+    val tapHoldMs: Long = Prefs.DEFAULT_TAP_HOLD_MS,
 )
 
 data class BindingSettings(
@@ -29,6 +32,8 @@ data class BindingSettings(
     val appMode: String = Prefs.APP_MINIMIZE,
     val appScreen: String = Prefs.APP_SCREEN_ASK,
     val appConfirm: Boolean = false,
+    /** The choice of an [Ayn] hotkey; null until made. */
+    val aynOption: String? = null,
     val switchAppFollow: Boolean = true,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
@@ -36,14 +41,14 @@ data class BindingSettings(
 }
 
 private fun factoryBindings(): Map<String, BindingSettings> = buildMap {
-    put(ShoulderButton.L1.prefKey, BindingSettings(Prefs.SHOULDER_FLICK_LEFT))
-    put(ShoulderButton.R1.prefKey, BindingSettings(Prefs.SHOULDER_FLICK_RIGHT))
-    put(ShoulderButton.L2.prefKey, BindingSettings(Prefs.SHOULDER_SCREENSHOT, targetOverride = Prefs.DISPLAY_TOP))
-    put(ShoulderButton.R2.prefKey, BindingSettings(Prefs.SHOULDER_CONTROLLER_FOCUS))
+    ShoulderButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
     DpadDirection.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    StickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    StickClickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    BackGestureButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
 }
 
-enum class SettingsChangeAction { PRESET, UNBIND }
+enum class SettingsChangeAction { PRESET, UNBIND, RESTORE }
 
 data class SettingsChangePlan(
     val before: SettingsState,
@@ -63,19 +68,22 @@ data class SettingsChangePlan(
             if (section == null || section == SettingsSection.BASIC) {
                 // Whole-app Unbind affects optional combinations, never primary Back gestures.
                 if (preset || section != null) after = after.copy(
-                    singleAction = if (preset) factory.singleAction else Prefs.SINGLE_BACK,
-                    doubleEnabled = if (preset) factory.doubleEnabled else false,
-                    tapHoldEnabled = if (preset) factory.tapHoldEnabled else false,
-                    holdEnabled = if (preset) factory.holdEnabled else false,
+                    bindings = after.bindings.toMutableMap().apply {
+                        BackGestureButton.entries.forEach { gesture ->
+                            put(gesture.prefKey, if (preset) factory.bindings.getValue(gesture.prefKey)
+                            else getValue(gesture.prefKey).copy(action = ""))
+                        }
+                    },
                     doubleMs = if (preset) factory.doubleMs else before.doubleMs,
                     tapHoldMs = if (preset) factory.tapHoldMs else before.tapHoldMs,
                     holdMs = if (preset) factory.holdMs else before.holdMs,
                 )
             }
             val buttons = when (section) {
-                null -> ShoulderButton.entries + DpadDirection.entries
+                null -> ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries
                 SettingsSection.SHOULDERS -> ShoulderButton.entries
                 SettingsSection.DPAD -> DpadDirection.entries
+                SettingsSection.STICKS -> StickButton.entries + StickClickButton.entries
                 else -> emptyList()
             }
             if (buttons.isNotEmpty()) after = after.copy(bindings = after.bindings.toMutableMap().apply {
@@ -84,6 +92,8 @@ data class SettingsChangePlan(
                     else getValue(button.prefKey).copy(action = ""))
                 }
             })
+            // Timings belong to the stick click gestures; Unbind keeps them like the Back timings.
+            if (preset && (section == null || section == SettingsSection.STICKS)) after = after.copy(stickTimings = factory.stickTimings)
             if (section == null || section == SettingsSection.SETTINGS) after = after.copy(
                 allApps = if (preset) factory.allApps else before.allApps,
                 controller = if (preset) factory.controller else before.controller,

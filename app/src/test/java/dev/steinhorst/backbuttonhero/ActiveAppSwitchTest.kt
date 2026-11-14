@@ -17,7 +17,8 @@ class ActiveAppSwitchTest {
             assertFalse(prefs.switchAppFollowFocus(button))
         }
         assertEquals(Prefs.DISPLAY_BOTTOM, prefs.shoulderDisplay(ShoulderButton.L1))
-        prefs.resetToDefaults()
+        val before = prefs.snapshot()
+        assertTrue(prefs.applySettings(before, SettingsChangePlan.create(before, null, SettingsChangeAction.PRESET).after))
         assertTrue(prefs.switchAppFollowFocus(ShoulderButton.L1))
     }
 

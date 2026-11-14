@@ -8,6 +8,19 @@ class Prefs(context: Context) {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
 
     init {
+        // A fresh install starts with nothing assigned. Every migration below exists for installs
+        // that already hold settings, so a fresh one is marked as having been through all of them.
+        if (sp.all.isEmpty()) {
+            sp.edit()
+                .putBoolean("navigation_flick_defaults_v1", true)
+                .putBoolean("navigation_flick_directions_v2", true)
+                .putBoolean("shoulder_defaults_v3", true)
+                .putBoolean("back_gestures_v1", true)
+                .putBoolean("toggle_pairs_v1", true)
+                .putBoolean("toggle_default_v2", true)
+                .putBoolean("unassigned_defaults_v1", true)
+                .apply()
+        }
         // One-time test default for the navigation-flick experiment. Keep L2/R2 and all
         // subsequent user choices untouched.
         val hadV1Defaults = sp.getBoolean("navigation_flick_defaults_v1", false)
@@ -49,48 +62,72 @@ class Prefs(context: Context) {
         // empty: pin whatever an existing install has (unassigned included) before the flag is set.
         if (!sp.getBoolean("shoulder_defaults_v3", false)) {
             val defaults = sp.edit()
-            if (hadV1Defaults) {
-                listOf(ShoulderButton.L2, ShoulderButton.R2).forEach { button ->
-                    val key = "${button.prefKey}_package"
-                    if (!sp.contains(key)) defaults.putString(key, "")
-                }
-            } else {
-                putFactoryShoulders(defaults)
+            listOf(ShoulderButton.L2, ShoulderButton.R2).forEach { button ->
+                val key = "${button.prefKey}_package"
+                if (!sp.contains(key)) defaults.putString(key, "")
             }
             defaults.putBoolean("shoulder_defaults_v3", true).apply()
+        }
+        // The Back gestures became assignable: carry each one's old switch and the single-press
+        // choice over, so an update behaves exactly as before. A custom launcher choice becomes plain Home.
+        if (!sp.getBoolean("back_gestures_v1", false)) {
+            val gestures = sp.edit()
+            fun legacy(key: String, default: Boolean, action: String) =
+                if (sp.getBoolean(key, default)) action else ""
+            gestures.putString("${BackGestureButton.SINGLE.prefKey}_package",
+                if (sp.getString("single_action", SINGLE_LAUNCHER) == SINGLE_BACK) SHOULDER_BACK else SHOULDER_HOME)
+            gestures.putString("${BackGestureButton.DOUBLE.prefKey}_package", legacy("double_enabled", true, SHOULDER_SWITCHER))
+            gestures.putString("${BackGestureButton.TAP_HOLD.prefKey}_package", legacy("tap_hold_enabled", true, SHOULDER_RECENTS))
+            gestures.putString("${BackGestureButton.HOLD.prefKey}_package", legacy("hold_enabled", true, SHOULDER_SWAP_APPS))
+            gestures.putBoolean("back_gestures_v1", true).apply()
+        }
+        // The sticks got their own exception columns. Until now their shortcuts were active in every
+        // listed app, so existing exceptions keep them on instead of silently handing the sticks over.
+        if (!sp.getBoolean("exception_sticks_v2", false)) {
+            val migrated = sp.edit()
+            sp.getString("app_exceptions", null)?.let { stored ->
+                migrated.putString("app_exceptions", stored.lineSequence().joinToString("\n") { line ->
+                    val parts = line.split('\t', limit = 4)
+                    val allowed = parts.getOrNull(1)?.toIntOrNull()
+                    if (parts.size == 4 && allowed != null) {
+                        (parts.take(1) + (allowed or (ExceptionControl.STICK_BITS shl 12)) + parts.drop(2)).joinToString("\t")
+                    } else line
+                })
+            }
+            migrated.putBoolean("exception_sticks_v2", true).apply()
         }
         // Single-stick toggles were offered in development builds; keep their replacement usable.
         if (!sp.getBoolean("toggle_pairs_v1", false)) {
             val toggle = sp.edit()
-            if (sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) in listOf("l3", "r3")) {
-                toggle.putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
+            if (sp.getString("toggle_buttons", TOGGLE_L2_R2) in listOf("l3", "r3")) {
+                toggle.putString("toggle_buttons", TOGGLE_L2_R2)
             }
             toggle.putBoolean("toggle_pairs_v1", true).apply()
         }
         if (!sp.getBoolean("toggle_default_v2", false)) {
             val toggle = sp.edit()
-            if (!sp.contains("toggle_buttons")) toggle.putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
+            if (!sp.contains("toggle_buttons")) toggle.putString("toggle_buttons", TOGGLE_L2_R2)
             toggle.putBoolean("toggle_default_v2", true).apply()
+        }
+        // Defaults became "nothing assigned": pin what an existing install was running on.
+        if (!sp.getBoolean("unassigned_defaults_v1", false)) {
+            val pinned = sp.edit()
+            DpadDirection.entries.forEach {
+                if (!sp.contains("${it.prefKey}_package")) pinned.putString("${it.prefKey}_package", it.earlierDefault)
+            }
+            if (!sp.contains("toggle_buttons")) pinned.putString("toggle_buttons", TOGGLE_L2_R2)
+            pinned.putBoolean("unassigned_defaults_v1", true).apply()
         }
     }
 
-    private fun putFactoryShoulders(edit: SharedPreferences.Editor) {
-        edit.putString("${ShoulderButton.R2.prefKey}_package", SHOULDER_CONTROLLER_FOCUS)
-            .putString("${ShoulderButton.L2.prefKey}_package", SHOULDER_SCREENSHOT)
-            .putString("${ShoulderButton.L2.prefKey}_target", DISPLAY_TOP)
-    }
-
-    /** Clears optional combos, including the temporary activation shortcut. */
-    fun unbindOptionals() {
-        val edit = sp.edit()
-        ShoulderButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
-        DpadDirection.entries.forEach { edit.putString("${it.prefKey}_package", "") }
-        edit.putString("toggle_buttons", TOGGLE_NONE).apply()
-    }
+    /** Whether a gesture has an action; the setter assigns the gesture's factory action or clears it. */
+    private fun gestureEnabled(gesture: BackGestureButton) = shoulderAction(gesture).isNotEmpty()
+    private fun setGestureEnabled(gesture: BackGestureButton, on: Boolean) =
+        setShoulderAction(gesture, if (on) gesture.earlierDefault else "")
 
     var doubleTapEnabled: Boolean
-        get() = sp.getBoolean("double_enabled", DEFAULT_DOUBLE_TAP_ENABLED)
-        set(v) = sp.edit().putBoolean("double_enabled", v).apply()
+        get() = gestureEnabled(BackGestureButton.DOUBLE)
+        set(v) = setGestureEnabled(BackGestureButton.DOUBLE, v)
 
     var doubleTapMs: Long
         get() = sp.getLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
@@ -115,8 +152,8 @@ class Prefs(context: Context) {
         set(v) = sp.edit().putLong("toggle_hold_ms", v).apply()
 
     var holdEnabled: Boolean
-        get() = sp.getBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
-        set(v) = sp.edit().putBoolean("hold_enabled", v).apply()
+        get() = gestureEnabled(BackGestureButton.HOLD)
+        set(v) = setGestureEnabled(BackGestureButton.HOLD, v)
 
     var holdMs: Long
         get() = sp.getLong("hold_ms", DEFAULT_HOLD_MS)
@@ -126,20 +163,12 @@ class Prefs(context: Context) {
      *  instead of swapping screens. Only takes effect while double-tap is enabled, since
      *  it needs the "was there a pending tap" window double-tap already tracks. */
     var tapHoldEnabled: Boolean
-        get() = sp.getBoolean("tap_hold_enabled", DEFAULT_TAP_HOLD_ENABLED)
-        set(v) = sp.edit().putBoolean("tap_hold_enabled", v).apply()
+        get() = gestureEnabled(BackGestureButton.TAP_HOLD)
+        set(v) = setGestureEnabled(BackGestureButton.TAP_HOLD, v)
 
     var tapHoldMs: Long
         get() = sp.getLong("tap_hold_ms", DEFAULT_TAP_HOLD_MS)
         set(v) = sp.edit().putLong("tap_hold_ms", v).apply()
-
-    /** [SINGLE_BACK], [SINGLE_LAUNCHER] (system default secondary home) or a flattened launcher component. */
-    var singleAction: String
-        get() = sp.getString("single_action", SINGLE_LAUNCHER) ?: SINGLE_LAUNCHER
-        set(v) = sp.edit().putString("single_action", v).apply()
-
-    val singleLauncher: ComponentName?
-        get() = ComponentName.unflattenFromString(singleAction)
 
     /** Holding Back and pressing [button] runs this action. Plain values are app package names. */
     fun shoulderAction(button: ComboButton): String =
@@ -173,6 +202,14 @@ class Prefs(context: Context) {
     /** Whether a force-close with a fixed screen asks first. Off by default: the action is meant to be instant. */
     fun appConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_app_confirm", false)
     fun setAppConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_app_confirm", confirm).apply() }
+
+    /** The stored option of an [Ayn] hotkey, or null until chosen. */
+    private fun aynOptionRaw(button: ComboButton): String? = sp.getString("${button.prefKey}_ayn_option", null)
+
+    /** The option [button] applies for [group]; a value left over from another action counts as unchosen. */
+    fun aynOption(button: ComboButton, group: Ayn.Group): String =
+        aynOptionRaw(button)?.takeIf(group::isValid) ?: group.defaultOption
+    fun setAynOption(button: ComboButton, option: String) { sp.edit().putString("${button.prefKey}_ayn_option", option).apply() }
 
     /** Whether switching the active app also sends controller input to its destination. */
     fun switchAppFollowFocus(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_switch_app_follow", true)
@@ -211,6 +248,24 @@ class Prefs(context: Context) {
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
     fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
 
+    /** Whether [stick] (either one when null) has an action - only then are its axes worth intercepting. */
+    fun hasStickAction(stick: Stick? = null): Boolean =
+        StickButton.entries.any { (stick == null || it.stick == stick) && shoulderAction(it).isNotEmpty() }
+
+    /** Whether [stick]'s click gestures have any action - only then is its L3/R3 press ours. */
+    fun hasStickClickAction(stick: Stick): Boolean =
+        StickClickButton.entries.any { it.stick == stick && shoulderAction(it).isNotEmpty() }
+
+    /** Longest pause between the two presses of a stick's double press. */
+    fun stickDoubleMs(stick: Stick): Long =
+        sp.getLong("${stick.prefix}_double_ms", DEFAULT_DOUBLE_TAP_MS).coerceIn(150L, 600L)
+    fun setStickDoubleMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_double_ms", ms).apply() }
+
+    /** How long a stick has to be held in after its first press for the tap-and-hold gesture. */
+    fun stickTapHoldMs(stick: Stick): Long =
+        sp.getLong("${stick.prefix}_tap_hold_ms", DEFAULT_TAP_HOLD_MS).coerceIn(500L, 2000L)
+    fun setStickTapHoldMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_tap_hold_ms", ms).apply() }
+
     /** Per-app opt-outs in the order the user added them. */
     var appExceptions: List<AppException>
         get() = AppException.decode(sp.getString("app_exceptions", null))
@@ -221,16 +276,16 @@ class Prefs(context: Context) {
         packageName?.let { pkg -> appExceptions.firstOrNull { it.packageName == pkg && it.active } }
 
     fun snapshot(): SettingsState = SettingsState(
-        singleAction, doubleTapEnabled, doubleTapMs, tapHoldEnabled, tapHoldMs,
-        holdEnabled, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
-        (ShoulderButton.entries + DpadDirection.entries).associate { button ->
+        doubleTapMs, tapHoldMs, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
+        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries).associate { button ->
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
-                appMode(button), appScreen(button), appConfirm(button), switchAppFollowFocus(button),
+                appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button), switchAppFollowFocus(button),
             )
         },
         appExceptions,
+        Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it), stickTapHoldMs(it)) },
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -249,12 +304,8 @@ class Prefs(context: Context) {
         fun long(key: String, old: Long, value: Long) {
             if (old != value) edit.putLong(key, value)
         }
-        string("single_action", before.singleAction, after.singleAction)
-        boolean("double_enabled", before.doubleEnabled, after.doubleEnabled)
         long("double_ms", before.doubleMs, after.doubleMs)
-        boolean("tap_hold_enabled", before.tapHoldEnabled, after.tapHoldEnabled)
         long("tap_hold_ms", before.tapHoldMs, after.tapHoldMs)
-        boolean("hold_enabled", before.holdEnabled, after.holdEnabled)
         long("hold_ms", before.holdMs, after.holdMs)
         boolean("switcher_shows_all_apps", before.allApps, after.allApps)
         boolean("switcher_controller_enabled", before.controller, after.controller)
@@ -272,7 +323,13 @@ class Prefs(context: Context) {
             string("${key}_app_mode", old.appMode, value.appMode)
             string("${key}_app_screen", old.appScreen, value.appScreen)
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
+            string("${key}_ayn_option", old.aynOption, value.aynOption)
             boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
+        }
+        before.stickTimings.forEach { (prefix, old) ->
+            val value = after.stickTimings.getValue(prefix)
+            long("${prefix}_double_ms", old.doubleMs, value.doubleMs)
+            long("${prefix}_tap_hold_ms", old.tapHoldMs, value.tapHoldMs)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         edit.apply()
@@ -293,36 +350,12 @@ class Prefs(context: Context) {
         listeners.remove(listener)?.let { sp.unregisterOnSharedPreferenceChangeListener(it) }
     }
 
-    /** Restores app configuration only; Android permissions and service state are untouched. */
-    fun resetToDefaults() {
-        val edit = sp.edit().clear()
-            .putBoolean("double_enabled", DEFAULT_DOUBLE_TAP_ENABLED)
-            .putLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
-            .putBoolean("switcher_shows_all_apps", DEFAULT_SWITCHER_SHOWS_ALL_APPS)
-            .putBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
-            .putBoolean("tap_hold_enabled", DEFAULT_TAP_HOLD_ENABLED)
-            .putLong("tap_hold_ms", DEFAULT_TAP_HOLD_MS)
-            .putBoolean("hold_enabled", DEFAULT_HOLD_ENABLED)
-            .putLong("hold_ms", DEFAULT_HOLD_MS)
-            .putString("single_action", SINGLE_LAUNCHER)
-            .putString("${ShoulderButton.L1.prefKey}_package", SHOULDER_FLICK_LEFT)
-            .putString("${ShoulderButton.R1.prefKey}_package", SHOULDER_FLICK_RIGHT)
-            .putBoolean("navigation_flick_defaults_v1", true)
-            .putBoolean("navigation_flick_directions_v2", true)
-            .putBoolean("shoulder_defaults_v3", true)
-            .putBoolean("toggle_pairs_v1", true)
-            .putBoolean("toggle_default_v2", true)
-            .putString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS)
-        putFactoryShoulders(edit)
-        edit.apply()
-    }
-
     companion object {
         const val TOGGLE_NONE = ""
         const val TOGGLE_BOTH = "both"
         const val TOGGLE_L1_R1 = "l1_r1"
         const val TOGGLE_L2_R2 = "l2_r2"
-        const val DEFAULT_TOGGLE_BUTTONS = TOGGLE_L2_R2
+        const val DEFAULT_TOGGLE_BUTTONS = TOGGLE_NONE
         const val DEFAULT_TOGGLE_HOLD_MS = 300L
         const val DEFAULT_DOUBLE_TAP_ENABLED = true
         const val DEFAULT_DOUBLE_TAP_MS = 300L
@@ -332,12 +365,15 @@ class Prefs(context: Context) {
         const val DEFAULT_TAP_HOLD_MS = 1000L
         const val DEFAULT_HOLD_ENABLED = true
         const val DEFAULT_HOLD_MS = 1000L
-        const val SINGLE_BACK = "back"
-        const val SINGLE_LAUNCHER = "launcher"
+        /** The pre-assignable single-press choices; only the one-time migration still reads them. */
+        private const val SINGLE_BACK = "back"
+        private const val SINGLE_LAUNCHER = "launcher"
         const val DISPLAY_TOP = "top"
         const val DISPLAY_BOTTOM = "bottom"
         const val TARGET_BOTH = "both"
         const val FOCUS_TOGGLE = "toggle"
+        /** Asks which screen to focus instead of choosing it in advance. */
+        const val FOCUS_MODAL = "modal"
         const val FOCUS_POS_CENTER = "center"
         const val DEFAULT_FOCUS_DURATION_MS = 500L
         const val MIN_FOCUS_DURATION_MS = 200L
@@ -354,6 +390,9 @@ class Prefs(context: Context) {
         const val SHOULDER_FLICK_LEFT = "@navigation_flick_left"
         const val SHOULDER_FLICK_RIGHT = "@navigation_flick_right"
         const val SHOULDER_HOME = "@home"
+        const val SHOULDER_BACK = "@back"
+        const val SHOULDER_SWITCHER = "@switcher"
+        const val SHOULDER_SWAP_APPS = "@swap_apps"
         const val SHOULDER_RECENTS = "@recents"
         const val SHOULDER_SCREENSHOT = "@screenshot"
         const val SHOULDER_QUICK_SETTINGS = "@quick_settings"
@@ -378,6 +417,16 @@ class Prefs(context: Context) {
         const val APP_MINIMIZE = "minimize"
         const val APP_FORCE_CLOSE = "force_close"
         const val APP_SCREEN_ASK = "ask"
+
+        /** Every `@` action this build knows; a backup naming anything else is not applied. */
+        val KNOWN_ACTIONS: Set<String> = setOf(
+            SHOULDER_FLICK_LEFT, SHOULDER_FLICK_RIGHT, SHOULDER_HOME, SHOULDER_BACK, SHOULDER_SWITCHER, SHOULDER_SWAP_APPS,
+            SHOULDER_RECENTS, SHOULDER_SCREENSHOT, SHOULDER_QUICK_SETTINGS, SHOULDER_NOTIFICATIONS, SHOULDER_INTERNET,
+            SHOULDER_BLUETOOTH, SHOULDER_NIGHT_LIGHT, SHOULDER_EXTRA_DIM, SHOULDER_DISPLAY_SETTINGS, SHOULDER_SOUND_SETTINGS,
+            SHOULDER_LOCATION_SETTINGS, SHOULDER_CAST_SETTINGS, SHOULDER_DND_SETTINGS, SHOULDER_BATTERY_SAVER,
+            SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
+            SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
+        ) + Ayn.ACTIONS
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

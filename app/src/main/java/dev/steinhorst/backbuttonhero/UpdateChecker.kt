@@ -15,9 +15,9 @@ import java.net.URL
 
 /**
  * Polls the project's GitHub releases for a newer version and raises a notification
- * that deep-links to the release page. No in-app downloader/installer on purpose:
- * that needs REQUEST_INSTALL_PACKAGES and a download manager, more surface than a
- * single-user side-loaded app needs. If that becomes annoying, add it later.
+ * that deep-links to the release page. The release's APK is described here as well
+ * ([Asset]); [UpdateInstaller] downloads and hands it to Android's own installer, which
+ * asks the user and refuses a package signed with another key.
  */
 object UpdateChecker {
 
@@ -31,30 +31,46 @@ object UpdateChecker {
 
     enum class Status { UPDATE_AVAILABLE, UP_TO_DATE, ERROR }
 
+    /** Why a check failed, so the message can name the real cause instead of always blaming the connection. */
+    enum class Failure { NETWORK, RATE_LIMITED, UNEXPECTED }
+
+    /** The release's APK, as GitHub lists it; [sha256] is lower-case hex when GitHub publishes a digest. */
+    data class Asset(val name: String, val url: String, val size: Long, val sha256: String?)
+
     data class CheckResult(
         val status: Status,
         val tagName: String? = null,
         val htmlUrl: String? = null,
+        val apk: Asset? = null,
+        val failure: Failure? = null,
+        /** For [Failure.RATE_LIMITED]: when GitHub will answer again, rounded up, when it said. */
+        val retryMinutes: Int? = null,
     )
+
+    internal sealed class Fetch {
+        class Found(val release: Release) : Fetch()
+        class Failed(val failure: Failure, val retryMinutes: Int? = null) : Fetch()
+    }
 
     fun checkInBackground(context: Context, callback: ((CheckResult) -> Unit)? = null) {
         val appContext = context.applicationContext
         Thread {
-            val release = runCatching { fetchLatestRelease() }.getOrNull()
-            if (release == null) {
-                deliver(callback, CheckResult(Status.ERROR))
+            val fetched = fetchLatestRelease()
+            if (fetched is Fetch.Failed) {
+                deliver(callback, CheckResult(Status.ERROR, failure = fetched.failure, retryMinutes = fetched.retryMinutes))
                 return@Thread
             }
+            val release = (fetched as Fetch.Found).release
             val current = runCatching {
                 appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
             }.getOrNull()?.let { parseVersion(it) }
             if (current == null) {
-                deliver(callback, CheckResult(Status.ERROR))
+                deliver(callback, CheckResult(Status.ERROR, failure = Failure.UNEXPECTED))
                 return@Thread
             }
             if (release.version > current) {
                 notify(appContext, release)
-                deliver(callback, CheckResult(Status.UPDATE_AVAILABLE, release.tagName, release.htmlUrl))
+                deliver(callback, CheckResult(Status.UPDATE_AVAILABLE, release.tagName, release.htmlUrl, release.apk))
             } else {
                 deliver(callback, CheckResult(Status.UP_TO_DATE))
             }
@@ -66,7 +82,7 @@ object UpdateChecker {
         Handler(Looper.getMainLooper()).post { callback(result) }
     }
 
-    internal data class Release(val tagName: String, val htmlUrl: String, val version: Version)
+    internal data class Release(val tagName: String, val htmlUrl: String, val version: Version, val apk: Asset? = null)
 
     /**
      * Semantic version, compared field by field. Only the release-relevant core is kept:
@@ -95,19 +111,43 @@ object UpdateChecker {
         return Version(numbers[0], numbers.getOrElse(1) { 0 }, numbers.getOrElse(2) { 0 })
     }
 
+    /**
+     * Unauthenticated GitHub calls are limited to 60 an hour per address, which a shared network or a
+     * busy day of testing can use up. That answer is a 403 (or 429) whose headers say so; everything else
+     * non-200 is an unexpected answer, and only a call that never got one is a connection problem.
+     */
+    internal fun httpFailure(code: Int, remaining: String?, reset: String?, retryAfter: String?, nowSeconds: Long): Fetch.Failed {
+        val limited = code == 429 || (code == 403 && (remaining == "0" || retryAfter != null))
+        if (!limited) return Fetch.Failed(Failure.UNEXPECTED)
+        val seconds = retryAfter?.toLongOrNull() ?: reset?.toLongOrNull()?.minus(nowSeconds)
+        return Fetch.Failed(Failure.RATE_LIMITED, seconds?.let { ((it + 59) / 60).coerceIn(1, 60).toInt() })
+    }
+
     /** CI tags releases "v<versionName>" (see release workflow), e.g. "v1.1.0". */
-    private fun fetchLatestRelease(): Release? {
-        val connection = URL("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest")
-            .openConnection() as HttpURLConnection
-        connection.setRequestProperty("Accept", "application/vnd.github+json")
-        connection.connectTimeout = 5000
-        connection.readTimeout = 5000
+    private fun fetchLatestRelease(): Fetch {
         return try {
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) return null
-            val body = connection.inputStream.bufferedReader().use { it.readText() }
-            parseRelease(body)
-        } finally {
-            connection.disconnect()
+            val connection = URL("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest")
+                .openConnection() as HttpURLConnection
+            connection.setRequestProperty("Accept", "application/vnd.github+json")
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            try {
+                val code = connection.responseCode
+                if (code != HttpURLConnection.HTTP_OK) {
+                    return httpFailure(
+                        code, connection.getHeaderField("X-RateLimit-Remaining"), connection.getHeaderField("X-RateLimit-Reset"),
+                        connection.getHeaderField("Retry-After"), System.currentTimeMillis() / 1000,
+                    )
+                }
+                val body = connection.inputStream.bufferedReader().use { it.readText() }
+                parseRelease(body)?.let { Fetch.Found(it) } ?: Fetch.Failed(Failure.UNEXPECTED)
+            } finally {
+                connection.disconnect()
+            }
+        } catch (_: java.io.IOException) {
+            Fetch.Failed(Failure.NETWORK)
+        } catch (_: Exception) {
+            Fetch.Failed(Failure.UNEXPECTED)
         }
     }
 
@@ -115,8 +155,30 @@ object UpdateChecker {
         val json = JSONObject(body)
         val tagName = json.getString("tag_name")
         val version = parseVersion(tagName) ?: return null
-        return Release(tagName, json.getString("html_url"), version)
+        return Release(tagName, json.getString("html_url"), version, parseApk(json))
     }
+
+    /**
+     * The one APK of a release, or null when it cannot be trusted enough to install: only an asset
+     * of this repository's own release downloads counts, with a plausible size. Android still checks
+     * the signature, but nothing from elsewhere should even be downloaded.
+     */
+    internal fun parseApk(release: JSONObject): Asset? {
+        val assets = release.optJSONArray("assets") ?: return null
+        for (i in 0 until assets.length()) {
+            val asset = assets.optJSONObject(i) ?: continue
+            val name = asset.optString("name")
+            val url = asset.optString("browser_download_url")
+            val size = asset.optLong("size", -1)
+            if (!name.endsWith(".apk") || size !in 1..MAX_APK_BYTES || !url.startsWith("$REPOSITORY_URL/releases/download/")) continue
+            val digest = asset.optString("digest").takeIf { it.startsWith("sha256:") }
+                ?.removePrefix("sha256:")?.lowercase()?.takeIf { it.matches(Regex("[0-9a-f]{64}")) }
+            return Asset(name, url, size, digest)
+        }
+        return null
+    }
+
+    private const val MAX_APK_BYTES = 100L * 1024 * 1024
 
     private fun notify(context: Context, release: Release) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

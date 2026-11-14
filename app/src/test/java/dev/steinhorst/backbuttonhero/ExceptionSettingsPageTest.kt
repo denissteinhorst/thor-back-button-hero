@@ -7,7 +7,6 @@ import android.content.pm.PackageInfo
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.Switch
@@ -74,12 +73,19 @@ class ExceptionSettingsPageTest {
         choice.listView.performItemClick(null, start, start.toLong())
         shadowOf(Looper.getMainLooper()).idle()
     }
-    private fun box(activity: SettingsActivity, pkg: String, control: ExceptionControl) =
-        root(activity).findViewWithTag<CheckBox>("exception_${pkg}_${control.ordinal}")
+    private fun chip(activity: SettingsActivity, pkg: String, group: ExceptionGroup) =
+        root(activity).findViewWithTag<View>("exception_group_${pkg}_${group.name}")
+    /** Opens a group's modal and returns its window, whose switches are tagged by control. */
+    private fun open(activity: SettingsActivity, pkg: String, group: ExceptionGroup): View {
+        chip(activity, pkg, group).performClick()
+        return ShadowAlertDialog.getLatestAlertDialog().window!!.decorView
+    }
+    private fun toggle(modal: View, control: ExceptionControl) = modal.findViewWithTag<Switch>("exceptions_control_${control.ordinal}")
+    private fun all(modal: View) = modal.findViewWithTag<Switch>("exceptions_group_all")
     private fun latestTitle() = shadowOf(ShadowAlertDialog.getLatestAlertDialog()).title.toString()
 
     @Test
-    fun `app picker searches names and packages and allowing everything checks every box`() {
+    fun `app picker searches names and packages and allowing everything handles every control`() {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
         installApps(activity)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
@@ -89,9 +95,11 @@ class ExceptionSettingsPageTest {
         val choice = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
         assertEquals("Alpha Emulator", shadowOf(choice).title.toString())
         choice.listView.performItemClick(null, 0, 0)
-        ExceptionControl.entries.forEach { assertTrue(box(activity, "org.example.alpha", it).isChecked) }
-        assertTrue(root(activity).findViewWithTag<CheckBox>("exception_all_org.example.alpha").isChecked)
         assertEquals(listOf(AppException("org.example.alpha", "Alpha Emulator")), Prefs(activity).appExceptions)
+        ExceptionGroup.values().forEach { group ->
+            val total = group.controls.size
+            assertTrue(chip(activity, "org.example.alpha", group).contentDescription.toString().contains("$total/$total"))
+        }
     }
 
     @Test
@@ -122,10 +130,17 @@ class ExceptionSettingsPageTest {
         val saved = Prefs(activity).appExceptions.single()
         assertEquals(0, saved.allowed)
         assertTrue(saved.backNative)
-        ExceptionControl.entries.forEach { control ->
-            assertFalse(box(activity, "org.example.beta", control).isChecked)
-            assertEquals(control in ExceptionControl.BACK, box(activity, "org.example.beta", control).isEnabled)
+        val back = open(activity, "org.example.beta", ExceptionGroup.BACK)
+        ExceptionControl.BACK.forEach {
+            assertFalse(toggle(back, it).isChecked)
+            assertTrue(toggle(back, it).isEnabled)
         }
+        val shoulders = open(activity, "org.example.beta", ExceptionGroup.SHOULDERS)
+        listOf(ExceptionControl.L1, ExceptionControl.R2).forEach {
+            assertFalse(toggle(shoulders, it).isChecked)
+            assertFalse(toggle(shoulders, it).isEnabled)
+        }
+        assertFalse(all(shoulders).isEnabled)
     }
 
     @Test
@@ -135,55 +150,76 @@ class ExceptionSettingsPageTest {
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
         val pkg = "org.example.alpha"
+        val back = open(activity, pkg, ExceptionGroup.BACK)
         listOf(ExceptionControl.SINGLE, ExceptionControl.DOUBLE, ExceptionControl.TAP_HOLD).forEach {
-            box(activity, pkg, it).isChecked = false
+            toggle(back, it).isChecked = false
         }
-        assertTrue(box(activity, pkg, ExceptionControl.L1).isEnabled)
         val before = ShadowAlertDialog.getLatestAlertDialog()
-        box(activity, pkg, ExceptionControl.HOLD).isChecked = false
+        toggle(back, ExceptionControl.HOLD).isChecked = false
         assertNotSame(before, ShadowAlertDialog.getLatestAlertDialog())
         assertEquals(activity.getString(R.string.exceptions_native_title), latestTitle())
-        assertFalse(box(activity, pkg, ExceptionControl.L1).isEnabled)
-        assertTrue(box(activity, pkg, ExceptionControl.L1).isChecked)
-        assertFalse(root(activity).findViewWithTag<CheckBox>("exception_all_$pkg").isChecked)
+        ShadowAlertDialog.getLatestAlertDialog().dismiss()
         assertFalse(Prefs(activity).appExceptions.single().allows(ExceptionControl.L1))
-        box(activity, pkg, ExceptionControl.SINGLE).isChecked = true
-        assertTrue(box(activity, pkg, ExceptionControl.L1).isEnabled)
+        var shoulders = open(activity, pkg, ExceptionGroup.SHOULDERS)
+        assertFalse(toggle(shoulders, ExceptionControl.L1).isEnabled)
+        assertTrue(toggle(shoulders, ExceptionControl.L1).isChecked)
+        toggle(back, ExceptionControl.SINGLE).isChecked = true
         assertTrue(Prefs(activity).appExceptions.single().allows(ExceptionControl.L1))
+        shoulders = open(activity, pkg, ExceptionGroup.SHOULDERS)
+        assertTrue(toggle(shoulders, ExceptionControl.L1).isEnabled)
     }
 
     @Test
-    fun `the all box clears and restores a whole row`() {
+    fun `a group all switch clears and restores only that group`() {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
         installApps(activity)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
-        val all = root(activity).findViewWithTag<CheckBox>("exception_all_org.example.alpha")
-        all.isChecked = false
-        assertEquals(0, Prefs(activity).appExceptions.single().allowed)
-        ExceptionControl.entries.forEach { assertFalse(box(activity, "org.example.alpha", it).isChecked) }
-        all.isChecked = true
+        val dpad = open(activity, "org.example.alpha", ExceptionGroup.DPAD)
+        all(dpad).isChecked = false
+        assertEquals(ExceptionControl.ALL and ExceptionGroup.DPAD.mask.inv(), Prefs(activity).appExceptions.single().allowed)
+        ExceptionGroup.DPAD.controls.forEach { assertFalse(toggle(dpad, it).isChecked) }
+        all(dpad).isChecked = true
         assertEquals(ExceptionControl.ALL, Prefs(activity).appExceptions.single().allowed)
-        box(activity, "org.example.alpha", ExceptionControl.UP).isChecked = false
-        assertFalse(all.isChecked)
+        toggle(dpad, ExceptionControl.UP).isChecked = false
+        assertFalse(all(dpad).isChecked)
     }
 
     @Test
-    fun `switching an exception off keeps its boxes but disables them`() {
+    fun `each stick has its own section switch inside the sticks modal`() {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
         installApps(activity)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
-        box(activity, "org.example.alpha", ExceptionControl.R2).isChecked = false
-        root(activity).findViewWithTag<Switch>("exception_active_org.example.alpha").isChecked = false
+        val sticks = open(activity, "org.example.alpha", ExceptionGroup.STICKS)
+        assertEquals(14, ExceptionGroup.STICKS.controls.size)
+        ExceptionGroup.STICKS.controls.forEach { assertNotNull(toggle(sticks, it)) }
+        val left = ExceptionGroup.STICKS.sections[0]
+        sticks.findViewWithTag<Switch>("exceptions_section_${left.controls.first().ordinal}").isChecked = false
+        val saved = Prefs(activity).appExceptions.single()
+        left.controls.forEach { assertFalse(saved.allows(it)) }
+        ExceptionGroup.STICKS.sections[1].controls.forEach { assertTrue(saved.allows(it)) }
+        assertFalse(all(sticks).isChecked)
+    }
+
+    @Test
+    fun `switching an exception off keeps its switches but disables them`() {
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        installApps(activity)
+        selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
+        add(activity, "org.example.alpha")
+        val pkg = "org.example.alpha"
+        toggle(open(activity, pkg, ExceptionGroup.SHOULDERS), ExceptionControl.R2).isChecked = false
+        root(activity).findViewWithTag<Switch>("exception_active_$pkg").isChecked = false
         val saved = Prefs(activity).appExceptions.single()
         assertFalse(saved.active)
-        assertNull(Prefs(activity).appException("org.example.alpha"))
-        assertFalse(box(activity, "org.example.alpha", ExceptionControl.R2).isChecked)
-        ExceptionControl.entries.forEach { assertFalse(box(activity, "org.example.alpha", it).isEnabled) }
-        assertFalse(root(activity).findViewWithTag<CheckBox>("exception_all_org.example.alpha").isEnabled)
-        root(activity).findViewWithTag<Switch>("exception_active_org.example.alpha").isChecked = true
-        assertTrue(box(activity, "org.example.alpha", ExceptionControl.R2).isEnabled)
+        assertNull(Prefs(activity).appException(pkg))
+        val shoulders = open(activity, pkg, ExceptionGroup.SHOULDERS)
+        assertFalse(toggle(shoulders, ExceptionControl.R2).isChecked)
+        ExceptionGroup.SHOULDERS.controls.forEach { assertFalse(toggle(shoulders, it).isEnabled) }
+        assertFalse(all(shoulders).isEnabled)
+        root(activity).findViewWithTag<Switch>("exception_active_$pkg").isChecked = true
+        assertTrue(toggle(shoulders, ExceptionControl.R2).isEnabled)
     }
 
     @Test
@@ -193,13 +229,13 @@ class ExceptionSettingsPageTest {
         installApps(activity)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
-        box(activity, "org.example.alpha", ExceptionControl.HOLD).isChecked = false
+        toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked = false
         selectSettingsPage(activity, SettingsSection.BASIC)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
-        assertFalse(box(activity, "org.example.alpha", ExceptionControl.HOLD).isChecked)
+        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked)
         controller.recreate()
         activity = controller.get()
-        assertFalse(box(activity, "org.example.alpha", ExceptionControl.HOLD).isChecked)
+        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked)
         root(activity).findViewWithTag<View>("exception_remove_org.example.alpha").performClick()
         var confirm = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
         assertEquals(activity.getString(R.string.exceptions_remove_title), shadowOf(confirm).title.toString())
@@ -210,7 +246,7 @@ class ExceptionSettingsPageTest {
         confirm = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
         confirm.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertNull(box(activity, "org.example.alpha", ExceptionControl.HOLD))
+        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
         assertEquals(emptyList<AppException>(), Prefs(activity).appExceptions)
     }
 
@@ -227,8 +263,8 @@ class ExceptionSettingsPageTest {
         list.performItemClick(null, 0, 0)
         ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertNotNull(box(activity, "org.example.alpha", ExceptionControl.SINGLE))
-        assertNull(box(activity, "org.example.beta", ExceptionControl.SINGLE))
+        assertNotNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
+        assertNull(chip(activity, "org.example.beta", ExceptionGroup.BACK))
         assertEquals(listOf("org.example.alpha"), Prefs(activity).appExceptions.map { it.packageName })
     }
 
@@ -248,7 +284,7 @@ class ExceptionSettingsPageTest {
         preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(before.copy(exceptions = emptyList()), Prefs(activity).snapshot())
-        assertNull(box(activity, "org.example.alpha", ExceptionControl.SINGLE))
+        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
     }
 
     @Test

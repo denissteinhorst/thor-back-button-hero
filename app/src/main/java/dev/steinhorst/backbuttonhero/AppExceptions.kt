@@ -2,12 +2,21 @@ package dev.steinhorst.backbuttonhero
 
 /** One column of the per-app exception matrix; the ordinal is the bit stored in [AppException.allowed]. */
 enum class ExceptionControl {
-    SINGLE, DOUBLE, TAP_HOLD, HOLD, L1, R1, L2, R2, UP, DOWN, LEFT, RIGHT;
+    SINGLE, DOUBLE, TAP_HOLD, HOLD, L1, R1, L2, R2, UP, DOWN, LEFT, RIGHT,
+    // Per stick: its four directions, then its three click gestures.
+    LEFT_STICK_UP, LEFT_STICK_DOWN, LEFT_STICK_LEFT, LEFT_STICK_RIGHT,
+    LEFT_STICK_PRESS, LEFT_STICK_DOUBLE, LEFT_STICK_TAP_HOLD,
+    RIGHT_STICK_UP, RIGHT_STICK_DOWN, RIGHT_STICK_LEFT, RIGHT_STICK_RIGHT,
+    RIGHT_STICK_PRESS, RIGHT_STICK_DOUBLE, RIGHT_STICK_TAP_HOLD;
 
     val bit: Int get() = 1 shl ordinal
 
     companion object {
-        const val ALL = (1 shl 12) - 1
+        const val ALL = (1 shl 26) - 1
+        /** The first twelve controls, which exist in every stored exception; the sticks came later. */
+        const val BEFORE_STICKS = (1 shl 12) - 1
+        /** The fourteen stick controls, as a mask shifted down to bit 0. */
+        const val STICK_BITS = (1 shl 14) - 1
         val BACK = listOf(SINGLE, DOUBLE, TAP_HOLD, HOLD)
 
         fun of(button: ComboButton): ExceptionControl = when (button) {
@@ -19,6 +28,8 @@ enum class ExceptionControl {
             DpadDirection.DOWN -> DOWN
             DpadDirection.LEFT -> LEFT
             DpadDirection.RIGHT -> RIGHT
+            is StickButton -> valueOf("${button.stick.name}_STICK_${button.direction.name}")
+            is StickClickButton -> valueOf("${button.stick.name}_STICK_${button.click.name}")
             else -> error("Unknown combo button ${button.prefKey}")
         }
     }

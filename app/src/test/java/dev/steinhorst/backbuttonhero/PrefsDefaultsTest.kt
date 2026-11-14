@@ -21,8 +21,8 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `toggle defaults round trip clamp and reset`() {
-        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
+    fun `toggle starts unassigned and round trips and clamps`() {
+        assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
         assertEquals(300L, prefs.toggleHoldMs)
         prefs.toggleButtons = Prefs.TOGGLE_L1_R1
         prefs.toggleHoldMs = 1700L
@@ -32,14 +32,11 @@ class PrefsDefaultsTest {
         assertEquals(100L, prefs.toggleHoldMs)
         prefs.toggleHoldMs = 9999L
         assertEquals(3000L, prefs.toggleHoldMs)
-        prefs.resetToDefaults()
-        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
-        assertEquals(300L, prefs.toggleHoldMs)
     }
 
     @Test
-    fun `doubleTapEnabled defaults to true`() {
-        assertEquals(Prefs.DEFAULT_DOUBLE_TAP_ENABLED, prefs.doubleTapEnabled)
+    fun `doubleTapEnabled defaults to false`() {
+        assertFalse(prefs.doubleTapEnabled)
     }
 
     @Test
@@ -48,8 +45,8 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `holdEnabled defaults to true`() {
-        assertEquals(Prefs.DEFAULT_HOLD_ENABLED, prefs.holdEnabled)
+    fun `holdEnabled defaults to false`() {
+        assertFalse(prefs.holdEnabled)
     }
 
     @Test
@@ -58,8 +55,8 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `tapHoldEnabled defaults to true`() {
-        assertEquals(Prefs.DEFAULT_TAP_HOLD_ENABLED, prefs.tapHoldEnabled)
+    fun `tapHoldEnabled defaults to false`() {
+        assertFalse(prefs.tapHoldEnabled)
     }
 
     @Test
@@ -68,13 +65,9 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `singleAction defaults to SINGLE_LAUNCHER`() {
-        assertEquals(Prefs.SINGLE_LAUNCHER, prefs.singleAction)
-    }
-
-    @Test
-    fun `singleLauncher is null because SINGLE_LAUNCHER is not a valid flattened ComponentName`() {
-        assertNull(prefs.singleLauncher)
+    fun `the Back gestures start unassigned`() {
+        BackGestureButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
+        assertEquals(Prefs.DISPLAY_BOTTOM, prefs.shoulderDisplay(BackGestureButton.SINGLE))
     }
 
     @Test
@@ -128,14 +121,30 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `singleAction round-trips SINGLE_BACK`() {
-        prefs.singleAction = Prefs.SINGLE_BACK
-        assertEquals(Prefs.SINGLE_BACK, prefs.singleAction)
+    fun `a Back gesture round-trips any action, and the legacy switches follow its assignment`() {
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_BACK)
+        assertEquals(Prefs.SHOULDER_BACK, prefs.shoulderAction(BackGestureButton.SINGLE))
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, "")
+        assertFalse(prefs.doubleTapEnabled)
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, Prefs.SHOULDER_SCREENSHOT)
+        assertTrue(prefs.doubleTapEnabled)
+        prefs.doubleTapEnabled = false
+        assertEquals("", prefs.shoulderAction(BackGestureButton.DOUBLE))
+        prefs.doubleTapEnabled = true
+        assertEquals(Prefs.SHOULDER_SWITCHER, prefs.shoulderAction(BackGestureButton.DOUBLE))
+        prefs.tapHoldEnabled = false
+        prefs.holdEnabled = false
+        assertEquals("", prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals("", prefs.shoulderAction(BackGestureButton.HOLD))
+        prefs.tapHoldEnabled = true
+        prefs.holdEnabled = true
+        assertEquals(Prefs.SHOULDER_RECENTS, prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals(Prefs.SHOULDER_SWAP_APPS, prefs.shoulderAction(BackGestureButton.HOLD))
     }
 
     @Test
-    fun `shoulderAction for L2 defaults to the screenshot`() {
-        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
+    fun `shoulderAction for L2 defaults to unassigned`() {
+        assertEquals("", prefs.shoulderAction(ShoulderButton.L2))
     }
 
     @Test

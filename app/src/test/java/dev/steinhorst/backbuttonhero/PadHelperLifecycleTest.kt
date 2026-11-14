@@ -41,4 +41,40 @@ class PadHelperLifecycleTest {
         helper.start()
         assertEquals(false, ReflectionHelpers.getField<Boolean>(helper, "wanted"))
     }
+
+    @Test
+    fun `stick reports become presses and releases, and malformed ones are ignored`() {
+        val events = mutableListOf<Pair<Stick, DpadDirection?>>()
+        val helper = PadHelper(RuntimeEnvironment.getApplication(), {}, {}, {}) { stick, direction -> events += stick to direction }
+        ReflectionHelpers.setField(helper, "wanted", true)
+        fun line(text: String) = ReflectionHelpers.callInstanceMethod<Unit>(helper, "handle", ReflectionHelpers.ClassParameter.from(String::class.java, text))
+        listOf("STICK L U", "STICK L N", "STICK R L", "STICK X U", "STICK L Q", "STICK L").forEach(::line)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(
+            listOf(Stick.LEFT to DpadDirection.UP, Stick.LEFT to null, Stick.RIGHT to DpadDirection.LEFT),
+            events,
+        )
+    }
+
+    @Test
+    fun `queued stick report cannot act after service disposal`() {
+        val events = mutableListOf<Pair<Stick, DpadDirection?>>()
+        val helper = PadHelper(RuntimeEnvironment.getApplication(), {}, {}, {}) { stick, direction -> events += stick to direction }
+        ReflectionHelpers.setField(helper, "wanted", true)
+        ReflectionHelpers.callInstanceMethod<Unit>(helper, "handle", ReflectionHelpers.ClassParameter.from(String::class.java, "STICK L U"))
+        helper.dispose()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(emptyList<Pair<Stick, DpadDirection?>>(), events)
+    }
+
+    @Test
+    fun `setSticks keeps the mask and only resends a change`() {
+        val helper = PadHelper(RuntimeEnvironment.getApplication(), {}, {}, {})
+        helper.setSticks(setOf(Stick.LEFT, Stick.RIGHT))
+        assertEquals(3, ReflectionHelpers.getField<Int>(helper, "stickMask"))
+        helper.setSticks(setOf(Stick.RIGHT))
+        assertEquals(2, ReflectionHelpers.getField<Int>(helper, "stickMask"))
+        helper.setSticks(setOf(Stick.RIGHT))
+        assertEquals(2, ReflectionHelpers.getField<Int>(helper, "stickMask"))
+    }
 }

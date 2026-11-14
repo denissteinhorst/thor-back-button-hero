@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.app.AlertDialog
 import android.os.Looper
 import android.view.View
@@ -19,6 +20,11 @@ import org.robolectric.shadows.ShadowAlertDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")
 class SettingsChangeDialogTest {
+    @org.junit.Before
+    fun earlierDefaults() {
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+    }
+
     private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
     private fun find(root: View, match: (View) -> Boolean): View? {
         if (match(root)) return root
@@ -59,33 +65,18 @@ class SettingsChangeDialogTest {
     }
 
     @Test
-    fun `preset lists only actual changes and applies the preview`() {
-        val activity = open()
-        val prefs = Prefs(activity)
-        prefs.doubleTapMs = 500
-        click(activity, R.string.settings_preset)
-        val preview = text(dialog().window!!.decorView)
-        assertTrue(preview.contains("Double-press timing: 500 ms → 300 ms"))
-        assertFalse(preview.contains("Screen-swap hold duration:"))
-        accept()
-        assertEquals(300L, prefs.doubleTapMs)
-        click(activity, R.string.settings_preset)
-        assertTrue(text(dialog().window!!.decorView).contains(activity.getString(R.string.settings_already_preset)))
-        assertNull(dialog().getButton(AlertDialog.BUTTON_NEGATIVE).text.takeIf { it.isNotEmpty() })
-    }
-
-    @Test
     fun `selecting not set requires confirmation and disables only the hold duration`() {
         val activity = open()
         val prefs = Prefs(activity)
+        prefs.toggleButtons = Prefs.TOGGLE_L2_R2
         selectSettingsPage(activity, SettingsSection.SETTINGS)
         click(activity, R.string.service_toggle_buttons)
         dialog().listView.performItemClick(null, 3, 3)
-        assertEquals(Prefs.DEFAULT_TOGGLE_BUTTONS, prefs.toggleButtons)
+        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
         assertTrue(text(dialog().window!!.decorView).contains(activity.getString(R.string.settings_unbind_reactivates)))
         dialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertEquals(Prefs.DEFAULT_TOGGLE_BUTTONS, prefs.toggleButtons)
+        assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
         click(activity, R.string.service_toggle_buttons)
         dialog().listView.performItemClick(null, 3, 3)
         accept()
@@ -100,35 +91,18 @@ class SettingsChangeDialogTest {
     }
 
     @Test
-    fun `global unbind preview includes activation and all eight buttons but no primary gestures`() {
-        val activity = open()
-        val prefs = Prefs(activity)
-        selectSettingsPage(activity, SettingsSection.SETTINGS)
-        click(activity, R.string.unbind_optionals)
-        val preview = text(dialog().window!!.decorView)
-        assertTrue(preview.contains(activity.getString(R.string.settings_entire_app)))
-        assertTrue(preview.contains("Hold button(s): L2 + R2 → Not set"))
-        assertTrue(preview.contains("Back + D-pad up:"))
-        assertFalse(preview.contains("Single press:"))
-        val before = prefs.snapshot()
-        accept()
-        assertEquals(SettingsChangePlan.create(before, null, SettingsChangeAction.UNBIND).after, prefs.snapshot())
-        click(activity, R.string.unbind_optionals)
-        assertTrue(text(dialog().window!!.decorView).contains(activity.getString(R.string.settings_already_unbound)))
-    }
-
-    @Test
     fun `stale dialog asks again with current values before any write`() {
         val activity = open()
         val prefs = Prefs(activity)
-        prefs.doubleTapMs = 500
-        click(activity, R.string.settings_preset)
-        prefs.doubleTapMs = 550
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_HOME)
+        click(activity, R.string.settings_unbind)
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, Prefs.SHOULDER_SCREENSHOT)
         accept()
-        assertEquals(550L, prefs.doubleTapMs)
+        // The preview was made before the second assignment, so nothing was written yet.
+        assertEquals(Prefs.SHOULDER_HOME, prefs.shoulderAction(BackGestureButton.SINGLE))
         assertTrue(dialog().isShowing)
-        assertTrue(text(dialog().window!!.decorView).contains("550 ms → 300 ms"))
         accept()
-        assertEquals(300L, prefs.doubleTapMs)
+        assertEquals("", prefs.shoulderAction(BackGestureButton.SINGLE))
+        assertEquals("", prefs.shoulderAction(BackGestureButton.DOUBLE))
     }
 }

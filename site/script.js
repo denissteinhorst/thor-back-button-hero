@@ -6,6 +6,33 @@
 
   document.documentElement.classList.add('js');
 
+  // Keep every family readable without JavaScript; only enhance once the controls work.
+  var inputPicker = document.querySelector('.input-picker');
+  var inputButtons = Array.prototype.slice.call(inputPicker.querySelectorAll('button'));
+  function selectInput(button) {
+    inputButtons.forEach(function (candidate) {
+      var selected = candidate === button;
+      candidate.setAttribute('aria-pressed', String(selected));
+      document.getElementById(candidate.getAttribute('aria-controls')).hidden = !selected;
+    });
+  }
+  inputButtons.forEach(function (button) {
+    button.addEventListener('click', function () { selectInput(button); });
+  });
+  selectInput(inputButtons[0]);
+  inputPicker.hidden = false;
+
+  var actionCatalog = document.getElementById('action-catalog');
+  function revealFeatureAnchor() {
+    if (location.hash === '#actions') actionCatalog.open = true;
+    if (location.hash === '#binding-examples') selectInput(inputButtons[0]);
+  }
+  revealFeatureAnchor();
+  window.addEventListener('hashchange', revealFeatureAnchor);
+  document.querySelectorAll('a[href="#actions"]').forEach(function (link) {
+    link.addEventListener('click', function () { actionCatalog.open = true; });
+  });
+
   // Narrow screens fold the navigation into a menu; without JavaScript it scrolls sideways instead.
   var menuBtn = document.getElementById('menu-toggle');
   var header = document.querySelector('.top');
@@ -26,26 +53,7 @@
     if (wide.addEventListener) wide.addEventListener('change', function () { setMenu(false); });
   }
 
-  // Showcase tabs (video / screenshots) and the screenshot stepper.
-  var tabs = Array.prototype.slice.call(document.querySelectorAll('.show-tabs [role="tab"]'));
-  function selectTab(tab, focus) {
-    tabs.forEach(function (t) {
-      var on = t === tab;
-      t.setAttribute('aria-selected', String(on));
-      t.tabIndex = on ? 0 : -1;
-      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
-    });
-    if (focus) tab.focus();
-  }
-  tabs.forEach(function (tab, i) {
-    tab.addEventListener('click', function () { selectTab(tab, false); });
-    tab.addEventListener('keydown', function (e) {
-      var step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (step) { e.preventDefault(); selectTab(tabs[(i + step + tabs.length) % tabs.length], true); }
-    });
-  });
-  if (tabs.length) selectTab(tabs[0], false);
-
+  // The optional screenshot gallery keeps its chapter navigation and image viewer.
   var shots = Array.prototype.slice.call(document.querySelectorAll('.shot'));
   var chapters = Array.prototype.slice.call(document.querySelectorAll('.shot-chapters button'));
   var count = document.querySelector('.shot-count');
@@ -70,8 +78,7 @@
         }
       });
     });
-    document.getElementById('panel-shots').addEventListener('keydown', function (e) {
-      if (e.target.closest('.show-tabs')) return;
+    document.querySelector('.shots').addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') showShot(current + 1);
       if (e.key === 'ArrowLeft') showShot(current - 1);
     });
@@ -181,41 +188,15 @@
   var explainer = document.getElementById('explainer');
   var explainerOpen = document.getElementById('explainer-open');
   if (explainer && explainerOpen && typeof explainer.showModal === 'function') {
-    var stage = explainer.querySelector('.explainer-stage');
-    var frame = stage.querySelector('iframe');
-    // The explainer is laid out at a fixed 640×640, so it is scaled rather than reflowed.
-    // Full screen on small screens, where it may also grow past its own size.
-    var fullScreen = window.matchMedia('(max-width: 800px)');
-    var frameH = 640;
-    // A tall portrait screen gets the explainer's touch layout: a page as tall as the screen
-    // allows, with controls sized for thumbs. The page's own light/dark choice wins over the
-    // system setting the explainer would otherwise follow.
-    var load = function () {
-      var w = stage.clientWidth, h = stage.clientHeight;
-      var touch = fullScreen.matches && w < 600 && h > w * 1.3;
-      frameH = touch ? Math.min(1200, Math.round(640 * h / w)) : 640;
-      frame.style.height = frameH + 'px';
-      var src = explainerOpen.getAttribute('href') + '?theme=' + currentTheme() + (touch ? '&touch' : '');
-      if (frame.getAttribute('src') !== src) frame.src = src;
-    };
+    var frame = explainer.querySelector('.explainer-stage iframe');
+    // The App-Simulation is responsive: the frame simply fills the stage and the page lays itself
+    // out (side by side in the wide desktop modal and on landscape screens, stacked in portrait).
+    // The page's own light/dark choice wins over the system setting the simulation would follow.
     var fit = function () {
       if (!explainer.open) return;
-      load();
-      // The touch layout may need more height than the screen's shape gives it; the frame then
-      // takes the content's full height and scales down, so nothing is ever clipped or scrolled.
-      try {
-        var content = frame.contentDocument.querySelector('.touch .stage');
-        if (content && content.offsetHeight > frameH) {
-          frameH = content.offsetHeight;
-          frame.style.height = frameH + 'px';
-        }
-      } catch (err) { /* not loaded yet; the load event fits again */ }
-      var s = Math.min(stage.clientWidth / 640, stage.clientHeight / frameH);
-      stage.style.setProperty('--s', fullScreen.matches ? s : Math.min(1, s));
+      var src = explainerOpen.getAttribute('href') + '?v=app-simulation-2&theme=' + currentTheme();
+      if (frame.getAttribute('src') !== src) frame.src = src;
     };
-    frame.addEventListener('load', fit);
-    if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
-    else window.addEventListener('resize', fit);
     // The header's Try button and the showcase button both open it.
     document.querySelectorAll('[data-explainer]').forEach(function (trigger) {
       trigger.addEventListener('click', function (e) {
@@ -226,6 +207,26 @@
     });
     explainer.querySelector('.explainer-close').addEventListener('click', function () { explainer.close(); });
     explainer.addEventListener('click', function (e) { if (e.target === explainer) explainer.close(); });
+  }
+
+  // Screenshot gallery in a modal like the App-Simulation. Without <dialog> support (or without
+  // JavaScript) it stays the inline section the links point to.
+  var gallery = document.getElementById('gallery');
+  var galleryInline = document.getElementById('screenshots');
+  if (gallery && galleryInline && typeof gallery.showModal === 'function') {
+    gallery.querySelector('.gallery-stage').appendChild(galleryInline.querySelector('.shots'));
+    galleryInline.hidden = true;
+    var openGallery = function () { if (!gallery.open) gallery.showModal(); };
+    document.querySelectorAll('[data-gallery]').forEach(function (trigger) {
+      trigger.addEventListener('click', function (e) { e.preventDefault(); openGallery(); });
+    });
+    gallery.querySelector('.explainer-close').addEventListener('click', function () { gallery.close(); });
+    gallery.addEventListener('click', function (e) { if (e.target === gallery) gallery.close(); });
+    if (location.hash === '#screenshots') openGallery();
+  } else {
+    document.querySelectorAll('[data-gallery]').forEach(function (trigger) {
+      trigger.addEventListener('click', function () { galleryInline.open = true; });
+    });
   }
 
   // YouTube loads only after a click, from the cookie-less domain.
@@ -285,6 +286,24 @@
 
   function fmtDate(iso) {
     return new Date(iso).toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  // A local preview can link site/build/release-notes.md to notes under docs/release-notes.
+  if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+    fetch('build/release-notes.md', { cache: 'no-store' })
+      .then(function (response) { return response.ok ? response.text() : ''; })
+      .then(function (body) {
+        var title = body.match(/^Release title: (.+)$/m);
+        if (!title) return;
+        var draft = document.createElement('article');
+        draft.className = 'release';
+        var heading = document.createElement('h3');
+        heading.textContent = title[1].trim();
+        draft.appendChild(heading);
+        draft.appendChild(renderNotes(body.replace(/^\s*<!--[\s\S]*?-->/, '')));
+        document.getElementById('releases').before(draft);
+      })
+      .catch(function () { /* the published changelog can still load */ });
   }
 
   fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=100', { headers: { Accept: 'application/vnd.github+json' } })

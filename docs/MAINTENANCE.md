@@ -139,6 +139,13 @@ implication. Judge them on risk:
 | Test-only libraries (Robolectric, Espresso, UiAutomator, JUnit) | Medium — can shift snapshot or qualifier behavior | One at a time behind a green gate |
 | Kotlin, AGP, Gradle | **High** — these affect the shipped artifact and can change behavior | One at a time, green gate **plus** a full device pass, never alongside a release |
 
+**Robolectric stays on 4.17 for now.** 4.18 fails 89 tests on SDK 34 with
+`NoClassDefFoundError: android/companion/virtual/VirtualDeviceManager$VirtualDeviceListener`,
+and running the suite on SDK 35 changes the framework output the goldens freeze. Lint's
+`NewerVersionAvailable` hint for it is therefore listed in `app/lint-baseline.xml` (19 entries
+now). When a newer Robolectric appears, try it with `sdk=34` and drop that baseline entry along
+with the version bump; never answer it by re-recording goldens.
+
 Keep test and debug tooling in `testImplementation`/`androidTestImplementation`/
 `debugImplementation` only. The 0BSD licence rests on the release classpath containing
 nothing but the Kotlin stdlib. Verify any time:

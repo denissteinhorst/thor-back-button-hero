@@ -47,6 +47,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var appControlPrompt: AppControlPrompt
     private lateinit var levels: LevelControl
     private lateinit var controllerFocus: ControllerFocus
+    private lateinit var aynControls: AynControls
     private lateinit var focusIndicator: FocusIndicatorOverlay
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
@@ -57,7 +58,32 @@ class SwitcherService : AccessibilityService(), GestureActions {
     @Volatile private var activeAppSwitchSession = 0
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
-    private var pendingDpadFocus: DpadDirection? = null
+    private var pendingDpadFocus: ComboButton? = null
+    private val stickKeys = PhysicalKeyTracker()
+    private val stickClicks by lazy {
+        Stick.entries.associateWith { stick ->
+            StickClickMachine(
+                gestureScheduler,
+                gestureClock,
+                { prefs.stickDoubleMs(stick) },
+                { prefs.stickTapHoldMs(stick) },
+                { prefs.shoulderAction(StickClickButton.of(stick, it)).isNotEmpty() },
+            ) { runStickClick(StickClickButton.of(stick, it)) }
+        }
+    }
+    private var repeatingButton: ComboButton? = null
+    private val levelRepeater by lazy {
+        LevelRepeater(gestureScheduler, gestureClock) {
+            val button = repeatingButton
+            if (button == null || !interceptionEnabled || !backGesture.backDown) {
+                repeatingButton = null
+                false
+            } else {
+                levels.run(prefs.shoulderAction(button), prefs.levelTarget(button), repeating = true)
+                true
+            }
+        }
+    }
     private var pendingDpadReleased = false
     private val recentsThumbnails = RecentsThumbnailCache()
     private val requestedThumbnails = mutableMapOf<RecentsThumbnailCache.Key, Int>()
@@ -170,13 +196,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
         levels = LevelControl(this) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
+        aynControls = AynControls(this)
         padHelper = PadHelper(
             this,
             ::handleDpad,
             ::handleDpadRelease,
             ::onPadHelperActiveChanged,
+            ::handleStick,
         )
-        dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
+        dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
         updatePadHelper()
@@ -215,6 +243,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (!::padHelper.isInitialized) return
         val passed = DpadDirection.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet()
         if (padHelper.setPassthrough(passed)) dlog("DPAD   passthrough=$passed")
+        updateStickCapture(exception)
+    }
+
+    // The helper takes a stick only when one of its directions is ours to act on; a direction the app
+    // keeps for itself is handed back to the game the moment that deflection is recognised.
+    private fun updateStickCapture(exception: AppException?) {
+        if (!::padHelper.isInitialized) return
+        fun ours(button: StickButton) = prefs.shoulderAction(button).isNotEmpty() && exception?.allows(ExceptionControl.of(button)) != false
+        padHelper.setSticks(Stick.entries.filter { stick -> StickButton.entries.any { it.stick == stick && ours(it) } }.toSet())
+        padHelper.setStickPassthrough(StickButton.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet())
     }
 
     private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
@@ -243,7 +281,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun updatePadHelper() {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
-        if (prefs.hasDpadAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        if (prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        updateStickCapture(backException)
     }
 
     private fun toggleInterception() {
@@ -254,6 +293,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
+        stopLevelRepeat()
+        stickClicks.values.forEach(StickClickMachine::reset)
+        stickKeys.clear()
         switcherBackDown = false
         switcherBackDeviceId = Int.MIN_VALUE
         topRecentsBackClosePending = false
@@ -383,10 +425,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active &&
-                DpadDirection.entries.any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
+                (DpadDirection.entries + StickButton.entries).any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
                 dpadOverlay.attach()
             }
             if (event.action == KeyEvent.ACTION_UP) {
+                stopLevelRepeat()
                 val overlayWasAttached = dpadOverlay.attached
                 dpadOverlay.detach()
                 // Once the overlay is gone a still held D-pad is released to the app, unseen; Back's
@@ -400,6 +443,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return consumed
         }
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
+        Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
     }
 
@@ -496,12 +540,101 @@ class SwitcherService : AccessibilityService(), GestureActions {
             pendingDpadReleased = false
             if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(direction)
         } else {
+            stopLevelRepeat()
             runComboAction(direction, action)
+            startLevelRepeat(direction, action)
         }
     }
 
+    /** Back + analog stick, from [PadHelper] or [DpadOverlay]; a null [direction] is the stick returning to neutral. */
+    private fun handleStick(stick: Stick, direction: DpadDirection?) {
+        if (direction == null) {
+            if ((repeatingButton as? StickButton)?.stick == stick) stopLevelRepeat()
+            if ((pendingDpadFocus as? StickButton)?.stick == stick) {
+                pendingDpadReleased = true
+                commitDpadFocus()
+            }
+            return
+        }
+        if (!interceptionEnabled || overlay.isShowing || topRecentsControllerActive || !backGesture.backDown) return
+        val button = StickButton.of(stick, direction)
+        val action = prefs.shoulderAction(button)
+        if (action.isEmpty() || !allowsCombo(button)) return
+        backGesture.markComboFired()
+        pendingDpadFocus = null
+        stopLevelRepeat()
+        // One deflection is one action, except the stepping ones, which repeat while it is held.
+        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
+            pendingDpadFocus = button
+            pendingDpadReleased = false
+            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
+        } else {
+            dlog("STICK  $button action=$action")
+            runComboAction(button, action)
+            startLevelRepeat(button, action)
+        }
+    }
+
+    /** A held stepping control (volume, brightness) keeps stepping, faster the longer it is held. */
+    private fun startLevelRepeat(button: ComboButton, action: String) {
+        if (!Prefs.isLevelAction(action)) return
+        repeatingButton = button
+        levelRepeater.start()
+    }
+
+    /**
+     * L3/R3 while Back is held. A press is ours only when the stick has a click action; otherwise
+     * the game keeps it, like an unassigned shoulder button. The Thor mirrors its controller, so
+     * both devices' DOWN/UP are consumed and the gesture sees one press.
+     */
+    private fun handleStickClick(stick: Stick, event: KeyEvent): Boolean {
+        val machine = stickClicks.getValue(stick)
+        return when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (!interceptionEnabled || !backGesture.backDown || !allowsCombo(StickClickButton.of(stick, StickClick.PRESS))) return false
+                val first = stickKeys.down(event.keyCode, event.deviceId)
+                if (first && event.repeatCount == 0) {
+                    if (!machine.down()) { stickKeys.up(event.keyCode, event.deviceId); return false }
+                    backGesture.markComboFired()
+                }
+                stickKeys.isDown(event.keyCode)
+            }
+            KeyEvent.ACTION_UP -> {
+                val tracked = stickKeys.up(event.keyCode, event.deviceId)
+                if (tracked && !stickKeys.isDown(event.keyCode)) {
+                    if ((repeatingButton as? StickClickButton)?.stick == stick) stopLevelRepeat()
+                    machine.up()
+                }
+                tracked
+            }
+            else -> false
+        }
+    }
+
+    private fun runStickClick(button: StickClickButton) {
+        val action = prefs.shoulderAction(button)
+        if (action.isEmpty() || !interceptionEnabled) return
+        dlog("STICK  $button action=$action")
+        if (button.click == StickClick.TAP_HOLD) {
+            // Fires while still held, like Back's tap-and-hold; stepping actions keep repeating until release.
+            stopLevelRepeat()
+            runComboAction(button, action)
+            startLevelRepeat(button, action)
+        } else {
+            runComboAction(button, action)
+        }
+    }
+
+    private fun stopLevelRepeat() {
+        repeatingButton = null
+        if (::padHelper.isInitialized) levelRepeater.stop()
+    }
+
     private fun handleDpadRelease(horizontal: Boolean) {
-        val pending = pendingDpadFocus ?: return
+        (repeatingButton as? DpadDirection)?.let {
+            if ((it == DpadDirection.LEFT || it == DpadDirection.RIGHT) == horizontal) stopLevelRepeat()
+        }
+        val pending = pendingDpadFocus as? DpadDirection ?: return
         if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
         pendingDpadReleased = true
         commitDpadFocus()
@@ -613,10 +746,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         else runControllerFocus(button)
     }
 
-    private fun showFocusIndicator(button: ComboButton) {
+    private fun showFocusIndicator(button: ComboButton, target: String = prefs.focusTarget(button)) {
+        // The modal has no target yet; the indicator follows once a screen is chosen.
+        if (target == Prefs.FOCUS_MODAL) return
         val position = prefs.focusPosition(button).takeIf { prefs.focusIndicator(button) }
         focusIndicator.show(
-            controllerFocus.targetIsTop(prefs.focusTarget(button)),
+            controllerFocus.targetIsTop(target),
             position,
             prefs.focusDuration(button),
         ) { openIndicatorSettings(button) }
@@ -633,8 +768,35 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun runControllerFocus(button: ComboButton) {
-        showFocusIndicator(button)
-        controllerFocus.run(prefs.focusTarget(button))
+        if (prefs.focusTarget(button) != Prefs.FOCUS_MODAL) {
+            showFocusIndicator(button)
+            controllerFocus.run(prefs.focusTarget(button))
+            return
+        }
+        val options = listOf(
+            AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
+            AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+        )
+        appControlPrompt.show(promptDisplay(), getString(R.string.focus_target_dialog_title), options) { chosen ->
+            showFocusIndicator(button, chosen)
+            controllerFocus.run(chosen)
+        }
+    }
+
+    /** The AYN tiles as hotkeys: a toggle flips, an option applies at once, "modal" asks first. */
+    private fun runAynAction(button: ComboButton, action: String) {
+        Ayn.toggleOf(action)?.let { return aynControls.toggle(it) }
+        val group = Ayn.groupOf(action) ?: return
+        val chosen = prefs.aynOption(button, group)
+        fun apply(key: String) {
+            group.options.firstOrNull { it.key == key }?.let { aynControls.apply(group, it) }
+        }
+        if (chosen != Ayn.MODAL) {
+            apply(chosen)
+            return
+        }
+        val options = group.options.map { AppControlPrompt.Option(it.key, getString(it.labelRes)) }
+        appControlPrompt.show(promptDisplay(), getString(group.titleRes), options) { apply(it) }
     }
 
     private fun runComboAction(button: ComboButton, action: String) {
@@ -646,8 +808,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
             Prefs.SHOULDER_SWITCH_APP -> switchActiveApp(button)
             Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
+            in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
-            Prefs.SHOULDER_RECENTS -> openTopRecents()
+            Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
+            Prefs.SHOULDER_SWITCHER -> showSwitcherNow()
+            Prefs.SHOULDER_SWAP_APPS -> swapScreensNow()
+            Prefs.SHOULDER_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
             Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
             Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             Prefs.SHOULDER_NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
@@ -961,6 +1127,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
+        stopLevelRepeat()
+        stickClicks.values.forEach(StickClickMachine::reset)
+        stickKeys.clear()
         toggleGesture.reset()
         backGesture.reset()
         interceptionGate.clear()
@@ -1275,7 +1444,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /** Move the two captured foreground tasks; the first move must not change the second target. */
-    override fun swapScreens() {
+    // The Back gestures are assignable: the machine reports which gesture fired, the bound action runs.
+    override fun swapScreens() = runBackGesture(BackGestureButton.HOLD)
+    override fun openTopRecents() = runBackGesture(BackGestureButton.TAP_HOLD)
+    override fun showSwitcher() = runBackGesture(BackGestureButton.DOUBLE)
+
+    private fun runBackGesture(gesture: BackGestureButton) {
+        val action = prefs.shoulderAction(gesture)
+        dlog("BACK   gesture $gesture action=${action.ifEmpty { "(none)" }}")
+        if (action.isNotEmpty()) runComboAction(gesture, action)
+    }
+
+    private fun swapScreensNow() {
         cancelBottomSwitcherOpen()
         val display = bottomDisplay() ?: return
         val bottom = display.displayId
@@ -1323,7 +1503,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
      * a dedicated Overview button or the recents gesture would show. GLOBAL_ACTION_RECENTS
      * always targets the default display, which is exactly the top screen in this setup.
      */
-    override fun openTopRecents() {
+    private fun openTopRecentsNow() {
         cancelBottomSwitcherOpen()
         overlay.dismiss()
         val session = ++topLaunchSession
@@ -1762,11 +1942,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onSingleTap() {
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { dlog("ACTION onSingleTap: overlay was showing -> dismiss only"); overlay.dismiss(); return }
-        dlog("ACTION onSingleTap: singleAction=${prefs.singleAction}")
-        when (prefs.singleAction) {
-            Prefs.SINGLE_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
-            else -> goHome(component = prefs.singleLauncher)
-        }
+        runBackGesture(BackGestureButton.SINGLE)
     }
 
     private fun goHome(displayId: Int? = null, dismissSwitcher: Boolean = true, component: ComponentName? = null) {
@@ -1780,7 +1956,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    override fun showSwitcher() {
+    private fun showSwitcherNow() {
         cancelTopRecentsLaunch()
         val display = bottomDisplay() ?: return
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }

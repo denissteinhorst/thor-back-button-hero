@@ -20,25 +20,15 @@ class DpadPrefsTest {
     }
 
     @Test
-    fun `D-pad defaults - up and down step brightness, left and right step volume`() {
-        assertEquals(Prefs.SHOULDER_BRIGHTNESS_UP, prefs.shoulderAction(DpadDirection.UP))
-        assertEquals(Prefs.SHOULDER_BRIGHTNESS_DOWN, prefs.shoulderAction(DpadDirection.DOWN))
-        assertEquals(Prefs.SHOULDER_VOLUME_DOWN, prefs.shoulderAction(DpadDirection.LEFT))
-        assertEquals(Prefs.SHOULDER_VOLUME_UP, prefs.shoulderAction(DpadDirection.RIGHT))
-    }
-
-    @Test
-    fun `L2 and R2 start with the factory shortcuts`() {
-        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(ShoulderButton.L2))
-        assertEquals(Prefs.SHOULDER_CONTROLLER_FOCUS, prefs.shoulderAction(ShoulderButton.R2))
+    fun `D-pad directions and shoulder buttons all start unassigned`() {
+        (DpadDirection.entries + ShoulderButton.entries).forEach { assertEquals(it.name, "", prefs.shoulderAction(it)) }
     }
 
     @Test
     fun `level target defaults to both screens for every button`() {
-        (DpadDirection.entries + ShoulderButton.entries - ShoulderButton.L2).forEach {
+        (DpadDirection.entries + ShoulderButton.entries).forEach {
             assertEquals(Prefs.TARGET_BOTH, prefs.levelTarget(it))
         }
-        assertEquals(Prefs.DISPLAY_TOP, prefs.levelTarget(ShoulderButton.L2))
     }
 
     @Test
@@ -109,21 +99,12 @@ class DpadPrefsTest {
     }
 
     @Test
-    fun `hasDpadAction is true by default and false once every direction is cleared`() {
-        assertTrue(prefs.hasDpadAction())
-        DpadDirection.entries.forEach { prefs.setShoulderAction(it, "") }
+    fun `hasDpadAction is false by default and follows the assignments`() {
         assertFalse(prefs.hasDpadAction())
         prefs.setShoulderAction(DpadDirection.LEFT, Prefs.SHOULDER_SCREENSHOT)
         assertTrue(prefs.hasDpadAction())
-    }
-
-    @Test
-    fun `reset restores the D-pad defaults`() {
-        DpadDirection.entries.forEach { prefs.setShoulderAction(it, "") }
-        prefs.setLevelTarget(DpadDirection.UP, Prefs.DISPLAY_TOP)
-        prefs.resetToDefaults()
-        assertEquals(Prefs.SHOULDER_BRIGHTNESS_UP, prefs.shoulderAction(DpadDirection.UP))
-        assertEquals(Prefs.TARGET_BOTH, prefs.levelTarget(DpadDirection.UP))
+        prefs.setShoulderAction(DpadDirection.LEFT, "")
+        assertFalse(prefs.hasDpadAction())
     }
 
     @Test
