@@ -78,8 +78,8 @@ android {
         applicationId = "dev.steinhorst.backbuttonhero"
         minSdk = 30
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.4.2"
+        versionCode = 10
+        versionName = "1.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
