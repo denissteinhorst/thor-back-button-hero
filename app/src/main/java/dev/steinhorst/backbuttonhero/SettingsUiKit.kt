@@ -620,3 +620,47 @@ fun Activity.settingsSurfaceColor(surface: SettingsSurface): Int {
         channel(Color.green(background), Color.green(foreground)),
         channel(Color.blue(background), Color.blue(foreground)))
 }
+
+/** Two or more equal-width tabs in one rounded strip; [onSelect] gets the tapped index. */
+fun Activity.tabBar(labels: List<Int>, selected: Int, onSelect: (Int) -> Unit): LinearLayout {
+    val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
+    val strip = LinearLayout(this).apply {
+        tag = "settings_tabs"
+        orientation = LinearLayout.HORIZONTAL
+        setPadding(dp(4), dp(4), dp(4), dp(4))
+        background = GradientDrawable().apply {
+            cornerRadius = dp(12).toFloat()
+            setColor((accent and 0x00FFFFFF) or 0x14000000)
+        }
+    }
+    labels.forEachIndexed { index, label ->
+        strip.addView(TextView(this).apply {
+            setText(label)
+            gravity = Gravity.CENTER
+            textSize = 15f
+            minHeight = dp(44)
+            isClickable = true
+            isFocusable = true
+            tag = "settings_tab_$index"
+            setOnClickListener { onSelect(index) }
+        }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+    }
+    selectTab(strip, selected)
+    return strip
+}
+
+fun Activity.selectTab(strip: LinearLayout, selected: Int) {
+    val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
+    val primary = themedColor(android.R.attr.textColorPrimary, Color.BLACK)
+    for (index in 0 until strip.childCount) {
+        val tab = strip.getChildAt(index) as TextView
+        val on = index == selected
+        tab.isSelected = on
+        tab.setTextColor(if (on) accent else primary)
+        tab.setTypeface(null, if (on) Typeface.BOLD else Typeface.NORMAL)
+        tab.background = GradientDrawable().apply {
+            cornerRadius = dp(9).toFloat()
+            setColor(if (on) (accent and 0x00FFFFFF) or 0x33000000 else Color.TRANSPARENT)
+        }
+    }
+}

@@ -46,12 +46,15 @@ class SettingsChangesTest {
                     doubleMs = factory.doubleMs, tapHoldEnabled = factory.tapHoldEnabled,
                     tapHoldMs = factory.tapHoldMs, holdEnabled = factory.holdEnabled, holdMs = factory.holdMs,
                 ), after)
-                SettingsSection.SHOULDERS, SettingsSection.DPAD -> {
-                    val keys = if (section == SettingsSection.SHOULDERS) ShoulderButton.entries.map { it.prefKey }
-                    else DpadDirection.entries.map { it.prefKey }
+                SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS -> {
+                    val keys = when (section) {
+                        SettingsSection.SHOULDERS -> ShoulderButton.entries.map { it.prefKey }
+                        SettingsSection.STICKS -> (StickButton.entries.map { it.prefKey } + StickClickButton.entries.map { it.prefKey })
+                        else -> DpadDirection.entries.map { it.prefKey }
+                    }
                     assertEquals(before.copy(bindings = before.bindings.mapValues { (key, value) ->
                         if (key in keys) factory.bindings.getValue(key) else value
-                    }), after)
+                    }, stickTimings = if (section == SettingsSection.STICKS) factory.stickTimings else before.stickTimings), after)
                 }
                 SettingsSection.SETTINGS -> assertEquals(before.copy(
                     allApps = factory.allApps, controller = factory.controller,
@@ -73,6 +76,7 @@ class SettingsChangesTest {
             val keys = when (section) {
                 SettingsSection.SHOULDERS -> ShoulderButton.entries.map { it.prefKey }
                 SettingsSection.DPAD -> DpadDirection.entries.map { it.prefKey }
+                SettingsSection.STICKS -> (StickButton.entries.map { it.prefKey } + StickClickButton.entries.map { it.prefKey })
                 else -> emptyList()
             }
             val expected = when (section) {

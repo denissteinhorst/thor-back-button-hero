@@ -109,6 +109,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. |
 | `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
 | `FocusIndicatorOverlay.kt` | 145 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `StickButton.kt` | 70 | The two sticks, their eight direction buttons and `StickDetector`, the engage/neutral state machine shared with the overlay fallback. |
+| `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |
+| `LevelRepeater.kt` | 60 | `RepeatCurve` and the repeater that steps a held volume/brightness shortcut faster over time. |
 | `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
 | `DpadOverlay.kt` | 81 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |

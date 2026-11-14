@@ -33,6 +33,15 @@ enum class DpadDirection(override val prefKey: String, override val defaultActio
 
     companion object {
         /** The direction a hat axis value points to; null while the axis rests at 0. */
+        /** The direction letter of a stick report such as `STICK L U`. */
+        fun fromWire(letter: String): DpadDirection? = when (letter) {
+            "U" -> UP
+            "D" -> DOWN
+            "L" -> LEFT
+            "R" -> RIGHT
+            else -> null
+        }
+
         fun fromHat(horizontal: Boolean, value: Float): DpadDirection? = when {
             value <= -0.5f -> if (horizontal) LEFT else UP
             value >= 0.5f -> if (horizontal) RIGHT else DOWN

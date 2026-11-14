@@ -13,6 +13,9 @@
 //   * It forwards every event unchanged, except D-pad presses that start while Back is held or the
 //     app's own Recents overlay is open. Those go to the app over a socket ("HAT X -1") instead.
 //     "PASS <mask>" exempts directions the focused app's exception keeps for itself.
+//     Analog sticks work the same way for the sticks the app lists in "STICKS <mask>": a deflection
+//     that starts while Back is held is withheld (the game sees a centred stick) and reported as
+//     "STICK L U" once, then "STICK L N" when the stick is neutral again.
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
 //
@@ -65,6 +68,23 @@ static struct {
     struct node_attrs attrs;
     int unlinked;
 } pad = { .fd = -1 };
+
+// One analog stick. The thresholds mirror StickDetector.kt: a direction fires once the dominant
+// axis passes ENGAGE and nothing fires again until both axes are back inside NEUTRAL.
+#define STICK_ENGAGE 0.6f
+#define STICK_NEUTRAL 0.3f
+struct stick {
+    int code[2];            // evdev axis codes: x, y
+    int present;
+    int center[2], half[2]; // from the pad's absinfo
+    float value[2];         // normalised -1..1
+    int rest;               // both axes were neutral at the previous event
+    int withheld;           // the game sees a centred stick; we own the deflection
+    int engaged;            // a direction was already reported for this deflection
+    int dirty;              // an axis changed since the last frame
+};
+static struct stick sticks[2];
+static int stick_mask = 0;  // bit 0 left, bit 1 right: sticks the app has actions for
 
 static int ufd = -1, sock = -1;
 static volatile sig_atomic_t stop;
@@ -244,6 +264,93 @@ static void report(const char *axis, int value) {
     if (write(sock, line, n) != n) stop = 1;
 }
 
+static void emit(int type, int code, int value) {
+    struct input_event e = { .type = type, .code = code, .value = value };
+    if (write(ufd, &e, sizeof e) != (ssize_t)sizeof e) stop = 1;
+}
+
+static int has_axis(const unsigned long *abs, int code) { return test_bit(code, abs); }
+
+// The left stick is X/Y. Android's Xbox layout puts the right stick on Z/RZ, the Linux convention is
+// RX/RY; use whichever pair the pad offers.
+static void load_sticks(int fd) {
+    unsigned long abs[NLONGS(ABS_CNT)] = {0};
+    ioctl(fd, EVIOCGBIT(EV_ABS, sizeof abs), abs);
+    memset(sticks, 0, sizeof sticks);
+    int map[2][2] = { { ABS_X, ABS_Y }, { ABS_RX, ABS_RY } };
+    if (!(has_axis(abs, ABS_RX) && has_axis(abs, ABS_RY))) { map[1][0] = ABS_Z; map[1][1] = ABS_RZ; }
+    for (int s = 0; s < 2; s++) {
+        sticks[s].present = has_axis(abs, map[s][0]) && has_axis(abs, map[s][1]);
+        sticks[s].rest = 1;
+        for (int a = 0; a < 2; a++) {
+            struct input_absinfo info = {0};
+            sticks[s].code[a] = map[s][a];
+            if (sticks[s].present) ioctl(fd, EVIOCGABS(map[s][a]), &info);
+            sticks[s].center[a] = (info.minimum + info.maximum) / 2;
+            sticks[s].half[a] = (info.maximum - info.minimum) / 2;
+            if (sticks[s].half[a] <= 0) sticks[s].present = 0;
+        }
+    }
+}
+
+static float fabsf_(float v) { return v < 0 ? -v : v; }
+
+static void report_stick(int s, char direction) {
+    char line[32];
+    int n = snprintf(line, sizeof line, "STICK %c %c\n", s == 0 ? 'L' : 'R', direction);
+    if (write(sock, line, n) != n) stop = 1;
+}
+
+static int stick_neutral(const struct stick *st) {
+    return fabsf_(st->value[0]) < STICK_NEUTRAL && fabsf_(st->value[1]) < STICK_NEUTRAL;
+}
+
+// Returns 1 when the event belonged to a stick we own and must not reach the game. Only the start of
+// a capture is decided here; engaging and returning to neutral are judged per frame (stick_frame), so
+// a stick swept across the centre, whose two axes arrive one after the other, is never seen half-way.
+static int handle_stick(const struct input_event *e, int back, int switcher) {
+    for (int s = 0; s < 2; s++) {
+        struct stick *st = &sticks[s];
+        if (!st->present) continue;
+        int a = e->code == st->code[0] ? 0 : e->code == st->code[1] ? 1 : -1;
+        if (a < 0) continue;
+        st->value[a] = (float)(e->value - st->center[a]) / (float)st->half[a];
+        st->dirty = 1;
+        if (st->withheld) return 1;
+        // A deflection that starts while Back is held is ours; one that started before Back stays the
+        // game's. Mode 3 suspends all new captures, the switchers use the D-pad, not the sticks.
+        if (!(st->rest && back && switcher == 0 && (stick_mask & (1 << s)) && !stick_neutral(st))) return 0;
+        st->withheld = 1;
+        st->engaged = 0;
+        emit(EV_ABS, st->code[0], st->center[0]);
+        emit(EV_ABS, st->code[1], st->center[1]);
+        return 1;
+    }
+    return 0;
+}
+
+// Called at every SYN_REPORT, before it is forwarded.
+static void stick_frame(void) {
+    for (int s = 0; s < 2; s++) {
+        struct stick *st = &sticks[s];
+        if (!st->present || !st->dirty) continue;
+        st->dirty = 0;
+        int neutral = stick_neutral(st);
+        if (!st->withheld) { st->rest = neutral; continue; }
+        float ax = fabsf_(st->value[0]), ay = fabsf_(st->value[1]);
+        if (!st->engaged && (ax >= STICK_ENGAGE || ay >= STICK_ENGAGE)) {
+            st->engaged = 1;
+            report_stick(s, ax >= ay ? (st->value[0] < 0 ? 'L' : 'R') : (st->value[1] < 0 ? 'U' : 'D'));
+        }
+        if (neutral) {
+            if (st->engaged) report_stick(s, 'N');
+            st->engaged = 0;
+            st->withheld = 0;
+            st->rest = 1;
+        }
+    }
+}
+
 // Only navigation keys are accepted on the authenticated app socket.
 static void navigation_key(int key) {
     int axis, value;
@@ -288,6 +395,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
     while ((newline = strchr(line, '\n')) != NULL) {
         *newline = '\0';
         int mode, key, mask;
+        if (sscanf(line, "STICKS %d", &mask) == 1 && mask >= 0 && mask <= 3) stick_mask = mask;
         if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
@@ -325,6 +433,7 @@ int main(int argc, char **argv) {
             }
             back = home = cap_x = cap_y = 0;
             both_since = 0;
+            load_sticks(pad.fd);
         }
 
         struct pollfd pfd[2] = { { .fd = pad.fd, .events = POLLIN }, { .fd = sock, .events = POLLIN } };
@@ -346,6 +455,8 @@ int main(int argc, char **argv) {
             struct input_event *e = &evs[i];
             if (e->type == EV_KEY && e->code == KEY_BACK) back = e->value != 0;
             if (e->type == EV_KEY && e->code == KEY_HOME) home = e->value != 0;
+            if (e->type == EV_SYN && e->code == SYN_REPORT) stick_frame();
+            if (e->type == EV_ABS && handle_stick(e, back, switcher)) continue;
             if (e->type == EV_ABS && (e->code == ABS_HAT0X || e->code == ABS_HAT0Y)) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
                 // A press that starts while Back is held is ours until it is released, even if Back

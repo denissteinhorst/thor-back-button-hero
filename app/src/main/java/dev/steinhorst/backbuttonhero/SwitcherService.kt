@@ -54,7 +54,32 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var noticeToast: Toast? = null
     private val shoulderKeys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
-    private var pendingDpadFocus: DpadDirection? = null
+    private var pendingDpadFocus: ComboButton? = null
+    private val stickKeys = PhysicalKeyTracker()
+    private val stickClicks by lazy {
+        Stick.entries.associateWith { stick ->
+            StickClickMachine(
+                gestureScheduler,
+                gestureClock,
+                { prefs.stickDoubleMs(stick) },
+                { prefs.stickTapHoldMs(stick) },
+                { prefs.shoulderAction(StickClickButton.of(stick, it)).isNotEmpty() },
+            ) { runStickClick(StickClickButton.of(stick, it)) }
+        }
+    }
+    private var repeatingButton: ComboButton? = null
+    private val levelRepeater by lazy {
+        LevelRepeater(gestureScheduler, gestureClock) {
+            val button = repeatingButton
+            if (button == null || !interceptionEnabled || !backGesture.backDown) {
+                repeatingButton = null
+                false
+            } else {
+                levels.run(prefs.shoulderAction(button), prefs.levelTarget(button), repeating = true)
+                true
+            }
+        }
+    }
     private var pendingDpadReleased = false
     private val recentsThumbnails = RecentsThumbnailCache()
     private val requestedThumbnails = mutableMapOf<RecentsThumbnailCache.Key, Int>()
@@ -172,8 +197,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::handleDpad,
             ::handleDpadRelease,
             ::onPadHelperActiveChanged,
+            ::handleStick,
         )
-        dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease)
+        dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
         updatePadHelper()
@@ -212,9 +238,19 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (!::padHelper.isInitialized) return
         val passed = DpadDirection.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet()
         if (padHelper.setPassthrough(passed)) dlog("DPAD   passthrough=$passed")
+        updateStickCapture(exception)
     }
 
-    private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
+    // A native-Back app never sees a Back combo, so its sticks must not be withheld either.
+    private fun updateStickCapture(exception: AppException?) {
+        if (!::padHelper.isInitialized) return
+        padHelper.setSticks(if (exception?.backNative == true) emptySet() else Stick.entries.filter(prefs::hasStickAction).toSet())
+    }
+
+    // Sticks have no exception column; they follow Back, which a native-Back exception never turns into a combo.
+    private fun allowsCombo(button: ComboButton) =
+        if (button is StickButton || button is StickClickButton) backException?.backNative != true
+        else backException?.allows(ExceptionControl.of(button)) ?: true
 
     override fun holdSwapBlocked() {
         noticeToast?.cancel()
@@ -240,7 +276,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun updatePadHelper() {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
-        if (prefs.hasDpadAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        if (prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        updateStickCapture(backException)
     }
 
     private fun toggleInterception() {
@@ -251,6 +288,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
+        stopLevelRepeat()
+        stickClicks.values.forEach(StickClickMachine::reset)
+        stickKeys.clear()
         switcherBackDown = false
         switcherBackDeviceId = Int.MIN_VALUE
         topRecentsBackClosePending = false
@@ -379,10 +419,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active &&
-                DpadDirection.entries.any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
+                (DpadDirection.entries + StickButton.entries).any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
                 dpadOverlay.attach()
             }
             if (event.action == KeyEvent.ACTION_UP) {
+                stopLevelRepeat()
                 val overlayWasAttached = dpadOverlay.attached
                 dpadOverlay.detach()
                 // Once the overlay is gone a still held D-pad is released to the app, unseen; Back's
@@ -396,6 +437,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return consumed
         }
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
+        Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
     }
 
@@ -492,12 +534,101 @@ class SwitcherService : AccessibilityService(), GestureActions {
             pendingDpadReleased = false
             showFocusIndicator(direction)
         } else {
+            stopLevelRepeat()
             runComboAction(direction, action)
+            startLevelRepeat(direction, action)
         }
     }
 
+    /** Back + analog stick, from [PadHelper] or [DpadOverlay]; a null [direction] is the stick returning to neutral. */
+    private fun handleStick(stick: Stick, direction: DpadDirection?) {
+        if (direction == null) {
+            if ((repeatingButton as? StickButton)?.stick == stick) stopLevelRepeat()
+            if ((pendingDpadFocus as? StickButton)?.stick == stick) {
+                pendingDpadReleased = true
+                commitDpadFocus()
+            }
+            return
+        }
+        if (!interceptionEnabled || overlay.isShowing || topRecentsControllerActive || !backGesture.backDown) return
+        val button = StickButton.of(stick, direction)
+        val action = prefs.shoulderAction(button)
+        if (action.isEmpty() || !allowsCombo(button)) return
+        backGesture.markComboFired()
+        pendingDpadFocus = null
+        stopLevelRepeat()
+        // One deflection is one action, except the stepping ones, which repeat while it is held.
+        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) {
+            pendingDpadFocus = button
+            pendingDpadReleased = false
+            showFocusIndicator(button)
+        } else {
+            dlog("STICK  $button action=$action")
+            runComboAction(button, action)
+            startLevelRepeat(button, action)
+        }
+    }
+
+    /** A held stepping control (volume, brightness) keeps stepping, faster the longer it is held. */
+    private fun startLevelRepeat(button: ComboButton, action: String) {
+        if (!Prefs.isLevelAction(action)) return
+        repeatingButton = button
+        levelRepeater.start()
+    }
+
+    /**
+     * L3/R3 while Back is held. A press is ours only when the stick has a click action; otherwise
+     * the game keeps it, like an unassigned shoulder button. The Thor mirrors its controller, so
+     * both devices' DOWN/UP are consumed and the gesture sees one press.
+     */
+    private fun handleStickClick(stick: Stick, event: KeyEvent): Boolean {
+        val machine = stickClicks.getValue(stick)
+        return when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (!interceptionEnabled || !backGesture.backDown || !allowsCombo(StickClickButton.of(stick, StickClick.PRESS))) return false
+                val first = stickKeys.down(event.keyCode, event.deviceId)
+                if (first && event.repeatCount == 0) {
+                    if (!machine.down()) { stickKeys.up(event.keyCode, event.deviceId); return false }
+                    backGesture.markComboFired()
+                }
+                stickKeys.isDown(event.keyCode)
+            }
+            KeyEvent.ACTION_UP -> {
+                val tracked = stickKeys.up(event.keyCode, event.deviceId)
+                if (tracked && !stickKeys.isDown(event.keyCode)) {
+                    if ((repeatingButton as? StickClickButton)?.stick == stick) stopLevelRepeat()
+                    machine.up()
+                }
+                tracked
+            }
+            else -> false
+        }
+    }
+
+    private fun runStickClick(button: StickClickButton) {
+        val action = prefs.shoulderAction(button)
+        if (action.isEmpty() || !interceptionEnabled) return
+        dlog("STICK  $button action=$action")
+        if (button.click == StickClick.TAP_HOLD) {
+            // Fires while still held, like Back's tap-and-hold; stepping actions keep repeating until release.
+            stopLevelRepeat()
+            runComboAction(button, action)
+            startLevelRepeat(button, action)
+        } else {
+            runComboAction(button, action)
+        }
+    }
+
+    private fun stopLevelRepeat() {
+        repeatingButton = null
+        if (::padHelper.isInitialized) levelRepeater.stop()
+    }
+
     private fun handleDpadRelease(horizontal: Boolean) {
-        val pending = pendingDpadFocus ?: return
+        (repeatingButton as? DpadDirection)?.let {
+            if ((it == DpadDirection.LEFT || it == DpadDirection.RIGHT) == horizontal) stopLevelRepeat()
+        }
+        val pending = pendingDpadFocus as? DpadDirection ?: return
         if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
         pendingDpadReleased = true
         commitDpadFocus()
@@ -868,6 +999,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
+        stopLevelRepeat()
+        stickClicks.values.forEach(StickClickMachine::reset)
+        stickKeys.clear()
         toggleGesture.reset()
         backGesture.reset()
         interceptionGate.clear()

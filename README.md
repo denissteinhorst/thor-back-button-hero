@@ -55,7 +55,7 @@ Hold **L2 + R2 together for 300 ms** to deactivate all Back gestures and shortcu
 
 ## Shoulder buttons and D-pad
 
-Hold Back and press another button to run a shortcut. The shoulder buttons **L1, L2, R1, R2** and the four D-pad directions **D-pad left, D-pad up, D-pad right, D-pad down** can each be assigned any action from the list below. A button without an assignment is left alone, so games and apps still receive its normal input.
+Hold Back and press another button to run a shortcut. The shoulder buttons **L1, L2, R1, R2** and the four D-pad directions **D-pad left, D-pad up, D-pad right, D-pad down** can each be assigned any action from the list below. A button without an assignment is left alone, so games and apps still receive its normal input. The four directions of the **left and right analog stick** can be assigned the same way, starting unassigned: each push runs its action once, the stick has to return to the centre before the next one, and pressing a stick in (L3/R3) offers press, double press and tap and hold, timed and set up like the Back button's own gestures. Volume and brightness repeat while you hold, and get faster the longer you do (also on the D-pad).
 
 **Available actions:**
 

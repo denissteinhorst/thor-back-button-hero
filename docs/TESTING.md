@@ -63,6 +63,7 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
 | Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
 | Top-Recents helper protocol and Quickstep state/TaskView geometry parsing | `PadNavigationModeTest`, `TopRecentsStateTest` |
@@ -163,6 +164,7 @@ measures instructions instead, which is not what these numbers mean.
 | `LevelSteps` | 1.00 | 1.0000 |
 | `DpadDirection` (and its companion) | 1.00 | 1.0000 |
 | `CardTouch` | 1.00 | 1.0000 |
+| `StickDetector`, `LevelRepeater`, `RepeatCurve`, `StickClickMachine`, `StickButton`, `StickClickButton`, `Stick`, `StickClick` | 1.00 | 1.0000 |
 | `BackGestureMachine` | 0.98 | 0.9890 |
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |

@@ -40,6 +40,10 @@ class SettingsActivity : Activity() {
     private var statusLabel: TextView? = null
     private lateinit var openA11yHandle: SettingsPage.ActionHandle
     private val comboRows = mutableMapOf<String, ComboRow>()
+    private val stickPages = mutableListOf<SettingsPage>()
+    private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
+    private var stickTabBar: LinearLayout? = null
+    private var stickTab = Stick.LEFT
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
 
@@ -85,9 +89,14 @@ class SettingsActivity : Activity() {
     private fun openIndicatorFromIntent() {
         val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
         intent.removeExtra(EXTRA_INDICATOR_BUTTON)
-        val button = (ShoulderButton.entries + DpadDirection.entries).firstOrNull { it.prefKey == key } ?: return
+        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries).firstOrNull { it.prefKey == key } ?: return
         if (prefs.shoulderAction(button) != Prefs.SHOULDER_CONTROLLER_FOCUS) return
-        navigation.show(if (button is ShoulderButton) SettingsSection.SHOULDERS else SettingsSection.DPAD)
+        when (button) {
+            is ShoulderButton -> navigation.show(SettingsSection.SHOULDERS)
+            is StickButton -> showStickButton(button.stick)
+            is StickClickButton -> showStickButton(button.stick)
+            else -> navigation.show(SettingsSection.DPAD)
+        }
         val row = comboRows.getValue(key)
         row.position.row.post {
             if (isFinishing || isDestroyed) return@post
@@ -150,6 +159,7 @@ class SettingsActivity : Activity() {
                 buildShoulderRow(page, ShoulderButton.L2, R.string.shoulder_l2)
                 buildShoulderRow(page, ShoulderButton.R2, R.string.shoulder_r2)
             }
+            SettingsSection.STICKS -> buildSticks(content)
             SettingsSection.DPAD -> {
                 page.sectionHeader(R.string.dpad_bindings_section)
                 buildShoulderRow(page, DpadDirection.UP, R.string.dpad_up)
@@ -161,6 +171,71 @@ class SettingsActivity : Activity() {
             SettingsSection.SETTINGS -> buildSettings(page)
             SettingsSection.HELP -> buildHelp(page)
         }
+    }
+
+    /** One page per stick behind two tabs; both are built up front so their rows stay in [comboRows]. */
+    private fun buildSticks(content: LinearLayout) {
+        stickPages.clear()
+        stickBoxes.clear()
+        val tabs = tabBar(listOf(R.string.stick_tab_left, R.string.stick_tab_right), Stick.entries.indexOf(stickTab)) {
+            stickTab = Stick.entries[it]
+            showStickTab()
+        }
+        stickTabBar = tabs
+        content.addView(tabs, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(16)
+        })
+        val titles = mapOf(
+            StickButton.LEFT_UP to R.string.stick_left_up, StickButton.LEFT_DOWN to R.string.stick_left_down,
+            StickButton.LEFT_LEFT to R.string.stick_left_left, StickButton.LEFT_RIGHT to R.string.stick_left_right,
+            StickButton.RIGHT_UP to R.string.stick_right_up, StickButton.RIGHT_DOWN to R.string.stick_right_down,
+            StickButton.RIGHT_LEFT to R.string.stick_right_left, StickButton.RIGHT_RIGHT to R.string.stick_right_right,
+        )
+        val clickTitles = mapOf(
+            StickClickButton.LEFT_PRESS to R.string.stick_left_press, StickClickButton.LEFT_DOUBLE to R.string.stick_left_double,
+            StickClickButton.LEFT_TAP_HOLD to R.string.stick_left_tap_hold, StickClickButton.RIGHT_PRESS to R.string.stick_right_press,
+            StickClickButton.RIGHT_DOUBLE to R.string.stick_right_double, StickClickButton.RIGHT_TAP_HOLD to R.string.stick_right_tap_hold,
+        )
+        Stick.entries.forEach { stick ->
+            val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; tag = "settings_stick_${stick.name}" }
+            content.addView(box, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val page = SettingsPage(this, box)
+            stickPages += page
+            stickBoxes[stick] = box
+            page.sectionHeader(if (stick == Stick.LEFT) R.string.stick_left_bindings_section else R.string.stick_right_bindings_section)
+            StickButton.entries.filter { it.stick == stick }.forEach { buildShoulderRow(page, it, titles.getValue(it)) }
+            // Same three sections, in the same order, as the Back page: the action replaces the switch.
+            fun clickRow(click: StickClick, extra: (SettingsPage.Card.() -> View)? = null) {
+                val button = StickClickButton.of(stick, click)
+                buildShoulderRow(page, button, clickTitles.getValue(button), extra)
+            }
+            page.sectionHeader(R.string.single_section_title)
+            clickRow(StickClick.PRESS)
+            page.sectionHeader(R.string.double_section_title)
+            clickRow(StickClick.DOUBLE) {
+                subOptions {
+                    sliderRow(R.string.stick_double_speed, 150, 600, 50, prefs.stickDoubleMs(stick), R.string.stick_double_hint, readValue = { prefs.stickDoubleMs(stick) }) { prefs.setStickDoubleMs(stick, it) }
+                }
+            }
+            page.sectionHeader(R.string.tap_hold_section_title)
+            clickRow(StickClick.TAP_HOLD) {
+                subOptions {
+                    sliderRow(R.string.stick_tap_hold_speed, 500, 2000, 100, prefs.stickTapHoldMs(stick), R.string.stick_tap_hold_hint, readValue = { prefs.stickTapHoldMs(stick) }) { prefs.setStickTapHoldMs(stick, it) }
+                }
+            }
+        }
+        showStickTab()
+    }
+
+    private fun showStickButton(stick: Stick) {
+        stickTab = stick
+        navigation.show(SettingsSection.STICKS)
+        showStickTab()
+    }
+
+    private fun showStickTab() {
+        stickBoxes.forEach { (stick, box) -> box.visibility = if (stick == stickTab) View.VISIBLE else View.GONE }
+        stickTabBar?.let { selectTab(it, Stick.entries.indexOf(stickTab)) }
     }
 
     private fun buildBasic(page: SettingsPage) {
@@ -266,6 +341,7 @@ class SettingsActivity : Activity() {
 
     private fun refresh() {
         pages.values.forEach { it.refresh() }
+        stickPages.forEach { it.refresh() }
         comboRows.values.forEach { updateShoulderRow(it) }
         toggleButtonsValue?.text = toggleButtonsLabel()
         toggleDuration?.setEnabled(prefs.toggleButtons != Prefs.TOGGLE_NONE)
@@ -273,7 +349,14 @@ class SettingsActivity : Activity() {
         serviceWarning.text = serviceStatusText(status)
         serviceWarning.visibility = if (status == ServiceStatus.ON) View.GONE else View.VISIBLE
         // Without pservice, Back + D-pad has to take window focus (DpadOverlay) and games may pause.
-        rootWarning.row.visibility = if (prefs.hasDpadAction() && !PService.cachedAvailable()) View.VISIBLE else View.GONE
+        val dpadNeeds = prefs.hasDpadAction()
+        val sticksNeed = prefs.hasStickAction()
+        rootWarning.label.setText(when {
+            dpadNeeds && sticksNeed -> R.string.dpad_stick_root_missing
+            sticksNeed -> R.string.stick_root_missing
+            else -> R.string.dpad_root_missing
+        })
+        rootWarning.row.visibility = if ((dpadNeeds || sticksNeed) && !PService.cachedAvailable()) View.VISIBLE else View.GONE
         singleValue?.text = describeSingleAction()
         statusLabel?.text = serviceStatusText(status)
         val enabled = isAccessibilityServiceEnabled()
@@ -535,6 +618,8 @@ class SettingsActivity : Activity() {
         val target: SettingsPage.ChooserHandle,
         val displayOptions: View,
         val targetOptions: View,
+        /** A timing slider that only means something once the row has an action. */
+        val timingOptions: View? = null,
     ) {
         var focusOptions: SettingsPage.FocusOptionsHandle? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
@@ -640,10 +725,12 @@ class SettingsActivity : Activity() {
         page: SettingsPage,
         button: ComboButton,
         titleRes: Int,
+        extra: (SettingsPage.Card.() -> View)? = null,
     ) {
         val card = page.card {}
         lateinit var row: ComboRow
         val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
+        val timing = extra?.let { card.it() }
         lateinit var display: SettingsPage.ToggleHandle
         val displayOptions = card.subOptions {
             display = toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP, readValue = { prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP }) {
@@ -654,7 +741,7 @@ class SettingsActivity : Activity() {
         val targetOptions = card.subOptions {
             target = chooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
         }
-        row = ComboRow(card, button, getString(titleRes), action, display.row, target, displayOptions, targetOptions)
+        row = ComboRow(card, button, getString(titleRes), action, display.row, target, displayOptions, targetOptions, timing)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
@@ -667,6 +754,7 @@ class SettingsActivity : Activity() {
         val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
         row.displayOptions.visibility = row.display.visibility
+        row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
         row.targetOptions.visibility = row.target.row.visibility
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
@@ -820,7 +908,21 @@ class SettingsActivity : Activity() {
             ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
             DpadDirection.UP to R.string.dpad_up, DpadDirection.DOWN to R.string.dpad_down,
             DpadDirection.LEFT to R.string.dpad_left, DpadDirection.RIGHT to R.string.dpad_right,
+            StickButton.LEFT_UP to R.string.stick_left_up, StickButton.LEFT_DOWN to R.string.stick_left_down,
+            StickButton.LEFT_LEFT to R.string.stick_left_left, StickButton.LEFT_RIGHT to R.string.stick_left_right,
+            StickButton.RIGHT_UP to R.string.stick_right_up, StickButton.RIGHT_DOWN to R.string.stick_right_down,
+            StickButton.RIGHT_LEFT to R.string.stick_right_left, StickButton.RIGHT_RIGHT to R.string.stick_right_right,
+            StickClickButton.LEFT_PRESS to R.string.stick_left_press, StickClickButton.LEFT_DOUBLE to R.string.stick_left_double,
+            StickClickButton.LEFT_TAP_HOLD to R.string.stick_left_tap_hold, StickClickButton.RIGHT_PRESS to R.string.stick_right_press,
+            StickClickButton.RIGHT_DOUBLE to R.string.stick_right_double, StickClickButton.RIGHT_TAP_HOLD to R.string.stick_right_tap_hold,
         )
+        Stick.entries.forEach { stick ->
+            val old = a.stickTimings.getValue(stick.prefix)
+            val new = b.stickTimings.getValue(stick.prefix)
+            val side = getString(if (stick == Stick.LEFT) R.string.stick_tab_left else R.string.stick_tab_right)
+            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_double_title)), ms(old.doubleMs), ms(new.doubleMs))
+            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_tap_hold_title)), ms(old.tapHoldMs), ms(new.tapHoldMs))
+        }
         buttons.forEach { (button, labelRes) ->
             val old = a.bindings.getValue(button.prefKey)
             val new = b.bindings.getValue(button.prefKey)
@@ -847,6 +949,9 @@ class SettingsActivity : Activity() {
         exceptionsPage?.dispose()
         exceptionsPage = null
         pages.clear()
+        stickPages.clear()
+        stickBoxes.clear()
+        stickTabBar = null
         comboRows.clear()
         singleValue = null
         toggleButtonsValue = null

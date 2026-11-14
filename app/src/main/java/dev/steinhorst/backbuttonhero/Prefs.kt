@@ -85,6 +85,8 @@ class Prefs(context: Context) {
         val edit = sp.edit()
         ShoulderButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
         DpadDirection.entries.forEach { edit.putString("${it.prefKey}_package", "") }
+        StickButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
+        StickClickButton.entries.forEach { edit.putString("${it.prefKey}_package", "") }
         edit.putString("toggle_buttons", TOGGLE_NONE).apply()
     }
 
@@ -205,6 +207,24 @@ class Prefs(context: Context) {
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
     fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
 
+    /** Whether [stick] (either one when null) has an action - only then are its axes worth intercepting. */
+    fun hasStickAction(stick: Stick? = null): Boolean =
+        StickButton.entries.any { (stick == null || it.stick == stick) && shoulderAction(it).isNotEmpty() }
+
+    /** Whether [stick]'s click gestures have any action - only then is its L3/R3 press ours. */
+    fun hasStickClickAction(stick: Stick): Boolean =
+        StickClickButton.entries.any { it.stick == stick && shoulderAction(it).isNotEmpty() }
+
+    /** Longest pause between the two presses of a stick's double press. */
+    fun stickDoubleMs(stick: Stick): Long =
+        sp.getLong("${stick.prefix}_double_ms", DEFAULT_DOUBLE_TAP_MS).coerceIn(150L, 600L)
+    fun setStickDoubleMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_double_ms", ms).apply() }
+
+    /** How long a stick has to be held in after its first press for the tap-and-hold gesture. */
+    fun stickTapHoldMs(stick: Stick): Long =
+        sp.getLong("${stick.prefix}_tap_hold_ms", DEFAULT_TAP_HOLD_MS).coerceIn(500L, 2000L)
+    fun setStickTapHoldMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_tap_hold_ms", ms).apply() }
+
     /** Per-app opt-outs in the order the user added them. */
     var appExceptions: List<AppException>
         get() = AppException.decode(sp.getString("app_exceptions", null))
@@ -217,7 +237,7 @@ class Prefs(context: Context) {
     fun snapshot(): SettingsState = SettingsState(
         singleAction, doubleTapEnabled, doubleTapMs, tapHoldEnabled, tapHoldMs,
         holdEnabled, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
-        (ShoulderButton.entries + DpadDirection.entries).associate { button ->
+        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries).associate { button ->
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
@@ -225,6 +245,7 @@ class Prefs(context: Context) {
             )
         },
         appExceptions,
+        Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it), stickTapHoldMs(it)) },
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -266,6 +287,11 @@ class Prefs(context: Context) {
             string("${key}_app_mode", old.appMode, value.appMode)
             string("${key}_app_screen", old.appScreen, value.appScreen)
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
+        }
+        before.stickTimings.forEach { (prefix, old) ->
+            val value = after.stickTimings.getValue(prefix)
+            long("${prefix}_double_ms", old.doubleMs, value.doubleMs)
+            long("${prefix}_tap_hold_ms", old.tapHoldMs, value.tapHoldMs)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         edit.apply()

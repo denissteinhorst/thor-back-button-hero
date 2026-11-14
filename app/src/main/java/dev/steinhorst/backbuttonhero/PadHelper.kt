@@ -23,6 +23,8 @@ class PadHelper(
     private val onPress: (DpadDirection) -> Unit,
     private val onRelease: (horizontal: Boolean) -> Unit,
     private val onActiveChanged: (Boolean) -> Unit,
+    /** A stick deflection (direction) or its return to neutral (null); see [StickDetector]. */
+    private val onStick: (Stick, DpadDirection?) -> Unit = { _, _ -> },
 ) {
 
     /** True while the helper has taken over a pad and gates its D-pad. */
@@ -38,6 +40,7 @@ class PadHelper(
     @Volatile private var navigationMode = PadNavigationMode.OFF
     @Volatile private var suspended = false
     @Volatile private var passthrough = 0
+    @Volatile private var stickMask = 0
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -111,6 +114,18 @@ class PadHelper(
         runCatching { client?.outputStream?.write("PASS $passthrough\n".toByteArray()) }
     }
 
+    /** Sticks (bits of [Stick.bit]) whose deflections made while Back is held the helper takes for the app. */
+    fun setSticks(sticks: Set<Stick>) {
+        val mask = sticks.sumOf { it.bit }
+        if (mask == stickMask) return
+        stickMask = mask
+        sendSticks()
+    }
+
+    private fun sendSticks() {
+        runCatching { client?.outputStream?.write("STICKS $stickMask\n".toByteArray()) }
+    }
+
     /** Linux key codes, emitted by the existing clone without another root-shell round trip. */
     fun navigateTop(direction: DpadDirection) = sendNavigation(when (direction) {
         DpadDirection.UP -> 103
@@ -158,10 +173,19 @@ class PadHelper(
                 failedLaunches = 0
                 setSwitcherNavigation(navigationMode)
                 sendPassthrough()
+                sendSticks()
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }
             "MODE" -> Unit
+            "STICK" -> if (parts.size == 3) {
+                val stick = Stick.fromWire(parts[1])
+                val direction = DpadDirection.fromWire(parts[2])
+                // "N" (neutral) maps to no direction: only a press or a release is reported.
+                if (stick != null && (direction != null || parts[2] == "N")) main.post {
+                    if (wanted && !closed) onStick(stick, direction)
+                }
+            }
             "HAT" -> if (parts.size == 3) {
                 val horizontal = parts[1] == "X"
                 val direction = DpadDirection.fromHat(horizontal, parts[2].toFloatOrNull() ?: 0f)

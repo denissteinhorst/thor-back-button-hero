@@ -20,7 +20,9 @@ class DpadOverlay(
     private val context: Context,
     private val onPress: (DpadDirection) -> Unit,
     private val onRelease: (horizontal: Boolean) -> Unit,
+    private val onStick: (Stick, DpadDirection?) -> Unit = { _, _ -> },
 ) {
+    private val detectors = Stick.entries.associateWith { StickDetector() }
     private val windows = mutableListOf<Pair<WindowManager, View>>()
     private var lastX = 0f
     private var lastY = 0f
@@ -31,6 +33,7 @@ class DpadOverlay(
         if (windows.isNotEmpty()) return
         lastX = 0f
         lastY = 0f
+        detectors.values.forEach(StickDetector::reset)
         for (display in context.getSystemService(DisplayManager::class.java).displays.filterNot(FrontendParking::isParkingDisplay)) {
             val ctx = context.createDisplayContext(display)
                 .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
@@ -46,10 +49,27 @@ class DpadOverlay(
                     val releasedY = DpadDirection.fromHat(false, y) == null && DpadDirection.fromHat(false, lastY) != null
                     lastX = x
                     lastY = y
+                    sticks(event)
                     pressed?.let(onPress)
                     if (releasedX) onRelease(true)
                     if (releasedY) onRelease(false)
                     return true
+                }
+
+                // Android's Xbox layout puts the right stick on Z/RZ; others use RX/RY.
+                private fun sticks(event: MotionEvent) {
+                    fun axis(a: Int, b: Int) = event.getAxisValue(a).takeIf { it != 0f } ?: event.getAxisValue(b)
+                    val values = mapOf(
+                        Stick.LEFT to (event.getAxisValue(MotionEvent.AXIS_X) to event.getAxisValue(MotionEvent.AXIS_Y)),
+                        Stick.RIGHT to (axis(MotionEvent.AXIS_Z, MotionEvent.AXIS_RX) to axis(MotionEvent.AXIS_RZ, MotionEvent.AXIS_RY)),
+                    )
+                    values.forEach { (stick, xy) ->
+                        when (val edge = detectors.getValue(stick).update(xy.first, xy.second)) {
+                            is StickDetector.Edge.Pressed -> onStick(stick, edge.direction)
+                            StickDetector.Edge.Released -> onStick(stick, null)
+                            null -> Unit
+                        }
+                    }
                 }
 
                 // Swallow anything else that lands here while it has focus (it only exists while Back is held).

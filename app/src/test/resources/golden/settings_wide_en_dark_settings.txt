@@ -17,12 +17,13 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
     LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
       ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
         LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Basic Controls" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Shoulder Button Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="D-Pad Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Exceptions" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,12] text="Settings" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
-          Button visibility=VISIBLE minHeight=168 padding=[36,36,36,36] clickable=true focusable=true margin=[0,0,0,0] text="Update & Help" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Basic Controls" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Shoulder Button Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Analog Stick Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="D-Pad Binds" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Exceptions" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,6] text="Settings" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          Button visibility=VISIBLE minHeight=132 padding=[36,24,36,24] clickable=true focusable=true margin=[0,0,0,0] text="Update & Help" textSizePx=42.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
       FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
         ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
           LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
@@ -64,7 +65,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
               LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
                 LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                   TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unbind optionals" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: remove all shoulder button, D-pad and on/off shortcut bindings." textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: remove all shoulder button, D-pad, analog stick and on/off shortcut bindings." textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
                 LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]

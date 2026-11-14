@@ -72,6 +72,21 @@ until release, even if Back is let go or the switcher closes first.
 5. **The app runs the configured action** (`SwitcherService.handleDpad`), just as it does for a
    shoulder-button combo. The game never sees the press and never loses focus.
 
+### Analog sticks
+
+Back + stick uses the same helper. The app lists the sticks that have an action in `STICKS <mask>`
+(bit 0 left, bit 1 right); only those are touched. Their axes are the pad's `ABS_X/Y` and, for the
+right stick, `ABS_RX/RY` when present, otherwise Android's Xbox layout `ABS_Z/RZ`. A deflection that
+starts while Back is held in the ordinary mode (not while a switcher or the pause mode is active) is
+withheld from the clone, which is told a centred stick, and reported once as `STICK L U` (or `D`,
+`L`, `R`; `STICK L N` when neutral again). A deflection that began before Back stays the game's.
+Judgements happen per `SYN_REPORT` frame, because the two axes arrive one after the other and a
+sweep across the diagonal would otherwise pass through a false neutral. A direction fires when an
+axis passes 0.6 and nothing fires again until both axes are inside 0.3, so a sweep from one
+direction to another is still one press. The app repeats only the stepping actions (volume,
+brightness) while the stick stays deflected and Back is held. The thresholds live in
+`StickDetector` (used by the overlay fallback) and `padhelper.c`; keep them in step.
+
 ### Temporarily deactivating Back Button Hero
 
 The app sends `SWITCHER 3` while its Back interception is deactivated. New D-pad
@@ -150,7 +165,7 @@ SELinux" off). It is the same requirement swipe-to-close has.
 - **Authenticated channel.** The helper connects to an abstract Unix socket, which has no file
   permissions. The app therefore accepts only peers whose credentials say **uid 0**; anything else
   is disconnected.
-- **It only runs when needed.** If no D-pad direction has an action and controller navigation for
+- **It only runs when needed.** If no D-pad direction or stick has an action and controller navigation for
   Recents is off, the helper is stopped and the pad stays untouched. Keeping controller navigation
   on keeps the helper warm so opening either switcher never recreates the pad under the first input.
 - **The pad always comes back**, in every case:

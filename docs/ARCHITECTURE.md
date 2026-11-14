@@ -197,7 +197,18 @@ path from the shoulder buttons. Both end in the same `runComboAction`:
   and per-display brightness (the `BrightnessControl` root entry point) need pservice. The step
   arithmetic is the pure, unit-tested `LevelSteps`.
 
-`ShoulderButton` and `DpadDirection` both implement `ComboButton`, so `Prefs` stores every combo
+**Analog sticks** (`StickButton`, `StickDetector`, `LevelRepeater`): eight more `ComboButton`s, all
+unassigned by default, set on the Analog Sticks page (two tabs, left and right). Reports arrive from
+the helper (`STICK`) or the overlay fallback and go to `SwitcherService.handleStick`, which runs the
+action once per deflection; controller focus commits when the stick returns to neutral, and the
+stepping actions (volume, brightness) repeat through `LevelRepeater` while Back and the stick are held.
+A stick's click (L3/R3) has press, double press and tap-and-hold gestures with their own
+double-press and tap-and-hold times, timed exactly like Back's (`StickClickMachine`, a port of the
+same decisions) and only while Back is held. Stepping actions repeat on `RepeatCurve` (slow start, easing to ~40 ms) for sticks, stick
+hold and the D-pad alike; `LevelControl` drops repeat steps while root work is still queued.
+Sticks have no exception column: they follow Back, so a native-Back exception releases them.
+
+`ShoulderButton`, `DpadDirection` and `StickButton` all implement `ComboButton`, so `Prefs` stores every combo
 button's action, launch screen and level target the same way.
 
 ### `SettingsActivity` + `SettingsUiKit`

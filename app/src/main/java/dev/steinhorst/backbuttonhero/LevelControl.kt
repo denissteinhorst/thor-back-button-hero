@@ -16,9 +16,18 @@ import java.util.concurrent.Executors
  */
 class LevelControl(private val context: Context, private val bottomDisplayId: () -> Int?) {
     private val worker = Executors.newSingleThreadExecutor()
+    private val queued = java.util.concurrent.atomic.AtomicInteger()
+
+    private fun submit(job: () -> Unit) {
+        queued.incrementAndGet()
+        worker.execute { try { job() } finally { queued.decrementAndGet() } }
+    }
 
     /** Runs a [Prefs.isLevelAction] action on [target] ([Prefs.TARGET_BOTH], top or bottom). */
-    fun run(action: String, target: String) {
+    fun run(action: String, target: String, repeating: Boolean = false) {
+        // A fast repeat must not queue root work faster than it completes, or the level keeps
+        // moving after the control was released.
+        if (repeating && queued.get() > 0) return
         val top = target != Prefs.DISPLAY_BOTTOM
         val bottom = target != Prefs.DISPLAY_TOP
         when (action) {
@@ -38,9 +47,9 @@ class LevelControl(private val context: Context, private val bottomDisplayId: ()
         if (!bottom) return
         // Only say so when nothing happened at all; "both" still changed the top screen.
         if (!PService.cachedAvailable()) { if (!top) unavailable(); return }
-        worker.execute {
+        submit {
             val current = Settings.System.getInt(context.contentResolver, SECONDARY_VOLUME, -1)
-            if (current < 0) return@execute
+            if (current < 0) return@submit
             val next = LevelSteps.nextVolume(current, up, SECONDARY_VOLUME_MAX)
             if (next != current) PService.exec("settings put system $SECONDARY_VOLUME $next")
         }
@@ -53,7 +62,7 @@ class LevelControl(private val context: Context, private val bottomDisplayId: ()
         )
         if (displays.isEmpty()) return
         if (!PService.cachedAvailable()) { unavailable(); return }
-        worker.execute {
+        submit {
             PService.runEntryPoint(context, "BrightnessControl", if (up) "up" else "down", *displays.map(Int::toString).toTypedArray())
         }
     }

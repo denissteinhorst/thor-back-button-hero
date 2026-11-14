@@ -56,7 +56,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
               LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
                 LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                   TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unbind optionals" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: remove all shoulder button, D-pad and on/off shortcut bindings." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Entire app: remove all shoulder button, D-pad, analog stick and on/off shortcut bindings." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
               View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[48,0,48,0]
               LinearLayout visibility=VISIBLE minHeight=216 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0]
                 LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]

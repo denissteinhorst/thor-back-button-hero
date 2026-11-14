@@ -169,6 +169,12 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17e | Switch the controller style: Xbox → Standard → Ban on Use → Xbox, testing C17a and C17b after each | Every style keeps working; with Ban on Use the pad is off, as in AYN's own behavior |
 | C17f | Hold Home + Back for 5 s | The pad is handed back to Android; the helper stays off until the service restarts, and the shortcuts fall back to the overlay |
 | C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
+| C17i | Assign actions to the left stick (up/down: volume, left: screenshot), hold Back and push the stick | Up/down step volume once, then repeat after 0.25 s while held, faster the longer; left runs once however long it is held; the game sees a centred stick |
+| C17j | Push left, sweep to up without passing the centre, return, push up | The sweep fires nothing; only the fresh deflection after the stick was neutral fires |
+| C17k | Push the stick first, then press Back; also push the stick without Back | No BBH action; the game keeps the stick in both cases. A stick without any action is never withheld |
+| C17l | Hold a stepping direction, then release Back before the stick | The repeat stops with Back; the right stick behaves the same with its own bindings |
+| C17m | Assign press / double press / tap and hold of a stick (L3/R3), hold Back | Timed exactly like Back's own gestures: press fires after the double-press window (at once without a double press); a quick second press fires only the double press; pressing again right after a tap and holding fires tap and hold while held (a volume/brightness action keeps repeating); the settings page has the same three sections as Basic Controls; without Back the game gets L3/R3 untouched |
+| C17n | Hold a volume or brightness shortcut (stick direction, stick hold, D-pad) | One step, then repeats after 0.25 s, getting faster for about 1.1 s up to ~40 ms; stops on release; brightness does not keep moving afterwards |
 | C17h | Force SELinux on (AYN setting), reopen the settings | The warning banner appears; Back + D-pad still works but the game pauses; brightness reports "not available" |
 
 ### App exceptions

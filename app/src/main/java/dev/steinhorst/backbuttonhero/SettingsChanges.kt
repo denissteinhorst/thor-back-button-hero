@@ -15,6 +15,13 @@ data class SettingsState(
     val toggleMs: Long = Prefs.DEFAULT_TOGGLE_HOLD_MS,
     val bindings: Map<String, BindingSettings> = factoryBindings(),
     val exceptions: List<AppException> = emptyList(),
+    /** Per stick (keyed by [Stick.prefix]): its double-press and hold times. */
+    val stickTimings: Map<String, StickTimings> = Stick.entries.associate { it.prefix to StickTimings() },
+)
+
+data class StickTimings(
+    val doubleMs: Long = Prefs.DEFAULT_DOUBLE_TAP_MS,
+    val tapHoldMs: Long = Prefs.DEFAULT_TAP_HOLD_MS,
 )
 
 data class BindingSettings(
@@ -40,6 +47,8 @@ private fun factoryBindings(): Map<String, BindingSettings> = buildMap {
     put(ShoulderButton.L2.prefKey, BindingSettings(Prefs.SHOULDER_SCREENSHOT, targetOverride = Prefs.DISPLAY_TOP))
     put(ShoulderButton.R2.prefKey, BindingSettings(Prefs.SHOULDER_CONTROLLER_FOCUS))
     DpadDirection.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    StickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    StickClickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
 }
 
 enum class SettingsChangeAction { PRESET, UNBIND }
@@ -72,9 +81,10 @@ data class SettingsChangePlan(
                 )
             }
             val buttons = when (section) {
-                null -> ShoulderButton.entries + DpadDirection.entries
+                null -> ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries
                 SettingsSection.SHOULDERS -> ShoulderButton.entries
                 SettingsSection.DPAD -> DpadDirection.entries
+                SettingsSection.STICKS -> StickButton.entries + StickClickButton.entries
                 else -> emptyList()
             }
             if (buttons.isNotEmpty()) after = after.copy(bindings = after.bindings.toMutableMap().apply {
@@ -83,6 +93,8 @@ data class SettingsChangePlan(
                     else getValue(button.prefKey).copy(action = ""))
                 }
             })
+            // Timings belong to the stick click gestures; Unbind keeps them like the Back timings.
+            if (preset && (section == null || section == SettingsSection.STICKS)) after = after.copy(stickTimings = factory.stickTimings)
             if (section == null || section == SettingsSection.SETTINGS) after = after.copy(
                 allApps = if (preset) factory.allApps else before.allApps,
                 controller = if (preset) factory.controller else before.controller,
