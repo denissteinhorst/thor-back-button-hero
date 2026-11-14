@@ -419,6 +419,7 @@ class SettingsActivity : Activity() {
             group(ActionGroups.Group.VOLUME),
             group(ActionGroups.Group.BRIGHTNESS),
             Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
+            Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
             Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
         ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
     }
@@ -635,6 +636,7 @@ class SettingsActivity : Activity() {
         var optionOptions: View? = null
         /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
         var switcherOptions: View? = null
+        var switchAppOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
@@ -815,9 +817,10 @@ class SettingsActivity : Activity() {
         }
         row.switcherOptions?.visibility = if (switcher) View.VISIBLE else View.GONE
         row.targetOptions.visibility = row.target.row.visibility
+        val switchApp = action == Prefs.SHOULDER_SWITCH_APP
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || hasOption || appControl || row.display.visibility == View.VISIBLE) 0 else 10))
+            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.visibility == View.VISIBLE) 0 else 10))
         if (hasOption && row.option == null) {
             lateinit var created: SettingsPage.ChooserHandle
             val options = row.card.subOptions {
@@ -845,6 +848,15 @@ class SettingsActivity : Activity() {
                 { chooseTarget(row) }, { choosePosition(row) },
             )
         }
+        if (switchApp && row.switchAppOptions == null) {
+            row.switchAppOptions = row.card.subOptions {
+                toggleRow(R.string.switch_app_follow_focus, null, prefs.switchAppFollowFocus(row.button),
+                    readValue = { prefs.switchAppFollowFocus(row.button) }) {
+                    prefs.setSwitchAppFollowFocus(row.button, it)
+                }
+            }
+        }
+        row.switchAppOptions?.visibility = if (switchApp) View.VISIBLE else View.GONE
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1124,6 +1136,7 @@ class SettingsActivity : Activity() {
                 extra(R.string.focus_target_title, focus(old.focusTarget), focus(new.focusTarget))
             extra(R.string.app_control_mode_title, appMode(old.appMode), appMode(new.appMode))
             extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
+            extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
             extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))

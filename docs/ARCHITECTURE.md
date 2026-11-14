@@ -136,13 +136,23 @@ The settings screen previews changes through `SwitcherService.previewFocusIndica
 the service may draw accessibility overlays.
 
 **The app never switches the controller focus on the user's behalf.** The route changes only
-when the user triggers it: an assigned controller-focus shortcut, or the opt-in controller
+when the user triggers it: an assigned controller-focus shortcut, Switch active app with its
+per-hotkey follow option enabled (the default), or the opt-in controller
 navigation in Recents, which borrows the route and restores it on exit, AYN's Auto-lock (`0`)
-included. Swaps, launches and window
-changes leave the route where it is, for every app. An automatic route-follows-swap for RetroArch
+included. Holding Back, Recents task moves and ordinary app launches retain the route,
+for every app. An automatic route-follows-swap for RetroArch
 (RetroArch hands port 1 to the first device it hears after a resume, and AYN's focus commit comes
 from Android's "Virtual" device) shipped as an experiment in 1.4.0 and was removed again in favor
 of this rule.
+
+Switch active app captures the controller/input display and moves only its foreground task through
+`RecentsTaskLauncher`, retaining task identity and leaving the destination's app in place. It waits
+for the trigger release and honors that hotkey's app exception, independently of Hold exclusions.
+In Auto-lock, `AutoControllerFocus` selects the requested input display with a consumed touch on a
+temporary app-owned shield. `ControllerFocusTouch` verifies the operation's uniquely named input window and restricts injection
+to the app UID, failing closed when the shield is absent, not touchable, or covered. No routing setting/property is changed in Auto-lock. The
+shield is removed after delivery; with follow disabled, the same path retains the source display.
+Fixed routes use the existing OEM command sequence only when follow is enabled.
 
 ### Active App Control — `AppControl` and `AppControlPrompt`
 

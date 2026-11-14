@@ -25,6 +25,7 @@ class SettingsBackupTest {
                     "r2" -> value.copy(action = Prefs.SHOULDER_CONTROLLER_FOCUS, focusTarget = Prefs.DISPLAY_TOP,
                         indicator = false, duration = 900, position = Prefs.FOCUS_POS_TOP_LEFT)
                     "l2" -> value.copy(action = Ayn.Group.FAN.action, aynOption = "smart")
+                    "dpad_left" -> value.copy(action = Prefs.SHOULDER_SWITCH_APP, switchAppFollow = false)
                     "lstick_press" -> value.copy(action = Prefs.SHOULDER_APP_CONTROL, appMode = Prefs.APP_FORCE_CLOSE,
                         appScreen = Prefs.DISPLAY_TOP, appConfirm = true)
                     else -> value

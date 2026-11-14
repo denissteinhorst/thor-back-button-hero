@@ -17,7 +17,7 @@ Quellen: [Initialer Release][initial] · [v1.3.0][v130] · [v1.4.0][v140]
 - Feature: Alle Aktionen frei auf alle Gesten/Hotkeys legen können, etwa „beide Apps schließen“ auf Tap + Hold. — **u/Aggravating-Taro5133**, [v1.4.0][v140].
 - Feature: Back + Stick oben/unten/links/rechts als zusätzliche Hotkeys, etwa für Helligkeit. — **u/Aggravating-Taro5133**, [v1.4.0][v140].
 - Feature: Zwischen Dual-Screen, nur oberem und nur unterem Display umschalten. — **u/Coxinigo**, [v1.4.0][v140].
-- Feature: Eine einzelne App auf das andere Display verschieben, ohne beide Apps zu tauschen. Über die App-Auswahl in Recents bereits möglich; eine eigene direkte Aktion fehlt. — **u/TophersTalk**, [initial][initial].
+- Feature: Eine einzelne App auf das andere Display verschieben, ohne beide Apps zu tauschen. Über die App-Auswahl in Recents bereits möglich; direkte Aktion jetzt unveröffentlicht als „Switch active app“ mit optional folgendem Gamepad-Fokus (ab Werk an), einschließlich erhaltenem Auto-lock. Owner-Abnahme noch offen. — **u/TophersTalk**, [initial][initial].
 
 ## Rückfragen / noch zu bestätigen
 

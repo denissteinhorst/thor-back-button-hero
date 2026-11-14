@@ -211,6 +211,12 @@ class Prefs(context: Context) {
         aynOptionRaw(button)?.takeIf(group::isValid) ?: group.defaultOption
     fun setAynOption(button: ComboButton, option: String) { sp.edit().putString("${button.prefKey}_ayn_option", option).apply() }
 
+    /** Whether switching the active app also sends controller input to its destination. */
+    fun switchAppFollowFocus(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_switch_app_follow", true)
+    fun setSwitchAppFollowFocus(button: ComboButton, follow: Boolean) {
+        sp.edit().putBoolean("${button.prefKey}_switch_app_follow", follow).apply()
+    }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -275,7 +281,7 @@ class Prefs(context: Context) {
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
-                appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button),
+                appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button), switchAppFollowFocus(button),
             )
         },
         appExceptions,
@@ -318,6 +324,7 @@ class Prefs(context: Context) {
             string("${key}_app_screen", old.appScreen, value.appScreen)
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
             string("${key}_ayn_option", old.aynOption, value.aynOption)
+            boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -405,6 +412,7 @@ class Prefs(context: Context) {
         const val SHOULDER_BRIGHTNESS_UP = "@brightness_up"
         const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
         const val SHOULDER_CONTROLLER_FOCUS = "@controller_focus"
+        const val SHOULDER_SWITCH_APP = "@switch_active_app"
         const val SHOULDER_APP_CONTROL = "@app_control"
         const val APP_MINIMIZE = "minimize"
         const val APP_FORCE_CLOSE = "force_close"
@@ -417,7 +425,7 @@ class Prefs(context: Context) {
             SHOULDER_BLUETOOTH, SHOULDER_NIGHT_LIGHT, SHOULDER_EXTRA_DIM, SHOULDER_DISPLAY_SETTINGS, SHOULDER_SOUND_SETTINGS,
             SHOULDER_LOCATION_SETTINGS, SHOULDER_CAST_SETTINGS, SHOULDER_DND_SETTINGS, SHOULDER_BATTERY_SAVER,
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
-            SHOULDER_CONTROLLER_FOCUS, SHOULDER_APP_CONTROL,
+            SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
         ) + Ayn.ACTIONS
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')

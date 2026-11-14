@@ -34,6 +34,7 @@ data class BindingSettings(
     val appConfirm: Boolean = false,
     /** The choice of an [Ayn] hotkey; null until made. */
     val aynOption: String? = null,
+    val switchAppFollow: Boolean = true,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
     fun levelTarget(): String = targetOverride ?: Prefs.TARGET_BOTH
