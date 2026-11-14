@@ -288,6 +288,8 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    // Stays on 4.17: 4.18 fails 89 tests with NoClassDefFoundError (VirtualDeviceManager$VirtualDeviceListener) on SDK 34,
+    // and SDK 35 changes the framework output the goldens freeze. The lint hint is baselined; see docs/MAINTENANCE.md.
     testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")
