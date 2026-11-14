@@ -220,7 +220,7 @@ first build, so they work right after a clone without a manual step.
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |
 | `hardening/` | The historical, German-language pre-release hardening plan: its 38 step files, reports and checklists. Frozen record, not current instructions. |
-| `gesture-explainer.html` | Interactive page demonstrating each gesture on a device diagram. Fully self-contained: `thor-base.png` is embedded as a base64 data URI so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. |
+| `gesture-explainer.html` | The App-Simulation: an intro that shows every shortcut on a device diagram, then every function to try out. Fully self-contained: `thor-base.png` and the app icon are embedded as base64 data URIs so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. `?autoplay` is the recording mode (light theme, no Skip button). |
 
 ### `docs/assets/`
 
@@ -230,7 +230,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `Back Button Hero 1.4.0.mp4` | Source of the 60 fps video (about 2.5 minutes), recorded frame by frame from `gesture-explainer.html?autoplay`. The README and the landing page link to the copy published with the site, `site/assets/back-button-hero-1.4.0.mp4`; keep the two files identical. |
+| `Back Button Hero 1.4.0.mp4` | The previous 1.4.0 video. The current one, `back-button-hero-1.5.0.mp4` (60 fps, 1200×1500, about 45 seconds), lives only in `site/assets/`; it is recorded frame by frame from `gesture-explainer.html?autoplay`, and the README links to the copy published with the site. |
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |

@@ -37,7 +37,7 @@
 
 <div align="center">
 
-[▶ Watch the video (about 2½ minutes)][video-url]
+[▶ Watch the video (about 45 seconds)][video-url]
 
 </div>
 
@@ -416,7 +416,7 @@ never in release.
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
 [explainer-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest/download/gesture-explainer.html
 [pages-url]: https://denissteinhorst.github.io/thor-back-button-hero/
-[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.4.0.mp4
+[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.5.0.mp4
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
 [platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white
