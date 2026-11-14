@@ -64,7 +64,8 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `ExceptionGroups.kt` | 41 | The four input groups of an exception and their controls. |
 | `ExceptionGroupDialog.kt` | 288 | The modal of one group: glyph, name and switch per control, all-switches. |
 | `ExceptionSettingsPage.kt` | 377 | Per-app exception editor: app search, allow/block start choice, one row per app with active switch, trash and four group buttons that open the group modal. |
-| `UpdateChecker.kt` | 141 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, and posts a notification. No in-app APK install by design. |
+| `UpdateInstaller.kt` | 139 | Streams the release APK into an Android `PackageInstaller` session, checks length and checksum, and lets Android confirm; its receiver opens that confirmation or names a refusal. |
+| `UpdateChecker.kt` | 203 | Polls the GitHub Releases API with `HttpURLConnection` and manual JSON parsing (no HTTP or JSON library), compares the semver tag against the installed `versionName`, posts a notification, and names the failure (rate limit, connection, unusable answer). |
 
 **Recent apps and the switchers**
 

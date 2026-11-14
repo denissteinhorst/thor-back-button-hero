@@ -308,4 +308,24 @@
     <string name="status_chip_unresponsive">Reagiert nicht</string>
     <string name="service_blocker_title">%1$s benötigt die Berechtigung „Bedienungshilfen“, um arbeiten zu können.</string>
     <string name="service_blocker_hint">Tippe auf den Button, aktiviere %1$s in den Bedienungshilfen und kehre danach zur App zurück.</string>
+    <string name="update_rate_limited_message">GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es später erneut.</string>
+    <plurals name="update_rate_limited_minutes">
+        <item quantity="one">GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es in etwa %d Minute erneut.</item>
+        <item quantity="other">GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es in etwa %d Minuten erneut.</item>
+    </plurals>
+    <string name="update_check_unexpected_message">GitHub hat keine verwertbare Antwort geliefert. Bitte versuche es später erneut.</string>
+    <string name="update_install_action">Herunterladen und installieren</string>
+    <string name="update_install_hint">Android bittet dich, die Installation zu bestätigen. Danach startet Back Button Hero neu.</string>
+    <string name="update_installing_title">Update wird geladen</string>
+    <string name="update_installing_progress">%1$d%%</string>
+    <string name="update_allow_title">Installation von Updates erlauben</string>
+    <string name="update_allow_message">Damit Back Button Hero Updates selbst installieren kann, braucht es deine Erlaubnis in Android. Aktiviere auf der nächsten Seite „Von dieser Quelle zulassen“, kehre danach hierher zurück und starte das Update erneut.</string>
+    <string name="update_allow_open">Einstellungen öffnen</string>
+    <string name="update_failed_title">Update nicht installiert</string>
+    <string name="update_failed_network">Der Download ist fehlgeschlagen. Prüfe die Internetverbindung und versuche es erneut.</string>
+    <string name="update_failed_corrupt">Die geladene Datei stimmte nicht mit dem veröffentlichten Release überein und wurde verworfen. Versuche es erneut oder öffne die Release-Seite.</string>
+    <string name="update_failed_session">Android konnte die Installation nicht starten. Das Update gibt es weiterhin auf der Release-Seite.</string>
+    <string name="update_install_conflict">Android hat das Update abgelehnt, weil es nicht zur installierten App passt (anderer Signaturschlüssel oder keine neuere Version). Prüfe die Datei auf der Release-Seite.</string>
+    <string name="update_install_storage">Für die Installation des Updates ist nicht genug Speicher frei.</string>
+    <string name="update_install_failed">Android konnte das Update nicht installieren.</string>
 </resources>

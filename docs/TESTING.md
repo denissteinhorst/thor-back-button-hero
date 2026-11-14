@@ -84,7 +84,8 @@ Everything the gate can verify without hardware.
 | Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
 | Card touch arbitration | `CardTouchTest` |
 | Recent-app bookkeeping, thumbnail cache | `AccessibilityAppSourceTest` |
-| Release parsing, semver ordering, legacy tags | `UpdateCheckerParseTest` |
+| Release parsing, semver ordering, legacy tags, APK asset selection, failure classification | `UpdateCheckerParseTest` |
+| In-app update: streaming, checksum, installer session against a local server, status receiver | `UpdateInstallerTest` |
 | UI-kit helpers | `SettingsUiKitTest` |
 | EN/DE string parity | `ResourceIntegrityTest` |
 | Infrastructure itself | `SmokeTest`, `support/ViewTreeSmokeTest` |

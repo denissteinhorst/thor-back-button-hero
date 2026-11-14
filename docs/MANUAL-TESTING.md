@@ -74,7 +74,15 @@ Confirms the app starts, renders, and reads its own state correctly.
 If the change touched `UpdateChecker`, add: tap **Check for new version** and confirm one
 of the three outcomes appears as a dialog. Before any release exists, or right after a
 reboot with no network yet, the expected result is the failure dialog — the check is a
-single attempt per app open, with no retry.
+single attempt per app open, with no retry. If the failure dialog shows after many checks within
+an hour, it should name the rate limit and the minutes to wait rather than the connection.
+
+If the change touched `UpdateInstaller`, test the install against a real newer release: tap **Check for
+new version** → **Download and install**. The first time, Android's "allow from this source" setting
+opens; allow it and start again. A progress dialog fills, then Android asks to confirm the installation,
+and the app restarts as the new version (the settings and bindings survive; reopen the settings over a
+running game afterwards, because the service restart recreates the pad). A debug build cannot be
+updated from the release APK because the keys differ; Android's refusal message is the expected result.
 
 ## Procedure B — Gesture pass
 

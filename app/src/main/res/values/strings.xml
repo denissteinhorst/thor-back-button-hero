@@ -309,4 +309,24 @@
     <string name="status_chip_unresponsive">No response</string>
     <string name="service_blocker_title">%1$s needs the accessibility permission to work.</string>
     <string name="service_blocker_hint">Tap the button, switch on %1$s in the accessibility settings, then come back to this app.</string>
+    <string name="update_rate_limited_message">GitHub limits how often updates can be checked from one network. Please try again later.</string>
+    <plurals name="update_rate_limited_minutes">
+        <item quantity="one">GitHub limits how often updates can be checked from one network. Please try again in about %d minute.</item>
+        <item quantity="other">GitHub limits how often updates can be checked from one network. Please try again in about %d minutes.</item>
+    </plurals>
+    <string name="update_check_unexpected_message">GitHub did not return a usable answer. Please try again later.</string>
+    <string name="update_install_action">Download and install</string>
+    <string name="update_install_hint">Android asks you to confirm the installation. Back Button Hero restarts afterwards.</string>
+    <string name="update_installing_title">Downloading update</string>
+    <string name="update_installing_progress">%1$d%%</string>
+    <string name="update_allow_title">Allow installing updates</string>
+    <string name="update_allow_message">To install updates itself, Back Button Hero needs your permission in Android. On the next screen, switch on “Allow from this source”, then come back here and start the update again.</string>
+    <string name="update_allow_open">Open settings</string>
+    <string name="update_failed_title">Update not installed</string>
+    <string name="update_failed_network">The download failed. Check your internet connection and try again.</string>
+    <string name="update_failed_corrupt">The downloaded file did not match the published release and was discarded. Try again or open the release page.</string>
+    <string name="update_failed_session">Android could not start the installation. You can still get the update from the release page.</string>
+    <string name="update_install_conflict">Android refused the update because it does not match the installed app (a different signing key or no newer version). Check the file on the release page.</string>
+    <string name="update_install_storage">There is not enough storage to install the update.</string>
+    <string name="update_install_failed">Android could not install the update.</string>
 </resources>

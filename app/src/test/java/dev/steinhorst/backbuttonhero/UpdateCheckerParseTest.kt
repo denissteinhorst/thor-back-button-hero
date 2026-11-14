@@ -83,4 +83,71 @@ class UpdateCheckerParseTest {
         val released = UpdateChecker.parseVersion("v1.1.0")!!
         assertTrue(released > installed)
     }
+
+    @Test
+    fun `a spent rate limit is named as such and says when to retry`() {
+        val failed = UpdateChecker.httpFailure(403, remaining = "0", reset = "1000300", retryAfter = null, nowSeconds = 1_000_000)
+        assertEquals(UpdateChecker.Failure.RATE_LIMITED, failed.failure)
+        assertEquals(5, failed.retryMinutes)
+        assertEquals(1, UpdateChecker.httpFailure(403, "0", "1000001", null, 1_000_000).retryMinutes)
+        assertEquals(60, UpdateChecker.httpFailure(403, "0", "9000000", null, 1_000_000).retryMinutes)
+    }
+
+    @Test
+    fun `retry-after and a 429 count as rate limits too, with or without a time`() {
+        assertEquals(2, UpdateChecker.httpFailure(403, null, null, "90", 0).retryMinutes)
+        assertEquals(UpdateChecker.Failure.RATE_LIMITED, UpdateChecker.httpFailure(429, null, null, null, 0).failure)
+        assertNull(UpdateChecker.httpFailure(429, null, null, null, 0).retryMinutes)
+    }
+
+    @Test
+    fun `other statuses are an unexpected answer, not a connection problem`() {
+        assertEquals(UpdateChecker.Failure.UNEXPECTED, UpdateChecker.httpFailure(404, null, null, null, 0).failure)
+        assertEquals(UpdateChecker.Failure.UNEXPECTED, UpdateChecker.httpFailure(500, "59", null, null, 0).failure)
+        // A plain 403 with calls left (a block, not the quota) is not a rate limit.
+        assertEquals(UpdateChecker.Failure.UNEXPECTED, UpdateChecker.httpFailure(403, "12", null, null, 0).failure)
+    }
+
+    private val base = "https://github.com/denissteinhorst/thor-back-button-hero/releases/download/v1.5.0"
+    private val hex = "a".repeat(64)
+
+    private fun release(asset: String) =
+        """{"tag_name":"v1.5.0","html_url":"https://example.com","assets":[$asset]}"""
+
+    @Test
+    fun `the release APK is found with its size and published checksum`() {
+        val apk = UpdateChecker.parseRelease(release(
+            """{"name":"thor-back-button-hero-v1.5.0.apk","browser_download_url":"$base/thor-back-button-hero-v1.5.0.apk","size":3466275,"digest":"sha256:${hex.uppercase()}"}""",
+        ))?.apk
+        assertEquals(UpdateChecker.Asset("thor-back-button-hero-v1.5.0.apk", "$base/thor-back-button-hero-v1.5.0.apk", 3_466_275, hex), apk)
+    }
+
+    @Test
+    fun `a missing or malformed digest leaves the checksum out, the APK stays usable`() {
+        fun digestOf(digest: String) = UpdateChecker.parseRelease(release(
+            """{"name":"a.apk","browser_download_url":"$base/a.apk","size":10,"digest":"$digest"}""",
+        ))?.apk
+        assertNull(digestOf("sha256:xyz")?.sha256)
+        assertNull(digestOf("md5:$hex")?.sha256)
+        assertEquals(10L, digestOf("")?.size)
+    }
+
+    @Test
+    fun `an APK that is not from this repository's release downloads is never offered`() {
+        fun apk(url: String, name: String = "a.apk", size: Long = 10) = UpdateChecker.parseRelease(release(
+            """{"name":"$name","browser_download_url":"$url","size":$size}""",
+        ))?.apk
+        assertNull(apk("https://evil.example.com/releases/download/v1/a.apk"))
+        assertNull(apk("https://github.com/someone/else/releases/download/v1/a.apk"))
+        assertNull(apk("$base/notes.txt", name = "notes.txt"))
+        assertNull(apk("$base/a.apk", size = 0))
+        assertNull(apk("$base/a.apk", size = 500L * 1024 * 1024))
+        assertNull(UpdateChecker.parseRelease("""{"tag_name":"v1.5.0","html_url":"https://example.com"}""")?.apk)
+    }
+
+    @Test
+    fun `the first usable APK wins over unusable assets before it`() {
+        val body = release("""{"name":"sources.zip","browser_download_url":"$base/sources.zip","size":5},{"name":"b.apk","browser_download_url":"$base/b.apk","size":7}""")
+        assertEquals("b.apk", UpdateChecker.parseRelease(body)?.apk?.name)
+    }
 }

@@ -275,8 +275,19 @@ does not produce an exception notice, and an allowed partial swap remains silent
 Talks to the GitHub Releases API directly with `HttpURLConnection` and manual JSON
 parsing — consistent with the no-dependency rule. It parses the release tag as semver and
 compares it against the installed `versionName`, then posts a notification linking to the
-release page. There is deliberately no in-app download or install, which would require
-`REQUEST_INSTALL_PACKAGES` and a download manager.
+release page. A failed check says why (`Failure`): a spent rate limit (403/429 with the
+`X-RateLimit-*`/`Retry-After` headers, shown with the minutes to wait), no connection, or an
+unusable answer.
+
+The release's APK is listed as an `Asset` (name, size and the SHA-256 GitHub publishes). Only an
+asset under this repository's own `releases/download/` URL, ending in `.apk`, is offered.
+`UpdateInstaller` streams it into an Android `PackageInstaller` session (no file of its own),
+checks length and checksum before committing, and lets Android ask for the confirmation. Android
+installs only a package signed with the installed app's key, so a foreign or tampered file is
+refused; `UpdateInstaller.StatusReceiver` opens the confirmation or names the refusal. This needs
+`REQUEST_INSTALL_PACKAGES`, which Android asks the user to grant once per app ("allow from this
+source"); without it the dialog explains the step and opens that setting. A release therefore has
+to publish its APK as a release asset, as `release.yml` does.
 
 Two behavioral facts that regularly surprise people:
 

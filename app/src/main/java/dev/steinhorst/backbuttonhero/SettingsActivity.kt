@@ -43,6 +43,7 @@ class SettingsActivity : Activity() {
     private var stickTab = Stick.LEFT
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
+    private var updateDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,6 +132,7 @@ class SettingsActivity : Activity() {
 
     override fun onDestroy() {
         navigation.dismiss()
+        updateDialog?.dismiss()
         exceptionsPage?.dispose()
         super.onDestroy()
     }
@@ -1156,14 +1158,21 @@ class SettingsActivity : Activity() {
             updateHandle.row.alpha = 1f
             updateHandle.title.setText(R.string.check_for_updates)
             when (result.status) {
-                UpdateChecker.Status.UPDATE_AVAILABLE -> AlertDialog.Builder(this)
-                    .setTitle(R.string.update_found_title)
-                    .setMessage(getString(R.string.update_found_message, result.tagName.orEmpty()))
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(R.string.open_release) { _, _ ->
-                        result.htmlUrl?.let { openUrl(it) }
+                UpdateChecker.Status.UPDATE_AVAILABLE -> {
+                    val apk = result.apk
+                    val found = getString(R.string.update_found_message, result.tagName.orEmpty())
+                    val builder = AlertDialog.Builder(this)
+                        .setTitle(R.string.update_found_title)
+                        .setMessage(if (apk == null) found else "$found\n\n${getString(R.string.update_install_hint)}")
+                        .setNegativeButton(android.R.string.cancel, null)
+                    if (apk != null) {
+                        builder.setPositiveButton(R.string.update_install_action) { _, _ -> startUpdate(apk) }
+                        builder.setNeutralButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
+                    } else {
+                        builder.setPositiveButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
                     }
-                    .show()
+                    builder.show()
+                }
                 UpdateChecker.Status.UP_TO_DATE -> AlertDialog.Builder(this)
                     .setTitle(R.string.no_update_title)
                     .setMessage(R.string.no_update_message)
@@ -1171,11 +1180,82 @@ class SettingsActivity : Activity() {
                     .show()
                 UpdateChecker.Status.ERROR -> AlertDialog.Builder(this)
                     .setTitle(R.string.update_check_failed_title)
-                    .setMessage(R.string.update_check_failed_message)
+                    .setMessage(updateFailureMessage(result))
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
         }
+    }
+
+    /** Downloads the release into Android's installer; Android then asks for the final confirmation itself. */
+    private fun startUpdate(apk: UpdateChecker.Asset) {
+        val installer = UpdateInstaller(this)
+        if (!installer.canInstall()) return explainInstallPermission()
+        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
+        val label = TextView(this).apply { textSize = 14f; text = getString(R.string.update_installing_progress, 0) }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(16), dp(24), dp(8))
+            addView(bar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
+        }
+        updateDialog?.dismiss()
+        val progress = AlertDialog.Builder(this)
+            .setTitle(R.string.update_installing_title)
+            .setView(content)
+            .setCancelable(false)
+            .setNegativeButton(android.R.string.cancel) { _, _ -> installer.cancel() }
+            .show()
+        updateDialog = progress
+        installer.install(apk, object : UpdateInstaller.Listener {
+            override fun onProgress(done: Long, total: Long) {
+                val percent = (done * 100 / total).toInt().coerceIn(0, 100)
+                bar.progress = percent
+                label.text = getString(R.string.update_installing_progress, percent)
+            }
+
+            override fun onHandedOver() {
+                progress.dismiss()
+            }
+
+            override fun onFailed(failure: UpdateInstaller.Failure) {
+                progress.dismiss()
+                if (isFinishing || isDestroyed) return
+                if (failure == UpdateInstaller.Failure.NOT_ALLOWED) return explainInstallPermission()
+                AlertDialog.Builder(this@SettingsActivity)
+                    .setTitle(R.string.update_failed_title)
+                    .setMessage(when (failure) {
+                        UpdateInstaller.Failure.NETWORK -> R.string.update_failed_network
+                        UpdateInstaller.Failure.CORRUPT -> R.string.update_failed_corrupt
+                        else -> R.string.update_failed_session
+                    })
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
+        })
+    }
+
+    /** Installing from an app is something Android asks the user to allow per app, once. */
+    private fun explainInstallPermission() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.update_allow_title)
+            .setMessage(R.string.update_allow_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.update_allow_open) { _, _ ->
+                runCatching {
+                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                }
+            }
+            .show()
+    }
+
+    /** Names what actually went wrong; "check your connection" is only true when no answer came at all. */
+    private fun updateFailureMessage(result: UpdateChecker.CheckResult): String = when (result.failure) {
+        UpdateChecker.Failure.RATE_LIMITED -> result.retryMinutes
+            ?.let { resources.getQuantityString(R.plurals.update_rate_limited_minutes, it, it) }
+            ?: getString(R.string.update_rate_limited_message)
+        UpdateChecker.Failure.UNEXPECTED -> getString(R.string.update_check_unexpected_message)
+        else -> getString(R.string.update_check_failed_message)
     }
 
     @Suppress("DEPRECATION")
