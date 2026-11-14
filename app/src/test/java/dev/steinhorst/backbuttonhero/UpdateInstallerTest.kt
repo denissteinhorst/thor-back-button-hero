@@ -55,6 +55,14 @@ class UpdateInstallerTest {
     }
 
     @Test
+    fun `the install is offered only for a release build that has an APK`() {
+        val apk = UpdateChecker.Asset("a.apk", "https://example.com/a.apk", 10, null)
+        assertTrue(UpdateInstaller.canOfferInstall(apk, debuggableBuild = false))
+        assertFalse(UpdateInstaller.canOfferInstall(apk, debuggableBuild = true))
+        assertFalse(UpdateInstaller.canOfferInstall(null, debuggableBuild = false))
+    }
+
+    @Test
     fun `Android's refusal is named by its cause`() {
         assertEquals(R.string.update_install_conflict, UpdateInstaller.refusalMessage(PackageInstaller.STATUS_FAILURE_CONFLICT))
         assertEquals(R.string.update_install_conflict, UpdateInstaller.refusalMessage(PackageInstaller.STATUS_FAILURE_INCOMPATIBLE))

@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -1160,12 +1161,18 @@ class SettingsActivity : Activity() {
             when (result.status) {
                 UpdateChecker.Status.UPDATE_AVAILABLE -> {
                     val apk = result.apk
+                    val developerBuild = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+                    val offerInstall = UpdateInstaller.canOfferInstall(apk, developerBuild)
                     val found = getString(R.string.update_found_message, result.tagName.orEmpty())
                     val builder = AlertDialog.Builder(this)
                         .setTitle(R.string.update_found_title)
-                        .setMessage(if (apk == null) found else "$found\n\n${getString(R.string.update_install_hint)}")
+                        .setMessage(when {
+                            offerInstall -> "$found\n\n${getString(R.string.update_install_hint)}"
+                            apk != null -> "$found\n\n${getString(R.string.update_developer_build_hint)}"
+                            else -> found
+                        })
                         .setNegativeButton(android.R.string.cancel, null)
-                    if (apk != null) {
+                    if (offerInstall && apk != null) {
                         builder.setPositiveButton(R.string.update_install_action) { _, _ -> startUpdate(apk) }
                         builder.setNeutralButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
                     } else {

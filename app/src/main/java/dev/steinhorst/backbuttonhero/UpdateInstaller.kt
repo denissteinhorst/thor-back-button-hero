@@ -105,6 +105,12 @@ class UpdateInstaller(private val context: Context) {
     }
 
     companion object {
+        /**
+         * Whether the in-app install is worth offering: a developer build is signed with another key than the
+         * release, so Android would always refuse the update there.
+         */
+        fun canOfferInstall(apk: UpdateChecker.Asset?, debuggableBuild: Boolean): Boolean = apk != null && !debuggableBuild
+
         /** Which message names Android's refusal; a signature or version clash is the common one. */
         fun refusalMessage(status: Int): Int = when (status) {
             PackageInstaller.STATUS_FAILURE_CONFLICT, PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> R.string.update_install_conflict

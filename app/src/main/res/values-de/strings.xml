@@ -325,7 +325,8 @@
     <string name="update_failed_network">Der Download ist fehlgeschlagen. Prüfe die Internetverbindung und versuche es erneut.</string>
     <string name="update_failed_corrupt">Die geladene Datei stimmte nicht mit dem veröffentlichten Release überein und wurde verworfen. Versuche es erneut oder öffne die Release-Seite.</string>
     <string name="update_failed_session">Android konnte die Installation nicht starten. Das Update gibt es weiterhin auf der Release-Seite.</string>
-    <string name="update_install_conflict">Android hat das Update abgelehnt, weil es nicht zur installierten App passt (anderer Signaturschlüssel oder keine neuere Version). Prüfe die Datei auf der Release-Seite.</string>
+    <string name="update_install_conflict">Android hat das Update abgelehnt, weil es mit einem anderen Schlüssel signiert ist als die installierte App (zum Beispiel ein Entwickler-Build) oder nicht neuer ist. Installiere das Release einmal von der Release-Seite.</string>
     <string name="update_install_storage">Für die Installation des Updates ist nicht genug Speicher frei.</string>
     <string name="update_install_failed">Android konnte das Update nicht installieren.</string>
+    <string name="update_developer_build_hint">Dies ist ein Entwickler-Build, der mit einem anderen Schlüssel signiert ist als das Release. Android würde das Update ablehnen, daher bleibt die Release-Seite der Weg.</string>
 </resources>

@@ -326,7 +326,8 @@
     <string name="update_failed_network">The download failed. Check your internet connection and try again.</string>
     <string name="update_failed_corrupt">The downloaded file did not match the published release and was discarded. Try again or open the release page.</string>
     <string name="update_failed_session">Android could not start the installation. You can still get the update from the release page.</string>
-    <string name="update_install_conflict">Android refused the update because it does not match the installed app (a different signing key or no newer version). Check the file on the release page.</string>
+    <string name="update_install_conflict">Android refused the update because it is signed with a different key than the installed app (for example a developer build), or it is not newer. Install the release once from the release page.</string>
     <string name="update_install_storage">There is not enough storage to install the update.</string>
     <string name="update_install_failed">Android could not install the update.</string>
+    <string name="update_developer_build_hint">This is a developer build, signed with a different key than the release. Android would refuse the update, so the release page is the way to go.</string>
 </resources>
