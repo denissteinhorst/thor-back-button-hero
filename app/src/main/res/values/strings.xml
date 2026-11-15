@@ -78,6 +78,13 @@
     <string name="app_control_prompt_close_yes">Force-Close</string>
     <string name="app_control_prompt_cancel">Cancel</string>
     <string name="app_control_no_app">No app to control on that screen.</string>
+    <string name="shoulder_close_apps">Close Apps</string>
+    <string name="close_apps_all">Close all apps</string>
+    <string name="close_apps_background">Keep foreground apps open</string>
+    <string name="close_apps_prompt_title">Close %1$s?</string>
+    <string name="close_apps_prompt_yes">Close</string>
+    <string name="close_apps_none">No apps to close on that screen.</string>
+    <string name="shoulder_power_menu">Power Menu</string>
     <string name="level_target_title">Screen</string>
     <string name="level_target_both">Both screens</string>
     <string name="level_target_top">Top screen</string>

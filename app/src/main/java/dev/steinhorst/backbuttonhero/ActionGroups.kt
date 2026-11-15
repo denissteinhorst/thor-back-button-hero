@@ -28,6 +28,13 @@ object ActionGroups {
             "flick", R.string.group_flick,
             listOf(Option(Prefs.SHOULDER_FLICK_LEFT, R.string.group_left), Option(Prefs.SHOULDER_FLICK_RIGHT, R.string.group_right)),
         ),
+        CLOSE_APPS(
+            "close_apps", R.string.shoulder_close_apps,
+            listOf(
+                Option(Prefs.SHOULDER_CLOSE_APPS, R.string.close_apps_all),
+                Option(Prefs.SHOULDER_CLOSE_BACKGROUND_APPS, R.string.close_apps_background),
+            ),
+        ),
         PANELS(
             "panels", R.string.group_panels,
             listOf(

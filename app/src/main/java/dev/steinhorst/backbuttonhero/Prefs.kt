@@ -217,6 +217,10 @@ class Prefs(context: Context) {
         sp.edit().putBoolean("${button.prefKey}_switch_app_follow", follow).apply()
     }
 
+    /** Whether closing apps asks first. On by default: it ends several apps at once, unsaved work included. */
+    fun closeConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_close_confirm", true)
+    fun setCloseConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_close_confirm", confirm).apply() }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -282,6 +286,7 @@ class Prefs(context: Context) {
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
                 appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button), switchAppFollowFocus(button),
+                closeConfirm(button),
             )
         },
         appExceptions,
@@ -325,6 +330,7 @@ class Prefs(context: Context) {
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
             string("${key}_ayn_option", old.aynOption, value.aynOption)
             boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
+            boolean("${key}_close_confirm", old.closeConfirm, value.closeConfirm)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -417,6 +423,9 @@ class Prefs(context: Context) {
         const val APP_MINIMIZE = "minimize"
         const val APP_FORCE_CLOSE = "force_close"
         const val APP_SCREEN_ASK = "ask"
+        const val SHOULDER_CLOSE_APPS = "@close_apps"
+        const val SHOULDER_CLOSE_BACKGROUND_APPS = "@close_background_apps"
+        const val SHOULDER_POWER_MENU = "@power_menu"
 
         /** Every `@` action this build knows; a backup naming anything else is not applied. */
         val KNOWN_ACTIONS: Set<String> = setOf(
@@ -426,6 +435,7 @@ class Prefs(context: Context) {
             SHOULDER_LOCATION_SETTINGS, SHOULDER_CAST_SETTINGS, SHOULDER_DND_SETTINGS, SHOULDER_BATTERY_SAVER,
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
+            SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU,
         ) + Ayn.ACTIONS
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
@@ -437,6 +447,9 @@ class Prefs(context: Context) {
 
         /** Actions that offer a secondary target choice below the action row. */
         fun hasScreenTarget(action: String): Boolean =
-            isLevelAction(action) || action == SHOULDER_SCREENSHOT || action == SHOULDER_CONTROLLER_FOCUS
+            isLevelAction(action) || action == SHOULDER_SCREENSHOT || action == SHOULDER_CONTROLLER_FOCUS ||
+                isCloseApps(action)
+
+        fun isCloseApps(action: String): Boolean = action == SHOULDER_CLOSE_APPS || action == SHOULDER_CLOSE_BACKGROUND_APPS
     }
 }

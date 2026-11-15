@@ -77,6 +77,13 @@
     <string name="app_control_prompt_close_yes">Force-Close</string>
     <string name="app_control_prompt_cancel">Abbrechen</string>
     <string name="app_control_no_app">Auf diesem Bildschirm gibt es keine App zu steuern.</string>
+    <string name="shoulder_close_apps">Apps beenden</string>
+    <string name="close_apps_all">Alle Apps schließen</string>
+    <string name="close_apps_background">Vordergrund-Apps geöffnet lassen</string>
+    <string name="close_apps_prompt_title">%1$s beenden?</string>
+    <string name="close_apps_prompt_yes">Beenden</string>
+    <string name="close_apps_none">Auf diesem Bildschirm gibt es keine Apps zum Beenden.</string>
+    <string name="shoulder_power_menu">Ein/Aus-Menü</string>
     <string name="level_target_title">Bildschirm</string>
     <string name="level_target_both">Beide Bildschirme</string>
     <string name="level_target_top">Oberer Bildschirm</string>

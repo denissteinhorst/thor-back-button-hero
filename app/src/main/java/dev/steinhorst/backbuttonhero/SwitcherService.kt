@@ -808,6 +808,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
             Prefs.SHOULDER_SWITCH_APP -> switchActiveApp(button)
             Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
+            Prefs.SHOULDER_CLOSE_APPS -> runCloseApps(button, keepForeground = false)
+            Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> runCloseApps(button, keepForeground = true)
+            Prefs.SHOULDER_POWER_MENU -> showPowerMenu()
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
@@ -962,6 +965,62 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return
         }
         applyAppControl(mode, targets)
+    }
+
+    /** Closes the apps known to run on the button's screens, optionally sparing whatever is in front. */
+    private fun runCloseApps(button: ComboButton, keepForeground: Boolean) {
+        val all = listOfNotNull(Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId)
+        val displays = CloseApps.displays(prefs.levelTarget(button), Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId)
+        val packages = CloseApps.packages(displays, all, keepForeground, { id -> source.appsOnDisplay(id).map { it.packageName } }, source::topApp)
+        Log.d(TAG, "Close apps on $displays (keep foreground: $keepForeground): $packages")
+        if (packages.isEmpty()) {
+            Toast.makeText(this, R.string.close_apps_none, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Every screen, not only the chosen ones: a closed app may have moved in front of the other one.
+        fun close() {
+            packages.forEach(source::forget)
+            killOnly(packages, all.toSet())
+        }
+        if (!prefs.closeConfirm(button)) {
+            close()
+            return
+        }
+        val pm = packageManager
+        val names = packages.joinToString(", ") {
+            runCatching { pm.getApplicationInfo(it, 0).loadLabel(pm).toString() }.getOrDefault(it)
+        }
+        val options = listOf(
+            AppControlPrompt.Option("yes", getString(R.string.close_apps_prompt_yes)),
+            AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
+        )
+        appControlPrompt.show(promptDisplay(), getString(R.string.close_apps_prompt_title, names), options) {
+            if (it == "yes") close()
+        }
+    }
+
+    /** Opens the system's own power dialog and gives its first option input focus, so the D-pad,
+     *  the stick and A operate it right away. */
+    private fun showPowerMenu() {
+        val before = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty().map { it.id }.toSet()
+        if (performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)) focusPowerMenu(before, POWER_MENU_FOCUS_ATTEMPTS)
+    }
+
+    /** The dialog's window appears asynchronously; retry until it is there and its option accepts focus.
+     *  Only a system window qualifies: a second press closes an open dialog instead, and the app it
+     *  uncovers then shows up as a new focused window whose views must not be touched. */
+    private fun focusPowerMenu(before: Set<Int>, attemptsLeft: Int) {
+        val window = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty()
+            .firstOrNull { it.id !in before && it.isFocused && it.type == AccessibilityWindowInfo.TYPE_SYSTEM }
+        val option = window?.root?.let { root ->
+            PowerMenu.firstOption(root, { node -> (0 until node.childCount).mapNotNull(node::getChild) }) { it.isFocusable }
+        }
+        val focused = option?.isFocused == true || option?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true
+        if (!focused && attemptsLeft > 1) {
+            handler.postDelayed({ focusPowerMenu(before, attemptsLeft - 1) }, POWER_MENU_FOCUS_RETRY_MS)
+        } else {
+            Log.d(TAG, "Power menu focus: ${if (focused) "set" else "not set"} (window ${window?.id}, ${attemptsLeft - 1} attempts left)")
+        }
     }
 
     /** The prompt belongs where the controller is, so its D-pad and buttons reach it. */
@@ -2028,6 +2087,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val TOP_RECENTS_EVENT_SETTLE_MS = 140L
         const val TOP_RECENTS_DELETE_SETTLE_MS = 260L
         const val TOP_RECENTS_DISMISS_MS = 110L
+        const val POWER_MENU_FOCUS_RETRY_MS = 80L
+        const val POWER_MENU_FOCUS_ATTEMPTS = 20
         const val CONTROLLER_FLIP_SETTING = "flip_button_layout"
         const val ACTION_EXTRA_DIM_SETTINGS = "android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"
         const val ACTION_ZEN_MODE_SETTINGS = "android.settings.ZEN_MODE_SETTINGS"

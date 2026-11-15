@@ -28,6 +28,8 @@ class SettingsBackupTest {
                     "dpad_left" -> value.copy(action = Prefs.SHOULDER_SWITCH_APP, switchAppFollow = false)
                     "lstick_press" -> value.copy(action = Prefs.SHOULDER_APP_CONTROL, appMode = Prefs.APP_FORCE_CLOSE,
                         appScreen = Prefs.DISPLAY_TOP, appConfirm = true)
+                    "rstick_press" -> value.copy(action = Prefs.SHOULDER_CLOSE_BACKGROUND_APPS,
+                        targetOverride = Prefs.DISPLAY_BOTTOM, closeConfirm = false)
                     else -> value
                 }
             },

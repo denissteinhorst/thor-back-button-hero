@@ -421,6 +421,8 @@ class SettingsActivity : Activity() {
             Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
             Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
             Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
+            group(ActionGroups.Group.CLOSE_APPS),
+            Choice(Prefs.SHOULDER_POWER_MENU, getString(R.string.shoulder_power_menu)),
         ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
     }
 
@@ -637,6 +639,7 @@ class SettingsActivity : Activity() {
         /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
         var switcherOptions: View? = null
         var switchAppOptions: View? = null
+        var closeAppsOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
@@ -857,6 +860,16 @@ class SettingsActivity : Activity() {
             }
         }
         row.switchAppOptions?.visibility = if (switchApp) View.VISIBLE else View.GONE
+        val closeApps = Prefs.isCloseApps(action)
+        if (closeApps && row.closeAppsOptions == null) {
+            row.closeAppsOptions = row.card.subOptions {
+                toggleRow(R.string.app_control_confirm_title, null, prefs.closeConfirm(row.button),
+                    readValue = { prefs.closeConfirm(row.button) }) {
+                    prefs.setCloseConfirm(row.button, it)
+                }
+            }
+        }
+        row.closeAppsOptions?.visibility = if (closeApps) View.VISIBLE else View.GONE
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1079,6 +1092,8 @@ class SettingsActivity : Activity() {
                 Prefs.isLevelAction(value.action) -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
+                Prefs.isCloseApps(value.action) ->
+                    "${getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes)}, ${target(value.levelTarget())}"
                 Ayn.groupOf(value.action) != null -> aynOption(value)
                 ActionGroups.groupOf(value.action) != null -> return getString(
                     R.string.settings_action_detail, describeAction(value.action),
@@ -1130,7 +1145,8 @@ class SettingsActivity : Activity() {
             if (!(launches(old) && launches(new))) extra(R.string.shoulder_top_screen, target(old.display), target(new.display))
             if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
                 extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
-            if (!(Prefs.isLevelAction(old.action) && Prefs.isLevelAction(new.action)))
+            fun screenTarget(action: String) = Prefs.isLevelAction(action) || Prefs.isCloseApps(action)
+            if (!(screenTarget(old.action) && screenTarget(new.action)))
                 extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
             if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
                 extra(R.string.focus_target_title, focus(old.focusTarget), focus(new.focusTarget))
@@ -1138,6 +1154,7 @@ class SettingsActivity : Activity() {
             extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
             extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
             extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
+            extra(R.string.app_control_confirm_title, onOff(old.closeConfirm), onOff(new.closeConfirm))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
             extra(R.string.focus_header_position, position(old.position), position(new.position))
