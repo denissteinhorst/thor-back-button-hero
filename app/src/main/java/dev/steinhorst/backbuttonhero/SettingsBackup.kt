@@ -72,7 +72,14 @@ object SettingsBackup {
                 .put("appConfirm", value.appConfirm)
                 .put("switchAppFollow", value.switchAppFollow)
                 .put("closeConfirm", value.closeConfirm)
-                .put("standbyConfirm", value.standbyConfirm))
+                .put("standbyConfirm", value.standbyConfirm)
+                .put("recordMic", value.recordMic)
+                .put("recordQuality", value.recordQuality)
+                .put("recordIndicator", value.recordIndicator)
+                .put("recordPosition", value.recordPosition)
+                .put("recordPtt", value.recordPtt)
+                .put("recordPttKey", value.recordPttKey)
+                .put("recordDuck", value.recordDuck))
         }
         val sticks = JSONObject()
         state.stickTimings.toSortedMap().forEach { (key, value) ->
@@ -135,6 +142,8 @@ object SettingsBackup {
     private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_MODAL
     private val APP_MODES = setOf(Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE)
     private val APP_SCREENS = TARGETS + Prefs.APP_SCREEN_ASK
+    private val RECORD_QUALITIES = setOf(Prefs.RECORD_SMALL, Prefs.RECORD_MEDIUM, Prefs.RECORD_LARGE)
+    private val DUCKS = setOf(Prefs.DUCK_OFF, Prefs.DUCK_VIDEO, Prefs.DUCK_DEVICE)
     private val POSITIONS = setOf(
         Prefs.FOCUS_POS_TOP_LEFT, Prefs.FOCUS_POS_TOP_CENTER, Prefs.FOCUS_POS_TOP_RIGHT,
         Prefs.FOCUS_POS_CENTER_LEFT, Prefs.FOCUS_POS_CENTER, Prefs.FOCUS_POS_CENTER_RIGHT,
@@ -159,6 +168,13 @@ object SettingsBackup {
                 switchAppFollow = entry.booleanOrNull("switchAppFollow") ?: default.switchAppFollow,
                 closeConfirm = entry.booleanOrNull("closeConfirm") ?: default.closeConfirm,
                 standbyConfirm = entry.booleanOrNull("standbyConfirm") ?: default.standbyConfirm,
+                recordMic = entry.booleanOrNull("recordMic") ?: default.recordMic,
+                recordQuality = entry.stringOrNull("recordQuality")?.takeIf { it in RECORD_QUALITIES } ?: default.recordQuality,
+                recordIndicator = entry.booleanOrNull("recordIndicator") ?: default.recordIndicator,
+                recordPosition = entry.stringOrNull("recordPosition")?.takeIf { it in POSITIONS } ?: default.recordPosition,
+                recordPtt = entry.booleanOrNull("recordPtt") ?: default.recordPtt,
+                recordPttKey = entry.intOrNull("recordPttKey")?.takeIf { it == 0 || PushToTalk.isAllowed(it) } ?: default.recordPttKey,
+                recordDuck = entry.stringOrNull("recordDuck")?.takeIf { it in DUCKS } ?: default.recordDuck,
                 aynOption = entry.stringOrNull("aynOption")?.takeIf { it in Ayn.OPTION_KEYS },
             )
         }

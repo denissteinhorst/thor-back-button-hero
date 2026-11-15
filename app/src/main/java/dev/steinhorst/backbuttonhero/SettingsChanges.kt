@@ -37,6 +37,13 @@ data class BindingSettings(
     val switchAppFollow: Boolean = true,
     val closeConfirm: Boolean = true,
     val standbyConfirm: Boolean = false,
+    val recordMic: Boolean = false,
+    val recordQuality: String = Prefs.RECORD_MEDIUM,
+    val recordIndicator: Boolean = true,
+    val recordPosition: String = Prefs.DEFAULT_RECORD_POSITION,
+    val recordPtt: Boolean = false,
+    val recordPttKey: Int = 0,
+    val recordDuck: String = Prefs.DUCK_VIDEO,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
     fun levelTarget(): String = targetOverride ?: Prefs.TARGET_BOTH

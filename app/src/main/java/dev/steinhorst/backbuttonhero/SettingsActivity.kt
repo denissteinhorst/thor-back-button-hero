@@ -15,6 +15,7 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -415,6 +416,7 @@ class SettingsActivity : Activity() {
             group(ActionGroups.Group.APP_SWITCHER),
             Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
             Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
+            Choice(Prefs.SHOULDER_RECORD_VIDEO, getString(R.string.shoulder_record_video)),
             group(ActionGroups.Group.FLICK),
             group(ActionGroups.Group.VOLUME),
             group(ActionGroups.Group.BRIGHTNESS),
@@ -511,16 +513,101 @@ class SettingsActivity : Activity() {
         Choice(Prefs.FOCUS_POS_BOTTOM_RIGHT, getString(R.string.focus_position_bottom_right)),
     )
 
+    private fun recordQualities(): List<Choice> = listOf(
+        Choice(Prefs.RECORD_SMALL, getString(R.string.record_quality_small)),
+        Choice(Prefs.RECORD_MEDIUM, getString(R.string.record_quality_medium)),
+        Choice(Prefs.RECORD_LARGE, getString(R.string.record_quality_large)),
+    )
+
+    private fun describeRecordQuality(button: ComboButton): String =
+        recordQualities().first { it.value == prefs.recordQuality(button) }.label
+
+    private fun recordDucks(): List<Choice> = listOf(
+        Choice(Prefs.DUCK_OFF, getString(R.string.record_duck_off)),
+        Choice(Prefs.DUCK_VIDEO, getString(R.string.record_duck_video)),
+        Choice(Prefs.DUCK_DEVICE, getString(R.string.record_duck_device)),
+    )
+
+    private fun describeRecordDuck(button: ComboButton): String =
+        recordDucks().first { it.value == prefs.recordDuck(button) }.label
+
+    private fun describePushToTalkKey(keyCode: Int): String =
+        if (keyCode == 0) getString(R.string.record_ptt_key_none) else PushToTalk.label(keyCode)
+
+    private fun chooseRecordDuck(row: ComboRow) {
+        val choices = recordDucks()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.record_duck_title)
+            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(),
+                choices.indexOfFirst { it.value == prefs.recordDuck(row.button) }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setRecordDuck(row.button, choices[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    /** Waits for the next button press and takes it as the push-to-talk button. */
+    private fun choosePushToTalkKey(row: ComboRow) {
+        val warning = getString(R.string.record_ptt_dialog_warning)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.record_ptt_key_title)
+            .setMessage("${getString(R.string.record_ptt_dialog_message)}\n\n$warning")
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        dialog.setOnKeyListener { _, keyCode, event ->
+            // Back still cancels; every other key is an answer, never a dialog navigation.
+            if (keyCode == KeyEvent.KEYCODE_BACK) return@setOnKeyListener false
+            if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return@setOnKeyListener true
+            if (!PushToTalk.isAllowed(keyCode)) {
+                dialog.setMessage("${getString(R.string.record_ptt_key_rejected, PushToTalk.label(keyCode))}\n\n$warning")
+                return@setOnKeyListener true
+            }
+            prefs.setRecordPttKey(row.button, keyCode)
+            dialog.dismiss()
+            updateShoulderRow(row)
+            true
+        }
+        dialog.show()
+    }
+
+    private fun describeRecordIndicator(button: ComboButton): String =
+        if (!prefs.recordIndicator(button)) getString(R.string.focus_position_off)
+        else focusPositions().first { it.value == prefs.recordPosition(button) }.label
+
+    private fun chooseRecordQuality(row: ComboRow) {
+        val choices = recordQualities()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.record_quality_title)
+            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(),
+                choices.indexOfFirst { it.value == prefs.recordQuality(row.button) }.coerceAtLeast(0)) { dialog, which ->
+                prefs.setRecordQuality(row.button, choices[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun describeFocusPosition(button: ComboButton): String =
         if (!prefs.focusIndicator(button)) getString(R.string.focus_position_off)
         else focusPositions().first { it.value == prefs.focusPosition(button) }.label
 
-    private fun choosePosition(row: ComboRow) {
+    /** The indicator dialog of the controller-focus pictogram, or with [record] of the recording dot,
+     *  which has no display time. */
+    private fun choosePosition(row: ComboRow, record: Boolean = false) {
         val positions = focusPositions()
         lateinit var grid: PositionGrid
-        fun refresh() = grid.update(prefs.focusPosition(row.button), prefs.focusIndicator(row.button))
+        fun position() = if (record) prefs.recordPosition(row.button) else prefs.focusPosition(row.button)
+        fun indicator() = if (record) prefs.recordIndicator(row.button) else prefs.focusIndicator(row.button)
+        fun refresh() = grid.update(position(), indicator())
         fun preview() {
-            val on = prefs.focusIndicator(row.button)
+            val on = indicator()
+            if (record) {
+                if (on) SwitcherService.previewRecordIndicator?.invoke(position())
+                return
+            }
             SwitcherService.previewFocusIndicator?.invoke(
                 prefs.focusTarget(row.button) != Prefs.DISPLAY_BOTTOM,
                 prefs.focusPosition(row.button).takeIf { on },
@@ -528,7 +615,7 @@ class SettingsActivity : Activity() {
             )
         }
         grid = positionGrid(positions.map { it.value to it.label }, { getString(R.string.focus_position_selected, it) }) {
-            prefs.setFocusPosition(row.button, it)
+            if (record) prefs.setRecordPosition(row.button, it) else prefs.setFocusPosition(row.button, it)
             refresh()
             preview()
         }
@@ -554,11 +641,11 @@ class SettingsActivity : Activity() {
         }
         durationValue.text = getString(R.string.focus_duration, min + duration.progress * step)
         val toggle = Switch(this).apply {
-            setText(R.string.focus_indicator_title)
+            setText(if (record) R.string.record_indicator_title else R.string.focus_indicator_title)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            isChecked = prefs.focusIndicator(row.button)
+            isChecked = indicator()
             setOnCheckedChangeListener { _, on ->
-                prefs.setFocusIndicator(row.button, on)
+                if (record) prefs.setRecordIndicator(row.button, on) else prefs.setFocusIndicator(row.button, on)
                 duration.isEnabled = on
                 durationValue.alpha = if (on) 1f else 0.35f
                 refresh()
@@ -585,6 +672,7 @@ class SettingsActivity : Activity() {
             addView(header(R.string.focus_header_indicator))
             toggle.minimumHeight = dp(48)
             addView(toggle, LinearLayout.LayoutParams(full, wrap).apply { topMargin = dp(8) })
+            if (record) return@apply
             addView(
                 LinearLayout(context).apply {
                     addView(header(R.string.focus_header_duration), LinearLayout.LayoutParams(0, wrap, 1f))
@@ -641,9 +729,19 @@ class SettingsActivity : Activity() {
         var switchAppOptions: View? = null
         var closeAppsOptions: View? = null
         var standbyOptions: View? = null
+        var recordOptions: RecordOptions? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
+
+    private class RecordOptions(
+        val group: View,
+        val pushToTalk: SettingsPage.ToggleHandle,
+        val pushToTalkKey: SettingsPage.ChooserHandle,
+        val duck: SettingsPage.ChooserHandle,
+        val quality: SettingsPage.ChooserHandle,
+        val indicator: SettingsPage.ChooserHandle,
+    )
 
     private fun chooseShoulderAction(row: ComboRow) {
         val choices = shoulderActions()
@@ -881,6 +979,59 @@ class SettingsActivity : Activity() {
             }
         }
         row.standbyOptions?.visibility = if (standby) View.VISIBLE else View.GONE
+        val record = action == Prefs.SHOULDER_RECORD_VIDEO
+        if (record && row.recordOptions == null) {
+            lateinit var pushToTalk: SettingsPage.ToggleHandle
+            lateinit var pushToTalkKey: SettingsPage.ChooserHandle
+            lateinit var duck: SettingsPage.ChooserHandle
+            lateinit var quality: SettingsPage.ChooserHandle
+            lateinit var indicator: SettingsPage.ChooserHandle
+            val group = row.card.subOptions {
+                toggleRow(R.string.record_mic_title, null, prefs.recordMic(row.button),
+                    readValue = { prefs.recordMic(row.button) }) {
+                    prefs.setRecordMic(row.button, it)
+                    updateShoulderRow(row)
+                }
+                pushToTalk = toggleRow(R.string.record_ptt_title, null, prefs.recordPtt(row.button),
+                    readValue = { prefs.recordPtt(row.button) }) {
+                    prefs.setRecordPtt(row.button, it)
+                    updateShoulderRow(row)
+                }
+                pushToTalkKey = chooserRow(R.string.record_ptt_key_title, describePushToTalkKey(prefs.recordPttKey(row.button))) {
+                    choosePushToTalkKey(row)
+                }
+                duck = chooserRow(R.string.record_duck_title, describeRecordDuck(row.button)) { chooseRecordDuck(row) }
+                quality = chooserRow(R.string.record_quality_title, describeRecordQuality(row.button)) { chooseRecordQuality(row) }
+                indicator = chooserRow(R.string.record_indicator_row, describeRecordIndicator(row.button)) {
+                    choosePosition(row, record = true)
+                }
+            }
+            row.recordOptions = RecordOptions(group, pushToTalk, pushToTalkKey, duck, quality, indicator)
+        }
+        row.recordOptions?.let { options ->
+            options.group.visibility = if (record) View.VISIBLE else View.GONE
+            // Push to talk only exists with the microphone, its button and fade only with push to talk.
+            val mic = prefs.recordMic(row.button)
+            val talk = mic && prefs.recordPtt(row.button)
+            fun show(view: View, visible: Boolean) {
+                val state = if (visible) View.VISIBLE else View.GONE
+                view.visibility = state
+                dividerBefore(view)?.visibility = state
+            }
+            show(options.pushToTalk.row, mic)
+            show(options.pushToTalkKey.row, talk)
+            show(options.duck.row, talk)
+            options.pushToTalkKey.value.text = describePushToTalkKey(prefs.recordPttKey(row.button))
+            options.pushToTalkKey.row.contentDescription =
+                getString(R.string.record_ptt_key_accessibility, row.label, options.pushToTalkKey.value.text)
+            options.duck.value.text = describeRecordDuck(row.button)
+            options.duck.row.contentDescription = getString(R.string.record_duck_accessibility, row.label, options.duck.value.text)
+            options.quality.value.text = describeRecordQuality(row.button)
+            options.quality.row.contentDescription = getString(R.string.record_quality_accessibility, row.label, options.quality.value.text)
+            options.indicator.value.text = describeRecordIndicator(row.button)
+            options.indicator.row.contentDescription =
+                getString(R.string.record_indicator_accessibility, row.label, options.indicator.value.text)
+        }
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1084,6 +1235,8 @@ class SettingsActivity : Activity() {
         fun appMode(value: String) = appModes().first { it.value == value }.label
         fun appScreen(value: String) = appScreens().first { it.value == value }.label
         fun position(value: String) = focusPositions().first { it.value == value }.label
+        fun quality(value: String) = recordQualities().first { it.value == value }.label
+        fun duck(value: String) = recordDucks().first { it.value == value }.label
         fun toggle(value: String) = when (value) {
             Prefs.TOGGLE_NONE -> getString(R.string.shoulder_none)
             Prefs.TOGGLE_L1_R1 -> "L1 + R1"
@@ -1100,7 +1253,7 @@ class SettingsActivity : Activity() {
             val detail = when {
                 launches(value) -> target(value.display)
                 value.action == Prefs.SHOULDER_SCREENSHOT -> target(value.screenshotTarget())
-                Prefs.isLevelAction(value.action) -> target(value.levelTarget())
+                Prefs.isLevelAction(value.action) || value.action == Prefs.SHOULDER_RECORD_VIDEO -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
                 Prefs.isCloseApps(value.action) || value.action == Prefs.SHOULDER_VOLUME_MUTE ->
@@ -1157,7 +1310,8 @@ class SettingsActivity : Activity() {
             if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
                 extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
             fun screenTarget(action: String) =
-                Prefs.isLevelAction(action) || Prefs.isCloseApps(action) || action == Prefs.SHOULDER_VOLUME_MUTE
+                Prefs.isLevelAction(action) || Prefs.isCloseApps(action) || action == Prefs.SHOULDER_VOLUME_MUTE ||
+                    action == Prefs.SHOULDER_RECORD_VIDEO
             if (!(screenTarget(old.action) && screenTarget(new.action)))
                 extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
             if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
@@ -1168,6 +1322,13 @@ class SettingsActivity : Activity() {
             extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
             extra(R.string.app_control_confirm_title, onOff(old.closeConfirm), onOff(new.closeConfirm))
             extra(R.string.standby_confirm_title, onOff(old.standbyConfirm), onOff(new.standbyConfirm))
+            extra(R.string.record_mic_title, onOff(old.recordMic), onOff(new.recordMic))
+            extra(R.string.record_ptt_title, onOff(old.recordPtt), onOff(new.recordPtt))
+            extra(R.string.record_ptt_key_title, describePushToTalkKey(old.recordPttKey), describePushToTalkKey(new.recordPttKey))
+            extra(R.string.record_duck_title, duck(old.recordDuck), duck(new.recordDuck))
+            extra(R.string.record_quality_title, quality(old.recordQuality), quality(new.recordQuality))
+            extra(R.string.record_indicator_title, onOff(old.recordIndicator), onOff(new.recordIndicator))
+            extra(R.string.record_indicator_row, position(old.recordPosition), position(new.recordPosition))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
             extra(R.string.focus_header_position, position(old.position), position(new.position))

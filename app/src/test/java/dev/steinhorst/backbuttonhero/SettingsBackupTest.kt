@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import android.view.KeyEvent
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -31,6 +32,10 @@ class SettingsBackupTest {
                     "rstick_press" -> value.copy(action = Prefs.SHOULDER_CLOSE_BACKGROUND_APPS,
                         targetOverride = Prefs.DISPLAY_BOTTOM, closeConfirm = false)
                     "rstick_double" -> value.copy(action = Prefs.SHOULDER_STANDBY, standbyConfirm = true)
+                    "rstick_tap_hold" -> value.copy(action = Prefs.SHOULDER_RECORD_VIDEO, targetOverride = Prefs.DISPLAY_TOP,
+                        recordMic = true, recordQuality = Prefs.RECORD_LARGE, recordIndicator = false,
+                        recordPosition = Prefs.FOCUS_POS_BOTTOM_CENTER, recordPtt = true,
+                        recordPttKey = KeyEvent.KEYCODE_BUTTON_Y, recordDuck = Prefs.DUCK_DEVICE)
                     else -> value
                 }
             },

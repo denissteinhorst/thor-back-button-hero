@@ -68,6 +68,15 @@ class ShoulderRowSnapshotTest {
         }
 
     @Test
+    fun `R2 assigned to video recording shows the screen row and the recording options`() =
+        snapshotWith("shoulder_r2_record_video") {
+            setShoulderAction(ShoulderButton.R2, Prefs.SHOULDER_RECORD_VIDEO)
+            setRecordMic(ShoulderButton.R2, true)
+            setRecordPtt(ShoulderButton.R2, true)
+            setRecordPttKey(ShoulderButton.R2, android.view.KeyEvent.KEYCODE_BUTTON_THUMBL)
+        }
+
+    @Test
     fun `all D-pad directions unassigned hides the screen rows and the root-service warning`() =
         snapshotWith("dpad_all_unassigned") {
             DpadDirection.entries.forEach { setShoulderAction(it, "") }

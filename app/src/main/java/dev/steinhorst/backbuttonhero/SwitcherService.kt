@@ -9,7 +9,10 @@ import android.graphics.BitmapFactory
 import java.io.File
 import android.graphics.Path
 import android.os.SystemClock
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
+import android.content.IntentFilter
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -49,6 +52,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var controllerFocus: ControllerFocus
     private lateinit var aynControls: AynControls
     private lateinit var focusIndicator: FocusIndicatorOverlay
+    private lateinit var recording: ScreenRecording
+    private lateinit var recordIndicator: RecordingIndicatorOverlay
+    /** The dot's place for the running recording; null when its button shows none. */
+    private var recordPosition: String? = null
+    private var screenOffReceiver: BroadcastReceiver? = null
+    /** The running recording's push-to-talk key, or null; the devices currently holding it. */
+    private var pushToTalkKey: Int? = null
+    private var pendingPushToTalkKey: Int? = null
+    private val pushToTalkDevices = mutableSetOf<Int>()
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
     private val toggleGesture by lazy { ServiceToggleGesture(prefs, gestureScheduler, ::toggleInterception) }
@@ -174,6 +186,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         backGesture.reset()
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
+        if (::recording.isInitialized) endRecording()
+        recordIndicator = RecordingIndicatorOverlay(this)
+        recording = ScreenRecording(this, ::onRecordingChanged)
+        previewRecordIndicator = { position -> handler.post { if (!recording.isRecording) recordIndicator.preview(position) } }
         PService.probeAsync()
         source = AccessibilityAppSource(this) { display -> panels.cards(display) }
         panels = BottomPanels(this, source::isCovered, ::capturePanel) {
@@ -442,6 +458,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             val consumed = backGesture.handleBack(event)
             return consumed
         }
+        if (handlePushToTalk(event)) return true
         if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
         Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
@@ -813,6 +830,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_POWER_MENU -> showPowerMenu()
             Prefs.SHOULDER_STANDBY -> runStandby(button)
             Prefs.SHOULDER_VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
+            Prefs.SHOULDER_RECORD_VIDEO -> toggleRecording(button)
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
@@ -1057,6 +1075,85 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
+    private fun toggleRecording(button: ComboButton) {
+        recording.toggle {
+            recordPosition = prefs.recordPosition(button).takeIf { prefs.recordIndicator(button) }
+            val mic = prefs.recordMic(button)
+            // Push to talk without a chosen button would leave the microphone closed for good.
+            val key = prefs.recordPttKey(button).takeIf { mic && prefs.recordPtt(button) && PushToTalk.isAllowed(it) }
+            pendingPushToTalkKey = key
+            ScreenRecording.Request(
+                prefs.levelTarget(button), Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId,
+                ScreenRecording.bitRate(prefs.recordQuality(button)), mic, key != null, prefs.recordDuck(button),
+            )
+        }
+    }
+
+    private fun onRecordingChanged(event: ScreenRecording.Event) {
+        pushToTalkDevices.clear()
+        pushToTalkKey = pendingPushToTalkKey.takeIf { event == ScreenRecording.Event.STARTED }
+        if (event == ScreenRecording.Event.STARTED) {
+            recordPosition?.let(recordIndicator::show)
+            // A recording ends with the screens: standby must not leave it running in the dark.
+            if (screenOffReceiver == null) {
+                screenOffReceiver = object : BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) = recording.stop()
+                }.also { registerReceiver(it, IntentFilter(Intent.ACTION_SCREEN_OFF)) }
+            }
+        } else {
+            recordIndicator.dismiss()
+            unregisterScreenOff()
+        }
+        val message = when (event) {
+            ScreenRecording.Event.STARTED -> R.string.record_started
+            ScreenRecording.Event.SAVED -> R.string.record_saved
+            ScreenRecording.Event.STOPPED -> R.string.record_stopped
+            ScreenRecording.Event.FAILED -> R.string.record_failed
+            ScreenRecording.Event.NEEDS_ROOT -> R.string.record_needs_root
+        }
+        Toast.makeText(this, message, if (event == ScreenRecording.Event.NEEDS_ROOT) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * While a push-to-talk recording runs, its button opens the microphone for as long as it is held and
+     * never reaches the app. With Back held it stays the button of its Back combination.
+     */
+    private fun handlePushToTalk(event: KeyEvent): Boolean {
+        val key = pushToTalkKey ?: return false
+        if (event.keyCode != key) return false
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (pushToTalkDevices.isEmpty() && backGesture.backDown) return false
+                if (pushToTalkDevices.add(event.deviceId) && pushToTalkDevices.size == 1) setTalking(true)
+            }
+            KeyEvent.ACTION_UP -> {
+                if (!pushToTalkDevices.remove(event.deviceId)) return false
+                if (pushToTalkDevices.isEmpty()) setTalking(false)
+            }
+        }
+        return true
+    }
+
+    private fun setTalking(on: Boolean) {
+        recording.talk(on)
+        recordIndicator.setTalking(on)
+    }
+
+    private fun unregisterScreenOff() {
+        screenOffReceiver?.let { runCatching { unregisterReceiver(it) } }
+        screenOffReceiver = null
+    }
+
+    /** Finishes a running recording when the service goes away; the recorder saves the file itself. */
+    private fun endRecording() {
+        if (!::recording.isInitialized) return
+        recording.release()
+        pushToTalkKey = null
+        pushToTalkDevices.clear()
+        recordIndicator.dismiss()
+        unregisterScreenOff()
+    }
+
     /**
      * Both displays use Android's native screenshot flow. AYN's SystemUI can capture the bottom
      * display but always renders its preview and action strip on the top display. The accessibility
@@ -1173,6 +1270,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
+        previewRecordIndicator = null
+        endRecording()
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
@@ -1191,6 +1290,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         cancelTopRecentsLaunch()
         isConnected = false
         previewFocusIndicator = null
+        previewRecordIndicator = null
+        endRecording()
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
@@ -2074,6 +2175,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         /** Lets the settings screen preview the focus pictogram, which only the service may draw. */
         @Volatile
         var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long) -> Unit)? = null
+            private set
+
+        /** Lets the settings screen show where the recording dot will appear. */
+        @Volatile
+        var previewRecordIndicator: ((position: String) -> Unit)? = null
             private set
 
         const val TAG = "BackButtonHero"

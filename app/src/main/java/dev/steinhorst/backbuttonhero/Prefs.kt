@@ -225,6 +225,42 @@ class Prefs(context: Context) {
     fun standbyConfirm(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_standby_confirm", false)
     fun setStandbyConfirm(button: ComboButton, confirm: Boolean) { sp.edit().putBoolean("${button.prefKey}_standby_confirm", confirm).apply() }
 
+    /** Whether a video recording also takes the microphone, mixed into the device audio. */
+    fun recordMic(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_record_mic", false)
+    fun setRecordMic(button: ComboButton, on: Boolean) { sp.edit().putBoolean("${button.prefKey}_record_mic", on).apply() }
+
+    /** Whether the microphone is only live while [recordPttKey] is held. */
+    fun recordPtt(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_record_ptt", false)
+    fun setRecordPtt(button: ComboButton, on: Boolean) { sp.edit().putBoolean("${button.prefKey}_record_ptt", on).apply() }
+
+    /** The key code of the push-to-talk button; 0 until one is chosen. */
+    fun recordPttKey(button: ComboButton): Int = sp.getInt("${button.prefKey}_record_ptt_key", 0)
+    fun setRecordPttKey(button: ComboButton, keyCode: Int) { sp.edit().putInt("${button.prefKey}_record_ptt_key", keyCode).apply() }
+
+    /** [DUCK_OFF], [DUCK_VIDEO] or [DUCK_DEVICE] - where the game sound is lowered while talking. */
+    fun recordDuck(button: ComboButton): String = sp.getString("${button.prefKey}_record_duck", DUCK_VIDEO) ?: DUCK_VIDEO
+    fun setRecordDuck(button: ComboButton, duck: String) { sp.edit().putString("${button.prefKey}_record_duck", duck).apply() }
+
+    /** [RECORD_SMALL], [RECORD_MEDIUM] or [RECORD_LARGE] - the video bit rate and with it the file size. */
+    fun recordQuality(button: ComboButton): String =
+        sp.getString("${button.prefKey}_record_quality", RECORD_MEDIUM) ?: RECORD_MEDIUM
+    fun setRecordQuality(button: ComboButton, quality: String) {
+        sp.edit().putString("${button.prefKey}_record_quality", quality).apply()
+    }
+
+    /** Whether a blinking dot shows while a recording runs. */
+    fun recordIndicator(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_record_indicator", true)
+    fun setRecordIndicator(button: ComboButton, shown: Boolean) {
+        sp.edit().putBoolean("${button.prefKey}_record_indicator", shown).apply()
+    }
+
+    /** Where the recording dot appears, on the controller-focus pictogram's 3x3 grid. */
+    fun recordPosition(button: ComboButton): String =
+        sp.getString("${button.prefKey}_record_position", DEFAULT_RECORD_POSITION) ?: DEFAULT_RECORD_POSITION
+    fun setRecordPosition(button: ComboButton, position: String) {
+        sp.edit().putString("${button.prefKey}_record_position", position).apply()
+    }
+
     /** Each screen's volume before a mute toggle set it to 0; 0 when none is stored. */
     var topVolumeBeforeMute: Int
         get() = sp.getInt("top_volume_before_mute", 0)
@@ -299,6 +335,8 @@ class Prefs(context: Context) {
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
                 appMode(button), appScreen(button), appConfirm(button), aynOptionRaw(button), switchAppFollowFocus(button),
                 closeConfirm(button), standbyConfirm(button),
+                recordMic(button), recordQuality(button), recordIndicator(button), recordPosition(button),
+                recordPtt(button), recordPttKey(button), recordDuck(button),
             )
         },
         appExceptions,
@@ -320,6 +358,9 @@ class Prefs(context: Context) {
         }
         fun long(key: String, old: Long, value: Long) {
             if (old != value) edit.putLong(key, value)
+        }
+        fun int(key: String, old: Int, value: Int) {
+            if (old != value) edit.putInt(key, value)
         }
         long("double_ms", before.doubleMs, after.doubleMs)
         long("tap_hold_ms", before.tapHoldMs, after.tapHoldMs)
@@ -344,6 +385,13 @@ class Prefs(context: Context) {
             boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
             boolean("${key}_close_confirm", old.closeConfirm, value.closeConfirm)
             boolean("${key}_standby_confirm", old.standbyConfirm, value.standbyConfirm)
+            boolean("${key}_record_mic", old.recordMic, value.recordMic)
+            string("${key}_record_quality", old.recordQuality, value.recordQuality)
+            boolean("${key}_record_indicator", old.recordIndicator, value.recordIndicator)
+            string("${key}_record_position", old.recordPosition, value.recordPosition)
+            boolean("${key}_record_ptt", old.recordPtt, value.recordPtt)
+            int("${key}_record_ptt_key", old.recordPttKey, value.recordPttKey)
+            string("${key}_record_duck", old.recordDuck, value.recordDuck)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -441,6 +489,14 @@ class Prefs(context: Context) {
         const val SHOULDER_POWER_MENU = "@power_menu"
         const val SHOULDER_STANDBY = "@standby"
         const val SHOULDER_VOLUME_MUTE = "@volume_mute"
+        const val SHOULDER_RECORD_VIDEO = "@record_video"
+        const val RECORD_SMALL = "small"
+        const val RECORD_MEDIUM = "medium"
+        const val RECORD_LARGE = "large"
+        const val DEFAULT_RECORD_POSITION = FOCUS_POS_TOP_RIGHT
+        const val DUCK_OFF = "off"
+        const val DUCK_VIDEO = "video"
+        const val DUCK_DEVICE = "device"
 
         /** Every `@` action this build knows; a backup naming anything else is not applied. */
         val KNOWN_ACTIONS: Set<String> = setOf(
@@ -451,6 +507,7 @@ class Prefs(context: Context) {
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
+            SHOULDER_RECORD_VIDEO,
         ) + Ayn.ACTIONS
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
@@ -463,7 +520,7 @@ class Prefs(context: Context) {
         /** Actions that offer a secondary target choice below the action row. */
         fun hasScreenTarget(action: String): Boolean =
             isLevelAction(action) || action == SHOULDER_SCREENSHOT || action == SHOULDER_CONTROLLER_FOCUS ||
-                isCloseApps(action) || action == SHOULDER_VOLUME_MUTE
+                isCloseApps(action) || action == SHOULDER_VOLUME_MUTE || action == SHOULDER_RECORD_VIDEO
 
         fun isCloseApps(action: String): Boolean = action == SHOULDER_CLOSE_APPS || action == SHOULDER_CLOSE_BACKGROUND_APPS
     }
