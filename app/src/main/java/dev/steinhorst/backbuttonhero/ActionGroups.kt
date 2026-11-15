@@ -18,7 +18,11 @@ object ActionGroups {
         ),
         VOLUME(
             "volume", R.string.group_volume,
-            listOf(Option(Prefs.SHOULDER_VOLUME_UP, R.string.group_up), Option(Prefs.SHOULDER_VOLUME_DOWN, R.string.group_down)),
+            listOf(
+                Option(Prefs.SHOULDER_VOLUME_UP, R.string.group_up),
+                Option(Prefs.SHOULDER_VOLUME_DOWN, R.string.group_down),
+                Option(Prefs.SHOULDER_VOLUME_MUTE, R.string.group_mute),
+            ),
         ),
         BRIGHTNESS(
             "brightness", R.string.group_brightness,
@@ -33,6 +37,13 @@ object ActionGroups {
             listOf(
                 Option(Prefs.SHOULDER_CLOSE_APPS, R.string.close_apps_all),
                 Option(Prefs.SHOULDER_CLOSE_BACKGROUND_APPS, R.string.close_apps_background),
+            ),
+        ),
+        POWER(
+            "power", R.string.group_power,
+            listOf(
+                Option(Prefs.SHOULDER_POWER_MENU, R.string.shoulder_power_menu),
+                Option(Prefs.SHOULDER_STANDBY, R.string.group_standby),
             ),
         ),
         PANELS(

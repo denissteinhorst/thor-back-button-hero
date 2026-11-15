@@ -84,6 +84,8 @@
     <string name="close_apps_prompt_yes">Beenden</string>
     <string name="close_apps_none">Auf diesem Bildschirm gibt es keine Apps zum Beenden.</string>
     <string name="shoulder_power_menu">Ein/Aus-Menü</string>
+    <string name="standby_confirm_title">Vor dem Standby nachfragen</string>
+    <string name="standby_prompt_title">In den Standby wechseln?</string>
     <string name="level_target_title">Bildschirm</string>
     <string name="level_target_both">Beide Bildschirme</string>
     <string name="level_target_top">Oberer Bildschirm</string>
@@ -304,6 +306,9 @@
     <string name="group_settings">System-Einstellungen</string>
     <string name="group_up">Erhöhen</string>
     <string name="group_down">Verringern</string>
+    <string name="group_mute">Stumm umschalten</string>
+    <string name="group_power">Ein/Aus</string>
+    <string name="group_standby">Standby</string>
     <string name="group_left">Links</string>
     <string name="group_right">Rechts</string>
     <string name="exceptions_group_sticks">Analog-Sticks</string>

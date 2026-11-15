@@ -811,6 +811,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_CLOSE_APPS -> runCloseApps(button, keepForeground = false)
             Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> runCloseApps(button, keepForeground = true)
             Prefs.SHOULDER_POWER_MENU -> showPowerMenu()
+            Prefs.SHOULDER_STANDBY -> runStandby(button)
+            Prefs.SHOULDER_VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
@@ -996,6 +998,21 @@ class SwitcherService : AccessibilityService(), GestureActions {
         )
         appControlPrompt.show(promptDisplay(), getString(R.string.close_apps_prompt_title, names), options) {
             if (it == "yes") close()
+        }
+    }
+
+    /** Locks and switches off the screens as a short press of the power button does. */
+    private fun runStandby(button: ComboButton) {
+        if (!prefs.standbyConfirm(button)) {
+            performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+            return
+        }
+        val options = listOf(
+            AppControlPrompt.Option("yes", getString(R.string.group_standby)),
+            AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
+        )
+        appControlPrompt.show(promptDisplay(), getString(R.string.standby_prompt_title), options) {
+            if (it == "yes") performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         }
     }
 

@@ -71,7 +71,8 @@ object SettingsBackup {
                 .put("appScreen", value.appScreen)
                 .put("appConfirm", value.appConfirm)
                 .put("switchAppFollow", value.switchAppFollow)
-                .put("closeConfirm", value.closeConfirm))
+                .put("closeConfirm", value.closeConfirm)
+                .put("standbyConfirm", value.standbyConfirm))
         }
         val sticks = JSONObject()
         state.stickTimings.toSortedMap().forEach { (key, value) ->
@@ -157,6 +158,7 @@ object SettingsBackup {
                 appConfirm = entry.booleanOrNull("appConfirm") ?: default.appConfirm,
                 switchAppFollow = entry.booleanOrNull("switchAppFollow") ?: default.switchAppFollow,
                 closeConfirm = entry.booleanOrNull("closeConfirm") ?: default.closeConfirm,
+                standbyConfirm = entry.booleanOrNull("standbyConfirm") ?: default.standbyConfirm,
                 aynOption = entry.stringOrNull("aynOption")?.takeIf { it in Ayn.OPTION_KEYS },
             )
         }

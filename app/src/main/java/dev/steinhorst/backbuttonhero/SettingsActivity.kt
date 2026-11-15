@@ -422,7 +422,7 @@ class SettingsActivity : Activity() {
             Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
             Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
             group(ActionGroups.Group.CLOSE_APPS),
-            Choice(Prefs.SHOULDER_POWER_MENU, getString(R.string.shoulder_power_menu)),
+            group(ActionGroups.Group.POWER),
         ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
     }
 
@@ -640,6 +640,7 @@ class SettingsActivity : Activity() {
         var switcherOptions: View? = null
         var switchAppOptions: View? = null
         var closeAppsOptions: View? = null
+        var standbyOptions: View? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
@@ -870,6 +871,16 @@ class SettingsActivity : Activity() {
             }
         }
         row.closeAppsOptions?.visibility = if (closeApps) View.VISIBLE else View.GONE
+        val standby = action == Prefs.SHOULDER_STANDBY
+        if (standby && row.standbyOptions == null) {
+            row.standbyOptions = row.card.subOptions {
+                toggleRow(R.string.standby_confirm_title, null, prefs.standbyConfirm(row.button),
+                    readValue = { prefs.standbyConfirm(row.button) }) {
+                    prefs.setStandbyConfirm(row.button, it)
+                }
+            }
+        }
+        row.standbyOptions?.visibility = if (standby) View.VISIBLE else View.GONE
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1092,7 +1103,7 @@ class SettingsActivity : Activity() {
                 Prefs.isLevelAction(value.action) -> target(value.levelTarget())
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
-                Prefs.isCloseApps(value.action) ->
+                Prefs.isCloseApps(value.action) || value.action == Prefs.SHOULDER_VOLUME_MUTE ->
                     "${getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes)}, ${target(value.levelTarget())}"
                 Ayn.groupOf(value.action) != null -> aynOption(value)
                 ActionGroups.groupOf(value.action) != null -> return getString(
@@ -1145,7 +1156,8 @@ class SettingsActivity : Activity() {
             if (!(launches(old) && launches(new))) extra(R.string.shoulder_top_screen, target(old.display), target(new.display))
             if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
                 extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
-            fun screenTarget(action: String) = Prefs.isLevelAction(action) || Prefs.isCloseApps(action)
+            fun screenTarget(action: String) =
+                Prefs.isLevelAction(action) || Prefs.isCloseApps(action) || action == Prefs.SHOULDER_VOLUME_MUTE
             if (!(screenTarget(old.action) && screenTarget(new.action)))
                 extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
             if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
@@ -1155,6 +1167,7 @@ class SettingsActivity : Activity() {
             extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
             extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
             extra(R.string.app_control_confirm_title, onOff(old.closeConfirm), onOff(new.closeConfirm))
+            extra(R.string.standby_confirm_title, onOff(old.standbyConfirm), onOff(new.standbyConfirm))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
             extra(R.string.focus_header_position, position(old.position), position(new.position))

@@ -49,6 +49,17 @@ class LevelStepsTest {
     }
 
     @Test
+    fun `muting stores the audible level and unmuting brings it back`() {
+        assertEquals(0 to 7, LevelSteps.mute(7, mute = true, saved = 0))
+        assertEquals(7 to 0, LevelSteps.mute(0, mute = false, saved = 7))
+        // Muting an already silent screen keeps the level stored earlier.
+        assertEquals(0 to 7, LevelSteps.mute(0, mute = true, saved = 7))
+        // A level raised meanwhile stays; nothing stored leaves silence alone.
+        assertEquals(4 to 0, LevelSteps.mute(4, mute = false, saved = 7))
+        assertEquals(0 to 0, LevelSteps.mute(0, mute = false, saved = 0))
+    }
+
+    @Test
     fun `hat values map to D-pad directions, rest maps to null`() {
         assertEquals(DpadDirection.LEFT, DpadDirection.fromHat(horizontal = true, value = -1f))
         assertEquals(DpadDirection.RIGHT, DpadDirection.fromHat(horizontal = true, value = 1f))

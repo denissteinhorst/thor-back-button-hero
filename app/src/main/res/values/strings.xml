@@ -85,6 +85,8 @@
     <string name="close_apps_prompt_yes">Close</string>
     <string name="close_apps_none">No apps to close on that screen.</string>
     <string name="shoulder_power_menu">Power Menu</string>
+    <string name="standby_confirm_title">Ask before standby</string>
+    <string name="standby_prompt_title">Go to standby?</string>
     <string name="level_target_title">Screen</string>
     <string name="level_target_both">Both screens</string>
     <string name="level_target_top">Top screen</string>
@@ -305,6 +307,9 @@
     <string name="group_settings">System settings</string>
     <string name="group_up">Up</string>
     <string name="group_down">Down</string>
+    <string name="group_mute">Toggle mute</string>
+    <string name="group_power">Power</string>
+    <string name="group_standby">Standby</string>
     <string name="group_left">Left</string>
     <string name="group_right">Right</string>
     <string name="exceptions_group_sticks">Analog sticks</string>

@@ -48,12 +48,35 @@ class CloseAppsTest {
             assertEquals(ActionGroups.Group.CLOSE_APPS, ActionGroups.groupOf(it))
         }
         assertFalse(Prefs.isCloseApps(Prefs.SHOULDER_APP_CONTROL))
-        assertTrue(Prefs.SHOULDER_POWER_MENU in Prefs.KNOWN_ACTIONS)
-        assertFalse(Prefs.hasScreenTarget(Prefs.SHOULDER_POWER_MENU))
+        listOf(Prefs.SHOULDER_POWER_MENU, Prefs.SHOULDER_STANDBY).forEach {
+            assertTrue(it in Prefs.KNOWN_ACTIONS)
+            assertFalse(Prefs.hasScreenTarget(it))
+            assertEquals(ActionGroups.Group.POWER, ActionGroups.groupOf(it))
+        }
+        assertTrue(Prefs.SHOULDER_VOLUME_MUTE in Prefs.KNOWN_ACTIONS)
+        assertTrue(Prefs.hasScreenTarget(Prefs.SHOULDER_VOLUME_MUTE))
+        // Held, volume up and down keep stepping; a mute toggle must not.
+        assertFalse(Prefs.isLevelAction(Prefs.SHOULDER_VOLUME_MUTE))
+        assertEquals(ActionGroups.Group.VOLUME, ActionGroups.groupOf(Prefs.SHOULDER_VOLUME_MUTE))
         val prefs = Prefs(ApplicationProvider.getApplicationContext())
         prefs.setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_CLOSE_APPS)
         assertEquals(Prefs.TARGET_BOTH, prefs.levelTarget(ShoulderButton.L1))
         assertTrue(prefs.closeConfirm(ShoulderButton.L1))
+    }
+
+    @Test
+    fun `standby asks only when chosen, and the stored mute levels start empty`() {
+        val prefs = Prefs(ApplicationProvider.getApplicationContext())
+        assertFalse(prefs.standbyConfirm(ShoulderButton.L1))
+        prefs.setStandbyConfirm(ShoulderButton.L1, true)
+        assertTrue(prefs.snapshot().bindings.getValue(ShoulderButton.L1.prefKey).standbyConfirm)
+        assertFalse(prefs.standbyConfirm(ShoulderButton.R1))
+        assertEquals(0, prefs.topVolumeBeforeMute)
+        assertEquals(0, prefs.bottomVolumeBeforeMute)
+        prefs.topVolumeBeforeMute = 5
+        prefs.bottomVolumeBeforeMute = 6
+        assertEquals(5, prefs.topVolumeBeforeMute)
+        assertEquals(6, prefs.bottomVolumeBeforeMute)
     }
 
     @Test

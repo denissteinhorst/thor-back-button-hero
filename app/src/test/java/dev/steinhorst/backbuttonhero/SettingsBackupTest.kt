@@ -30,6 +30,7 @@ class SettingsBackupTest {
                         appScreen = Prefs.DISPLAY_TOP, appConfirm = true)
                     "rstick_press" -> value.copy(action = Prefs.SHOULDER_CLOSE_BACKGROUND_APPS,
                         targetOverride = Prefs.DISPLAY_BOTTOM, closeConfirm = false)
+                    "rstick_double" -> value.copy(action = Prefs.SHOULDER_STANDBY, standbyConfirm = true)
                     else -> value
                 }
             },

@@ -55,6 +55,35 @@ class LevelControl(private val context: Context, private val bottomDisplayId: ()
         }
     }
 
+    /**
+     * Mutes or unmutes [target] by storing each screen's volume, setting it to 0 and restoring it later.
+     * The Thor's own mute of the music stream drops its level to 0 and does not bring it back, and AYN's
+     * bottom-screen volume has no mute at all. With both screens the top screen's state decides, so the
+     * two screens never end up flipped against each other.
+     */
+    fun toggleMute(target: String) {
+        val top = target != Prefs.DISPLAY_BOTTOM
+        val bottom = target != Prefs.DISPLAY_TOP
+        val prefs = Prefs(context)
+        val audio = context.getSystemService(AudioManager::class.java)
+        val topLevel = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val mute = if (top) topLevel > 0 else Settings.System.getInt(context.contentResolver, SECONDARY_VOLUME, 0) > 0
+        if (top) {
+            val (next, saved) = LevelSteps.mute(topLevel, mute, prefs.topVolumeBeforeMute)
+            prefs.topVolumeBeforeMute = saved
+            audio.setStreamVolume(AudioManager.STREAM_MUSIC, next, AudioManager.FLAG_SHOW_UI)
+        }
+        if (!bottom) return
+        if (!PService.cachedAvailable()) { if (!top) unavailable(); return }
+        submit {
+            val current = Settings.System.getInt(context.contentResolver, SECONDARY_VOLUME, -1)
+            if (current < 0) return@submit
+            val (next, saved) = LevelSteps.mute(current, mute, prefs.bottomVolumeBeforeMute)
+            prefs.bottomVolumeBeforeMute = saved
+            if (next != current) PService.exec("settings put system $SECONDARY_VOLUME $next")
+        }
+    }
+
     private fun brightness(up: Boolean, top: Boolean, bottom: Boolean) {
         val displays = listOfNotNull(
             Display.DEFAULT_DISPLAY.takeIf { top },

@@ -14,4 +14,12 @@ object LevelSteps {
 
     /** The next volume index one step [up] or down, kept within 0..[max]. */
     fun nextVolume(current: Int, up: Boolean, max: Int): Int = (current + if (up) 1 else -1).coerceIn(0, max)
+
+    /**
+     * A screen's next volume and stored pre-mute volume when it is set to [mute]. Muting keeps the last
+     * audible level; unmuting restores it, or leaves a level alone that was raised meanwhile.
+     */
+    fun mute(current: Int, mute: Boolean, saved: Int): Pair<Int, Int> =
+        if (mute) 0 to (if (current > 0) current else saved)
+        else (if (current == 0 && saved > 0) saved else current) to 0
 }
