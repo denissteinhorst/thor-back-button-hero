@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AYN Thor · Rainbow Modellstudie</title>
+<link rel="stylesheet" href="viewer.css">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+<header><a href="../index.html" class="brand">BACK BUTTON HERO <span>/ MODELLSTUDIE 01</span></a><span class="edition"><i></i> RAINBOW</span></header>
+<main>
+<div class="intro"><div><p class="eyebrow">AYN THOR / THREE.JS</p><h1>Rainbow</h1></div><p class="sub">Rekonstruktion nach Produkt- und Detailfotos</p></div>
+<div class="design-tools" role="group" aria-label="Darstellung des Modells">
+<button id="design-toggle" aria-pressed="false"><span aria-hidden="true">◇</span> Wireframe</button>
+<label><input id="design-solid-controls" type="checkbox" checked disabled> Tasten im Originalstil</label>
+</div>
+<div id="viewport" role="region" aria-label="Drehbares 3D-Modell des AYN Thor Rainbow" tabindex="0"><span id="design-badge" class="design-badge" hidden>WIREFRAME / DESIGNNETZ</span><p id="status" role="status">3D-Modell wird geladen …</p></div>
+<div class="toolbar">
+<div class="views" aria-label="Kameraansicht"><button id="perspective" aria-pressed="true">Perspektive</button><button id="front" aria-pressed="false">Frontal</button><button id="rear" aria-pressed="false">Rückseite</button><button id="underside" aria-pressed="false">Unterseite</button><button id="shoulder" aria-pressed="false">Schulterdetail</button></div>
+<div class="hinge-control">
+<label class="hinge">Scharnier <output id="angle-value" for="angle">150°</output><input id="angle" type="range" min="0" max="180" value="150" list="hinge-stops" aria-label="Öffnungswinkel des Scharniers"></label>
+<datalist id="hinge-stops"><option value="120"></option><option value="150"></option><option value="180"></option></datalist>
+<div class="hinge-presets" role="group" aria-label="Scharnier-Rastungen"><button data-hinge-angle="120" aria-label="Erste Rastung: 120 Grad" aria-pressed="false">120°</button><button data-hinge-angle="150" aria-label="Zweite Rastung: 150 Grad" aria-pressed="true">150°</button><button data-hinge-angle="180" aria-label="Dritte Rastung: 180 Grad, komplett flach" aria-pressed="false">180°</button></div>
+</div>
+</div>
+<p class="hint">Ziehen zum Drehen · Scrollen zum Zoomen · Pfeiltasten zum Drehen</p>
+<details class="input-inspector">
+<summary>Tasten und Sticks testen</summary>
+<div class="input-fields">
+<label>Taste <select id="input-button" aria-label="Taste auswählen"></select></label>
+<label>Druck <output id="input-pressure-value" for="input-pressure">0 %</output><input id="input-pressure" aria-label="Tastendruck" type="range" min="0" max="100" value="0"></label>
+<label>Stick <select id="input-stick" aria-label="Stick auswählen"><option value="left">Links</option><option value="right">Rechts</option></select></label>
+<div class="stick-axes">
+<label>Links / rechts <output id="input-stick-x-value" for="input-stick-x">0 %</output><input id="input-stick-x" aria-label="Stick links oder rechts" type="range" min="-100" max="100" value="0"></label>
+<label>Unten / oben <output id="input-stick-y-value" for="input-stick-y">0 %</output><input id="input-stick-y" aria-label="Stick unten oder oben" type="range" min="-100" max="100" value="0"></label>
+</div>
+</div>
+<div class="input-actions"><button id="input-stick-centre">Stick zentrieren</button><button id="input-release">Alles loslassen</button><output id="input-state" aria-live="polite">Alle Tasten losgelassen</output></div>
+</details>
+<p class="fidelity">150 × 94 × 25,6 mm nominal · Detailmaße und Farbtöne noch nicht messtechnisch bestätigt</p>
+</main>
+<footer><span>Parametrisch modelliert · unabhängige Geometrie</span><a href="vendor/LICENSE">Three.js · MIT-Lizenz</a></footer>
+<script type="module" src="viewer.js"></script>
+</body>
+</html>

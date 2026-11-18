@@ -1,0 +1,123 @@
+// SPDX-License-Identifier: 0BSD
+import * as THREE from 'three';
+import { OrbitControls } from './vendor/OrbitControls.js';
+import { createThor } from './thor.js';
+import { updateStudioKey } from './lighting.js';
+import { mountInputInspector } from './input-inspector.js';
+import { snapHingeAngle } from './hinge.js';
+import { createDesignMode } from './design-mode.js';
+
+const viewport=document.getElementById('viewport');
+const status=document.getElementById('status');
+try {
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  viewport.append(renderer.domElement);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(33,1,1,1500);
+  const ortho=new THREE.OrthographicCamera(-100,100,100,-100,1,1500);
+  camera.position.set(185,205,235);
+  const controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.set(0,29,-20);controls.enableDamping=true;
+  controls.minDistance=140;controls.maxDistance=650;controls.minZoom=.55;controls.maxZoom=3;
+  controls.enablePan=false;controls.listenToKeyEvents(viewport);
+  // Original neutral studio cards generate reflections; no HDRI or texture assets.
+  const studio=new THREE.Scene();studio.background=new THREE.Color('#626768');
+  for(const [w,h,pos,target,power] of [
+    [240,180,[-140,190,120],[0,0,0],4],
+    [170,220,[180,100,-170],[0,0,0],2.5],
+    [90,250,[0,60,210],[0,0,0],1.7]
+  ]){
+    const card=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color().setScalar(power)}));
+    card.position.set(...pos);card.lookAt(...target);studio.add(card);
+  }
+  const pmrem=new THREE.PMREMGenerator(renderer);
+  const environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.55;
+  pmrem.dispose();studio.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});
+  scene.add(new THREE.HemisphereLight('#e6edf1','#6a6255',1.3));
+  function light(color,power,x,y,z,shadow=false) {
+    const l=new THREE.DirectionalLight(color,power);l.position.set(x,y,z);scene.add(l);
+    if(shadow){l.castShadow=true;l.shadow.mapSize.set(2048,2048);Object.assign(l.shadow.camera,{left:-170,right:170,top:190,bottom:-170,near:1,far:650});l.shadow.normalBias=.08;l.shadow.bias=-.00005;}
+    return l;
+  }
+  const keyLight=light('#fff4df',3,70,240,150,true);
+  scene.add(keyLight.target);
+  // The studio's overhead cards cannot illuminate a downward-facing back. A
+  // soft viewing-axis fill makes its moulded domes readable during inspection.
+  const undersideFill=light('#f2f3ec',0,0,-150,0);scene.add(undersideFill.target);
+  light('#d4e3ed',.9,-160,100,-110);light('#ffffff',1.4,0,80,-200);
+  const thor=createThor();scene.add(thor.root);
+  window.thorInputs=thor.inputs;
+  mountInputInspector(thor.inputs);
+  let floor;
+  const design=createDesignMode(thor.root);
+  const designToggle=document.getElementById('design-toggle'),solidControls=document.getElementById('design-solid-controls');
+  const designBadge=document.getElementById('design-badge');
+  function designUi() {
+    const state=design.getState();
+    designToggle.setAttribute('aria-pressed',String(state.enabled));
+    solidControls.disabled=!state.enabled;
+    viewport.classList.toggle('design-mode',state.enabled);designBadge.hidden=!state.enabled;
+    if(floor)floor.visible=floor.userData.viewVisible&&!state.enabled;
+  }
+  designToggle.addEventListener('click',()=>{design.setEnabled(!design.getState().enabled);designUi();});
+  solidControls.addEventListener('change',()=>design.setSolidControls(solidControls.checked));
+  designUi();
+  floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.ShadowMaterial({opacity:.2}));floor.userData.viewVisible=true;
+  floor.rotation.x=-Math.PI/2;floor.position.y=-11;floor.receiveShadow=true;scene.add(floor);
+  function resize(){
+    const {width,height}=viewport.getBoundingClientRect();if(width<=0||height<=0)return;renderer.setSize(width,height);
+    design.setViewport(width,height,renderer.getPixelRatio());
+    const aspect=width/height;camera.aspect=aspect;camera.updateProjectionMatrix();
+    const half=Math.max(96,92/aspect);ortho.left=-half*aspect;ortho.right=half*aspect;ortho.top=half;ortho.bottom=-half;ortho.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(viewport);resize();
+  const slider=document.getElementById('angle'),output=document.getElementById('angle-value');
+  const modelBounds=new THREE.Box3();
+  let detailFocus=null;
+  function focusCentre(){return detailFocus?new THREE.Vector3(...detailFocus):modelBounds.setFromObject(thor.root).getCenter(new THREE.Vector3());}
+  function angle(value,updateSlider=true){
+    thor.setAngle(value);if(updateSlider)slider.value=String(value);output.value=value+'°';
+    const detentButtons=[...document.querySelectorAll('[data-hinge-angle]')];
+    const detent=detentButtons.findIndex(b=>Number(b.dataset.hingeAngle)===value);
+    slider.setAttribute('aria-valuetext',value+' Grad'+(detent<0?'':', Rastung '+(detent+1)));
+    detentButtons.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.hingeAngle)===value)));
+    const centre=focusCentre(),delta=centre.clone().sub(controls.target);
+    controls.object.position.add(delta);controls.target.copy(centre);controls.update();
+  }
+  const views={
+    perspective:{offset:[185,176,255]},
+    front:{offset:[0,360,.1],angle:180,orthographic:true},
+    rear:{offset:[-155,101,-240]},
+    underside:{offset:[0,-310,.01],orthographic:true},
+    shoulder:{offset:[-145,-150,-180],focus:[-63,-6,-38],angle:120,orthographic:true,zoom:2.3}
+  };
+  for(const [id,view] of Object.entries(views))document.getElementById(id).addEventListener('click',()=>{
+    detailFocus=view.focus??null;
+    controls.object=view.orthographic?ortho:camera;
+    if(view.angle!==undefined)angle(view.angle);
+    const centre=focusCentre();
+    controls.object.position.set(...view.offset).add(centre);controls.object.zoom=view.zoom??1;controls.object.updateProjectionMatrix();
+    controls.target.copy(centre);floor.userData.viewVisible=id!=='underside'&&id!=='shoulder';
+    floor.visible=floor.userData.viewVisible&&!design.getState().enabled;controls.update();
+    document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-pressed',String(b.id===id)));
+  });
+  controls.addEventListener('start',()=>document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-pressed','false')));
+  // Keep the raw thumb position while snapping the model. Writing the snapped
+  // value back here would trap keyboard arrows inside a detent's capture zone.
+  slider.addEventListener('input',event=>angle(snapHingeAngle(Number(event.target.value)),false));
+  for(const button of document.querySelectorAll('[data-hinge-angle]'))button.addEventListener('click',()=>angle(Number(button.dataset.hingeAngle)));
+  angle(150);
+  renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();status.hidden=false;status.textContent='3D-Kontext unterbrochen. Bitte Seite neu laden.';});
+  renderer.setAnimationLoop(()=>{
+    controls.update();
+    updateStudioKey(keyLight,controls.object,controls.target);
+    undersideFill.position.copy(controls.object.position);undersideFill.target.position.copy(controls.target);
+    undersideFill.intensity=1.5*THREE.MathUtils.smoothstep(controls.target.y-controls.object.position.y,0,150);
+    undersideFill.target.updateMatrixWorld();
+    renderer.render(scene,controls.object);
+  });
+  status.hidden=true;
+}catch(error){status.textContent='3D-Vorschau konnte nicht starten. Bitte WebGL im Browser aktivieren.';console.error(error);}
