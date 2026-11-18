@@ -93,13 +93,15 @@ class SettingsActivity : Activity() {
     private fun openIndicatorFromIntent() {
         val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
         intent.removeExtra(EXTRA_INDICATOR_BUTTON)
-        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries).firstOrNull { it.prefKey == key } ?: return
+        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
+            AndroidButton.entries + FaceButton.entries).firstOrNull { it.prefKey == key } ?: return
         if (prefs.shoulderAction(button) != Prefs.SHOULDER_CONTROLLER_FOCUS) return
         when (button) {
             is ShoulderButton -> navigation.show(SettingsSection.SHOULDERS)
             is StickButton -> showStickButton(button.stick)
             is StickClickButton -> showStickButton(button.stick)
-            is BackGestureButton -> navigation.show(SettingsSection.BASIC)
+            is BackGestureButton, is AndroidButton -> navigation.show(SettingsSection.BASIC)
+            is FaceButton -> navigation.show(SettingsSection.FACE)
             else -> navigation.show(SettingsSection.DPAD)
         }
         val row = comboRows.getValue(key)
@@ -154,6 +156,13 @@ class SettingsActivity : Activity() {
         page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
         when (section) {
             SettingsSection.BASIC -> buildBasic(page)
+            SettingsSection.FACE -> {
+                page.sectionHeader(R.string.face_bindings_section)
+                buildShoulderRow(page, FaceButton.A, R.string.button_a)
+                buildShoulderRow(page, FaceButton.B, R.string.button_b)
+                buildShoulderRow(page, FaceButton.X, R.string.button_x)
+                buildShoulderRow(page, FaceButton.Y, R.string.button_y)
+            }
             SettingsSection.SHOULDERS -> {
                 page.sectionHeader(R.string.shoulder_bindings_section)
                 buildShoulderRow(page, ShoulderButton.L1, R.string.shoulder_l1)
@@ -256,6 +265,10 @@ class SettingsActivity : Activity() {
         gesture(R.string.hold_section_title, BackGestureButton.HOLD, R.string.back_hold_row) {
             subOptions { sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it } }
         }
+        page.sectionHeader(R.string.android_bindings_section)
+        buildShoulderRow(page, AndroidButton.HOME, R.string.button_home)
+        buildShoulderRow(page, AndroidButton.START, R.string.button_start)
+        buildShoulderRow(page, AndroidButton.SELECT, R.string.button_select)
     }
 
     private fun buildSettings(page: SettingsPage) {

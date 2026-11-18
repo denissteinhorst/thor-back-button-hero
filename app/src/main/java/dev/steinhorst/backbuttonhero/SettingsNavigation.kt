@@ -20,7 +20,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 
 enum class SettingsSection(val titleRes: Int, val hintRes: Int, val iconRes: Int) {
-    BASIC(R.string.nav_basic, R.string.nav_basic_hint, R.drawable.ic_settings_back),
+    BASIC(R.string.nav_basic, R.string.nav_basic_hint, R.drawable.ic_settings_android),
+    FACE(R.string.nav_face, R.string.nav_face_hint, R.drawable.ic_settings_face),
     SHOULDERS(R.string.nav_shoulders, R.string.nav_shoulders_hint, R.drawable.ic_settings_shoulders),
     STICKS(R.string.nav_sticks, R.string.nav_sticks_hint, R.drawable.ic_settings_stick),
     DPAD(R.string.nav_dpad, R.string.nav_dpad_hint, R.drawable.ic_settings_dpad),
@@ -46,7 +47,7 @@ class SettingsNavigation(
     private val navButtons = mutableMapOf<SettingsSection, Button>()
     private val pageHost = FrameLayout(activity)
     private val body = LinearLayout(activity)
-    // Everything below the header, so the blocker can sit over the warnings and the menu alike.
+    // Everything below the header, so the blocker can sit over the warnings and the page alike.
     private val below = FrameLayout(activity)
     private val belowColumn = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
     /** A tinted scrim with one card in its middle; it swallows every touch, so the card is the only way on. */
@@ -58,6 +59,18 @@ class SettingsNavigation(
         visibility = View.GONE
         addView(blockerCard, FrameLayout.LayoutParams(activity.dp(360), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
     }
+    /** The wide layout's menu column: the full window height, beside the header and the page. */
+    private val navHost = FrameLayout(activity)
+    // The menu sits beside the header now, so the blocker cannot reach it; this scrim covers it instead.
+    private val navScrim = View(activity).apply {
+        tag = "settings_navigation_scrim"
+        setBackgroundColor(Color.argb(170, 0, 0, 0))
+        isClickable = true
+        isFocusable = true
+        visibility = View.GONE
+    }
+    /** The header and everything below it. */
+    private val main = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
     private val bar = LinearLayout(activity)
     private val titleRow = LinearLayout(activity).apply { gravity = Gravity.CENTER_VERTICAL }
     private var menuDialog: AlertDialog? = null
@@ -89,7 +102,7 @@ class SettingsNavigation(
     } ?: SettingsSection.BASIC
         private set
 
-    val view = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
+    val view = LinearLayout(activity).apply { orientation = LinearLayout.HORIZONTAL }
 
     init {
         SettingsSection.entries.forEach { positions[it] = savedState?.getInt("settings_scroll_${it.name}") ?: 0 }
@@ -107,12 +120,13 @@ class SettingsNavigation(
         view.setBackgroundColor(activity.themedColor(android.R.attr.colorBackground, Color.WHITE))
         bar.addView(titleRow, LinearLayout.LayoutParams(full, wrap))
         body.addView(pageHost, LinearLayout.LayoutParams(0, full, 1f))
-        view.addView(bar, LinearLayout.LayoutParams(full, wrap))
+        main.addView(bar, LinearLayout.LayoutParams(full, wrap))
         belowColumn.addView(warnings, LinearLayout.LayoutParams(full, wrap))
         belowColumn.addView(body, LinearLayout.LayoutParams(full, 0, 1f))
         below.addView(belowColumn, FrameLayout.LayoutParams(full, full))
         below.addView(blocker, FrameLayout.LayoutParams(full, full))
-        view.addView(below, LinearLayout.LayoutParams(full, 0, 1f))
+        main.addView(below, LinearLayout.LayoutParams(full, 0, 1f))
+        view.addView(main, LinearLayout.LayoutParams(0, full, 1f))
         view.addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ -> adapt(right - left) }
         adapt(activity.resources.configuration.screenWidthDp.let(activity::dp))
         show(selected)
@@ -121,9 +135,12 @@ class SettingsNavigation(
     /** While blocked, nothing behind the scrim is reachable by touch, focus or a screen reader. */
     fun setBlocked(blocked: Boolean) {
         blocker.visibility = if (blocked) View.VISIBLE else View.GONE
-        belowColumn.importantForAccessibility =
-            if (blocked) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
-        belowColumn.descendantFocusability = if (blocked) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_AFTER_DESCENDANTS
+        navScrim.visibility = blocker.visibility
+        listOfNotNull(belowColumn, navHost.getChildAt(0) as? ViewGroup).forEach { column ->
+            column.importantForAccessibility =
+                if (blocked) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            column.descendantFocusability = if (blocked) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_AFTER_DESCENDANTS
+        }
     }
 
     private fun icon(res: Int) = activity.getDrawable(res)!!.mutate().apply {
@@ -136,9 +153,15 @@ class SettingsNavigation(
             wide = expanded
             menuDialog?.dismiss()
             navButtons.clear()
-            if (body.childCount > 1) body.removeViewAt(0)
+            navHost.removeAllViews()
+            view.removeView(navHost)
             menu.visibility = if (expanded) View.GONE else View.VISIBLE
-            if (expanded) body.addView(navigation(), 0, LinearLayout.LayoutParams(activity.dp(240), full))
+            if (expanded) {
+                navHost.addView(navigation(), FrameLayout.LayoutParams(full, full))
+                navHost.addView(navScrim, FrameLayout.LayoutParams(full, full))
+                view.addView(navHost, 0, LinearLayout.LayoutParams(activity.dp(240), full))
+                setBlocked(blocker.visibility == View.VISIBLE)
+            }
         }
     }
 
@@ -165,7 +188,7 @@ class SettingsNavigation(
                 gravity = Gravity.CENTER_VERTICAL or Gravity.START
                 minimumHeight = activity.dp(44)
                 setPadding(activity.dp(12), activity.dp(8), activity.dp(12), activity.dp(8))
-                // Seven entries must fit the panel without scrolling on the Thor's top screen.
+                // Eight entries must fit the full-height panel without scrolling on the Thor's top screen.
                 setCompoundDrawablesRelative(icon(section.iconRes).apply { setBounds(0, 0, activity.dp(20), activity.dp(20)) }, null, null, null)
                 compoundDrawablePadding = activity.dp(12)
                 background = RippleDrawable(ColorStateList.valueOf((accent and 0x00FFFFFF) or 0x33000000), states, null)

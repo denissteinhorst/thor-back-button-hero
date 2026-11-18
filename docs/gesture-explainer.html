@@ -122,12 +122,12 @@ button { font: inherit; color: inherit; }
 .ov { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .ov .fade { opacity: 0; transition: opacity 0.3s; }
 .ov .show { opacity: 1; }
-.ov .sh rect { fill: var(--surface); stroke: var(--accent); stroke-width: 3; transition: fill 0.2s; }
+.ov .sh rect, .ov .sh circle { fill: var(--surface); stroke: var(--accent); stroke-width: 3; transition: fill 0.2s; }
 .ov .sh text { font: 800 21px system-ui, sans-serif; text-anchor: middle; fill: var(--accent); }
-.ov .sh.on rect { fill: var(--accent); }
+.ov .sh.on rect, .ov .sh.on circle { fill: var(--accent); }
 .ov .sh.on text { fill: var(--accent-ink); }
-.ov .sh.press rect { fill: var(--accent); transform: scale(1.12); }
-.ov .sh rect { transform-box: fill-box; transform-origin: center; transition: transform 0.15s, fill 0.15s; }
+.ov .sh.press rect, .ov .sh.press circle { fill: var(--accent); transform: scale(1.12); }
+.ov .sh rect, .ov .sh circle { transform-box: fill-box; transform-origin: center; transition: transform 0.15s, fill 0.15s; }
 .ov .sh.press text { fill: var(--accent-ink); }
 .ov .arm {
   fill: var(--accent); fill-opacity: 0; stroke: var(--accent); stroke-width: 3; stroke-opacity: 0; stroke-linejoin: round;
@@ -438,7 +438,7 @@ button { font: inherit; color: inherit; }
     <!-- 3. explore: groups, each opens a drawer -->
     <div id="main" hidden>
       <h1>See a function in action</h1>
-      <p class="lede">Pick a group, then a function. Each one works on <b>any</b> of the 26 shortcuts.</p>
+      <p class="lede">Pick a group, then a function. Each one works on <b>any</b> of the 33 shortcuts.</p>
       <ul class="groups" id="groups"></ul>
       <div class="foot"><button class="btn ghost" type="button" id="replay"></button></div>
     </div>
@@ -470,6 +470,9 @@ const Thor = (() => {
     // stick and button centres sit on the drawn caps; the D-pad is described by its arm faces
     back: [733, 925], dpad: [127.5, 811], ls: [125, 659], rs: [781, 816],
     sh: { L2: [88, 487], L1: [88, 524], R2: [820, 487], R1: [820, 524] },
+    // the small round keys and the face buttons, centred on their drawn caps (Nintendo order: X top, A right)
+    android: { home: [176, 927, '⌂'], select: [187, 573, '▢'], start: [721, 573, '▷'] },
+    face: { X: [783, 617], Y: [738, 660], A: [828, 660], B: [783, 703] },
   };
   const pct = (v, t) => (v / t * 100).toFixed(3) + '%';
   const box = r => `left:${pct(r.x, W)};top:${pct(r.y, H)};width:${pct(r.w, W)};height:${pct(r.h, H)}`;
@@ -517,10 +520,12 @@ const Thor = (() => {
   };
   const ico = (n, cls = 'ico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[n] || I.gear}</svg>`;
 
-  /* ---------- the 26 slots ---------- */
+  /* ---------- the 33 slots ---------- */
   const GROUPS = [
     { id: 'back', name: 'Back button', short: 'Back', icon: 'btn', hint: 'Back on its own' },
     { id: 'sh', name: 'Back + shoulder', short: 'Shoulders', icon: 'shI', hint: 'Hold Back, press L1, L2, R1 or R2' },
+    { id: 'face', name: 'Back + face button', short: 'Face buttons', icon: 'btn', hint: 'Hold Back, press A, B, X or Y' },
+    { id: 'android', name: 'Back + Home, Start, Select', short: 'Home · Start · Select', icon: 'home', hint: 'Hold Back, press Home, Start or Select' },
     { id: 'dpad', name: 'Back + D-pad', short: 'D-pad', icon: 'dpadI', hint: 'Hold Back, press a direction' },
     { id: 'ls', name: 'Back + left stick', short: 'Left stick', icon: 'stickI', hint: 'Hold Back, push or click the left stick' },
     { id: 'rs', name: 'Back + right stick', short: 'Right stick', icon: 'stickI', hint: 'Hold Back, push or click the right stick' },
@@ -532,6 +537,8 @@ const Thor = (() => {
   add('back', 'taphold', 'Tap, then hold', 'Back · tap, then hold', 'bd3', 'taphold');
   add('back', 'hold', 'Hold', 'Back · hold', 'bd4', 'hold');
   ['L1', 'L2', 'R1', 'R2'].forEach(k => add('sh', k, k, `Back + ${k}`, `i-${k}`, 'sh'));
+  ['A', 'B', 'X', 'Y'].forEach(k => add('face', k, k, `Back + ${k}`, `i-${k}`, 'sh'));
+  [['home', 'Home'], ['start', 'Start'], ['select', 'Select']].forEach(([k, l]) => add('android', k, l, `Back + ${l}`, `i-${k}`, 'sh'));
   [['up', '▲', 'Up'], ['down', '▼', 'Down'], ['left', '◀', 'Left'], ['right', '▶', 'Right']].forEach(([k, g, l]) =>
     add('dpad', k, `${g}  ${l}`, `Back + D-pad ${g}`, `a-dpad-${k}`, 'dir'));
   ['ls', 'rs'].forEach(st => {
@@ -614,7 +621,9 @@ const Thor = (() => {
       ${[0, 1, 2].map(i => `<circle class="dot" id="${id}-p${i + 1}" cx="${x + dx}" cy="${y - 22 + i * 22}" r="8"/>`).join('')}`;
     const [bx, by] = G.back, [dx, dy] = G.dpad;
     return `<svg class="ov" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-      ${Object.entries(G.sh).map(([k, [x, y]]) => `<g class="sh fade" id="i-${k}"><rect x="${x - 34}" y="${y - 16}" width="68" height="32" rx="16"/><text x="${x}" y="${y + 7.5}">${k}</text></g>`).join('')}
+      ${Object.entries(G.android).map(([k, [x, y, g]]) => `<g class="sh fade" data-g="android" id="i-${k}"><circle cx="${x}" cy="${y}" r="19"/><text x="${x}" y="${y + 7.5}">${g}</text></g>`).join('')}
+      ${Object.entries(G.face).map(([k, [x, y]]) => `<g class="sh fade" data-g="face" id="i-${k}"><circle cx="${x}" cy="${y}" r="21"/><text x="${x}" y="${y + 7.5}">${k}</text></g>`).join('')}
+      ${Object.entries(G.sh).map(([k, [x, y]]) => `<g class="sh fade" data-g="sh" id="i-${k}"><rect x="${x - 34}" y="${y - 16}" width="68" height="32" rx="16"/><text x="${x}" y="${y + 7.5}">${k}</text></g>`).join('')}
       <g id="i-dpad">
         <circle id="dpad-sel" class="sel" cx="${dx}" cy="${dy}" r="76"/>
         ${dpadArms()}
@@ -631,10 +640,11 @@ const Thor = (() => {
   const HOT = {
     back: [G.back[0] - 42, G.back[1] - 42, 84, 84],
     shL: [40, 465, 100, 80, 'pill'], shR: [770, 465, 100, 80, 'pill'],
+    face: [705, 585, 156, 150], home: [146, 897, 60, 60], select: [157, 543, 60, 60], start: [691, 543, 60, 60],
     dpad: [G.dpad[0] - 80, G.dpad[1] - 80, 160, 160],
     ls: [G.ls[0] - 82, G.ls[1] - 82, 164, 164], rs: [G.rs[0] - 82, G.rs[1] - 82, 164, 164],
   };
-  const HOT_LABEL = { back: 'Back button', shL: 'Left shoulder buttons L1 and L2', shR: 'Right shoulder buttons R1 and R2', dpad: 'D-pad', ls: 'Left stick', rs: 'Right stick' };
+  const HOT_LABEL = { back: 'Back button', shL: 'Left shoulder buttons L1 and L2', shR: 'Right shoulder buttons R1 and R2', face: 'Face buttons A, B, X and Y', home: 'Home button', select: 'Select button', start: 'Start button', dpad: 'D-pad', ls: 'Left stick', rs: 'Right stick' };
 
   let dev, $ = id => dev.querySelector('#' + id);
   let top, bot;
@@ -772,7 +782,7 @@ const Thor = (() => {
     if (s.group === 'back') { await backPattern(c, s.kind); return; }
     await backHold(c, true);
     await c.sleep(120);
-    if (s.group === 'sh') await shPress(c, s.key, 380);
+    if (s.group === 'sh' || s.group === 'face' || s.group === 'android') await shPress(c, s.key, 380);
     if (s.group === 'dpad') await dpadPress(c, s.key, 380);
     if (s.group === 'ls' || s.group === 'rs') {
       if (s.kind === 'dir') await stickDir(c, s.group, s.key, 420);
@@ -794,7 +804,7 @@ const Thor = (() => {
   }
   function select(groupOrNull) {
     ['back', 'dpad', 'ls', 'rs'].forEach(g => el(`${g}-sel`).classList.toggle('show', g === groupOrNull));
-    ['L1', 'L2', 'R1', 'R2'].forEach(k => el(`i-${k}`).querySelector('rect').style.strokeWidth = groupOrNull === 'sh' ? 6 : '');
+    dev.querySelectorAll('.ov .sh').forEach(g => { g.firstElementChild.style.strokeWidth = g.dataset.g === groupOrNull ? 6 : ''; });
   }
   function caption(html) { const cap = el('cap'); cap.innerHTML = html; cap.classList.add('shown'); }
 
@@ -945,7 +955,7 @@ const Thor = (() => {
     el('nt').innerHTML = t; el('ns').innerHTML = s;
     n.classList.remove('swap');
   }
-  const TALLY = [['sh', 'Shoulders', 4], ['dpad', 'D-pad', 4], ['ls', 'Left stick', 7], ['rs', 'Right stick', 7], ['back', 'Back alone', 4]];
+  const TALLY = [['sh', 'Shoulders', 4], ['face', 'Face buttons', 4], ['android', 'Home · Start · Select', 3], ['dpad', 'D-pad', 4], ['ls', 'Left stick', 7], ['rs', 'Right stick', 7], ['back', 'Back alone', 4]];
   function tallyReset() {
     el('tally').innerHTML = TALLY.map(([id, n, k]) => `<div class="row" data-t="${id}"><span>${n}</span><b>${k}</b></div>`).join('') +
       '<div class="row sum" data-t="sum"><span>Potential shortcuts</span><b id="tsum">0</b></div>';
@@ -957,7 +967,7 @@ const Thor = (() => {
     el('tally').querySelector('[data-t="sum"]').classList.add('in');
   }
   function tallyFinal(used = 0) {
-    el('tally').innerHTML = `<div class="big"><b>${used}<span style="font-size:.45em">/26</span></b><span>shortcuts in use</span><br>
+    el('tally').innerHTML = `<div class="big"><b>${used}<span style="font-size:.45em">/33</span></b><span>shortcuts in use</span><br>
       <span class="empty-pill">${used ? 'the rest stays empty' : 'all empty on a fresh install'}</span></div>`;
   }
 
@@ -1021,7 +1031,19 @@ const Thor = (() => {
     tallyIn('sh');
     await c.sleep(500);
 
-    step('…plus the D-pad', 0.28);
+    step('…plus a face button', 0.22);
+    await narr(c, '… + a <em>face button</em>', 'A · B · X · Y');
+    await accelerate(['X', 'A', 'B', 'Y'], 420, 180, (k, ms, gap) => shPress(c, k, ms, gap));
+    tallyIn('face');
+    await c.sleep(500);
+
+    step('…plus Home, Start or Select', 0.26);
+    await narr(c, '… + <em>Home</em>, <em>Start</em> or <em>Select</em>', 'the small round keys');
+    await accelerate(['select', 'start', 'home'], 460, 220, (k, ms, gap) => shPress(c, k, ms, gap));
+    tallyIn('android');
+    await c.sleep(500);
+
+    step('…plus the D-pad', 0.3);
     await narr(c, '… + the <em>D-pad</em>', 'every direction is its own shortcut');
     await accelerate(['up', 'right', 'down', 'left'], 420, 180, (d, ms, gap) => dpadPress(c, d, ms, gap));
     tallyIn('dpad');
@@ -1073,9 +1095,9 @@ const Thor = (() => {
     tallyIn('back');
     await c.sleep(800);
 
-    step('26 shortcuts, all yours', 0.95);
+    step('33 shortcuts, all yours', 0.95);
     showAllInputs(true);
-    await narr(c, '<em>26</em> shortcuts. All empty.', 'You decide what goes where, or leave it blank.');
+    await narr(c, '<em>33</em> shortcuts. All empty.', 'You decide what goes where, or leave it blank.');
     tallyFinal(0);
     await c.sleep(2900);
     step('Any function on any shortcut', 1);
@@ -1088,13 +1110,13 @@ const Thor = (() => {
     el('ns').getAnimations().forEach(a => a.cancel());
     el('narr').classList.remove('brand', 'swap');
     showAllInputs(true);
-    el('nt').innerHTML = '<em>26</em> shortcuts. All empty.';
+    el('nt').innerHTML = '<em>33</em> shortcuts. All empty.';
     el('ns').innerHTML = 'You decide what goes where, or leave it blank.';
     tallyFinal(0);
   }
   /** The closing card of the intro: the function list sits in the panel, the device sums it up. */
   async function introOutro(c) {
-    await narr(c, 'Any function. <em>Any</em> shortcut.', 'Every function fits on each of the 26.');
+    await narr(c, 'Any function. <em>Any</em> shortcut.', 'Every function fits on each of the 33.');
   }
   function leaveIntro() { dev.classList.remove('intro'); }
 
@@ -1147,8 +1169,8 @@ const Thor = (() => {
     return `<div class="tile ${c.id === 'settings' ? 'wide' : ''}"><h3>${ico(CAT_ICON[c.id])}${c.name}<span>${fs.reduce((n, f) => n + f.v, 0)}</span></h3>
       <ul class="flist">${fs.map(f => `<li>${SHORT[f.id] || f.name}</li>`).join('')}</ul></div>`;
   }).join('');
-  $('pFoot').innerHTML = ico('check') + `<span><b>${VARIANTS} functions × 26 shortcuts.</b> Nothing is set until you choose.</span>`;
-  $('ovStep').textContent = `${VARIANTS} functions · 26 shortcuts · none set by default`;
+  $('pFoot').innerHTML = ico('check') + `<span><b>${VARIANTS} functions × 33 shortcuts.</b> Nothing is set until you choose.</span>`;
+  $('ovStep').textContent = `${VARIANTS} functions · 33 shortcuts · none set by default`;
 
   async function startIntro() {
     closeDrawer(true);

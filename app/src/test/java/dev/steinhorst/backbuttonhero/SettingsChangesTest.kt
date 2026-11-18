@@ -42,12 +42,13 @@ class SettingsChangesTest {
             when (section) {
                 SettingsSection.BASIC -> assertEquals(before.copy(
                     bindings = before.bindings.mapValues { (key, value) ->
-                        if (BackGestureButton.entries.any { it.prefKey == key }) factory.bindings.getValue(key) else value
+                        if ((BackGestureButton.entries + AndroidButton.entries).any { it.prefKey == key }) factory.bindings.getValue(key) else value
                     },
                     doubleMs = factory.doubleMs, tapHoldMs = factory.tapHoldMs, holdMs = factory.holdMs,
                 ), after)
-                SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS -> {
+                SettingsSection.FACE, SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS -> {
                     val keys = when (section) {
+                        SettingsSection.FACE -> FaceButton.entries.map { it.prefKey }
                         SettingsSection.SHOULDERS -> ShoulderButton.entries.map { it.prefKey }
                         SettingsSection.STICKS -> (StickButton.entries.map { it.prefKey } + StickClickButton.entries.map { it.prefKey })
                         else -> DpadDirection.entries.map { it.prefKey }
@@ -74,6 +75,7 @@ class SettingsChangesTest {
         SettingsSection.entries.forEach { section ->
             val plan = SettingsChangePlan.create(before, section, SettingsChangeAction.UNBIND)
             val keys = when (section) {
+                SettingsSection.FACE -> FaceButton.entries.map { it.prefKey }
                 SettingsSection.SHOULDERS -> ShoulderButton.entries.map { it.prefKey }
                 SettingsSection.DPAD -> DpadDirection.entries.map { it.prefKey }
                 SettingsSection.STICKS -> (StickButton.entries.map { it.prefKey } + StickClickButton.entries.map { it.prefKey })
@@ -81,7 +83,7 @@ class SettingsChangesTest {
             }
             val expected = when (section) {
                 SettingsSection.BASIC -> before.copy(bindings = before.bindings.mapValues { (key, value) ->
-                    if (BackGestureButton.entries.any { it.prefKey == key }) value.copy(action = "") else value
+                    if ((BackGestureButton.entries + AndroidButton.entries).any { it.prefKey == key }) value.copy(action = "") else value
                 })
                 SettingsSection.SETTINGS -> before.copy(toggleButtons = Prefs.TOGGLE_NONE)
                 else -> before.copy(bindings = before.bindings.mapValues { (key, value) ->

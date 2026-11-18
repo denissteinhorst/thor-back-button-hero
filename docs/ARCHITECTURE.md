@@ -225,9 +225,18 @@ The four Back gestures are `BackGestureButton`s: `BackGestureMachine` still deci
 `ShoulderButton`, `DpadDirection` and `StickButton` all implement `ComboButton`, so `Prefs` stores every combo
 button's action, launch screen and level target the same way.
 
+**Home, Start, Select and the face buttons** (`AndroidButton`, `FaceButton`) are key events like the shoulder
+buttons and share `SwitcherService.handleShoulder`; `comboButton` maps an event to its button. Face buttons are
+stored by their printed letter: the Thor's style switch (`flip_button_layout`) swaps the keys the pad reports
+(A↔B, X↔Y, measured on the device), so `FaceButton.of` reads the setting at every press. AYN's own button sends
+the same `KEYCODE_HOME` as the house key, but from `gpio-keys` instead of the pad, so Home counts only with
+`SOURCE_GAMEPAD`. A Back + Home combo the service will consume bypasses `handleAynButton` (`isHomeCombo`), DOWN
+and UP alike; Home alone, an unassigned or excepted Home and AYN's button keep their earlier path. Home, Start
+and Select sit on the Android Buttons page below the Back gestures, A/B/X/Y on the Face Buttons page.
+
 ### `SettingsActivity` + `SettingsUiKit`
 
-Six hand-built pages share framework Views; no `PreferenceFragment` or layout XML.
+Eight hand-built pages share framework Views; no `PreferenceFragment` or layout XML.
 `SettingsNavigation` lazily builds and caches pages, using a left panel at 720 dp and
 above and a menu dialog below that width. Explicit navigation starts content at the top;
 activity recreation preserves the active page and scroll position. `SettingsUiKit`
@@ -238,18 +247,21 @@ the existing Android accessibility-settings repair flow.
 
 `SettingsChanges` captures immutable before/after snapshots for page defaults/unbind and
 whole-app reset/unbind. Confirmations list actual changes; `Prefs.applySettings` rejects
-stale previews and writes accepted plans atomically. Whole-app unbind clears shoulder,
+stale previews and writes accepted plans atomically. Whole-app unbind clears button, stick,
 D-pad and activation shortcuts, preserving primary gestures. An unassigned activation
 shortcut reactivates temporarily paused interception so the app cannot remain stranded.
 
 `ExceptionSettingsPage` edits per-app exceptions (`AppException`, stored by `Prefs` as
 `app_exceptions`): installed-app search (system apps hidden unless toggled on or
 searched for), a start choice (allow or block everything), and a
-list of apps. Each row has an active switch, a trash button (with confirmation) and four group buttons
-(Back, shoulder buttons, D-pad, analog sticks) that show how many of the group's controls Back Button Hero
-still handles; a button opens `ExceptionGroupDialog`, a modal with a glyph, name and switch per control
-(26 in all: four Back gestures, L1–R2, four D-pad directions, and per stick four directions plus
-press/double/tap-and-hold), an all-switch and, for the sticks, one all-switch per stick. The group model is
+list of apps. Each row has an active switch, a trash button (with confirmation) and five group buttons in a
+two-column grid (Android buttons, face buttons, shoulder buttons, D-pad, analog sticks) that show how many of
+the group's controls Back Button Hero still handles; a button opens `ExceptionGroupDialog`, a modal with a
+glyph, name and switch per control (33 in all: four Back gestures, L1–R2, four D-pad directions, per stick four
+directions plus press/double/tap-and-hold, Home/Start/Select and A/B/X/Y), an all-switch and one all-switch per
+section (Back gestures and Back + Home/Start/Select; left and right stick). The 33 bits no longer fit an `Int`,
+so `AppException.allowed` is a `Long`; `exception_buttons_v1` turns the seven button bits on for exceptions
+stored before them, and backups carry them as `buttonsAllowed`. The group model is
 `ExceptionGroup`; every change is written at once. Help has no page actions; Exceptions offers **Add app** and
 **Remove all exceptions** (a `PRESET` plan for that section) in its introduction. Whole-app factory settings also
 clear exceptions; Unbind never does.
@@ -261,7 +273,7 @@ turns a blocked single tap into `nativeBack(false)` and a blocked hold into
 `nativeBack(true)` at the system long-press timeout. `nativeBack` injects `input -d <display>
 keyevent [--longpress] 4` through pservice (global Back as fallback); the injected virtual-device
 Back passes `onKeyEvent` untouched. With all four Back gestures blocked the physical Back is
-not consumed at all, and no combo runs. Blocked shoulder buttons stay unconsumed and blocked
+not consumed at all, and no combo runs. Blocked key buttons stay unconsumed and blocked
 D-pad directions are sent to the helper as a `PASS` mask; either still marks the Back press as a
 combo, so its release is no tap. The mask is refreshed on window changes, setting
 changes and every Back DOWN. The activation toggle is global and unaffected.

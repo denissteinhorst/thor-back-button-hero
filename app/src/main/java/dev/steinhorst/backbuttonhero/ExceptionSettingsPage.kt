@@ -29,8 +29,8 @@ import android.widget.TextView
 
 /**
  * Per-app exceptions; every change is written to [Prefs] at once, so the service follows immediately.
- * Each app is one row with its active switch and four group buttons (Back, shoulder buttons, D-pad,
- * analog sticks); a button opens [ExceptionGroupDialog] with that group's controls.
+ * Each app is one row with its active switch and five group buttons (Android buttons, face buttons,
+ * shoulder buttons, D-pad, analog sticks); a button opens [ExceptionGroupDialog] with that group's controls.
  */
 class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, private val prefs: Prefs) {
     private data class App(val name: String, val packageName: String, val system: Boolean = false)
@@ -207,7 +207,7 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
                     // Its glyph sits 16 dp inside the 48 dp target (12 padding plus the drawable's own margin); pull it out so it meets the chips' edge.
                     }, LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginEnd = -dp(16) })
                 }, LinearLayout.LayoutParams(full, wrap))
-                // Two by two, so the names stay readable on a narrow screen and the buttons stay big.
+                // Two per line, so the names stay readable on a narrow screen and the buttons stay big.
                 ExceptionGroup.values().toList().chunked(2).forEach { pair ->
                     addView(LinearLayout(activity).apply {
                         pair.forEachIndexed { i, group ->
@@ -215,6 +215,8 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
                                 if (i == 0) marginEnd = dp(8)
                             })
                         }
+                        // An odd last group keeps its column width; the empty cell stays empty.
+                        if (pair.size == 1) addView(View(activity), LinearLayout.LayoutParams(0, 0, 1f))
                     }, LinearLayout.LayoutParams(full, wrap).apply { topMargin = dp(8) })
                 }
             }, LinearLayout.LayoutParams(full, wrap))
@@ -278,7 +280,7 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
         }
     }
 
-    private fun add(app: App, allowed: Int, picker: AlertDialog) {
+    private fun add(app: App, allowed: Long, picker: AlertDialog) {
         if (exceptions.none { it.packageName == app.packageName }) {
             val exception = AppException(app.packageName, app.name, allowed)
             save(exceptions + exception)
@@ -302,7 +304,7 @@ class ExceptionSettingsPage(private val activity: Activity, page: SettingsPage, 
             .setItems(arrayOf(
                 activity.getString(R.string.exceptions_allow_all),
                 activity.getString(R.string.exceptions_block_all),
-            )) { _, which -> add(app, if (which == 0) ExceptionControl.ALL else 0, picker) }
+            )) { _, which -> add(app, if (which == 0) ExceptionControl.ALL else 0L, picker) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }

@@ -24,6 +24,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import android.view.Display
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
@@ -342,10 +343,33 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        if (handleAynButton(event)) return true
+        if (!isHomeCombo(event) && handleAynButton(event)) return true
         toggleGesture.handle(event)
         return interceptionGate.handle(event, interceptionEnabled, ::handleActiveKeyEvent)
     }
+
+    /**
+     * Back + the pad's house key is an ordinary combo and bypasses [handleAynButton], DOWN and UP alike.
+     * Only a press the combo really consumes does: Home alone, an unassigned or excepted Home, and AYN's
+     * own button (the same key code from another input device) keep their established path.
+     */
+    private fun isHomeCombo(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_HOME || !event.isFromSource(InputDevice.SOURCE_GAMEPAD)) return false
+        if (event.action != KeyEvent.ACTION_DOWN) return shoulderKeys.isDown(event.keyCode)
+        return interceptionEnabled && backGesture.backDown && prefs.shoulderAction(AndroidButton.HOME).isNotEmpty() &&
+            allowsCombo(AndroidButton.HOME)
+    }
+
+    /** The combo button behind [event]: a shoulder, Home/Start/Select, or a face button by its printed label. */
+    private fun comboButton(event: KeyEvent): ComboButton? {
+        SHOULDER_BUTTONS.firstOrNull { it.keyCode == event.keyCode }?.let { return it }
+        AndroidButton.of(event.keyCode)?.let { button ->
+            return button.takeIf { it != AndroidButton.HOME || event.isFromSource(InputDevice.SOURCE_GAMEPAD) }
+        }
+        return FaceButton.of(event.keyCode, controllerFlipped())
+    }
+
+    private fun controllerFlipped(): Boolean = Settings.System.getInt(contentResolver, CONTROLLER_FLIP_SETTING, 0) != 0
 
     /**
      * AYN's button arrives as a physical Home key. While we hide AYN's panel, AYN still thinks it is
@@ -459,7 +483,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return consumed
         }
         if (handlePushToTalk(event)) return true
-        if (SHOULDER_BUTTONS.any { it.keyCode == event.keyCode }) return handleShoulder(event)
+        comboButton(event)?.let { return handleShoulder(event, it) }
         Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
     }
@@ -467,7 +491,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** The Thor's style switch swaps the confirm face button at runtime. */
     private fun isRecentsConfirm(event: KeyEvent): Boolean = event.keyCode == confirmKeyCode()
 
-    private fun confirmKeyCode(): Int = if (Settings.System.getInt(contentResolver, CONTROLLER_FLIP_SETTING, 0) != 0)
+    private fun confirmKeyCode(): Int = if (controllerFlipped())
         KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
 
     private fun handleRecentsControllerKey(event: KeyEvent): Boolean? {
@@ -712,12 +736,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         runReleasedCombo(pending)
     }
 
-    /** Holding Back and pressing a shoulder button runs that button's configured action
-     *  instead of whatever Back alone would have done, and swallows the shoulder button's
+    /** Holding Back and pressing a shoulder, Home/Start/Select or face button runs that button's
+     *  configured action instead of whatever Back alone would have done, and swallows the button's
      *  own event so the focused app/game never sees a stray press. Buttons with nothing
      *  configured are left alone, even while Back is held. */
-    private fun handleShoulder(event: KeyEvent): Boolean {
-        val button = SHOULDER_BUTTONS.first { it.keyCode == event.keyCode }
+    private fun handleShoulder(event: KeyEvent, button: ComboButton): Boolean {
         val action = prefs.shoulderAction(button)
         return when (event.action) {
             KeyEvent.ACTION_DOWN -> {

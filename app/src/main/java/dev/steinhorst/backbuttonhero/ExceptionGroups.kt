@@ -1,10 +1,18 @@
 package dev.steinhorst.backbuttonhero
 
-/** The four input groups an app's exception is edited by; each opens one modal of switches. */
+/** The input groups an app's exception is edited by; each opens one modal of switches. */
 enum class ExceptionGroup(val titleRes: Int, val iconRes: Int, val sections: List<Section>) {
-    BACK(
-        R.string.exceptions_group_back, R.drawable.ic_settings_back,
-        listOf(Section(null, ExceptionControl.BACK)),
+    ANDROID(
+        R.string.exceptions_group_android, R.drawable.ic_settings_android,
+        listOf(
+            Section(R.string.exceptions_section_back, ExceptionControl.BACK),
+            Section(R.string.exceptions_section_android_combos,
+                listOf(ExceptionControl.HOME, ExceptionControl.START, ExceptionControl.SELECT)),
+        ),
+    ),
+    FACE(
+        R.string.exceptions_group_face, R.drawable.ic_settings_face,
+        listOf(Section(null, listOf(ExceptionControl.A, ExceptionControl.B, ExceptionControl.X, ExceptionControl.Y))),
     ),
     SHOULDERS(
         R.string.exceptions_group_shoulders, R.drawable.ic_settings_shoulders,
@@ -28,13 +36,17 @@ enum class ExceptionGroup(val titleRes: Int, val iconRes: Int, val sections: Lis
     val controls: List<ExceptionControl> get() = sections.flatMap { it.controls }
 
     /** Bits of this group's controls. */
-    val mask: Int get() = controls.sumOf { it.bit }
+    val mask: Long get() = controls.sumOf { it.bit }
 
     /** How many of this group's controls Back Button Hero still handles for [exception]. */
-    fun allowedCount(exception: AppException): Int = controls.count { exception.allowed and it.bit != 0 }
+    fun allowedCount(exception: AppException): Int = controls.count { exception.allowed and it.bit != 0L }
 
-    /** The combos of every group but Back are unreachable once Back reaches the app untouched. */
-    fun editable(exception: AppException): Boolean = exception.active && (this == BACK || !exception.backNative)
+    /** Some control of this group can still be changed for [exception]. */
+    fun editable(exception: AppException): Boolean = controls.any { editable(exception, it) }
+
+    /** Every combo is unreachable once Back reaches the app untouched; the Back gestures stay editable. */
+    fun editable(exception: AppException, control: ExceptionControl): Boolean =
+        exception.active && (control in ExceptionControl.BACK || !exception.backNative)
 }
 
 private fun stickControls(side: String) = listOf("UP", "DOWN", "LEFT", "RIGHT", "PRESS", "DOUBLE", "TAP_HOLD")

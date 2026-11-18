@@ -163,6 +163,16 @@ Each is pressed **while holding Back**.
 C17 protects the promise that the app stays out of the way. It is easy to break by
 consuming a key event unconditionally, and no test can catch it.
 
+### Home, Start, Select and face buttons
+
+| # | Step | Expected |
+|---|---|---|
+| C17r | Assign Back + Home, Start, Select, A, B, X and Y one action each; hold Back and press each in a game | Each runs its own action; the game never sees the press, Back's release is no tap |
+| C17s | Switch the controller style (Standard ↔ Xbox) and repeat Back + A/B/X/Y | The printed letter keeps its action in both styles |
+| C17t | Press Home alone, AYN's button alone, and Back + AYN's button; also with a hidden bottom panel | Home goes home as before, AYN's button and the panel restore behave as before; Back + Home runs its action even while a panel is hidden |
+| C17u | Leave Home/Start/Select/A/B/X/Y unassigned and press them with and without Back | The game receives every press (C17) |
+| C17v | Uncheck Back + A and Back + Home in the game's exception | Both reach the game while Back is held; the other buttons still run their actions |
+
 ### D-pad shortcuts and the root helper
 
 Run these in a game or emulator that is already set up for the pad. See

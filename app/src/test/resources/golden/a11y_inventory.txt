@@ -17,6 +17,39 @@ clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Back but
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
 clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Back button hold screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Home action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Home screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Start action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Start screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Select action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Select screen: Both screens. Double-tap to change.
+clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+Page: FACE
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=A action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=A screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=B action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=B screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=X action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=X screen: Both screens. Double-tap to change.
+clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Y action: Not set. Double-tap to change.
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Use top screen
+clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Y screen: Both screens. Double-tap to change.
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SHOULDERS

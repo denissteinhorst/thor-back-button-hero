@@ -63,12 +63,21 @@ class SettingsBackupTest {
     }
 
     @Test
+    fun `button columns round trip on their own field`() {
+        val allowed = ExceptionControl.ALL and ExceptionControl.HOME.bit.inv() and ExceptionControl.Y.bit.inv()
+        val state = SettingsState(exceptions = listOf(AppException("com.a", "A", allowed)))
+        val text = SettingsBackup.write(state, "1.5.0", 15)
+        assertTrue(text.contains("\"buttonsAllowed\": ${ExceptionControl.BUTTON_BITS - 1 - 64}"))
+        assertEquals(state.exceptions, (SettingsBackup.read(text) as SettingsBackup.Result.Loaded).state.exceptions)
+    }
+
+    @Test
     fun `stick columns round trip, and an older backup keeps the sticks on`() {
         val state = SettingsState(exceptions = listOf(AppException("com.a", "A", ExceptionControl.BEFORE_STICKS or ExceptionControl.RIGHT_STICK_UP.bit or ExceptionControl.LEFT_STICK_TAP_HOLD.bit)))
         val back = (SettingsBackup.read(SettingsBackup.write(state, "1.5.0", 15)) as SettingsBackup.Result.Loaded).state
         assertEquals(state.exceptions, back.exceptions)
         val old = """{"format":"${SettingsBackup.FORMAT}","settings":{"exceptions":[{"package":"com.a","allowed":5}]}}"""
-        assertEquals(5 or (ExceptionControl.STICK_BITS shl 12), loaded(old).state.exceptions.single().allowed)
+        assertEquals(5L or (ExceptionControl.STICK_BITS shl 12) or (ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT), loaded(old).state.exceptions.single().allowed)
     }
 
     @Test
@@ -161,8 +170,8 @@ class SettingsBackupTest {
         assertEquals("com.ok.app", state.exceptions[0].name)
         assertEquals("Two", state.exceptions[1].name)
         // Undefined bits are dropped, like when the app reads its own stored exceptions; a backup
-        // from before the sticks has no stick field and keeps their shortcuts on.
-        assertEquals((999999 and ExceptionControl.BEFORE_STICKS) or (ExceptionControl.STICK_BITS shl 12), state.exceptions[1].allowed)
+        // from before the sticks or the buttons has no such field and keeps their shortcuts on.
+        assertEquals((999999L and ExceptionControl.BEFORE_STICKS) or (ExceptionControl.STICK_BITS shl 12) or (ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT), state.exceptions[1].allowed)
         assertTrue(state.exceptions[1].active)
         // Whatever came out is a state the app can store as it is.
         assertNotNull(SettingsBackup.write(state, "1.5.0", 15))

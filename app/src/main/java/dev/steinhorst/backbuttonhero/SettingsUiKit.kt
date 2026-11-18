@@ -112,7 +112,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
         card(activity.settingsSurfaceColor(SettingsSurface.INTRODUCTION)) {
             textRow(activity.getString(hintRes), verticalPaddingDp = 16).apply {
                 tag = "settings_page_hint"
-                textSize = 16f
+                textSize = 14f
                 setTextColor(themeColor(android.R.attr.textColorPrimary, Color.BLACK))
                 setTypeface(typeface, Typeface.BOLD)
                 setLineSpacing(dp(2).toFloat(), 1f)

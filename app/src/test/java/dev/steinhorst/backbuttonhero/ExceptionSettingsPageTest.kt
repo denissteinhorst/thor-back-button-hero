@@ -130,7 +130,7 @@ class ExceptionSettingsPageTest {
         val saved = Prefs(activity).appExceptions.single()
         assertEquals(0, saved.allowed)
         assertTrue(saved.backNative)
-        val back = open(activity, "org.example.beta", ExceptionGroup.BACK)
+        val back = open(activity, "org.example.beta", ExceptionGroup.ANDROID)
         ExceptionControl.BACK.forEach {
             assertFalse(toggle(back, it).isChecked)
             assertTrue(toggle(back, it).isEnabled)
@@ -150,7 +150,7 @@ class ExceptionSettingsPageTest {
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
         val pkg = "org.example.alpha"
-        val back = open(activity, pkg, ExceptionGroup.BACK)
+        val back = open(activity, pkg, ExceptionGroup.ANDROID)
         listOf(ExceptionControl.SINGLE, ExceptionControl.DOUBLE, ExceptionControl.TAP_HOLD).forEach {
             toggle(back, it).isChecked = false
         }
@@ -229,13 +229,13 @@ class ExceptionSettingsPageTest {
         installApps(activity)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
         add(activity, "org.example.alpha")
-        toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked = false
+        toggle(open(activity, "org.example.alpha", ExceptionGroup.ANDROID), ExceptionControl.HOLD).isChecked = false
         selectSettingsPage(activity, SettingsSection.BASIC)
         selectSettingsPage(activity, SettingsSection.EXCEPTIONS)
-        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked)
+        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.ANDROID), ExceptionControl.HOLD).isChecked)
         controller.recreate()
         activity = controller.get()
-        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.BACK), ExceptionControl.HOLD).isChecked)
+        assertFalse(toggle(open(activity, "org.example.alpha", ExceptionGroup.ANDROID), ExceptionControl.HOLD).isChecked)
         root(activity).findViewWithTag<View>("exception_remove_org.example.alpha").performClick()
         var confirm = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
         assertEquals(activity.getString(R.string.exceptions_remove_title), shadowOf(confirm).title.toString())
@@ -246,7 +246,7 @@ class ExceptionSettingsPageTest {
         confirm = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
         confirm.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
+        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.ANDROID))
         assertEquals(emptyList<AppException>(), Prefs(activity).appExceptions)
     }
 
@@ -263,8 +263,8 @@ class ExceptionSettingsPageTest {
         list.performItemClick(null, 0, 0)
         ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertNotNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
-        assertNull(chip(activity, "org.example.beta", ExceptionGroup.BACK))
+        assertNotNull(chip(activity, "org.example.alpha", ExceptionGroup.ANDROID))
+        assertNull(chip(activity, "org.example.beta", ExceptionGroup.ANDROID))
         assertEquals(listOf("org.example.alpha"), Prefs(activity).appExceptions.map { it.packageName })
     }
 
@@ -284,7 +284,7 @@ class ExceptionSettingsPageTest {
         preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(before.copy(exceptions = emptyList()), Prefs(activity).snapshot())
-        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.BACK))
+        assertNull(chip(activity, "org.example.alpha", ExceptionGroup.ANDROID))
     }
 
     @Test

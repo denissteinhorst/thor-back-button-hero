@@ -33,12 +33,37 @@ class ServiceBlockerTest {
         val bar = root(activity).findViewWithTag<View>("settings_top_bar")
         assertFalse(isInside(blocker, bar))
         assertEquals(View.VISIBLE, bar.findViewWithTag<View>("settings_service_warning").visibility)
-        // The menu, pages and warnings sit under it and are hidden from focus and screen readers.
+        // Pages and warnings sit under it and are hidden from focus and screen readers.
+        val page = generateSequence(root(activity).findViewWithTag<View>("settings_page_BASIC")) { it.parent as? View }
+            .first { it.parent === blocker.parent }
+        assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS, (page as ViewGroup).importantForAccessibility)
+        // The wide menu spans the full height beside the header, under a scrim of its own.
         val navigation = root(activity).findViewWithTag<View>("settings_navigation")
         if (navigation != null) {
-            val column = generateSequence(navigation as View?) { it.parent as? View }.first { it.parent === blocker.parent }
-            assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS, (column as ViewGroup).importantForAccessibility)
+            val scrim = root(activity).findViewWithTag<View>("settings_navigation_scrim")
+            assertEquals(View.VISIBLE, scrim.visibility)
+            assertTrue(scrim.isClickable)
+            assertTrue(scrim.parent === navigation.parent)
+            assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS, navigation.importantForAccessibility)
         }
+    }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `in the wide layout the full-height menu gets its own scrim while the header stays free`() {
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val navigation = root(activity).findViewWithTag<View>("settings_navigation")
+        val scrim = root(activity).findViewWithTag<View>("settings_navigation_scrim")
+        val bar = root(activity).findViewWithTag<View>("settings_top_bar")
+        assertEquals(View.VISIBLE, scrim.visibility)
+        assertTrue(scrim.isClickable)
+        assertTrue(scrim.parent === navigation.parent)
+        assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS, navigation.importantForAccessibility)
+        assertFalse(isInside(scrim, bar))
+        // The menu column starts at the window's top edge, beside the header rather than below it.
+        val host = navigation.parent as View
+        assertEquals(0, host.top)
+        assertEquals(host.height, (host.parent as View).height)
     }
 
     @Test

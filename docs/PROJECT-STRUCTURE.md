@@ -54,12 +54,12 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `PhysicalKeyTracker.kt` | 31 | Collapses duplicate shoulder-key events from the Thor's two mirrored controller input devices into one physical press/release cycle. |
 | `ServiceToggleGesture.kt` | 57 | The activation shortcut: observes a configured button pair without consuming it and toggles interception after the hold time. |
 | `KeyInterceptionGate.kt` | 29 | Keeps each key DOWN/UP pair on its original side of a runtime interception change, so pausing never strands a half-consumed press. |
-| `ShoulderButton.kt` | 42 | The `ComboButton` interface and its two enums: the four shoulder buttons (preference key, Android keycode) and the four D-pad directions (preference key, default action, hat-axis mapping). |
+| `ShoulderButton.kt` | 106 | The `ComboButton` interface and its key and D-pad enums: the four shoulder buttons, Home/Start/Select (`AndroidButton`) and the face buttons by printed letter (`FaceButton`, mapped through the controller-style switch), each with preference key and Android keycode, plus the four D-pad directions and the four Back gestures. |
 | `Prefs.kt` | 385 | `SharedPreferences` wrapper: schema, defaults, typed accessors, atomic application of change plans, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
 | `AppExceptions.kt` | 58 | `ExceptionControl` columns and `AppException` rules, plus their stored line format. |
 | `SettingsActivity.kt` | 907 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, triggers the update check, offers the page and whole-app defaults/unbind actions, and hosts the indicator-appearance popup (also opened directly from the focus pictogram). |
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
-| `SettingsNavigation.kt` | 221 | Adaptive six-page navigation (left panel from 720 dp, menu dialog below), top bar, lazy page cache and scroll state. |
+| `SettingsNavigation.kt` | 221 | Adaptive eight-page navigation (left panel from 720 dp, menu dialog below), top bar, lazy page cache and scroll state. |
 | `SettingsChanges.kt` | 97 | Immutable settings snapshots and scoped defaults/unbind change plans. |
 | `ExceptionGroups.kt` | 41 | The four input groups of an exception and their controls. |
 | `ExceptionGroupDialog.kt` | 288 | The modal of one group: glyph, name and switch per control, all-switches. |
@@ -168,7 +168,7 @@ The automated safety net. 55 test classes, **337 tests**. Run by the gate. By ar
 | Path | Purpose |
 |---|---|
 | `resources/robolectric.properties` | Pins Robolectric to `sdk=34`, matching `compileSdk`. |
-| `resources/golden/*.txt` | The **44** golden snapshots: six settings pages across locales/themes/window widths, shoulder/D-pad states, change-preview dialogs and accessibility inventory. |
+| `resources/golden/*.txt` | The **62** golden snapshots: eight settings pages across locales/themes/window widths, shoulder/D-pad states, change-preview dialogs and accessibility inventory. |
 
 ### `app/src/androidTest/` — instrumented tests
 

@@ -55,6 +55,8 @@ private fun factoryBindings(): Map<String, BindingSettings> = buildMap {
     StickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
     StickClickButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
     BackGestureButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    AndroidButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
+    FaceButton.entries.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
 }
 
 enum class SettingsChangeAction { PRESET, UNBIND, RESTORE }
@@ -89,7 +91,10 @@ data class SettingsChangePlan(
                 )
             }
             val buttons = when (section) {
-                null -> ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries
+                null -> AndroidButton.entries + FaceButton.entries + ShoulderButton.entries + DpadDirection.entries +
+                    StickButton.entries + StickClickButton.entries
+                SettingsSection.BASIC -> AndroidButton.entries
+                SettingsSection.FACE -> FaceButton.entries
                 SettingsSection.SHOULDERS -> ShoulderButton.entries
                 SettingsSection.DPAD -> DpadDirection.entries
                 SettingsSection.STICKS -> StickButton.entries + StickClickButton.entries

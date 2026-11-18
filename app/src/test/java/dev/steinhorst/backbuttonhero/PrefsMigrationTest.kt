@@ -240,16 +240,32 @@ class PrefsMigrationTest {
     }
 
     @Test
+    fun `existing exceptions keep the new button shortcuts on once`() {
+        val ctx = context()
+        rawPrefs(ctx).edit().clear().putBoolean("exception_sticks_v2", true)
+            .putString("app_exceptions", "com.a\t5\t1\tA\nbroken line").apply()
+        val buttons = ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT
+        assertEquals(listOf(5L or buttons), Prefs(ctx).appExceptions.map { it.allowed })
+        assertEquals("com.a\t${5L or buttons}\t1\tA\nbroken line", rawPrefs(ctx).getString("app_exceptions", null))
+        assertTrue(rawPrefs(ctx).getBoolean("exception_buttons_v1", false))
+        // A button the user switched off afterwards stays off.
+        Prefs(ctx).appExceptions = Prefs(ctx).appExceptions.map { it.copy(allowed = 5) }
+        assertEquals(listOf(5L), Prefs(ctx).appExceptions.map { it.allowed })
+    }
+
+    @Test
     fun `existing exceptions keep their stick shortcuts on once, malformed lines stay as they are`() {
         val ctx = context()
         rawPrefs(ctx).edit().clear()
             .putString("app_exceptions", "com.a\t5\t1\tA\nbroken line\ncom.b\t4095\t0\tB").apply()
         val exceptions = Prefs(ctx).appExceptions
-        assertEquals(listOf(5 or (ExceptionControl.STICK_BITS shl 12), 4095 or (ExceptionControl.STICK_BITS shl 12)), exceptions.map { it.allowed })
+        // The button columns' own migration runs in the same start and adds their bits as well.
+        val added = (ExceptionControl.STICK_BITS shl 12) or (ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT)
+        assertEquals(listOf(5L or added, 4095L or added), exceptions.map { it.allowed })
         assertTrue(rawPrefs(ctx).getBoolean("exception_sticks_v2", false))
         // A stick the user switched off afterwards is not switched back on by a later start.
         Prefs(ctx).appExceptions = exceptions.map { it.copy(allowed = 5) }
-        assertEquals(listOf(5, 5), Prefs(ctx).appExceptions.map { it.allowed })
+        assertEquals(listOf(5L, 5L), Prefs(ctx).appExceptions.map { it.allowed })
     }
 
     @Test

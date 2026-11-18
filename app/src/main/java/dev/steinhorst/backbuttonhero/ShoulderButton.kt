@@ -22,6 +22,41 @@ enum class ShoulderButton(override val prefKey: String, val keyCode: Int) : Comb
 }
 
 /**
+ * Home, Start and Select, combined with holding Back. Home is the pad's house key only: AYN's own
+ * button reports the same KEYCODE_HOME from another input device and keeps its panel role.
+ */
+enum class AndroidButton(override val prefKey: String, val keyCode: Int) : ComboButton {
+    HOME("home", KeyEvent.KEYCODE_HOME),
+    START("start", KeyEvent.KEYCODE_BUTTON_START),
+    SELECT("select", KeyEvent.KEYCODE_BUTTON_SELECT);
+
+    override val defaultAction: String get() = ""
+
+    companion object {
+        fun of(keyCode: Int): AndroidButton? = entries.firstOrNull { it.keyCode == keyCode }
+    }
+}
+
+/**
+ * The four face buttons, named and stored by their printed label. The Thor's style switch swaps the
+ * keys the pad reports (A with B, X with Y), so the key code behind a label depends on it.
+ */
+enum class FaceButton(override val prefKey: String, private val keyCode: Int, private val flippedKeyCode: Int) : ComboButton {
+    A("face_a", KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B),
+    B("face_b", KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_A),
+    X("face_x", KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y),
+    Y("face_y", KeyEvent.KEYCODE_BUTTON_Y, KeyEvent.KEYCODE_BUTTON_X);
+
+    override val defaultAction: String get() = ""
+
+    companion object {
+        /** The printed button behind [keyCode]; [flipped] is the Thor's `flip_button_layout` setting. */
+        fun of(keyCode: Int, flipped: Boolean): FaceButton? =
+            entries.firstOrNull { (if (flipped) it.flippedKeyCode else it.keyCode) == keyCode }
+    }
+}
+
+/**
  * The four D-pad directions, combined with holding Back. The Thor's D-pad reports a hat axis rather
  * than key events, so these arrive from [PadHelper] or [DpadOverlay], not from onKeyEvent.
  */

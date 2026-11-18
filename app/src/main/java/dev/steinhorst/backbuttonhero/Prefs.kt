@@ -88,13 +88,29 @@ class Prefs(context: Context) {
             sp.getString("app_exceptions", null)?.let { stored ->
                 migrated.putString("app_exceptions", stored.lineSequence().joinToString("\n") { line ->
                     val parts = line.split('\t', limit = 4)
-                    val allowed = parts.getOrNull(1)?.toIntOrNull()
+                    val allowed = parts.getOrNull(1)?.toLongOrNull()
                     if (parts.size == 4 && allowed != null) {
                         (parts.take(1) + (allowed or (ExceptionControl.STICK_BITS shl 12)) + parts.drop(2)).joinToString("\t")
                     } else line
                 })
             }
             migrated.putBoolean("exception_sticks_v2", true).apply()
+        }
+        // Home, Start, Select and the face buttons got exception columns too. Like the sticks, they
+        // start as handled in every listed app instead of being handed over to it unasked.
+        if (!sp.getBoolean("exception_buttons_v1", false)) {
+            val migrated = sp.edit()
+            sp.getString("app_exceptions", null)?.let { stored ->
+                migrated.putString("app_exceptions", stored.lineSequence().joinToString("\n") { line ->
+                    val parts = line.split('\t', limit = 4)
+                    val allowed = parts.getOrNull(1)?.toLongOrNull()
+                    if (parts.size == 4 && allowed != null) {
+                        val buttons = ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT
+                        (parts.take(1) + (allowed or buttons) + parts.drop(2)).joinToString("\t")
+                    } else line
+                })
+            }
+            migrated.putBoolean("exception_buttons_v1", true).apply()
         }
         // Single-stick toggles were offered in development builds; keep their replacement usable.
         if (!sp.getBoolean("toggle_pairs_v1", false)) {
@@ -329,7 +345,8 @@ class Prefs(context: Context) {
 
     fun snapshot(): SettingsState = SettingsState(
         doubleTapMs, tapHoldMs, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
-        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries).associate { button ->
+        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
+            AndroidButton.entries + FaceButton.entries).associate { button ->
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),

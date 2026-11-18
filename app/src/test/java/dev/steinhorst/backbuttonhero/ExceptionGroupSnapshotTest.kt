@@ -31,7 +31,7 @@ class ExceptionGroupSnapshotTest {
     }
 
     @Test
-    fun `an app row shows the four groups with how much each still handles`() {
+    fun `an app row shows the five groups with how much each still handles`() {
         val partial = AppException(pkg, "Alpha Emulator",
             ExceptionControl.ALL and (ExceptionControl.L2.bit or ExceptionControl.LEFT_STICK_UP.bit).inv())
         val row = activity(partial).findViewById<View>(android.R.id.content).findViewWithTag<View>("exception_active_$pkg").parent.parent as View
@@ -39,8 +39,19 @@ class ExceptionGroupSnapshotTest {
     }
 
     @Test
-    fun `the back modal lists its gestures`() {
-        Golden.verify("exceptions_modal_back", ViewTree.describe(modal(activity(AppException(pkg, "Alpha Emulator", ExceptionControl.ALL and ExceptionControl.HOLD.bit.inv())), ExceptionGroup.BACK)))
+    fun `the Android modal lists the Back gestures and the Home Start Select combos`() {
+        Golden.verify("exceptions_modal_android", ViewTree.describe(modal(activity(AppException(pkg, "Alpha Emulator", ExceptionControl.ALL and ExceptionControl.HOLD.bit.inv())), ExceptionGroup.ANDROID)))
+    }
+
+    @Test
+    fun `the face modal lists its four buttons by their printed letters`() {
+        Golden.verify("exceptions_modal_face", ViewTree.describe(modal(activity(AppException(pkg, "Alpha Emulator", ExceptionControl.ALL and ExceptionControl.B.bit.inv())), ExceptionGroup.FACE)))
+    }
+
+    @Test
+    fun `a native Back greys only the Android modal's combos`() {
+        val nativeBack = ExceptionControl.ALL and ExceptionControl.BACK.sumOf { it.bit }.inv()
+        Golden.verify("exceptions_modal_android_native", ViewTree.describe(modal(activity(AppException(pkg, "Alpha Emulator", nativeBack)), ExceptionGroup.ANDROID)))
     }
 
     @Test

@@ -22,12 +22,12 @@ class AppExceptionTest {
     @Test
     fun `decoding skips malformed lines, unsafe packages and duplicates`() {
         val stored = listOf(
-            "org.example.alpha\t67108863\t1\tAlpha",
+            "org.example.alpha\t8589934591\t1\tAlpha",
             "org.example.alpha\t0\t1\tDuplicate",
             "not a package\t1\t1\tBad",
             "org.example.beta\tx\t1\tBad mask",
             "org.example.gamma\t1",
-            "org.example.delta\t134217727\t0\t",
+            "org.example.delta\t17179869183\t0\t",
         ).joinToString("\n")
         assertEquals(listOf(
             AppException("org.example.alpha", "Alpha"),
@@ -51,7 +51,8 @@ class AppExceptionTest {
 
     @Test
     fun `every combo button maps to its own column`() {
-        val buttons: List<ComboButton> = ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries
+        val buttons: List<ComboButton> = ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries +
+            AndroidButton.entries + FaceButton.entries
         assertEquals(ExceptionControl.entries - ExceptionControl.BACK.toSet(),
             buttons.map(ExceptionControl::of).distinct().sortedBy { it.ordinal })
         // Every stick direction and click gesture has a column of its own.
@@ -70,5 +71,30 @@ class AppExceptionTest {
         assertEquals(true, oneOff.allows(ExceptionControl.RIGHT_STICK_UP))
         val nativeBack = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.BACK.sumOf { it.bit }.inv())
         assertEquals(false, nativeBack.allows(ExceptionControl.RIGHT_STICK_TAP_HOLD))
+    }
+
+    @Test
+    fun `the button columns sit above every older bit, and a native-Back app releases them too`() {
+        val buttons = listOf(ExceptionControl.HOME, ExceptionControl.START, ExceptionControl.SELECT,
+            ExceptionControl.A, ExceptionControl.B, ExceptionControl.X, ExceptionControl.Y)
+        assertEquals(ExceptionControl.BUTTON_BITS shl ExceptionControl.BUTTON_SHIFT, buttons.sumOf { it.bit })
+        assertEquals(ExceptionControl.ALL, ExceptionControl.entries.sumOf { it.bit })
+        val noA = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.A.bit.inv())
+        assertFalse(noA.allows(ExceptionControl.A))
+        assertTrue(noA.allows(ExceptionControl.HOME))
+        val nativeBack = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.BACK.sumOf { it.bit }.inv())
+        assertFalse(nativeBack.allows(ExceptionControl.HOME))
+        assertFalse(nativeBack.allows(ExceptionControl.Y))
+    }
+
+    @Test
+    fun `the Android group keeps its Back gestures editable while Back is native`() {
+        val nativeBack = AppException("com.a", "A", ExceptionControl.ALL and ExceptionControl.BACK.sumOf { it.bit }.inv())
+        assertTrue(ExceptionGroup.ANDROID.editable(nativeBack))
+        assertTrue(ExceptionGroup.ANDROID.editable(nativeBack, ExceptionControl.SINGLE))
+        assertFalse(ExceptionGroup.ANDROID.editable(nativeBack, ExceptionControl.HOME))
+        assertFalse(ExceptionGroup.FACE.editable(nativeBack))
+        assertTrue(ExceptionGroup.FACE.editable(AppException("com.a", "A")))
+        assertFalse(ExceptionGroup.FACE.editable(AppException("com.a", "A", active = false)))
     }
 }

@@ -89,7 +89,9 @@ object SettingsBackup {
         state.exceptions.forEach {
             exceptions.put(JSONObject().put("package", it.packageName).put("name", it.name)
                 .put("allowed", it.allowed and ExceptionControl.BEFORE_STICKS)
-                .put("sticksAllowed", it.allowed shr 12).put("active", it.active))
+                .put("sticksAllowed", (it.allowed shr 12) and ExceptionControl.STICK_BITS)
+                .put("buttonsAllowed", (it.allowed shr ExceptionControl.BUTTON_SHIFT) and ExceptionControl.BUTTON_BITS)
+                .put("active", it.active))
         }
         return JSONObject()
             .put("format", FORMAT)
@@ -196,9 +198,11 @@ object SettingsBackup {
             val pkg = entry.stringOrNull("package")?.takeIf(Shell::isPkg) ?: continue
             if (pkg in result) continue
             val name = entry.stringOrNull("name")?.filterNot { it.isISOControl() }?.trim()?.take(MAX_NAME)
-            // Backups from before the sticks have no such field; their shortcuts were active then.
-            val allowed = ((entry.intOrNull("allowed") ?: ExceptionControl.ALL) and ExceptionControl.BEFORE_STICKS) or
-                (((entry.intOrNull("sticksAllowed") ?: ExceptionControl.STICK_BITS) and ExceptionControl.STICK_BITS) shl 12)
+            // Backups from before the sticks or the buttons lack those fields; their shortcuts were active then.
+            fun bits(key: String, all: Long) = (entry.intOrNull(key)?.toLong() ?: all) and all
+            val allowed = bits("allowed", ExceptionControl.BEFORE_STICKS) or
+                (bits("sticksAllowed", ExceptionControl.STICK_BITS) shl 12) or
+                (bits("buttonsAllowed", ExceptionControl.BUTTON_BITS) shl ExceptionControl.BUTTON_SHIFT)
             result[pkg] = AppException(pkg, name?.ifEmpty { null } ?: pkg, allowed, entry.booleanOrNull("active") ?: true)
         }
         return result.values.toList()

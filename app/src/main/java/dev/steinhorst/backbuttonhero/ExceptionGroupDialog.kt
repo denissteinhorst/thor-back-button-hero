@@ -25,7 +25,7 @@ class ExceptionGroupDialog(
     private val group: ExceptionGroup,
     private val packageName: String,
     private val current: () -> AppException?,
-    private val onChange: (Int) -> Unit,
+    private val onChange: (Long) -> Unit,
 ) {
     private class RowViews(val row: View, val toggle: Switch)
     private class SectionViews(val group: List<ExceptionControl>, val toggle: Switch, val count: TextView)
@@ -97,22 +97,25 @@ class ExceptionGroupDialog(
         binding = true
         val editable = group.editable(exception)
         rows.forEach { (control, views) ->
-            views.toggle.isChecked = exception.allowed and control.bit != 0
-            views.toggle.isEnabled = editable
-            views.row.alpha = if (editable) 1f else 0.38f
-            views.row.isEnabled = editable
+            val enabled = group.editable(exception, control)
+            views.toggle.isChecked = exception.allowed and control.bit != 0L
+            views.toggle.isEnabled = enabled
+            views.row.alpha = if (enabled) 1f else 0.38f
+            views.row.isEnabled = enabled
         }
         sections.forEach { section ->
-            val on = section.group.count { exception.allowed and it.bit != 0 }
+            val on = section.group.count { exception.allowed and it.bit != 0L }
             section.toggle.isChecked = on == section.group.size
-            section.toggle.isEnabled = editable
+            section.toggle.isEnabled = section.group.any { group.editable(exception, it) }
             section.count.text = activity.getString(R.string.exceptions_count, on, section.group.size)
         }
         allToggle.isChecked = group.allowedCount(exception) == group.controls.size
         allToggle.isEnabled = editable
         allCount.text = activity.getString(R.string.exceptions_count, group.allowedCount(exception), group.controls.size)
         banner.text = activity.getString(if (!exception.active) R.string.exceptions_modal_inactive else R.string.exceptions_modal_native)
-        banner.visibility = if (!exception.active || (group != ExceptionGroup.BACK && exception.backNative)) View.VISIBLE else View.GONE
+        // Shown wherever a combo went grey; the Back gestures themselves always stay editable.
+        val unreachable = exception.backNative && group.controls.any { it !in ExceptionControl.BACK }
+        banner.visibility = if (!exception.active || unreachable) View.VISIBLE else View.GONE
         binding = false
     }
 
@@ -182,7 +185,7 @@ class ExceptionGroupDialog(
         return row to toggle
     }
 
-    private fun write(mask: Int, on: Boolean) {
+    private fun write(mask: Long, on: Boolean) {
         if (binding) return
         val exception = current() ?: return
         onChange(if (on) exception.allowed or mask else exception.allowed and mask.inv())
@@ -245,6 +248,13 @@ class ExceptionGroupDialog(
             ExceptionControl.DOWN -> Info(s(R.string.dpad_down), combo(s(R.string.dpad_down)), arrow, 180f, null)
             ExceptionControl.LEFT -> Info(s(R.string.dpad_left), combo(s(R.string.dpad_left)), arrow, 270f, null)
             ExceptionControl.RIGHT -> Info(s(R.string.dpad_right), combo(s(R.string.dpad_right)), arrow, 90f, null)
+            ExceptionControl.HOME -> Info(s(R.string.button_home), combo(s(R.string.button_home)), R.drawable.ic_exc_home, 0f, null)
+            ExceptionControl.START -> Info(s(R.string.button_start), combo(s(R.string.button_start)), R.drawable.ic_exc_start, 0f, null)
+            ExceptionControl.SELECT -> Info(s(R.string.button_select), combo(s(R.string.button_select)), R.drawable.ic_exc_select, 0f, null)
+            ExceptionControl.A -> Info(s(R.string.button_a), combo(s(R.string.button_a)), null, 0f, "A")
+            ExceptionControl.B -> Info(s(R.string.button_b), combo(s(R.string.button_b)), null, 0f, "B")
+            ExceptionControl.X -> Info(s(R.string.button_x), combo(s(R.string.button_x)), null, 0f, "X")
+            ExceptionControl.Y -> Info(s(R.string.button_y), combo(s(R.string.button_y)), null, 0f, "Y")
             else -> stick(control)
         }
     }
