@@ -114,6 +114,9 @@ stops withholding, tells the game where the stick now stands and reports nothing
 only the swing up to the threshold, and the stick is its own again until it returns to neutral.
 With an empty mask the behaviour is unchanged. The mask is resent when the helper takes over a new pad.
 
+`HOMEBACK 1` (the app's *Use the Home button as Back* option) makes the pad's Home key count as a held
+Back for every capture above; `HOMEBACK 0` restores Back alone. It is resent on every takeover.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one
@@ -182,7 +185,8 @@ SELinux" off). It is the same requirement swipe-to-close has.
   - **Helper crashes:** the kernel removes the clone automatically. On its next start the helper
     first recreates any `/dev/input` node that the kernel still has a device for.
   - **Emergency release:** holding **Home + Back for 5 seconds** makes the helper hand the pad back
-    and tells the app not to restart it until the service restarts.
+    and tells the app not to restart it until the service restarts. While Home stands in for Back
+    (`HOMEBACK 1`) holding both is ordinary use, so the release is off then.
   - **Style switch:** switching the controller style creates a fresh pad and node in any case.
 - **A restarted helper recreates the pad.** Whenever the helper starts again (an app update, a
   reinstall, a service restart), Android sees the pad vanish and reappear with a new device id.

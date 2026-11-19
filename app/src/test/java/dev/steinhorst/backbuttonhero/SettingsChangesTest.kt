@@ -15,7 +15,7 @@ class SettingsChangesTest {
     private fun customized(): SettingsState = SettingsState().let { factory ->
         factory.copy(
             doubleMs = 550, tapHoldMs = 1700, holdMs = 1900,
-            allApps = true, controller = false, toggleButtons = Prefs.TOGGLE_L1_R1, toggleMs = 1300,
+            allApps = true, controller = false, homeAsBack = true, toggleButtons = Prefs.TOGGLE_L1_R1, toggleMs = 1300,
             bindings = factory.bindings.mapValues { (_, value) -> value.copy(
                 action = "com.example.game", display = Prefs.DISPLAY_TOP,
                 targetOverride = Prefs.DISPLAY_BOTTOM, focusTarget = Prefs.DISPLAY_BOTTOM,
@@ -58,7 +58,7 @@ class SettingsChangesTest {
                     }, stickTimings = if (section == SettingsSection.STICKS) factory.stickTimings else before.stickTimings), after)
                 }
                 SettingsSection.SETTINGS -> assertEquals(before.copy(
-                    allApps = factory.allApps, controller = factory.controller,
+                    allApps = factory.allApps, controller = factory.controller, homeAsBack = factory.homeAsBack,
                     toggleButtons = factory.toggleButtons, toggleMs = factory.toggleMs,
                 ), after)
                 SettingsSection.HELP, SettingsSection.EXCEPTIONS -> assertTrue(plan.isEmpty)

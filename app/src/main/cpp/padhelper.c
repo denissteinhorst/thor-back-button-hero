@@ -20,6 +20,7 @@
 //     is recognised instead of being reported.
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
+//     "HOMEBACK 1" makes the pad's Home key count as Back for all of the above.
 //
 // AYN's controller-style switch (Xbox / Standard / Ban on Use) destroys the pad and creates a new one
 // with another name and product id. read() then fails, the clone is torn down, and the helper takes
@@ -392,6 +393,8 @@ static void navigation_key(int key) {
 
 // Directions the focused app keeps while Back is held (bits: up 1, down 2, left 4, right 8).
 static int pass_mask = 0;
+// "HOMEBACK 1": the user lets the pad's Home key stand in for Back, so either one counts as held.
+static int home_back = 0;
 
 static int passes(int code, int value) {
     int bit = code == ABS_HAT0X ? (value < 0 ? 4 : 8) : (value < 0 ? 1 : 2);
@@ -414,6 +417,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "SPASS %d", &mask) == 1 && mask >= 0 && mask <= 255) stick_pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
+        if (sscanf(line, "HOMEBACK %d", &mode) == 1 && (mode == 0 || mode == 1)) home_back = mode;
         line = newline + 1;
     }
     size_t remaining = *used - (size_t)(line - buffer);
@@ -434,7 +438,7 @@ int main(int argc, char **argv) {
     if (sock < 0) return 1;
     dprintf(sock, "READY\n");
 
-    int back = 0, home = 0, cap_x = 0, cap_y = 0, switcher = 0, emergency = 0;
+    int back = 0, back_key = 0, home = 0, cap_x = 0, cap_y = 0, switcher = 0, emergency = 0;
     char command_buffer[128] = {0};
     size_t command_used = 0;
     long both_since = 0;
@@ -446,7 +450,7 @@ int main(int argc, char **argv) {
                 if (poll(&sp, 1, 300) > 0) break; // app went away while we were waiting
                 continue;
             }
-            back = home = cap_x = cap_y = 0;
+            back = back_key = home = cap_x = cap_y = 0;
             both_since = 0;
             load_sticks(pad.fd);
         }
@@ -468,8 +472,9 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < n / (ssize_t)sizeof evs[0]; i++) {
             struct input_event *e = &evs[i];
-            if (e->type == EV_KEY && e->code == KEY_BACK) back = e->value != 0;
+            if (e->type == EV_KEY && e->code == KEY_BACK) back_key = e->value != 0;
             if (e->type == EV_KEY && e->code == KEY_HOME) home = e->value != 0;
+            back = back_key || (home_back && home);
             if (e->type == EV_SYN && e->code == SYN_REPORT) stick_frame();
             if (e->type == EV_ABS && handle_stick(e, back, switcher)) continue;
             if (e->type == EV_ABS && (e->code == ABS_HAT0X || e->code == ABS_HAT0Y)) {
@@ -492,8 +497,9 @@ int main(int argc, char **argv) {
             if (write(ufd, e, sizeof *e) != (ssize_t)sizeof *e) { stop = 1; break; }
         }
         // Escape hatch that does not depend on the app: Home + Back for 5 s returns the pad to Android
-        // and tells the app not to start us again.
-        if (back && home) {
+        // and tells the app not to start us again. With Home standing in for Back the user holds both
+        // as one key and would trip the hatch by accident, so it is off then.
+        if (back_key && home && !home_back) {
             if (!both_since) both_since = now_ms();
             else if (now_ms() - both_since > EMERGENCY_HOLD_MS) { emergency = 1; break; }
         } else {

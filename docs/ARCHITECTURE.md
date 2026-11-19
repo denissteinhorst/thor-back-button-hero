@@ -234,6 +234,17 @@ the same `KEYCODE_HOME` as the house key, but from `gpio-keys` instead of the pa
 and UP alike; Home alone, an unassigned or excepted Home and AYN's button keep their earlier path. Home, Start
 and Select sit on the Android Buttons page below the Back gestures, A/B/X/Y on the Face Buttons page.
 
+**Home as Back** (`Prefs.homeAsBack`, Settings page, off by default) makes the pad's house key behave exactly like
+Back: every gesture, combo and exception. `onKeyEvent` routes Back and the pad's Home through `HomeAsBack` before
+`handleAynButton` and the interception gate. Whichever key goes down first owns the one virtual Back until all its
+devices release it; Home's events are copied as `KEYCODE_BACK` and the other key's press is swallowed whole, so
+holding both is neither a double press nor Back + Home. The route is fixed at DOWN, so a press keeps it across a
+pause or a setting change; with interception paused no new press is routed and Home stays Home. A translated Home
+is always consumed: where real Back would pass natively (an exception's native Back), the service injects a Back
+on release instead. Back + Home cannot be pressed meanwhile, so its row is shown disabled with its binding kept.
+`PadHelper` sends `HOMEBACK 0/1` so the helper counts Home as Back for D-pad and stick captures, which also turns
+its Home + Back emergency release off.
+
 ### `SettingsActivity` + `SettingsUiKit`
 
 Eight hand-built pages share framework Views; no `PreferenceFragment` or layout XML.

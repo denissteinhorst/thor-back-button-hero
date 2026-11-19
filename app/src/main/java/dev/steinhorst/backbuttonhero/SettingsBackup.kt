@@ -101,6 +101,7 @@ object SettingsBackup {
             .put("settings", JSONObject()
                 .put("backTimings", JSONObject().put("doubleMs", state.doubleMs).put("tapHoldMs", state.tapHoldMs).put("holdMs", state.holdMs))
                 .put("switcher", JSONObject().put("showsAllApps", state.allApps).put("controllerNavigation", state.controller))
+                .put("homeAsBack", state.homeAsBack)
                 .put("activationShortcut", JSONObject().put("buttons", state.toggleButtons).put("holdMs", state.toggleMs))
                 .put("stickTimings", sticks)
                 .put("bindings", bindings)
@@ -129,6 +130,7 @@ object SettingsBackup {
             holdMs = back.time("holdMs", factory.holdMs, 500, 2000),
             allApps = switcher?.booleanOrNull("showsAllApps") ?: factory.allApps,
             controller = switcher?.booleanOrNull("controllerNavigation") ?: factory.controller,
+            homeAsBack = settings?.booleanOrNull("homeAsBack") ?: factory.homeAsBack,
             toggleButtons = activation?.stringOrNull("buttons")?.takeIf { it in TOGGLE_VALUES } ?: factory.toggleButtons,
             toggleMs = activation.time("holdMs", factory.toggleMs, 100, 3000),
             bindings = readBindings(settings?.objectOrNull("bindings"), factory.bindings),

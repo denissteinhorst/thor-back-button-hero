@@ -278,6 +278,13 @@ class SettingsActivity : Activity() {
                 prefs.switcherControllerEnabled = it
             }
         }
+        page.sectionHeader(R.string.home_as_back_section)
+        page.card {
+            toggleRow(R.string.home_as_back, R.string.home_as_back_hint, prefs.homeAsBack, readValue = { prefs.homeAsBack }) {
+                prefs.homeAsBack = it
+                comboRows[AndroidButton.HOME.prefKey]?.let(::updateShoulderRow)
+            }
+        }
         page.sectionHeader(R.string.service_toggle_title)
         page.card {
             val buttons = chooserRow(R.string.service_toggle_buttons, toggleButtonsLabel()) { chooseToggleButtons() }
@@ -1075,7 +1082,19 @@ class SettingsActivity : Activity() {
             options.position.value.text = describeFocusPosition(row.button)
             options.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, options.position.value.text)
         }
+        // With Home standing in for Back, Back + Home cannot be pressed; its binding stays stored.
+        val blocked = row.button == AndroidButton.HOME && prefs.homeAsBack
+        if (blocked) row.action.value.text = getString(R.string.home_as_back_combo_blocked)
+        (row.action.row.parent as View).let { card ->
+            card.alpha = if (blocked) 0.5f else 1f
+            setTreeEnabled(card, !blocked)
+        }
         row.action.row.contentDescription = getString(R.string.shoulder_action_accessibility, row.label, row.action.value.text)
+    }
+
+    private fun setTreeEnabled(view: View, enabled: Boolean) {
+        view.isEnabled = enabled
+        if (view is ViewGroup) for (i in 0 until view.childCount) setTreeEnabled(view.getChildAt(i), enabled)
     }
 
     private fun dividerBefore(row: View): View? =
@@ -1287,6 +1306,7 @@ class SettingsActivity : Activity() {
         addChange(getString(R.string.settings_hold_time), ms(a.holdMs), ms(b.holdMs))
         addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
+        addChange(getString(R.string.home_as_back), onOff(a.homeAsBack), onOff(b.homeAsBack))
         addChange(getString(R.string.service_toggle_buttons), toggle(a.toggleButtons), toggle(b.toggleButtons))
         addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }

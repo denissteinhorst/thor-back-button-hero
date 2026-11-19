@@ -172,6 +172,9 @@ consuming a key event unconditionally, and no test can catch it.
 | C17t | Press Home alone, AYN's button alone, and Back + AYN's button; also with a hidden bottom panel | Home goes home as before, AYN's button and the panel restore behave as before; Back + Home runs its action even while a panel is hidden |
 | C17u | Leave Home/Start/Select/A/B/X/Y unassigned and press them with and without Back | The game receives every press (C17) |
 | C17v | Uncheck Back + A and Back + Home in the game's exception | Both reach the game while Back is held; the other buttons still run their actions |
+| C17w | Settings → *Use the Home button as Back* on; use Home for a tap, double tap, hold, tap-and-hold and Home + L1, D-pad, stick | Each behaves exactly as with Back, the game keeps focus and never sees Home; the Back + Home row is disabled with its binding kept |
+| C17x | With the option on, hold Back and press Home (and the reverse); hold both 6 s | The second key does nothing, the first acts alone; the pad is not released |
+| C17y | Option on, game exception with native Back; then pause interception with the activation shortcut | Home gives the game a Back; paused, Home goes home again |
 
 ### D-pad shortcuts and the root helper
 
@@ -185,7 +188,7 @@ Run these in a game or emulator that is already set up for the pad. See
 | C17c | Back + left / right, at the defaults | Volume of both screens steps down / up; the system volume panel appears; no pause |
 | C17d | Set one direction's screen to *Top screen*, then to *Bottom screen* | Only that screen changes |
 | C17e | Switch the controller style: Xbox → Standard → Ban on Use → Xbox, testing C17a and C17b after each | Every style keeps working; with Ban on Use the pad is off, as in AYN's own behavior |
-| C17f | Hold Home + Back for 5 s | The pad is handed back to Android; the helper stays off until the service restarts, and the shortcuts fall back to the overlay |
+| C17f | Hold Home + Back for 5 s (with *Use the Home button as Back* off) | The pad is handed back to Android; the helper stays off until the service restarts, and the shortcuts fall back to the overlay |
 | C17g | Clear all four D-pad directions | The helper stops; Android sees AYN's own pad again |
 | C17i | Assign actions to the left stick (up/down: volume, left: screenshot), hold Back and push the stick | Up/down step volume once, then repeat after 0.25 s while held, faster the longer; left runs once however long it is held; the game sees a centred stick |
 | C17j | Push left, sweep to up without passing the centre, return, push up | The sweep fires nothing; only the fresh deflection after the stick was neutral fires |

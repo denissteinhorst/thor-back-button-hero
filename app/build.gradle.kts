@@ -272,7 +272,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
             "StickButton" to "1.00", "Stick" to "1.00",
             "SettingsBackup" to "1.00",
-            "AndroidButton" to "1.00", "FaceButton" to "1.00", "ExceptionGroup" to "1.00",
+            "AndroidButton" to "1.00", "FaceButton" to "1.00", "ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

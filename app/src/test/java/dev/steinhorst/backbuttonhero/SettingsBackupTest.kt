@@ -16,7 +16,7 @@ import java.time.LocalDate
 class SettingsBackupTest {
     private fun customized(): SettingsState = SettingsState().let { factory ->
         factory.copy(
-            doubleMs = 450, tapHoldMs = 1_400, holdMs = 1_700, allApps = true, controller = false,
+            doubleMs = 450, tapHoldMs = 1_400, holdMs = 1_700, allApps = true, controller = false, homeAsBack = true,
             toggleButtons = Prefs.TOGGLE_L1_R1, toggleMs = 1_300,
             bindings = factory.bindings.mapValues { (key, value) ->
                 when (key) {
@@ -135,6 +135,7 @@ class SettingsBackupTest {
         val text = """{"format":"${SettingsBackup.FORMAT}","settings":{
             "backTimings":{"doubleMs":99999,"tapHoldMs":-5,"holdMs":"1000"},
             "switcher":{"showsAllApps":"yes","controllerNavigation":1},
+            "homeAsBack":"yes",
             "activationShortcut":{"buttons":"x_y","holdMs":1},
             "stickTimings":{"lstick":{"doubleMs":0,"tapHoldMs":1e9},"rstick":"broken"},
             "bindings":{
@@ -155,6 +156,7 @@ class SettingsBackupTest {
         assertEquals(factory.holdMs, state.holdMs)
         assertEquals(factory.allApps, state.allApps)
         assertEquals(factory.controller, state.controller)
+        assertEquals(factory.homeAsBack, state.homeAsBack)
         assertEquals(factory.toggleButtons, state.toggleButtons)
         assertEquals(100L, state.toggleMs)
         assertEquals(StickTimings(150, 2_000), state.stickTimings.getValue("lstick"))

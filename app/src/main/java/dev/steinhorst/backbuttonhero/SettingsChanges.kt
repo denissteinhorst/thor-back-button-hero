@@ -13,6 +13,7 @@ data class SettingsState(
     val exceptions: List<AppException> = emptyList(),
     /** Per stick (keyed by [Stick.prefix]): its double-press and hold times. */
     val stickTimings: Map<String, StickTimings> = Stick.entries.associate { it.prefix to StickTimings() },
+    val homeAsBack: Boolean = Prefs.DEFAULT_HOME_AS_BACK,
 )
 
 data class StickTimings(
@@ -111,6 +112,7 @@ data class SettingsChangePlan(
             if (section == null || section == SettingsSection.SETTINGS) after = after.copy(
                 allApps = if (preset) factory.allApps else before.allApps,
                 controller = if (preset) factory.controller else before.controller,
+                homeAsBack = if (preset) factory.homeAsBack else before.homeAsBack,
                 toggleButtons = if (preset) factory.toggleButtons else Prefs.TOGGLE_NONE,
                 toggleMs = if (preset) factory.toggleMs else before.toggleMs,
             )

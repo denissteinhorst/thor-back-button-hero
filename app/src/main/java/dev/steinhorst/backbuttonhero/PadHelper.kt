@@ -42,6 +42,7 @@ class PadHelper(
     @Volatile private var passthrough = 0
     @Volatile private var stickMask = 0
     @Volatile private var stickPassthrough = 0
+    @Volatile private var homeAsBack = false
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -134,6 +135,17 @@ class PadHelper(
         sendStickPassthrough()
     }
 
+    /** Lets the pad's Home key count as Back for captures; also turns the Home + Back release off. */
+    fun setHomeAsBack(value: Boolean) {
+        if (value == homeAsBack) return
+        homeAsBack = value
+        sendHomeAsBack()
+    }
+
+    private fun sendHomeAsBack() {
+        runCatching { client?.outputStream?.write("HOMEBACK ${if (homeAsBack) 1 else 0}\n".toByteArray()) }
+    }
+
     private fun sendStickPassthrough() {
         runCatching { client?.outputStream?.write("SPASS $stickPassthrough\n".toByteArray()) }
     }
@@ -191,6 +203,7 @@ class PadHelper(
                 sendPassthrough()
                 sendSticks()
                 sendStickPassthrough()
+                sendHomeAsBack()
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }

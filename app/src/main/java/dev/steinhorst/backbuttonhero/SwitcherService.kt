@@ -156,6 +156,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val nativeBackDevices = mutableSetOf<Int>()
     // Back that nativeBack injects arrives here again with the virtual device id and must pass.
     private var nativeBackInjections = 0
+    private val homeAsBack = HomeAsBack()
+    /** True while a Home press standing in for Back runs through the Back path. */
+    private var translatingHome = false
     private val prefs by lazy { Prefs(this) }
     private val handler = Handler(Looper.getMainLooper())
 
@@ -184,6 +187,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         aynButtonPassing = null
         interceptionGate.clear()
         toggleGesture.reset()
+        homeAsBack.reset()
         backGesture.reset()
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
@@ -299,6 +303,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
         if (prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        padHelper.setHomeAsBack(prefs.homeAsBack)
         updateStickCapture(backException)
     }
 
@@ -343,10 +348,36 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        val route = homeAsBackRoute(event)
+        if (route == HomeAsBack.Route.SWALLOW) return true
+        if (route == HomeAsBack.Route.AS_BACK) {
+            translatingHome = true
+            try {
+                interceptionGate.handle(asBack(event), interceptionEnabled, ::handleActiveKeyEvent)
+            } finally {
+                translatingHome = false
+            }
+            // Whatever the Back path decides, the original Home must never reach Android as Home.
+            return true
+        }
         if (!isHomeCombo(event) && handleAynButton(event)) return true
         toggleGesture.handle(event)
         return interceptionGate.handle(event, interceptionEnabled, ::handleActiveKeyEvent)
     }
+
+    /** Back and the pad's house key, routed through [homeAsBack]; AYN's own Home button never is. */
+    private fun homeAsBackRoute(event: KeyEvent): HomeAsBack.Route {
+        val home = event.keyCode == KeyEvent.KEYCODE_HOME && event.isFromSource(InputDevice.SOURCE_GAMEPAD)
+        if (!home && event.keyCode != KeyEvent.KEYCODE_BACK) return HomeAsBack.Route.PASS
+        // Injected Back (virtual device) is ours to let through, never a physical press to pair.
+        if (event.deviceId < 0) return HomeAsBack.Route.PASS
+        return homeAsBack.route(event.keyCode, event.deviceId, event.action, event.repeatCount, interceptionEnabled && prefs.homeAsBack)
+    }
+
+    private fun asBack(event: KeyEvent): KeyEvent = KeyEvent(
+        event.downTime, event.eventTime, event.action, KeyEvent.KEYCODE_BACK, event.repeatCount, event.metaState,
+        event.deviceId, event.scanCode, event.flags, event.source,
+    )
 
     /**
      * Back + the pad's house key is an ordinary combo and bypasses [handleAynButton], DOWN and UP alike.
@@ -460,7 +491,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
             if (event.deviceId in nativeBackDevices) {
                 if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
                 backGesture.observeNativeBack(event, nativeBackDevices.size)
-                dlog("BACK   native passthrough action=${event.action} device=${event.deviceId}")
+                dlog("BACK   native passthrough action=${event.action} device=${event.deviceId} home=$translatingHome")
+                // Passing a translated Home on would hand Android a Home press; the app gets a Back instead.
+                if (translatingHome) {
+                    if (event.action == KeyEvent.ACTION_UP) nativeBack(longPress = false)
+                    return true
+                }
                 return false
             }
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.

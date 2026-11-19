@@ -159,6 +159,11 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
         set(v) = sp.edit().putBoolean("switcher_controller_enabled", v).apply()
 
+    /** Whether the pad's Home key acts exactly like Back: every gesture, combo and exception. */
+    var homeAsBack: Boolean
+        get() = sp.getBoolean("home_as_back", DEFAULT_HOME_AS_BACK)
+        set(v) = sp.edit().putBoolean("home_as_back", v).apply()
+
     var toggleButtons: String
         get() = sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) ?: DEFAULT_TOGGLE_BUTTONS
         set(v) = sp.edit().putString("toggle_buttons", v).apply()
@@ -358,6 +363,7 @@ class Prefs(context: Context) {
         },
         appExceptions,
         Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it), stickTapHoldMs(it)) },
+        homeAsBack = homeAsBack,
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -384,6 +390,7 @@ class Prefs(context: Context) {
         long("hold_ms", before.holdMs, after.holdMs)
         boolean("switcher_shows_all_apps", before.allApps, after.allApps)
         boolean("switcher_controller_enabled", before.controller, after.controller)
+        boolean("home_as_back", before.homeAsBack, after.homeAsBack)
         string("toggle_buttons", before.toggleButtons, after.toggleButtons)
         long("toggle_hold_ms", before.toggleMs, after.toggleMs)
         before.bindings.forEach { (key, old) ->
@@ -445,6 +452,7 @@ class Prefs(context: Context) {
         const val DEFAULT_DOUBLE_TAP_MS = 300L
         const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false
         const val DEFAULT_SWITCHER_CONTROLLER_ENABLED = true
+        const val DEFAULT_HOME_AS_BACK = false
         const val DEFAULT_TAP_HOLD_ENABLED = true
         const val DEFAULT_TAP_HOLD_MS = 1000L
         const val DEFAULT_HOLD_ENABLED = true

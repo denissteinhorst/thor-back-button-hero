@@ -21,6 +21,10 @@
     <string name="switcher_all_apps_hint">Schließt Apps ein, die auf dem oberen Bildschirm beobachtet wurden. „Alle Apps schließen“ schließt dann Apps beider Bildschirme. Apps, die der Bedienungshilfen-Dienst seit seinem Start nicht gesehen hat, können nicht erscheinen.</string>
     <string name="switcher_controller">Recents mit dem Controller bedienen</string>
     <string name="switcher_controller_hint">D-Pad links/rechts wählt eine App. D-Pad runter führt zu Screenshot und „Alle schließen“; Bestätigen führt die markierte Aktion aus. D-Pad hoch schließt die ausgewählte App. Die Bestätigungstaste folgt dem Thor-Controller-Stil.</string>
+    <string name="home_as_back_section">Home-Taste</string>
+    <string name="home_as_back">Home-Button wie Back-Taste verwenden</string>
+    <string name="home_as_back_hint">Home verhält sich dann genau wie Back: alle Back-Gesten, alle Back + Taste-Kürzel und die App-Ausnahmen. Back + Home ist solange nicht verfügbar.</string>
+    <string name="home_as_back_combo_blocked">Nicht verfügbar, solange Home als Back dient</string>
     <string name="hold_speed">Haltedauer: %d ms</string>
     <string name="hold_section_title">Halten</string>
     <string name="hold_hint">Wie lange Back gehalten werden muss. Standard: 1000 ms.</string>

@@ -148,6 +148,9 @@ own accessibility service.
 - **Clear bindings** on a page previews the bindings it will remove. Removing the
   activation shortcut also resumes temporarily paused interception. Gesture timings
   and other settings stay as they are.
+- **Use the Home button as Back** (Settings page, off by default) makes the house
+  key act exactly like Back: every gesture, shortcut and app exception. Back + Home
+  is unavailable while it is on; its binding is kept.
 - **Backup** (Settings page) saves all bindings, timings, switches, the activation
   shortcut and the app exceptions as one JSON file, named
   `back-button-hero-backup_v<version>_<date>.json`, through Android's file picker, so

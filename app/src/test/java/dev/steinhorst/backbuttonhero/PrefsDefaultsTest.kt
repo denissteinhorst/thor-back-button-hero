@@ -97,6 +97,13 @@ class PrefsDefaultsTest {
     }
 
     @Test
+    fun `home as back defaults to false and round-trips`() {
+        assertFalse(prefs.homeAsBack)
+        prefs.homeAsBack = true
+        assertTrue(prefs.homeAsBack)
+    }
+
+    @Test
     fun `holdEnabled round-trips false`() {
         prefs.holdEnabled = false
         assertFalse(prefs.holdEnabled)
