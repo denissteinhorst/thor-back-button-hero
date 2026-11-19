@@ -133,6 +133,15 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
   ./gradlew connectedDebugAndroidTest
 ```
 
+### Device — the on-device suite
+
+`tools/devicetest` presses the Thor's controller programmatically over adb and checks the result on
+the device: settings, apps and windows per screen, processes, files, media keys, toasts and what a
+stand-in game receives. Run `python3 tools/devicetest/run.py --changed` after a change to the areas
+it can affect, and `--full` only on request. It needs the attached Thor and the debug build, and it
+is **not** part of the gate. Usage, the areas and the restore guarantees are in
+[`DEVICE-TEST.md`](DEVICE-TEST.md).
+
 ## Quality ratchets
 
 Two mechanisms that may tighten but never loosen.
@@ -217,7 +226,9 @@ file-to-tier mapping and the step-by-step procedures live in
 | S3 | `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, manifest, or a Kotlin/AGP/Gradle bump | + overlay and shoulder pass, ~30 min |
 | S4 | Publishing a release | + acceptance on the signed artifact, ~40 min |
 
-Run the applicable tier **before pushing**. For changes that are meant to be
+Run `tools/devicetest/run.py --changed` first ([`DEVICE-TEST.md`](DEVICE-TEST.md)): it covers the
+functional checks automatically, so the manual pass can focus on what only a person can judge
+(visuals, feel, timing). Run the applicable tier **before pushing**. For changes that are meant to be
 behavior-neutral, use the gesture-trace comparison described there instead of relying on
 an impression — it diffs the actual logged decisions before and after.
 

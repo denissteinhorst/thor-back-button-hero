@@ -221,6 +221,10 @@ the extraction moved the *decisions* under test but left the Android side effect
 One Espresso smoke test (`SettingsActivitySmokeTest`, device-only, **not** part of the
 gate) covers activity startup against manifest/resource failures.
 
+**On-device suite.** `python3 tools/devicetest/run.py --changed` runs the affected functional
+checks on the attached Thor (debug build installed, prerequisites restored); `--full` only when
+the owner asks for it. It saves and restores the owner's settings itself. See `docs/DEVICE-TEST.md`.
+
 After touching `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, the
 D-pad path (`padhelper.c`, `PadHelper`, `DpadOverlay`, `LevelControl`,
 `BrightnessControl`), the controller-focus path (`ControllerFocus`, `FocusIndicatorOverlay`), or anything key-event related, a green gate proves little — exercise the gestures on the

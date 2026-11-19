@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: the on-device test suite (tools/devicetest) configures the app through this
+     receiver. DUMP is held by the adb shell but by no ordinary app, so nothing else can send to it. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Stands in for a game: logs what reaches the foreground app. -->
+        <activity
+            android:name=".DeviceTestKeyActivity"
+            android:exported="false"
+            android:taskAffinity="dev.steinhorst.backbuttonhero.devicetest"
+            android:excludeFromRecents="true" />
+        <receiver
+            android:name=".DeviceTestReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="dev.steinhorst.backbuttonhero.DEVICE_TEST" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

@@ -10,6 +10,10 @@ This document decides *when* that is necessary and *exactly what* to do — so t
 is not re-argued per change, and so a pass is reproducible rather than a vague
 "seemed fine".
 
+Most functional checks below now run unattended through the on-device suite
+(`python3 tools/devicetest/run.py --changed`, see [DEVICE-TEST.md](DEVICE-TEST.md)). Run it first;
+the manual steps remain for what it cannot judge: how things look, feel and time.
+
 Run the applicable procedure **before pushing**, not after. The `pre-push` hook enforces
 the automated gate; the manual tier is a judgement the hook cannot make for you.
 
@@ -148,7 +152,7 @@ Each is pressed **while holding Back**.
 | # | Step | Expected |
 |---|---|---|
 | C9 | L1 at its default (navigation flick left) | Visible flick to the previous app |
-| C10 | R1 at its default (navigation flick right) | Visible flick to the next app |
+| C10 | R1 at its default (navigation flick right), within about half a second after a flick left | Visible flick back to the app right of the centre (Quickstep reorders after about a second, then there is none) |
 | C11 | One button set to *Launch app*, target **top** screen | The chosen app opens on the top screen |
 | C12 | Same, target **bottom** screen | It opens on the bottom screen |
 | C13 | One button set to *Home* | Launcher on the configured screen |
