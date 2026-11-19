@@ -117,6 +117,20 @@ With an empty mask the behaviour is unchanged. The mask is resent when the helpe
 `HOMEBACK 1` (the app's *Use the Home button as Back* option) makes the pad's Home key count as a held
 Back for every capture above; `HOMEBACK 0` restores Back alone. It is resent on every takeover.
 
+### Macros
+
+`RECORD 1` turns the helper into the macro editor's recorder: every pad event except Back, Home and the volume
+keys is withheld from the clone and reported instead, as `REC <ms> K <code> <0|1>` for keys,
+`REC <ms> A <code> <permille>` for axes (per mille of the axis range, so the app needs no ranges) and
+`REC <ms> S` per frame. The clone is set to rest when recording starts, so nothing held a moment earlier stays
+pressed. `RECORD 0` returns to ordinary forwarding.
+
+Playback is loaded as `MCLEAR`, a list of `MEV <ms> <K|A> <code> <value>` lines and `MPLAY <id>`. Only the pad's
+gamepad keys (`BTN_GAMEPAD`..`BTN_THUMBR`) and axes up to the hat are accepted. The helper waits until Back
+(or Home standing in for it) is released, then emits each moment's events as one frame through the clone. A new
+Back press, `MSTOP`, a new recording or a lost pad stops it and releases every key and axis it touched.
+`MACRO_DONE <id>` reports the end, `MACRO_STOPPED <id>` a stop the app did not ask for.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one

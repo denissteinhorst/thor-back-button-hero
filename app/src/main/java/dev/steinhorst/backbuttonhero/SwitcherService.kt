@@ -157,6 +157,19 @@ class SwitcherService : AccessibilityService(), GestureActions {
     // Back that nativeBack injects arrives here again with the virtual device id and must pass.
     private var nativeBackInjections = 0
     private val homeAsBack = HomeAsBack()
+    /** The hotkey whose macro the helper is playing, under [playingMacroId]; null when none is. */
+    private var playingMacro: ComboButton? = null
+    private var playingMacroId = 0
+    /** The macro this Back press stopped: its own hotkey in the same press only cancels, it does not restart. */
+    private var macroCancelled: ComboButton? = null
+    /**
+     * The helper stops a macro the moment Back goes down and reports it over its socket, which usually
+     * arrives before the Back key itself has passed Android's input pipeline. That Back press must
+     * still count as the one that cancelled.
+     */
+    private var macroStopAwaitsBack = false
+    /** The macro editor's sink while it records; the helper then keeps the pad's input from the app. */
+    private var macroRecordListener: ((List<String>) -> Unit)? = null
     /** True while a Home press standing in for Back runs through the Back path. */
     private var translatingHome = false
     private val prefs by lazy { Prefs(this) }
@@ -195,6 +208,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
         recordIndicator = RecordingIndicatorOverlay(this)
         recording = ScreenRecording(this, ::onRecordingChanged)
         previewRecordIndicator = { position -> handler.post { if (!recording.isRecording) recordIndicator.preview(position) } }
+        macroRecorder = object : MacroRecorderBridge {
+            override fun start(onInput: (List<String>) -> Unit) {
+                handler.post { startMacroRecording(onInput) }
+            }
+            override fun stop() {
+                handler.post { stopMacroRecording() }
+            }
+            override val ready: Boolean get() = ::padHelper.isInitialized && padHelper.active
+        }
         PService.probeAsync()
         source = AccessibilityAppSource(this) { display -> panels.cards(display) }
         panels = BottomPanels(this, source::isCovered, ::capturePanel) {
@@ -223,7 +245,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::handleDpad,
             ::handleDpadRelease,
             ::onPadHelperActiveChanged,
-            ::handleStick,
+            onStick = ::handleStick,
+            onRecord = { line -> macroRecordListener?.invoke(line) },
+            onMacroEnd = ::onMacroEnd,
         )
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
@@ -302,7 +326,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun updatePadHelper() {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
-        if (prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled) padHelper.start() else padHelper.stop()
+        val needed = prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled ||
+            prefs.hasMacroAction() || macroRecordListener != null
+        if (needed) padHelper.start() else padHelper.stop()
         padHelper.setHomeAsBack(prefs.homeAsBack)
         updateStickCapture(backException)
     }
@@ -482,6 +508,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         handleRecentsControllerKey(event)?.let { return it }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !backGesture.backDown) {
+                // The helper stops the macro on this press too; mirror it and remember whose it was.
+                if (playingMacro != null) {
+                    macroCancelled = playingMacro
+                    stopMacroPlayback()
+                } else if (!macroStopAwaitsBack) {
+                    macroCancelled = null
+                }
+                macroStopAwaitsBack = false
+            }
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                 backException = currentException()
                 updateDpadPassthrough(backException)
@@ -859,6 +895,55 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
+    /**
+     * Plays [button]'s macro through the helper's pad clone. The helper starts it once Back is
+     * released, so the macro's keys never read as Back + button shortcuts; pressing the same hotkey
+     * while it runs only stops it.
+     */
+    private fun runMacro(button: ComboButton) {
+        if (macroCancelled == button) {
+            macroCancelled = null
+            return
+        }
+        val macro = prefs.macro(button) ?: return
+        val id = ++playingMacroId
+        if (padHelper.active && padHelper.playMacro(id, macro.events(controllerFlipped()))) {
+            playingMacro = button
+            dlog("MACRO  play ${button.prefKey} steps=${macro.steps.size}")
+        } else {
+            noticeToast?.cancel()
+            noticeToast = Toast.makeText(this, R.string.macro_helper_missing, Toast.LENGTH_SHORT).also { it.show() }
+        }
+    }
+
+    private fun onMacroEnd(id: Int, stopped: Boolean) {
+        if (id != playingMacroId || playingMacro == null) return
+        if (stopped) {
+            macroCancelled = playingMacro
+            macroStopAwaitsBack = true
+        }
+        playingMacro = null
+    }
+
+    private fun stopMacroPlayback() {
+        padHelper.stopMacro()
+        playingMacro = null
+    }
+
+    private fun startMacroRecording(onInput: (List<String>) -> Unit) {
+        if (::padHelper.isInitialized && playingMacro != null) stopMacroPlayback()
+        macroRecordListener = onInput
+        updatePadHelper()
+        padHelper.setRecording(true)
+    }
+
+    private fun stopMacroRecording() {
+        if (macroRecordListener == null) return
+        macroRecordListener = null
+        padHelper.setRecording(false)
+        updatePadHelper()
+    }
+
     /** The AYN tiles as hotkeys: a toggle flips, an option applies at once, "modal" asks first. */
     private fun runAynAction(button: ComboButton, action: String) {
         Ayn.toggleOf(action)?.let { return aynControls.toggle(it) }
@@ -890,6 +975,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_STANDBY -> runStandby(button)
             Prefs.SHOULDER_VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             Prefs.SHOULDER_RECORD_VIDEO -> toggleRecording(button)
+            Prefs.SHOULDER_MACRO -> runMacro(button)
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
@@ -1330,6 +1416,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         isConnected = false
         previewFocusIndicator = null
         previewRecordIndicator = null
+        macroRecorder = null
+        macroRecordListener = null
+        playingMacro = null
         endRecording()
         shoulderKeys.clear()
         pendingFocusTargets.clear()
@@ -1350,6 +1439,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         isConnected = false
         previewFocusIndicator = null
         previewRecordIndicator = null
+        macroRecorder = null
+        macroRecordListener = null
+        playingMacro = null
         endRecording()
         shoulderKeys.clear()
         pendingFocusTargets.clear()
@@ -1955,6 +2047,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onPadHelperActiveChanged(active: Boolean) {
+        if (!active) {
+            // A lost pad stops a macro without any Back press that could claim the cancel.
+            playingMacro = null
+            macroCancelled = null
+            macroStopAwaitsBack = false
+        }
         if (!interceptionEnabled || !::overlay.isInitialized || !prefs.switcherControllerEnabled ||
             (!overlay.isShowing && !topRecentsControllerActive)
         ) return
@@ -2236,6 +2334,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long) -> Unit)? = null
             private set
 
+        /** Lets the macro editor record through the helper, which only the service talks to. */
+        @Volatile
+        var macroRecorder: MacroRecorderBridge? = null
+            private set
+
         /** Lets the settings screen show where the recording dot will appear. */
         @Volatile
         var previewRecordIndicator: ((position: String) -> Unit)? = null
@@ -2283,4 +2386,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun dlog(msg: String) {
         if (DEBUG_GESTURES) Log.d(TAG, msg)
     }
+}
+
+/** The service's side of macro recording, for the editor in the settings screen. */
+interface MacroRecorderBridge {
+    /** Starts recording; every input arrives in [onInput] on the main thread until [stop]. */
+    fun start(onInput: (List<String>) -> Unit)
+    fun stop()
+    /** Whether the helper holds the pad, so a recording actually receives input. */
+    val ready: Boolean
 }

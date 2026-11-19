@@ -49,6 +49,9 @@ enum class FaceButton(override val prefKey: String, private val keyCode: Int, pr
 
     override val defaultAction: String get() = ""
 
+    /** The key code the pad reports for this printed button; [flipped] as in [of]. */
+    fun keyCode(flipped: Boolean): Int = if (flipped) flippedKeyCode else keyCode
+
     companion object {
         /** The printed button behind [keyCode]; [flipped] is the Thor's `flip_button_layout` setting. */
         fun of(keyCode: Int, flipped: Boolean): FaceButton? =

@@ -60,6 +60,7 @@ object SettingsBackup {
         state.bindings.toSortedMap().forEach { (key, value) ->
             bindings.put(key, JSONObject()
                 .apply { value.aynOption?.let { put("aynOption", it) } }
+                .apply { value.macro?.let { put("macro", it) } }
                 .put("action", value.action)
                 .put("display", value.display)
                 .put("target", value.targetOverride ?: JSONObject.NULL)
@@ -93,6 +94,8 @@ object SettingsBackup {
                 .put("buttonsAllowed", (it.allowed shr ExceptionControl.BUTTON_SHIFT) and ExceptionControl.BUTTON_BITS)
                 .put("active", it.active))
         }
+        val macros = JSONArray()
+        state.macros.forEach { macros.put(JSONObject().put("id", it.id).put("name", it.name).put("steps", it.macro.encode())) }
         return JSONObject()
             .put("format", FORMAT)
             .put("formatVersion", FORMAT_VERSION)
@@ -105,7 +108,8 @@ object SettingsBackup {
                 .put("activationShortcut", JSONObject().put("buttons", state.toggleButtons).put("holdMs", state.toggleMs))
                 .put("stickTimings", sticks)
                 .put("bindings", bindings)
-                .put("exceptions", exceptions))
+                .put("exceptions", exceptions)
+                .put("macros", macros))
             .toString(2)
     }
 
@@ -124,6 +128,7 @@ object SettingsBackup {
         val back = settings?.objectOrNull("backTimings")
         val switcher = settings?.objectOrNull("switcher")
         val activation = settings?.objectOrNull("activationShortcut")
+        val macros = readMacros(settings?.optJSONArray("macros"))
         val state = factory.copy(
             doubleMs = back.time("doubleMs", factory.doubleMs, 150, 600),
             tapHoldMs = back.time("tapHoldMs", factory.tapHoldMs, 500, 2000),
@@ -133,9 +138,10 @@ object SettingsBackup {
             homeAsBack = settings?.booleanOrNull("homeAsBack") ?: factory.homeAsBack,
             toggleButtons = activation?.stringOrNull("buttons")?.takeIf { it in TOGGLE_VALUES } ?: factory.toggleButtons,
             toggleMs = activation.time("holdMs", factory.toggleMs, 100, 3000),
-            bindings = readBindings(settings?.objectOrNull("bindings"), factory.bindings),
+            bindings = readBindings(settings?.objectOrNull("bindings"), factory.bindings, macros),
             stickTimings = readStickTimings(settings?.objectOrNull("stickTimings"), factory.stickTimings),
             exceptions = readExceptions(settings?.optJSONArray("exceptions")),
+            macros = macros,
         )
         return Result.Loaded(state, info)
     }
@@ -154,10 +160,12 @@ object SettingsBackup {
         Prefs.FOCUS_POS_BOTTOM_LEFT, Prefs.FOCUS_POS_BOTTOM_CENTER, Prefs.FOCUS_POS_BOTTOM_RIGHT,
     )
 
-    private fun readBindings(json: JSONObject?, factory: Map<String, BindingSettings>): Map<String, BindingSettings> =
+    private fun readBindings(json: JSONObject?, factory: Map<String, BindingSettings>, macros: List<SavedMacro>): Map<String, BindingSettings> =
         factory.mapValues { (key, default) ->
             val entry = json?.objectOrNull(key) ?: return@mapValues default
             val action = entry.stringOrNull("action")?.takeIf { it.isEmpty() || it in Prefs.KNOWN_ACTIONS || Shell.isPkg(it) }
+                // Back's own gestures cannot play macros: the macro would wait for the very Back it started with.
+                ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.MACRO_BUTTONS.any { button -> button.prefKey == key } }
             default.copy(
                 action = action ?: default.action,
                 display = entry.stringOrNull("display")?.takeIf { it in SCREENS } ?: default.display,
@@ -180,6 +188,8 @@ object SettingsBackup {
                 recordPttKey = entry.intOrNull("recordPttKey")?.takeIf { it == 0 || PushToTalk.isAllowed(it) } ?: default.recordPttKey,
                 recordDuck = entry.stringOrNull("recordDuck")?.takeIf { it in DUCKS } ?: default.recordDuck,
                 aynOption = entry.stringOrNull("aynOption")?.takeIf { it in Ayn.OPTION_KEYS },
+                // Only a macro the backup's own library holds; anything else would point at nothing.
+                macro = entry.stringOrNull("macro")?.takeIf { id -> macros.any { it.id == id } },
             )
         }
 
@@ -191,6 +201,18 @@ object SettingsBackup {
                 tapHoldMs = entry.time("tapHoldMs", default.tapHoldMs, 500, 2000),
             )
         }
+
+    private fun readMacros(json: JSONArray?): List<SavedMacro> {
+        if (json == null) return emptyList()
+        val result = LinkedHashMap<String, SavedMacro>()
+        for (i in 0 until json.length()) {
+            val entry = json.optJSONObject(i) ?: continue
+            val id = entry.stringOrNull("id")?.takeIf(SavedMacro::isId) ?: continue
+            val macro = entry.stringOrNull("steps")?.let(Macro::decode) ?: continue
+            result.getOrPut(id) { SavedMacro(id, SavedMacro.cleanName(entry.stringOrNull("name"), id), macro) }
+        }
+        return result.values.toList()
+    }
 
     private fun readExceptions(json: JSONArray?): List<AppException> {
         if (json == null) return emptyList()

@@ -117,6 +117,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |
 | `LevelRepeater.kt` | 60 | `RepeatCurve` and the repeater that steps a held volume/brightness shortcut faster over time. |
 | `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
+| `Macro.kt` | 501 | Pure macro model: steps, buttons and eight-way directions, the checked stored form, the named library entry `SavedMacro`, the editor's list operations `MacroEdits`, the playback timeline for the helper, and `MacroRecorder`, which turns the helper's raw recording into steps. |
+| `MacroEditor.kt` | 1520 | The full-screen macro editor: step cards with live recording, two-column step and pause sheets, the input palette, drag to move or delete, undo, preview, naming and loading; `MacroLibraryDialog` (choose, new, edit, rename, duplicate, delete) and `MacroIconView` for the input glyphs. |
+| `MacroWidgets.kt` | 320 | The macro editor's shared building blocks: colours, pills, focus rings, the bottom sheet, `StepStrip`, the row that drags steps, and `ScrollIndicator`, the position thumb under it. |
 | `DpadOverlay.kt` | 81 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
 | `LevelSteps.kt` | 17 | Pure step arithmetic for volume and brightness (15 equal brightness steps). |

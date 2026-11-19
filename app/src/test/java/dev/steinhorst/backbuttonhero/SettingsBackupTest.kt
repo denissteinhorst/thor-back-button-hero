@@ -188,9 +188,11 @@ class SettingsBackupTest {
 
     @Test
     fun `every action the app offers is accepted and a stored package is too`() {
+        val keys = SettingsState().bindings.keys.sorted()
         val bindings = Prefs.KNOWN_ACTIONS.mapIndexed { i, action ->
-            val key = SettingsState().bindings.keys.sorted()[i % SettingsState().bindings.size]
-            key to action
+            // Back's own gestures cannot play macros; that action goes to a combo instead.
+            val usable = if (action == Prefs.SHOULDER_MACRO) keys.filter { key -> Prefs.MACRO_BUTTONS.any { it.prefKey == key } } else keys
+            usable[i % usable.size] to action
         }
         bindings.forEach { (key, action) ->
             val text = """{"format":"${SettingsBackup.FORMAT}","settings":{"bindings":{"$key":{"action":"$action"}}}}"""

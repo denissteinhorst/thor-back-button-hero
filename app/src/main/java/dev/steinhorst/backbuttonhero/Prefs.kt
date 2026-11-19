@@ -282,6 +282,46 @@ class Prefs(context: Context) {
         sp.edit().putString("${button.prefKey}_record_position", position).apply()
     }
 
+    /** The named macros, in the order they were first saved. Hotkeys refer to them by id. */
+    var macroLibrary: List<SavedMacro>
+        get() = SavedMacro.decode(sp.getString("macro_library", null))
+        set(v) = sp.edit().putString("macro_library", SavedMacro.encode(v)).apply()
+
+    /** The library macro [button] plays for [SHOULDER_MACRO]; null until one is chosen or recorded. */
+    fun savedMacro(button: ComboButton): SavedMacro? =
+        sp.getString("${button.prefKey}_macro", null)?.let { id -> macroLibrary.firstOrNull { it.id == id } }
+    fun macro(button: ComboButton): Macro? = savedMacro(button)?.macro
+    fun setMacroRef(button: ComboButton, id: String?) {
+        sp.edit().apply { if (id == null) remove("${button.prefKey}_macro") else putString("${button.prefKey}_macro", id) }.apply()
+    }
+
+    /** Stores [macro] as [name] under [id], or as a new library entry when [id] is null or unknown. */
+    fun saveMacro(id: String?, name: String, macro: Macro): SavedMacro {
+        val library = macroLibrary
+        val existing = library.any { it.id == id }
+        val newId = if (existing) checkNotNull(id) else SavedMacro.nextId(library)
+        val saved = SavedMacro(newId, SavedMacro.cleanName(name, newId), macro)
+        macroLibrary = if (existing) library.map { if (it.id == newId) saved else it } else library + saved
+        return saved
+    }
+
+    fun renameMacro(id: String, name: String) {
+        macroLibrary = macroLibrary.map { if (it.id == id) it.copy(name = SavedMacro.cleanName(name, it.name)) else it }
+    }
+
+    /** The hotkeys that play library macro [id]. */
+    fun macroUsers(id: String): List<ComboButton> = MACRO_BUTTONS.filter { sp.getString("${it.prefKey}_macro", null) == id }
+
+    /** Removes macro [id] from the library and from every hotkey that played it, in one write. */
+    fun deleteMacro(id: String) {
+        val edit = sp.edit().putString("macro_library", SavedMacro.encode(macroLibrary.filterNot { it.id == id }))
+        macroUsers(id).forEach { edit.remove("${it.prefKey}_macro") }
+        edit.apply()
+    }
+
+    /** Whether any hotkey plays a recorded macro - only then must the helper hold the pad for it. */
+    fun hasMacroAction(): Boolean = MACRO_BUTTONS.any { shoulderAction(it) == SHOULDER_MACRO && macro(it) != null }
+
     /** Each screen's volume before a mute toggle set it to 0; 0 when none is stored. */
     var topVolumeBeforeMute: Int
         get() = sp.getInt("top_volume_before_mute", 0)
@@ -348,7 +388,10 @@ class Prefs(context: Context) {
     fun appException(packageName: String?): AppException? =
         packageName?.let { pkg -> appExceptions.firstOrNull { it.packageName == pkg && it.active } }
 
-    fun snapshot(): SettingsState = SettingsState(
+    // The library is read once: every binding checks its macro against the same list.
+    fun snapshot(): SettingsState = snapshot(macroLibrary)
+
+    private fun snapshot(library: List<SavedMacro>): SettingsState = SettingsState(
         doubleTapMs, tapHoldMs, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
         (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
             AndroidButton.entries + FaceButton.entries).associate { button ->
@@ -359,11 +402,13 @@ class Prefs(context: Context) {
                 closeConfirm(button), standbyConfirm(button),
                 recordMic(button), recordQuality(button), recordIndicator(button), recordPosition(button),
                 recordPtt(button), recordPttKey(button), recordDuck(button),
+                sp.getString("${button.prefKey}_macro", null)?.takeIf { id -> library.any { it.id == id } },
             )
         },
         appExceptions,
         Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it), stickTapHoldMs(it)) },
         homeAsBack = homeAsBack,
+        macros = library,
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -416,6 +461,7 @@ class Prefs(context: Context) {
             boolean("${key}_record_ptt", old.recordPtt, value.recordPtt)
             int("${key}_record_ptt_key", old.recordPttKey, value.recordPttKey)
             string("${key}_record_duck", old.recordDuck, value.recordDuck)
+            string("${key}_macro", old.macro, value.macro)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -423,6 +469,7 @@ class Prefs(context: Context) {
             long("${prefix}_tap_hold_ms", old.tapHoldMs, value.tapHoldMs)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
+        if (before.macros != after.macros) edit.putString("macro_library", SavedMacro.encode(after.macros))
         edit.apply()
         return true
     }
@@ -515,6 +562,7 @@ class Prefs(context: Context) {
         const val SHOULDER_STANDBY = "@standby"
         const val SHOULDER_VOLUME_MUTE = "@volume_mute"
         const val SHOULDER_RECORD_VIDEO = "@record_video"
+        const val SHOULDER_MACRO = "@macro"
         const val RECORD_SMALL = "small"
         const val RECORD_MEDIUM = "medium"
         const val RECORD_LARGE = "large"
@@ -532,8 +580,14 @@ class Prefs(context: Context) {
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
-            SHOULDER_RECORD_VIDEO,
+            SHOULDER_RECORD_VIDEO, SHOULDER_MACRO,
         ) + Ayn.ACTIONS
+
+        /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
+        val MACRO_BUTTONS: List<ComboButton> by lazy {
+            ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries +
+                AndroidButton.entries + FaceButton.entries
+        }
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

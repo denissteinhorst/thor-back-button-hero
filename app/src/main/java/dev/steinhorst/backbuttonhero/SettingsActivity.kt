@@ -46,6 +46,7 @@ class SettingsActivity : Activity() {
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
     private var updateDialog: AlertDialog? = null
+    private var macroEditor: MacroEditor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +128,11 @@ class SettingsActivity : Activity() {
         // A service rebind can finish just after the activity resumes.
         navigation.view.postDelayed({ if (!isFinishing && !isDestroyed) refresh() }, 600)
         PService.probeAsync { runOnUiThread { if (!isFinishing && !isDestroyed) refresh() } }
+    }
+
+    override fun onPause() {
+        macroEditor?.pause()
+        super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -426,9 +432,10 @@ class SettingsActivity : Activity() {
         }.distinctBy { it.value }.sortedBy { it.label }
     }
 
-    private fun shoulderActions(): List<Choice> {
+    /** [macro]: whether the list offers macros; Back's own gestures cannot play them. */
+    private fun shoulderActions(macro: Boolean = true): List<Choice> {
         fun group(g: ActionGroups.Group) = Choice(g.entry, getString(g.titleRes))
-        return listOf(
+        return listOfNotNull(
             Choice("", getString(R.string.shoulder_none)),
             Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
             Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
@@ -437,6 +444,7 @@ class SettingsActivity : Activity() {
             Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
             Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
             Choice(Prefs.SHOULDER_RECORD_VIDEO, getString(R.string.shoulder_record_video)),
+            Choice(Prefs.SHOULDER_MACRO, getString(R.string.shoulder_macro)).takeIf { macro },
             group(ActionGroups.Group.FLICK),
             group(ActionGroups.Group.VOLUME),
             group(ActionGroups.Group.BRIGHTNESS),
@@ -751,6 +759,8 @@ class SettingsActivity : Activity() {
         var standbyOptions: View? = null
         var recordOptions: RecordOptions? = null
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
+        var macroOptions: View? = null
+        var macroLibrary: SettingsPage.ChooserHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
 
@@ -764,7 +774,7 @@ class SettingsActivity : Activity() {
     )
 
     private fun chooseShoulderAction(row: ComboRow) {
-        val choices = shoulderActions()
+        val choices = shoulderActions(macro = row.button !is BackGestureButton)
         val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
         AlertDialog.Builder(this)
@@ -777,6 +787,8 @@ class SettingsActivity : Activity() {
                 val action = choices[which].value
                 if (action == ACTION_APP) {
                     chooseShoulderApp(row)
+                } else if (action == Prefs.SHOULDER_MACRO && !PService.cachedAvailable()) {
+                    showMacroUnavailable()
                 } else {
                     // A group stores its option's own action; re-picking the group keeps the option.
                     val group = ActionGroups.groupOfEntry(action)
@@ -786,11 +798,58 @@ class SettingsActivity : Activity() {
                     )
                     updateShoulderRow(row)
                     refresh()
+                    // A fresh macro hotkey has nothing to play yet: pick a saved one or record one right away.
+                    if (action == Prefs.SHOULDER_MACRO && stored != action && prefs.macro(row.button) == null) {
+                        if (prefs.macroLibrary.isEmpty()) openMacroEditor(row) else openMacroLibrary(row)
+                    }
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
+
+    private fun showMacroUnavailable() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.macro_unavailable_title)
+            .setMessage(R.string.macro_unavailable_body)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    /** [assign] false edits a library macro from the list: the hotkey keeps playing whatever it played before. */
+    private fun openMacroEditor(row: ComboRow, initial: SavedMacro? = prefs.savedMacro(row.button), assign: Boolean = true) {
+        if (macroEditor != null) return
+        val editor = MacroEditor(this, row.label, initial, getString(R.string.macro_default_name, row.label), { prefs.macroLibrary }, {
+            Settings.System.getInt(contentResolver, SwitcherService.CONTROLLER_FLIP_SETTING, 0) != 0
+        }) { id, name, macro ->
+            val saved = macro?.let { prefs.saveMacro(id, name, it).id }
+            if (assign) prefs.setMacroRef(row.button, saved)
+            // Other hotkeys may play the same library macro; their rows show its new name and length too.
+            refresh()
+        }
+        macroEditor = editor
+        editor.show().setOnDismissListener {
+            editor.pause()
+            macroEditor = null
+        }
+    }
+
+    private fun openMacroLibrary(row: ComboRow) {
+        MacroLibraryDialog(this, prefs, prefs.savedMacro(row.button)?.id, { saved ->
+            if (saved == null) {
+                openMacroEditor(row, null)
+            } else {
+                prefs.setMacroRef(row.button, saved.id)
+                updateShoulderRow(row)
+            }
+        }, { saved ->
+            // Editing the hotkey's own macro works as it always did, so "Save as new" hands the hotkey the variant.
+            openMacroEditor(row, saved, assign = saved.id == prefs.savedMacro(row.button)?.id)
+        }) { refresh() }.show()
+    }
+
+    private fun describeMacro(saved: SavedMacro?): String =
+        saved?.let { MacroEditor.macroLine(this, it) } ?: getString(R.string.macro_not_recorded)
 
     private fun chooseShoulderApp(row: ComboRow) {
         val apps = allApps()
@@ -1052,6 +1111,22 @@ class SettingsActivity : Activity() {
             options.indicator.row.contentDescription =
                 getString(R.string.record_indicator_accessibility, row.label, options.indicator.value.text)
         }
+        val macroAction = action == Prefs.SHOULDER_MACRO
+        if (macroAction && row.macroOptions == null) {
+            lateinit var library: SettingsPage.ChooserHandle
+            // One row: the list both picks a saved macro and records a new one, and its value names the one this hotkey plays.
+            row.macroOptions = row.card.subOptions {
+                library = chooserRow(R.string.macro_library_title, describeMacro(prefs.savedMacro(row.button))) {
+                    if (PService.cachedAvailable()) openMacroLibrary(row) else showMacroUnavailable()
+                }
+            }
+            row.macroLibrary = library
+        }
+        row.macroOptions?.visibility = if (macroAction) View.VISIBLE else View.GONE
+        row.macroLibrary?.let { library ->
+            library.value.text = describeMacro(prefs.savedMacro(row.button))
+            library.row.contentDescription = getString(R.string.macro_library_accessibility, row.label, library.value.text)
+        }
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1311,6 +1386,8 @@ class SettingsActivity : Activity() {
         addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
         addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))
+        fun macros(value: List<SavedMacro>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.macro_library_empty) }
+        addChange(getString(R.string.macro_library_title), macros(a.macros), macros(b.macros))
         val buttons = listOf(
             BackGestureButton.SINGLE to R.string.back_single_row, BackGestureButton.DOUBLE to R.string.back_double_row,
             BackGestureButton.TAP_HOLD to R.string.back_tap_hold_row, BackGestureButton.HOLD to R.string.back_hold_row,
@@ -1362,6 +1439,8 @@ class SettingsActivity : Activity() {
             extra(R.string.record_quality_title, quality(old.recordQuality), quality(new.recordQuality))
             extra(R.string.record_indicator_title, onOff(old.recordIndicator), onOff(new.recordIndicator))
             extra(R.string.record_indicator_row, position(old.recordPosition), position(new.recordPosition))
+            extra(R.string.macro_title, describeMacro(a.macros.firstOrNull { it.id == old.macro }),
+                describeMacro(b.macros.firstOrNull { it.id == new.macro }))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
             extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
             extra(R.string.focus_header_position, position(old.position), position(new.position))

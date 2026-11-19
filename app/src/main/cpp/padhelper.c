@@ -21,6 +21,12 @@
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
 //     "HOMEBACK 1" makes the pad's Home key count as Back for all of the above.
+//   * Macros: "RECORD 1" withholds every pad input except Back, Home and the volume keys from the
+//     clone and reports it instead ("REC <ms> K <code> <0|1>", "REC <ms> A <code> <permille>" and a
+//     "REC <ms> S" per frame). "MCLEAR", "MEV <ms> <K|A> <code> <value>" lines and "MPLAY <id>" load
+//     and start a macro, which the clone plays once Back is released; pressing Back again, "MSTOP" or
+//     a lost pad stops it and releases everything it held. "MACRO_DONE <id>" reports the end, and
+//     "MACRO_STOPPED <id>" a stop the app did not ask for.
 //
 // AYN's controller-style switch (Xbox / Standard / Ban on Use) destroys the pad and creates a new one
 // with another name and product id. read() then fails, the clone is torn down, and the helper takes
@@ -92,6 +98,18 @@ static int stick_pass_mask = 0;  // bit stick*4 + (U0 D1 L2 R3): directions the 
 
 static int ufd = -1, sock = -1;
 static volatile sig_atomic_t stop;
+
+// The pad's axis ranges, so macros can speak in per mille of a range instead of raw values.
+static struct input_absinfo axis_info[ABS_CNT];
+
+// A loaded macro: raw clone events relative to its start. State 1 waits for Back to be released,
+// because the app would read macro keys pressed while Back is held as Back + button shortcuts.
+#define MACRO_MAX 8192
+struct macro_event { long at; int key; int code; int value; };
+static struct macro_event macro[MACRO_MAX];
+static int macro_len = 0, macro_next = 0, macro_state = 0, macro_id = 0;
+static long macro_start = 0;
+static int recording = 0;
 
 static long now_ms(void) {
     struct timespec ts;
@@ -275,6 +293,33 @@ static void emit(int type, int code, int value) {
 
 static int has_axis(const unsigned long *abs, int code) { return test_bit(code, abs); }
 
+static void load_axes(int fd) {
+    memset(axis_info, 0, sizeof axis_info);
+    for (int c = 0; c < ABS_CNT; c++) ioctl(fd, EVIOCGABS(c), &axis_info[c]);
+}
+
+// Per mille of the range to a raw value: -1000..1000 around the centre, or 0..1000 from the minimum
+// for axes that rest at their minimum (the triggers).
+static int axis_raw(int code, int permille) {
+    const struct input_absinfo *a = &axis_info[code];
+    if (a->minimum >= 0) {
+        if (permille < 0) permille = 0;
+        if (permille > 1000) permille = 1000;
+        return a->minimum + (int)((long)(a->maximum - a->minimum) * permille / 1000);
+    }
+    if (permille < -1000) permille = -1000;
+    if (permille > 1000) permille = 1000;
+    return (a->minimum + a->maximum) / 2 + (int)((long)((a->maximum - a->minimum) / 2) * permille / 1000);
+}
+
+static int axis_permille(int code, int raw) {
+    const struct input_absinfo *a = &axis_info[code];
+    if (a->maximum <= a->minimum) return 0;
+    if (a->minimum >= 0) return (int)((long)(raw - a->minimum) * 1000 / (a->maximum - a->minimum));
+    int half = (a->maximum - a->minimum) / 2;
+    return half > 0 ? (int)((long)(raw - (a->minimum + a->maximum) / 2) * 1000 / half) : 0;
+}
+
 // The left stick is X/Y. Android's Xbox layout puts the right stick on Z/RZ, the Linux convention is
 // RX/RY; use whichever pair the pad offers.
 static void load_sticks(int fd) {
@@ -391,6 +436,85 @@ static void navigation_key(int key) {
         write(ufd, &sync, sizeof sync) != sizeof sync) stop = 1;
 }
 
+// Everything a stopped macro may still hold goes back to rest in one frame.
+static void macro_release(void) {
+    for (int i = 0; i < macro_len; i++) {
+        if (macro[i].key) emit(EV_KEY, macro[i].code, 0);
+        else emit(EV_ABS, macro[i].code, axis_raw(macro[i].code, 0));
+    }
+    emit(EV_SYN, SYN_REPORT, 0);
+}
+
+static void macro_stop(int tell) {
+    if (!macro_state) return;
+    if (macro_state == 2 && ufd >= 0) macro_release();
+    macro_state = 0;
+    if (tell) dprintf(sock, "MACRO_STOPPED %d\n", macro_id);
+}
+
+// Milliseconds until the next macro event is due, or -1 when none is; also starts an armed macro.
+static int macro_timeout(int back) {
+    if (macro_state == 1 && !back) {
+        macro_state = 2;
+        macro_start = now_ms();
+        macro_next = 0;
+    }
+    if (macro_state != 2) return -1;
+    long wait = macro_start + macro[macro_next].at - now_ms();
+    return wait < 0 ? 0 : (int)wait;
+}
+
+// Emits every event that is due, one frame per moment; events of the same moment share a frame.
+static void macro_tick(void) {
+    if (macro_state != 2 || ufd < 0) return;
+    long now = now_ms();
+    int any = 0;
+    while (macro_next < macro_len && macro_start + macro[macro_next].at <= now) {
+        const struct macro_event *m = &macro[macro_next++];
+        emit(m->key ? EV_KEY : EV_ABS, m->code, m->key ? m->value : axis_raw(m->code, m->value));
+        any = 1;
+        if (macro_next < macro_len && macro[macro_next].at != m->at) break;
+    }
+    if (any) emit(EV_SYN, SYN_REPORT, 0);
+    if (macro_next >= macro_len) {
+        macro_state = 0;
+        dprintf(sock, "MACRO_DONE %d\n", macro_id);
+    }
+}
+
+// Only the pad's gamepad buttons and its sticks, triggers and hat are accepted from the app.
+static void macro_add(long at, char kind, int code, int value) {
+    if (macro_state || macro_len >= MACRO_MAX || at < 0 || at > 600000) return;
+    if (kind == 'K' && code >= BTN_GAMEPAD && code <= BTN_THUMBR && (value == 0 || value == 1))
+        macro[macro_len++] = (struct macro_event){ at, 1, code, value };
+    if (kind == 'A' && code >= 0 && code <= ABS_HAT0Y && value >= -1000 && value <= 1000)
+        macro[macro_len++] = (struct macro_event){ at, 0, code, value };
+}
+
+// Keys that keep their system role while a macro is recorded; everything else is the macro's.
+static int system_key(int code) {
+    return code == KEY_BACK || code == KEY_HOME || code == KEY_VOLUMEDOWN || code == KEY_VOLUMEUP || code == KEY_APPSELECT;
+}
+
+static void record(const struct input_event *e) {
+    char line[64];
+    long ms = (long)e->input_event_sec * 1000L + (long)e->input_event_usec / 1000L;
+    int n;
+    if (e->type == EV_SYN) n = snprintf(line, sizeof line, "REC %ld S\n", ms);
+    else if (e->type == EV_KEY) n = snprintf(line, sizeof line, "REC %ld K %d %d\n", ms, e->code, e->value);
+    else n = snprintf(line, sizeof line, "REC %ld A %d %d\n", ms, e->code, axis_permille(e->code, e->value));
+    if (write(sock, line, n) != n) stop = 1;
+}
+
+// A recording starts from rest: nothing the pad held a moment ago stays pressed on the clone.
+static void rest_axes(void) {
+    if (ufd < 0) return;
+    for (int c = 0; c <= ABS_HAT0Y; c++)
+        if (axis_info[c].maximum > axis_info[c].minimum) emit(EV_ABS, c, axis_raw(c, 0));
+    emit(EV_SYN, SYN_REPORT, 0);
+    for (int s = 0; s < 2; s++) { sticks[s].withheld = 0; sticks[s].engaged = 0; sticks[s].rest = 1; }
+}
+
 // Directions the focused app keeps while Back is held (bits: up 1, down 2, left 4, right 8).
 static int pass_mask = 0;
 // "HOMEBACK 1": the user lets the pad's Home key stand in for Back, so either one counts as held.
@@ -411,13 +535,25 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
     char *newline;
     while ((newline = strchr(line, '\n')) != NULL) {
         *newline = '\0';
-        int mode, key, mask;
+        int mode, key, mask, code, value;
+        long at;
+        char kind;
         if (sscanf(line, "STICKS %d", &mask) == 1 && mask >= 0 && mask <= 3) stick_mask = mask;
         if (sscanf(line, "SWITCHER %d", &mode) == 1 && mode >= 0 && mode <= 3) current = mode;
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "SPASS %d", &mask) == 1 && mask >= 0 && mask <= 255) stick_pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
         if (sscanf(line, "HOMEBACK %d", &mode) == 1 && (mode == 0 || mode == 1)) home_back = mode;
+        // Stops the app asks for are not reported back; it already knows.
+        if (sscanf(line, "RECORD %d", &mode) == 1 && (mode == 0 || mode == 1) && mode != recording) {
+            macro_stop(0);
+            recording = mode;
+            if (recording) rest_axes();
+        }
+        if (strcmp(line, "MCLEAR") == 0) { macro_stop(0); macro_len = 0; }
+        if (sscanf(line, "MEV %ld %c %d %d", &at, &kind, &code, &value) == 4) macro_add(at, kind, code, value);
+        if (sscanf(line, "MPLAY %d", &value) == 1 && macro_len > 0 && !recording) { macro_stop(0); macro_id = value; macro_state = 1; }
+        if (strcmp(line, "MSTOP") == 0) macro_stop(0);
         line = newline + 1;
     }
     size_t remaining = *used - (size_t)(line - buffer);
@@ -438,7 +574,7 @@ int main(int argc, char **argv) {
     if (sock < 0) return 1;
     dprintf(sock, "READY\n");
 
-    int back = 0, back_key = 0, home = 0, cap_x = 0, cap_y = 0, switcher = 0, emergency = 0;
+    int back = 0, back_key = 0, home = 0, cap_x = 0, cap_y = 0, switcher = 0, emergency = 0, back_before = 0;
     char command_buffer[128] = {0};
     size_t command_used = 0;
     long both_since = 0;
@@ -450,13 +586,16 @@ int main(int argc, char **argv) {
                 if (poll(&sp, 1, 300) > 0) break; // app went away while we were waiting
                 continue;
             }
-            back = back_key = home = cap_x = cap_y = 0;
+            back = back_key = home = cap_x = cap_y = back_before = 0;
             both_since = 0;
             load_sticks(pad.fd);
+            load_axes(pad.fd);
+            if (recording) rest_axes();
         }
 
         struct pollfd pfd[2] = { { .fd = pad.fd, .events = POLLIN }, { .fd = sock, .events = POLLIN } };
-        if (poll(pfd, 2, -1) < 0) { if (errno == EINTR) continue; break; }
+        if (poll(pfd, 2, macro_timeout(back)) < 0) { if (errno == EINTR) continue; break; }
+        macro_tick();
         if (pfd[1].revents) {
             int mode = read_switcher_mode(command_buffer, &command_used, switcher);
             if (mode < 0) break; // EOF or hangup: the app is gone, so hand the pad back
@@ -475,7 +614,18 @@ int main(int argc, char **argv) {
             if (e->type == EV_KEY && e->code == KEY_BACK) back_key = e->value != 0;
             if (e->type == EV_KEY && e->code == KEY_HOME) home = e->value != 0;
             back = back_key || (home_back && home);
-            if (e->type == EV_SYN && e->code == SYN_REPORT) stick_frame();
+            // A new Back press stops a running macro at once: its keys would otherwise read as
+            // Back + button shortcuts, and pressing the macro's own hotkey again is how it is cancelled.
+            if (back && !back_before) macro_stop(1);
+            back_before = back;
+            if (recording) {
+                if (e->type == EV_SYN || (e->type == EV_KEY && system_key(e->code))) {
+                    if (e->type == EV_SYN && e->code == SYN_REPORT) record(e);
+                } else {
+                    if (e->type == EV_KEY || e->type == EV_ABS) record(e);
+                    continue;
+                }
+            } else if (e->type == EV_SYN && e->code == SYN_REPORT) stick_frame();
             if (e->type == EV_ABS && handle_stick(e, back, switcher)) continue;
             if (e->type == EV_ABS && (e->code == ABS_HAT0X || e->code == ABS_HAT0Y)) {
                 int *cap = e->code == ABS_HAT0X ? &cap_x : &cap_y;
@@ -508,11 +658,13 @@ int main(int argc, char **argv) {
         continue;
 
     pad_gone:
+        macro_stop(1);
         destroy_clone();
         release_pad(0);
         dprintf(sock, "PAD_GONE\n");
     }
 
+    macro_stop(0);
     destroy_clone(); // before the node returns, so the pad gets controller number 1 back
     release_pad(1);
     if (emergency) dprintf(sock, "RELEASED\n");

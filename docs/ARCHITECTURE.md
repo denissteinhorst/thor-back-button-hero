@@ -245,6 +245,41 @@ on release instead. Back + Home cannot be pressed meanwhile, so its row is shown
 `PadHelper` sends `HOMEBACK 0/1` so the helper counts Home as Back for D-pad and stick captures, which also turns
 its Home + Back emergency release off.
 
+**Macros** (`Prefs.SHOULDER_MACRO`, any combo but Back's own gestures, `Prefs.MACRO_BUTTONS`) play a recorded
+input sequence through the helper's pad clone, so the game receives it as player 1. `Macro` holds the steps
+(inputs pressed together, hold, pause before the next step) and its compact stored form, which `decode` checks
+value by value. Macros live in a named library (`SavedMacro`, pref `macro_library`, one tab-separated line per
+macro); a hotkey stores only the id in `<key>_macro`, so one macro can serve several hotkeys and an edit reaches
+all of them. Deleting a macro clears every reference in the same write; resets and unbinding clear references but
+keep the library. Snapshots and backups carry the library and the references; a backup reference to a macro its
+own library lacks is dropped. A new macro is named when first saved (a free "Macro <hotkey>"); a library macro
+saves in place, is renamed from the editor's header, and "Save as new" (⋯ menu) stores a variant. Loading (⋯ menu,
+or the empty editor) and the hotkey's single "Saved macros" row (`MacroLibraryDialog`: choose, new, edit, rename, duplicate,
+delete) pick from the library; that row's value names the macro the hotkey plays. Holds and pauses under 50 ms (`SHORT_WARN_MS`) are
+flagged in the timeline and explained on their sheet: games that read input once per frame can miss them. Editing another macro from the
+list never reassigns the hotkey; editing its own works like before, so "Save as new" hands the hotkey the variant.
+
+The editor is built for people who are not into macros: one big record button that always adds to the end, steps
+as cards (a bar under each shows the hold up to a second), tap a card or pause for a bottom sheet with minus/plus
+in 50 ms steps, presets and an exact value, and per step move earlier/later, duplicate and delete, so everything
+also works with the D-pad. Long press drags a card (`StepStrip` takes the touch stream over, an accent line marks
+the slot, a bin replaces the bottom bar); pauses stay in place when steps move (`MacroEdits.move`). A palette adds
+steps by hand or changes a step's chord (one input per channel, at most eight). Every change goes through one
+undo history; deletions show an undo bar instead of asking. The preview lights cards and pauses up in real time
+without sending any input, because real input would operate the settings screen. The pure list operations live
+in `MacroEdits`; the shared views (`MacroUi`, sheets, `StepStrip`) in `MacroWidgets.kt`. `MacroEditor` (settings) records through
+`SwitcherService.macroRecorder`: the service sets `PadHelper.setRecording`, the helper withholds the pad from
+Android and streams raw `REC` lines, and `MacroRecorder` turns them into steps (keys at once, D-pad, sticks and
+trigger axes per frame; sticks in eight directions with the 0.6/0.3 thresholds; presses that overlap or start
+within 60 ms become one step). `finish` changes nothing, so the editor calls it every 100 ms while recording
+to show the steps so far, with a held press and the pause since the last release (`restingMs`) counting up; the
+timeline only rebuilds the steps that changed and scrolls to its end. Playback sends the compiled `MacroEvent` timeline with an id; the helper starts it
+only after Back is released, because macro keys pressed under a held Back would read as Back + button shortcuts.
+A new Back press stops it in the helper at once; the service remembers which macro that press stopped, so the
+same hotkey in that press only cancels. The helper's `MACRO_STOPPED` can arrive before that Back press reaches
+the service, so a stop the service did not request also counts as cancelled by the next Back press. Face buttons are stored by printed label and mapped through
+`flip_button_layout` at recording and playback. While any macro is bound, the helper is kept running.
+
 ### `SettingsActivity` + `SettingsUiKit`
 
 Eight hand-built pages share framework Views; no `PreferenceFragment` or layout XML.

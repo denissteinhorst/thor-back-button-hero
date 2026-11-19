@@ -273,6 +273,9 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "StickButton" to "1.00", "Stick" to "1.00",
             "SettingsBackup" to "1.00",
             "AndroidButton" to "1.00", "FaceButton" to "1.00", "ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
+            "Macro" to "1.00", "MacroRecorder" to "1.00", "MacroButton" to "1.00", "MacroDirection" to "1.00",
+            "Evdev" to "1.00", "MacroEditor" to "0.97", "SavedMacro" to "1.00", "MacroLibraryDialog" to "1.00",
+            "MacroEdits" to "1.00", "MacroUi" to "1.00", "MacroUi\$Sheet" to "1.00", "MacroWidgetsKt" to "1.00", "StepStrip" to "0.80", "ScrollIndicator" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

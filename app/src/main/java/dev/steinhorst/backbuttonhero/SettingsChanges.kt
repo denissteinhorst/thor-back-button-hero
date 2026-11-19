@@ -14,6 +14,8 @@ data class SettingsState(
     /** Per stick (keyed by [Stick.prefix]): its double-press and hold times. */
     val stickTimings: Map<String, StickTimings> = Stick.entries.associate { it.prefix to StickTimings() },
     val homeAsBack: Boolean = Prefs.DEFAULT_HOME_AS_BACK,
+    /** The macro library; resets and unbinding leave it alone, only hotkeys lose their macro. */
+    val macros: List<SavedMacro> = emptyList(),
 )
 
 data class StickTimings(
@@ -45,6 +47,8 @@ data class BindingSettings(
     val recordPtt: Boolean = false,
     val recordPttKey: Int = 0,
     val recordDuck: String = Prefs.DUCK_VIDEO,
+    /** The [SavedMacro.id] of the library macro it plays; null until one is chosen. */
+    val macro: String? = null,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
     fun levelTarget(): String = targetOverride ?: Prefs.TARGET_BOTH

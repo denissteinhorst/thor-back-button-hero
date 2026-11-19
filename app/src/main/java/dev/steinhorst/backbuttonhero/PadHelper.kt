@@ -23,6 +23,10 @@ class PadHelper(
     private val onPress: (DpadDirection) -> Unit,
     private val onRelease: (horizontal: Boolean) -> Unit,
     private val onActiveChanged: (Boolean) -> Unit,
+    /** One recorded input while [setRecording] is on: a "REC" line without its prefix, see [MacroRecorder]. */
+    private val onRecord: (List<String>) -> Unit = {},
+    /** The macro [playMacro] started under this id has ended: played through, or [stopped] by a Back press or a lost pad. */
+    private val onMacroEnd: (id: Int, stopped: Boolean) -> Unit = { _, _ -> },
     /** A stick deflection (direction) or its return to neutral (null); see [StickDetector]. */
     private val onStick: (Stick, DpadDirection?) -> Unit = { _, _ -> },
 ) {
@@ -43,6 +47,7 @@ class PadHelper(
     @Volatile private var stickMask = 0
     @Volatile private var stickPassthrough = 0
     @Volatile private var homeAsBack = false
+    @Volatile private var recording = false
     private var listening = false
     private var failedLaunches = 0
     private var launchPending = false
@@ -146,6 +151,36 @@ class PadHelper(
         runCatching { client?.outputStream?.write("HOMEBACK ${if (homeAsBack) 1 else 0}\n".toByteArray()) }
     }
 
+    /** While on, the pad's buttons, sticks and D-pad reach only [onRecord], not the foreground app. */
+    fun setRecording(value: Boolean) {
+        if (value == recording) return
+        recording = value
+        sendRecording()
+    }
+
+    private fun sendRecording() {
+        runCatching { client?.outputStream?.write("RECORD ${if (recording) 1 else 0}\n".toByteArray()) }
+    }
+
+    /**
+     * Loads [events] into the helper and plays them through the pad clone once Back is released.
+     * False when no helper holds the pad, so nothing can play.
+     */
+    fun playMacro(id: Int, events: List<MacroEvent>): Boolean {
+        val out = client?.outputStream ?: return false
+        if (!active) return false
+        val text = buildString {
+            append("MCLEAR\n")
+            events.forEach { append(it.wire()).append('\n') }
+            append("MPLAY ").append(id).append('\n')
+        }
+        return runCatching { out.write(text.toByteArray()) }.isSuccess
+    }
+
+    fun stopMacro() {
+        runCatching { client?.outputStream?.write("MSTOP\n".toByteArray()) }
+    }
+
     private fun sendStickPassthrough() {
         runCatching { client?.outputStream?.write("SPASS $stickPassthrough\n".toByteArray()) }
     }
@@ -204,10 +239,19 @@ class PadHelper(
                 sendSticks()
                 sendStickPassthrough()
                 sendHomeAsBack()
+                sendRecording()
             }
             "PAD_GONE" -> setActive(false)
             "RELEASED" -> { released = true; wanted = false; setActive(false) }
             "MODE" -> Unit
+            "REC" -> if (recording) {
+                val values = parts.drop(1)
+                main.post { if (wanted && !closed) onRecord(values) }
+            }
+            "MACRO_DONE", "MACRO_STOPPED" -> parts.getOrNull(1)?.toIntOrNull()?.let { id ->
+                val stopped = parts[0] == "MACRO_STOPPED"
+                main.post { if (!closed) onMacroEnd(id, stopped) }
+            }
             "STICK" -> if (parts.size == 3) {
                 val stick = Stick.fromWire(parts[1])
                 val direction = DpadDirection.fromWire(parts[2])
