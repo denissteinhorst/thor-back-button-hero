@@ -328,18 +328,16 @@ class SettingsActivity : Activity() {
         }
     }
 
-    private fun toggleButtonsLabel(): String = when (prefs.toggleButtons) {
-        Prefs.TOGGLE_NONE -> getString(R.string.shoulder_none)
-        Prefs.TOGGLE_L1_R1 -> "L1 + R1"
-        Prefs.TOGGLE_L2_R2 -> "L2 + R2"
-        else -> "L3 + R3"
-    }
+    private fun toggleButtonsLabel(): String = toggleLabel(prefs.toggleButtons)
+
+    private fun toggleLabel(value: String): String = ServiceToggleGesture.label(value) ?: getString(R.string.shoulder_none)
 
     private fun chooseToggleButtons() {
-        val values = listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, Prefs.TOGGLE_NONE)
+        val values = listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, Prefs.TOGGLE_START_SELECT,
+            Prefs.TOGGLE_BACK_HOME, Prefs.TOGGLE_NONE)
         AlertDialog.Builder(this)
             .setTitle(R.string.service_toggle_buttons)
-            .setSingleChoiceItems(arrayOf("L1 + R1", "L2 + R2", "L3 + R3", getString(R.string.shoulder_none)), values.indexOf(prefs.toggleButtons)) { dialog, which ->
+            .setSingleChoiceItems(values.map(::toggleLabel).toTypedArray(), values.indexOf(prefs.toggleButtons)) { dialog, which ->
                 dialog.dismiss()
                 if (values[which] == Prefs.TOGGLE_NONE) {
                     showChanges(SettingsChangePlan.create(prefs.snapshot(), SettingsSection.SETTINGS, SettingsChangeAction.UNBIND))
@@ -1157,9 +1155,11 @@ class SettingsActivity : Activity() {
             options.position.value.text = describeFocusPosition(row.button)
             options.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, options.position.value.text)
         }
-        // With Home standing in for Back, Back + Home cannot be pressed; its binding stays stored.
-        val blocked = row.button == AndroidButton.HOME && prefs.homeAsBack
-        if (blocked) row.action.value.text = getString(R.string.home_as_back_combo_blocked)
+        // With Home standing in for Back, or Back + Home as the activation shortcut, Back + Home cannot
+        // run its own shortcut; the binding stays stored.
+        val toggleBlocks = row.button == AndroidButton.HOME && prefs.toggleButtons == Prefs.TOGGLE_BACK_HOME
+        val blocked = toggleBlocks || row.button == AndroidButton.HOME && prefs.homeAsBack
+        if (blocked) row.action.value.text = getString(if (toggleBlocks) R.string.toggle_combo_blocked else R.string.home_as_back_combo_blocked)
         (row.action.row.parent as View).let { card ->
             card.alpha = if (blocked) 0.5f else 1f
             setTreeEnabled(card, !blocked)
@@ -1344,12 +1344,6 @@ class SettingsActivity : Activity() {
         fun position(value: String) = focusPositions().first { it.value == value }.label
         fun quality(value: String) = recordQualities().first { it.value == value }.label
         fun duck(value: String) = recordDucks().first { it.value == value }.label
-        fun toggle(value: String) = when (value) {
-            Prefs.TOGGLE_NONE -> getString(R.string.shoulder_none)
-            Prefs.TOGGLE_L1_R1 -> "L1 + R1"
-            Prefs.TOGGLE_L2_R2 -> "L2 + R2"
-            else -> "L3 + R3"
-        }
         fun aynOption(value: BindingSettings): String {
             val group = checkNotNull(Ayn.groupOf(value.action))
             val chosen = value.aynOption?.takeIf(group::isValid) ?: group.defaultOption
@@ -1382,7 +1376,7 @@ class SettingsActivity : Activity() {
         addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
         addChange(getString(R.string.home_as_back), onOff(a.homeAsBack), onOff(b.homeAsBack))
-        addChange(getString(R.string.service_toggle_buttons), toggle(a.toggleButtons), toggle(b.toggleButtons))
+        addChange(getString(R.string.service_toggle_buttons), toggleLabel(a.toggleButtons), toggleLabel(b.toggleButtons))
         addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
         addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))

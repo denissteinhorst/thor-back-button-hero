@@ -146,7 +146,8 @@ object SettingsBackup {
         return Result.Loaded(state, info)
     }
 
-    private val TOGGLE_VALUES = setOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, "l3_r3")
+    private val TOGGLE_VALUES = setOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, "l3_r3",
+        Prefs.TOGGLE_START_SELECT, Prefs.TOGGLE_BACK_HOME)
     private val SCREENS = setOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM)
     private val TARGETS = SCREENS + Prefs.TARGET_BOTH
     private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_MODAL

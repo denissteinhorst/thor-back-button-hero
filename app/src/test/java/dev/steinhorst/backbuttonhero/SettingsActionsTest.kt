@@ -65,14 +65,15 @@ class SettingsActionsTest {
         (ShadowDialog.getLatestDialog() ?: error("No dialog")).window!!.decorView
 
     @Test
-    fun `toggle buttons chooser offers stick and shoulder choices and persists selection`() {
+    fun `toggle buttons chooser offers stick, shoulder, Start and Back choices and persists selection`() {
         val activity = open().get()
         selectSettingsPage(activity, SettingsSection.SETTINGS)
-        for ((index, expected) in listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH).withIndex()) {
+        for ((index, expected) in listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH,
+            Prefs.TOGGLE_START_SELECT, Prefs.TOGGLE_BACK_HOME).withIndex()) {
             clickRow(activity, activity.getString(R.string.service_toggle_buttons))
             val dialog = ShadowAlertDialog.getLatestAlertDialog()
-            assertEquals(4, dialog.listView.adapter.count)
-            assertEquals(listOf("L1 + R1", "L2 + R2", "L3 + R3")[index], dialog.listView.adapter.getItem(index))
+            assertEquals(6, dialog.listView.adapter.count)
+            assertEquals(listOf("L1 + R1", "L2 + R2", "L3 + R3", "Start + Select", "Back + Home")[index], dialog.listView.adapter.getItem(index))
             dialog.listView.performItemClick(null, index, index.toLong())
             assertEquals(expected, Prefs(context).toggleButtons)
             assertFalse(dialog.isShowing)

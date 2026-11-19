@@ -48,4 +48,18 @@ class HomeAsBackSettingsTest {
         assertTrue(card.isEnabled)
         assertEquals(1f, card.alpha)
     }
+
+    @Test
+    fun `Back + Home as activation shortcut blocks the row with its own reason, ahead of the Home option`() {
+        prefs.setShoulderAction(AndroidButton.HOME, Prefs.SHOULDER_SCREENSHOT)
+        prefs.homeAsBack = true
+        prefs.toggleButtons = Prefs.TOGGLE_BACK_HOME
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val root = activity.findViewById<View>(android.R.id.content)
+        val blocked = checkNotNull(text(root, activity.getString(R.string.toggle_combo_blocked)))
+        assertNull(text(root, activity.getString(R.string.home_as_back_combo_blocked)))
+        val card = generateSequence(blocked) { it.parent as? View }.first { it.alpha == 0.5f }
+        assertFalse(card.isEnabled)
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(AndroidButton.HOME))
+    }
 }

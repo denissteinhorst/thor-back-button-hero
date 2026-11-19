@@ -245,6 +245,17 @@ on release instead. Back + Home cannot be pressed meanwhile, so its row is shown
 `PadHelper` sends `HOMEBACK 0/1` so the helper counts Home as Back for D-pad and stick captures, which also turns
 its Home + Back emergency release off.
 
+**Back + Home as the activation shortcut** (`Prefs.TOGGLE_BACK_HOME`) must toggle and nothing else, in either order,
+active or paused, with Home as Back on or off. `ServiceToggleGesture` therefore runs first in `onKeyEvent`, ahead of
+the Home-as-Back routing, and tracks one press per key across mirrored devices. Once both keys are down the second
+press is consumed whole; a first press the service already handled (active Back, or Home acting as Back) gets
+`markComboFired`, so its Back gesture ends without a tap. A first press that would reach Android at DOWN (both keys
+while paused, the pad's Home while active without Home as Back) is held back instead. Released without its partner,
+it is replayed through the normal key path (`replayUnpaired`, so AYN-panel and combo handling still apply) and
+whatever that leaves to Android is injected: Back via `nativeBack` (long press past the system timeout), Home via
+`GLOBAL_ACTION_HOME`. The cost is that, with this shortcut, such a lone press reaches Android only on release. AYN's
+own Home and injected Back never count. `Start + Select` is an ordinary observed pair like the shoulders.
+
 **Macros** (`Prefs.SHOULDER_MACRO`, any combo but Back's own gestures, `Prefs.MACRO_BUTTONS`) play a recorded
 input sequence through the helper's pad clone, so the game receives it as player 1. `Macro` holds the steps
 (inputs pressed together, hold, pause before the next step) and its compact stored form, which `decode` checks

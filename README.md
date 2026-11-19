@@ -53,7 +53,7 @@
 
 Each gesture can be switched off in the app's settings.
 
-Hold **L2 + R2 together for 300 ms** to deactivate all Back gestures and shortcuts; hold again to reactivate them. While deactivated, Back and its combinations reach your game normally. Stick clicks always reach the game. Settings also offer L3 + R3 or L1 + R1, and a hold time from 100 to 3000 ms. A message confirms each change. Back Button Hero starts active after a device or service restart.
+Hold **L2 + R2 together for 300 ms** to deactivate all Back gestures and shortcuts; hold again to reactivate them. While deactivated, Back and its combinations reach your game normally. Stick clicks always reach the game. Settings also offer L3 + R3, L1 + R1, Start + Select or Back + Home, and a hold time from 100 to 3000 ms. A message confirms each change. Back Button Hero starts active after a device or service restart.
 
 ## Shoulder buttons, face buttons and D-pad
 

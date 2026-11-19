@@ -64,7 +64,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val pushToTalkDevices = mutableSetOf<Int>()
     private var interceptionEnabled = true
     private val interceptionGate = KeyInterceptionGate()
-    private val toggleGesture by lazy { ServiceToggleGesture(prefs, gestureScheduler, ::toggleInterception) }
+    private val toggleGesture by lazy {
+        ServiceToggleGesture(prefs, gestureScheduler,
+            // Paused, both keys reach Android at DOWN; active, so does the pad's Home unless it acts as Back.
+            defers = { key -> !interceptionEnabled || key == KeyEvent.KEYCODE_HOME && !prefs.homeAsBack },
+            onPaired = { if (backGesture.backDown) backGesture.markComboFired() },
+            onReplay = ::replayUnpaired,
+            onToggle = ::toggleInterception)
+    }
     private var noticeToast: Toast? = null
     private val autoControllerFocus by lazy { AutoControllerFocus(this) }
     private var switchingActiveApp = false
@@ -362,18 +369,36 @@ class SwitcherService : AccessibilityService(), GestureActions {
             // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
         }
-        val buttons = when (prefs.toggleButtons) {
-            Prefs.TOGGLE_L1_R1 -> "L1 + R1"
-            Prefs.TOGGLE_L2_R2 -> "L2 + R2"
-            else -> "L3 + R3"
-        }
+        val buttons = ServiceToggleGesture.label(prefs.toggleButtons)
         noticeToast?.cancel()
-        val message = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) getString(R.string.service_toggle_no_shortcut)
+        val message = if (buttons == null) getString(R.string.service_toggle_no_shortcut)
         else getString(if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive, buttons)
         noticeToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        // Ahead of the Home-as-Back routing, so Back + Home is seen as both keys whichever leads.
+        if (toggleGesture.handle(event)) return true
+        return dispatchKey(event)
+    }
+
+    /**
+     * A Back or Home press the Back + Home shortcut held back turned out to be alone. It takes the
+     * path it would have taken at once; whatever that leaves to Android is injected, since the
+     * original pair was consumed. Timing-based handling only sees the press's length.
+     */
+    private fun replayUnpaired(down: KeyEvent, up: KeyEvent) {
+        val consumed = dispatchKey(down)
+        dispatchKey(up)
+        if (consumed) return
+        if (down.keyCode == KeyEvent.KEYCODE_BACK) {
+            nativeBack(longPress = up.eventTime - down.downTime >= ViewConfiguration.getLongPressTimeout())
+        } else {
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
+    }
+
+    private fun dispatchKey(event: KeyEvent): Boolean {
         val route = homeAsBackRoute(event)
         if (route == HomeAsBack.Route.SWALLOW) return true
         if (route == HomeAsBack.Route.AS_BACK) {
@@ -387,7 +412,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return true
         }
         if (!isHomeCombo(event) && handleAynButton(event)) return true
-        toggleGesture.handle(event)
         return interceptionGate.handle(event, interceptionEnabled, ::handleActiveKeyEvent)
     }
 

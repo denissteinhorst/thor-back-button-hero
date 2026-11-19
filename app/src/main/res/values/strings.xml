@@ -26,6 +26,7 @@
     <string name="home_as_back">Use the Home button as Back</string>
     <string name="home_as_back_hint">Home then behaves exactly like Back: every Back gesture, every Back + button shortcut and the app exceptions. Back + Home is unavailable meanwhile.</string>
     <string name="home_as_back_combo_blocked">Unavailable while Home acts as Back</string>
+    <string name="toggle_combo_blocked">Unavailable while Back + Home turns Back Button Hero on or off</string>
     <string name="hold_speed">Hold time: %d ms</string>
     <string name="hold_section_title">Hold</string>
     <string name="hold_hint">How long Back has to be held. Default: 1000 ms.</string>

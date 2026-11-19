@@ -238,7 +238,7 @@ emulator with its own Back handling (e.g. RetroArch) as the excepted app.
 
 Use S3 for changes to the toggle or the helper's pass-through mode.
 
-- In settings, confirm L2 + R2 and 300 ms by default. Confirm that only L3 + R3, L1 + R1 and L2 + R2 are offered; select each pair,
+- In settings, confirm L2 + R2 and 300 ms by default. Confirm that only L3 + R3, L1 + R1, L2 + R2, Start + Select and Back + Home are offered; select each pair,
   change the duration, and reopen settings to confirm persistence. Check light/dark
   themes and English/German wording. Restore the default selection afterward.
 - Hold only one button of the selected pair: nothing toggles. Hold both buttons for less than the
@@ -248,6 +248,15 @@ Use S3 for changes to the toggle or the helper's pass-through mode.
   toggle; both required buttons must overlap for the full duration. The message must
   name the selected pair. Without Back held, verify both shoulders still reach the game
   in either state. With BBH active, Back + each shoulder retains its existing shortcut.
+- Start + Select: either alone does not toggle; both past the threshold toggle in either state, and
+  without Back held both still reach the game. Back + Start and Back + Select keep their shortcuts.
+- Back + Home, with "Use the Home button as Back" off and on, active and paused, in both orders (Back first,
+  Home first): BBH toggles and nothing else happens: no launcher, no Back in the game, no Back gesture, hold swap
+  or Back + Home shortcut. The Back + Home row shows it is unavailable; AYN's own Home button never takes part.
+- With Back + Home selected, a lone press still works on release: paused, Back reaches the game once (held past
+  the long-press timeout, as a long press) and the pad's Home goes home; active without the Home option, the pad's
+  Home goes home (or returns a hidden AYN panel). Holding both 5 s still triggers the helper's emergency release
+  only with the Home option off.
 - In a game, verify both stick clicks still work in both states. While deactivated,
   test Back tap, double tap, hold, tap-then-hold, Back + every shoulder and Back +
   every D-pad direction: no BBH action, normal game input and no focus loss.

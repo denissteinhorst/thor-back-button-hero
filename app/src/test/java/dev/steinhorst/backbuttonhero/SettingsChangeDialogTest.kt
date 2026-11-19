@@ -71,14 +71,14 @@ class SettingsChangeDialogTest {
         prefs.toggleButtons = Prefs.TOGGLE_L2_R2
         selectSettingsPage(activity, SettingsSection.SETTINGS)
         click(activity, R.string.service_toggle_buttons)
-        dialog().listView.performItemClick(null, 3, 3)
+        dialog().listView.performItemClick(null, 5, 5)
         assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
         assertTrue(text(dialog().window!!.decorView).contains(activity.getString(R.string.settings_unbind_reactivates)))
         dialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(Prefs.TOGGLE_L2_R2, prefs.toggleButtons)
         click(activity, R.string.service_toggle_buttons)
-        dialog().listView.performItemClick(null, 3, 3)
+        dialog().listView.performItemClick(null, 5, 5)
         accept()
         assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
         val slider = find(activity.findViewById(android.R.id.content)) { it is SeekBar && it.max == 29 }!!

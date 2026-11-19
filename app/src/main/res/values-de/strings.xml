@@ -25,6 +25,7 @@
     <string name="home_as_back">Home-Button wie Back-Taste verwenden</string>
     <string name="home_as_back_hint">Home verhält sich dann genau wie Back: alle Back-Gesten, alle Back + Taste-Kürzel und die App-Ausnahmen. Back + Home ist solange nicht verfügbar.</string>
     <string name="home_as_back_combo_blocked">Nicht verfügbar, solange Home als Back dient</string>
+    <string name="toggle_combo_blocked">Nicht verfügbar, solange Back + Home Back Button Hero ein- und ausschaltet</string>
     <string name="hold_speed">Haltedauer: %d ms</string>
     <string name="hold_section_title">Halten</string>
     <string name="hold_hint">Wie lange Back gehalten werden muss. Standard: 1000 ms.</string>

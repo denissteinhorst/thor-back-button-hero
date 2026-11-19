@@ -493,6 +493,8 @@ class Prefs(context: Context) {
         const val TOGGLE_BOTH = "both"
         const val TOGGLE_L1_R1 = "l1_r1"
         const val TOGGLE_L2_R2 = "l2_r2"
+        const val TOGGLE_START_SELECT = "start_select"
+        const val TOGGLE_BACK_HOME = "back_home"
         const val DEFAULT_TOGGLE_BUTTONS = TOGGLE_NONE
         const val DEFAULT_TOGGLE_HOLD_MS = 300L
         const val DEFAULT_DOUBLE_TAP_ENABLED = true
