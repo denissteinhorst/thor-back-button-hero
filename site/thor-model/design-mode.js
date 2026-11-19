@@ -74,12 +74,13 @@ export function createDesignMode(root) {
     side:THREE.DoubleSide,transparent:true,depthWrite:false,toneMapped:false
   });
   const instances=new THREE.MeshBasicMaterial({color:'#65becd',wireframe:true,toneMapped:false});
-  const state={enabled:false,solidControls:true};let disposed=false;
+  const state={enabled:false,solidControls:true};let disposed=false,solidControl=null;
+  let solidControlNames=[];
   root.traverse(object=>{
     if(!object.isMesh)return;
-    let control=false;
-    for(let parent=object;parent;parent=parent.parent)if(parent.userData.inputControl){control=true;break;}
-    parts.push({object,control,legend:object.name.startsWith('mark-'),geometry:object.geometry,material:object.material,
+    let control=false,controlName=null;
+    for(let parent=object;parent;parent=parent.parent)if(parent.userData.inputControl){control=true;controlName=parent.userData.inputControl;break;}
+    parts.push({object,control,controlName,legend:object.name.startsWith('mark-'),geometry:object.geometry,material:object.material,
       visible:object.visible,castShadow:object.castShadow,receiveShadow:object.receiveShadow,overlay:null});
   });
   function bundle(geometry) {
@@ -99,7 +100,7 @@ export function createDesignMode(root) {
   }
   function apply() {
     for(const part of parts) {
-      const o=part.object,wire=state.enabled&&!(state.solidControls&&part.control);
+      const o=part.object,wire=state.enabled&&!(state.solidControls&&part.control)&&!(solidControl!==null&&part.controlName===solidControl)&&!solidControlNames.includes(part.controlName);
       if(part.overlay)part.overlay.visible=false;
       o.geometry=part.geometry;o.material=part.material;o.visible=part.visible;
       o.castShadow=part.castShadow;o.receiveShadow=part.receiveShadow;
@@ -115,15 +116,26 @@ export function createDesignMode(root) {
   const set=(key,value)=>{
     if(disposed)throw new Error('Design mode has been disposed');
     if(typeof value!=='boolean')throw new TypeError('Design settings must be boolean');
-    state[key]=value;apply();return api;
+    if(state[key]!==value){state[key]=value;apply();}return api;
   };
   const api={
     setEnabled:value=>set('enabled',value),setSolidControls:value=>set('solidControls',value),
+    setSolidControl(name) {
+      if(disposed)throw new Error('Design mode has been disposed');
+      if(name!==null&&!parts.some(part=>part.controlName===name))throw new RangeError('Unknown design control: '+name);
+      if(solidControl!==name){solidControl=name;apply();}return api;
+    },
+    setSolidControlNames(names) {
+      if(disposed)throw new Error('Design mode has been disposed');
+      if(!Array.isArray(names)||names.some(name=>!parts.some(part=>part.controlName===name&&name!==null)))throw new RangeError('Unknown design controls');
+      const next=[...new Set(names)].sort();
+      if(next.join(',')!==solidControlNames.join(',')){solidControlNames=next;apply();}return api;
+    },
     setViewport(width,height,pixelRatio=1) {
       if(![width,height,pixelRatio].every(v=>Number.isFinite(v)&&v>0))throw new RangeError('Viewport dimensions must be positive');
       lines.uniforms.resolution.value.set(width*pixelRatio,height*pixelRatio);lines.uniforms.lineWidth.value=1.8*pixelRatio;
     },
-    getState:()=>({...state}),
+    getState:()=>({...state,...(solidControl!==null?{solidControl}:{}),...(solidControlNames.length?{solidControlNames:[...solidControlNames]}:{})}),
     dispose() {
       if(disposed)return;
       state.enabled=false;apply();

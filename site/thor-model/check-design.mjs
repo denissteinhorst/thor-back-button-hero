@@ -28,6 +28,22 @@ const coarse=body.geometry;
 mode.setSolidControls(false);
 for(const part of parts.filter(p=>p.control&&!p.o.name.startsWith('mark-')))assert.notEqual(part.o.material,part.material,'control fails to enter wire mode');
 const knurl=root.getObjectByName('left-stick-knurling');assert.equal(knurl.material.wireframe,true,'instanced stick grip has no wire style');
+const backParts=parts.filter(part=>{
+  for(let p=part.o;p;p=p.parent)if(p.userData.inputControl==='back')return true;
+  return false;
+});
+mode.setSolidControl('back');
+for(const part of backParts){assert.equal(part.o.material,part.material);assert.equal(part.o.geometry,part.geometry);assert.equal(part.o.visible,part.visible);}
+for(const part of parts.filter(p=>p.control&&!backParts.includes(p)&&!p.o.name.startsWith('mark-')))assert.notEqual(part.o.material,part.material,'Back exception restores another control');
+assert.equal(mode.getState().solidControl,'back');
+mode.setSolidControl(null);assert.equal(mode.getState().solidControl,undefined);
+assert.throws(()=>mode.setSolidControl('unknown'),RangeError);
+mode.setSolidControlNames(['home','A']);
+assert.deepEqual(mode.getState().solidControlNames,['A','home']);
+for(const name of ['home-button','button-A']){const part=parts.find(p=>p.o.name===name);assert.equal(part.o.material,part.material);}
+assert.throws(()=>mode.setSolidControlNames(['unknown']),RangeError);
+mode.setSolidControlNames([]);assert.equal(mode.getState().solidControlNames,undefined);
+for(const part of backParts.filter(p=>!p.o.name.startsWith('mark-')))assert.notEqual(part.o.material,part.material);
 mode.setSolidControls(true);assert.equal(body.geometry,coarse,'design geometry is rebuilt on each toggle');
 for(let i=0;i<3;i++) {
   mode.setEnabled(false);

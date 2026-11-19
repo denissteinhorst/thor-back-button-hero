@@ -13,6 +13,163 @@ snaps: `setAngle(degrees)` continues to accept exact angles for animation code.
 **Schulterdetail** frames the left shoulder and underside together; orbit from
 there to inspect the side profile. The pressure inspector uses the same rig.
 
+## Intro preview
+
+The viewer initially selects **Intro-Vorschau**, paused at the closed-device
+starting pose supplied by the owner. **Play / Pause**, **Stop** and the horizontal
+timeline share an absolute, deterministic animation clock. Scrubbing pauses at
+that time; Play resumes there, Stop resets to zero, and playback stops at the
+last frame. Arrow keys on the timeline advance in 1/60-second increments. The
+frame readout is a 60 fps reference, not a claim about real-time rendering speed.
+
+Default duration is **30 seconds**, adjustable from 2 to 30 seconds. The
+advertisement uses an explicit edit clock (`intro-ad-clock.js`) over the existing
+rig cues, preserving absolute seek reconstruction and all supplied camera poses:
+
+- 0–11.2 s: opening, Back reach demonstration, Home-as-Back option, mirrored reach
+  demonstration and the move into the frontal pose. No configuration card is
+  visible during that last transition.
+- 11.2–14.2 s: the five pause combinations, with physical key presses and eased
+  rows; monochrome logo and pause bars only during each press.
+- 14.2–18 s: possible-hotkey counts, synchronized button highlights and stick
+  movement, followed by the smaller logo and **Available Functions**.
+- 18–26 s: eight one-second feature beats. Each uses one large headline and a
+  brief supporting line. **Almost no touch input needed.** stays visible above
+  the device. Highlights cover swapping apps, bottom-screen app switching,
+  screenshots, gameplay recording with push-to-talk, macro recording, controller
+  focus, volume/brightness, and toggling screens/more.
+- 26–30 s: a still, pause-friendly poster. A branded **33 functions.** header,
+  compact product image, touch-input benefit and all six full function groups
+  appear together in a three-column, two-row grid. There are no NEW badges or
+  rotating side lists. This is intended as a readable paused frame or screenshot
+  for sharing, rather than expecting every function to be read during playback.
+
+The black outside-lid title rotates away as the hinge flicks open. The display
+background is fully visible from 100°. **Support for both hands** and **Use the
+Home button as Back too** are movie captions; they never change app preferences.
+The duration input rescales the entire finished edit and preserves relative
+playback progress. `introStoryTiming` / `sampleIntroStory` retain the underlying
+47-second rig coordinates; public `introTiming` / `sampleIntro` expose the ad's
+actual playback time. Earlier frame numbers therefore move in the shorter cut.
+
+Images are fully decoded, painted and uploaded to GPU textures before the player
+is enabled. Display content uses an opaque, depth-biased surface and fades its
+emitted colour, preserving real lid occlusion while avoiding transparent-layer
+competition with the OLED glass. Animated textures use stable linear sampling
+without regenerating mipmaps on each upload.
+
+The landscape drifts and gently zooms; a mask derived from the existing image's
+warm pixels softly pulses the lava without tinting the surrounding rocks. Five
+independently drawn bird silhouettes emerge from behind the upper-screen logo
+as it fades in, with staggered paths and wingbeats. They start a 0.9-second flight
+at the logo reveal and leave before the wireframe sweep.
+These effects use absolute timeline seconds, so pause freezes them and seeking
+backward restores the same image. No extra image, animation library or asset is
+required. `intro-atmosphere.js` owns the independent motion samples and birds.
+
+All six exact camera keyframes and the original 732:442 viewport ratio are retained.
+The intro canvas preserves that ratio at other window widths. Titles and display
+content are rendered inside WebGL, so future canvas capture can include them.
+This step supplies a local preview, without video encoding, audio or publication.
+The app version and landing page are unchanged.
+
+**Modell bearbeiten** returns to the previous model view, hinge angle, design mode
+and button/stick state; its dark displays remain available for geometry work.
+The intro locks orbit and model controls to preserve the specified camera path.
+The pose inspector continues to report the actual rendered camera and hinge.
+It also reports the current animation time, wireframe/radial progress, reach
+flash strength and Back pressure.
+
+`intro-wireframe.js` renders complementary scissored normal/wire views with a
+narrow additive glint, including controls and displays. It uses the existing
+design geometry and prewarms its contour cache. Initially only Back returns to the normal
+style, via `design.setSolidControl('back')`; its actual input rig remains pressed.
+The upper wireframe display retains the existing logo as a centred monochrome
+watermark: cyan `#82b6c4`, 20% opacity, 28% of the display width. The shader keeps
+the original logo's luminance detail and circular silhouette. It follows the
+actual lid and is revealed by the same wipe, remains throughout the held-Back
+sequence, and is also present in the modelling viewer's native wireframe mode.
+It uses the existing logo at runtime without a modified image asset. The glint
+pass excludes the watermark so its rectangular plane never flashes.
+`intro-back-hint.js` adds two ring pulses and a scene-space caption/leader for
+Back and Home, including the two-line Home label. `intro-home-option.js` renders
+the enlarged settings row and animated switch using project-owned wording.
+`intro-callout.js` directly anchors the caption's top-right corner to the
+lower-left front corner of the SD-slot cover, with only a narrow visual gap.
+It extends down-left from that port (7–8 o'clock) and caches layout for a fixed
+camera. Automatic silhouette avoidance must not push this close caption away.
+This external placement is the convention for subsequent button explanations.
+
+`intro-radial.js` adds a camera-facing laser with a short fading trail originating at Back. Its ray crosses
+the actual projected positions of Home, the four D-pad directions, both sticks,
+all four shoulders, Start, Select and all four facebuttons. Spatial angle sets
+the encounter order. Each target immediately takes its reach colour on contact,
+holds that colour until the laser finishes, then fades to its original style.
+The same cubic ease-in-out and its inverse determine both contact times and the age of
+the trailing illumination, which decays over 0.18 seconds instead of leaving a
+filled fan. Rings appear only during the initial flyover. The design mode's
+explicit solid-control list retains the revealed original geometry. The D-pad uses a clipped
+original-material overlay and individual legends until all four quadrants are
+revealed; its connected physical mesh and input state are preserved.
+
+The reach palette is green for left controls and all shoulders, green-yellow
+for Start, yellow for Select/facebuttons and red for the right stick. After the
+colour fade, the original button materials remain visible without further flashing. Shoulder cues include depth-independent copies of the actual shoulder
+geometry and readable L1/L2/R1/R2 markings, visible through the housing only while
+the shoulder colour is lit. Tint/emissive materials are private clones; original materials are restored
+after the fade and on exit. Other buttons remain unpressed, while Back stays
+held. The watermark and external Hold Back caption remain visible. Absolute
+timeline sampling reconstructs the fan, reveals and colour fades when seeking in
+either direction. The fan/highlight geometry stays outside the device root so
+it cannot change the existing camera framing or wireframe sweep bounds.
+
+`intro-reach-gauge.js` draws a slim, gently curved reach scale in the bottom
+viewport margin, outside the product. A subdued green/yellow/red track gains
+colour behind a small progress marker. Easy/hard captions reverse for the Home
+view. There are no instrument ticks or enclosing tachometer arc. Its composition
+is independent of the held key's position; the laser still crosses the actual
+projected buttons. The owner's Alamy image was a concept reference only; no stock
+artwork is incorporated. Geometry, shaders and labels are original project code.
+
+The pause and hotkey-count sequences share absolute input samples, so both
+seeking directions release keys and centre sticks outside their cues. Both
+analog sticks demonstrate their seven assignments in parallel. The screen table
+counts four physical system keys, four D-pad directions, seven assignments per
+stick, four shoulder keys and four face keys. The final catalogue represents all
+33 actions supplied by the owner, grouped by benefit; configuration sub-options
+are deliberately omitted. `intro-feature-catalog.js` owns that copy and
+`intro-hotkey-demo.js` owns the large feature headlines and final poster.
+
+`intro-timeline.js` owns timing/transport, `intro-player.js` owns playback controls,
+and `intro-screens.js` adds screen/title content without changing the model
+geometry or OLED materials. The nature background is an original Imagegen asset;
+see [asset provenance and the exact prompt](assets/PROVENANCE.md).
+Run `node site/thor-model/check-intro.mjs` for poses, fade sequencing, the 100°
+threshold, shortened logo stand, duration changes, reverse seeking and playback controls.
+Run `node site/thor-model/check-intro-screens.mjs` for lid/base attachment, title
+orientation and occlusion, UV coordinates, captions and preservation of model materials.
+The same checks cover texture readiness, opaque colour fades, depth bias, stopped
+texture uploads while paused, background margins and deterministic flock positions.
+Run `node site/thor-model/check-intro-feature.mjs` for complementary render passes,
+renderer state restoration, Back-only styling, outside caption placement and
+two pulses without releasing Back. Visual and automated checks are now owner-led:
+do not run them unless the owner explicitly requests them.
+
+## Copying animation keyframes
+
+**Aktuelle Position** shows live JSON; **Position kopieren** copies a snapshot.
+If clipboard access is unavailable, the field is selected for manual copying.
+The snapshot uses full numeric precision and includes the active camera type,
+position, quaternion (x/y/z/w), up vector, OrbitControls target, zoom, clipping
+planes and projection parameters, plus the viewport dimensions. Model position,
+quaternion, scale and the actual snapped hinge angle are included, together with
+the design mode and button/stick state. Positions use model millimetres and the
+hinge angle uses degrees. Orbiting moves the camera around the model; the root
+model transform normally stays at its identity. Reproduce the viewport aspect
+ratio as well as the camera projection for the same framing. The field updates
+after rendering, including while orbit damping settles. It does not store poses
+across reloads or import keyframes.
+
 ## Wireframe design view
 
 **Wireframe** toggles a quiet navy/cyan design view. It draws contours and
