@@ -4,7 +4,6 @@ import android.content.Context
 import android.media.AudioManager
 import android.provider.Settings
 import android.view.Display
-import android.widget.Toast
 import java.util.concurrent.Executors
 
 /**
@@ -14,7 +13,11 @@ import java.util.concurrent.Executors
  * state only [BrightnessControl] can change. Both of those go through [PService], one at a time, so
  * fast repeated presses still step one by one.
  */
-class LevelControl(private val context: Context, private val bottomDisplayId: () -> Int?) {
+class LevelControl(
+    private val context: Context,
+    private val notice: (String) -> Unit,
+    private val bottomDisplayId: () -> Int?,
+) {
     private val worker = Executors.newSingleThreadExecutor()
     private val queued = java.util.concurrent.atomic.AtomicInteger()
 
@@ -96,8 +99,7 @@ class LevelControl(private val context: Context, private val bottomDisplayId: ()
         }
     }
 
-    private fun unavailable() =
-        Toast.makeText(context, R.string.shoulder_action_unavailable, Toast.LENGTH_SHORT).show()
+    private fun unavailable() = notice(context.getString(R.string.shoulder_action_unavailable))
 
     companion object {
         /** AYN's bottom-screen volume; its slider runs 0..15 like STREAM_MUSIC. */

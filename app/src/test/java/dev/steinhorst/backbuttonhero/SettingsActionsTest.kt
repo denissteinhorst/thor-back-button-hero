@@ -155,11 +155,49 @@ class SettingsActionsTest {
         assertNotNull(find(again.findViewById(android.R.id.content)) { it is TextView && it.text.toString() == "Off" })
     }
 
+    @Test
+    fun `action list says below each entry what it does`() {
+        val activity = open().get()
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        clickRow(activity, "L1")
+        val adapter = ShadowAlertDialog.getLatestAlertDialog().listView.adapter
+        val items = (0 until adapter.count).map { adapter.getItem(it).toString() }
+        fun entry(name: Int) = items.first { it.substringBefore('\n') == activity.getString(name) }
+        // "Not set" does nothing, so it stays a single line; everything else carries its description.
+        assertEquals(activity.getString(R.string.shoulder_none), items.first())
+        assertTrue(items.drop(1).all { '\n' in it })
+        assertEquals(
+            "${activity.getString(R.string.shoulder_app_control)}\n${activity.getString(R.string.action_desc_app_control)}",
+            entry(R.string.shoulder_app_control),
+        )
+        listOf(R.string.group_media, R.string.shoulder_status, R.string.ayn_refresh_rate, R.string.ayn_stick_light,
+            R.string.ayn_virtual_mouse, R.string.ayn_do_not_disturb, R.string.ayn_mute_microphone).forEach { entry(it) }
+    }
+
+    @Test
+    fun `restart joins the app-control modes and asks before it can be assigned`() {
+        val activity = open().get()
+        val prefs = Prefs(context)
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        chooseAction(activity, "L1", R.string.shoulder_app_control)
+        clickRow(activity, activity.getString(R.string.app_control_minimize))
+        val modes = ShadowAlertDialog.getLatestAlertDialog()
+        val restart = (0 until modes.listView.adapter.count).first { modes.listView.adapter.getItem(it).toString() == activity.getString(R.string.app_control_restart) }
+        modes.listView.performItemClick(null, restart, restart.toLong())
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+        assertEquals(Prefs.APP_MINIMIZE, prefs.appMode(ShoulderButton.L1))
+        val warning = ShadowAlertDialog.getLatestAlertDialog()
+        assertEquals(activity.getString(R.string.app_control_restart_use), warning.getButton(AlertDialog.BUTTON_POSITIVE).text.toString())
+        warning.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+        assertEquals(Prefs.APP_RESTART, prefs.appMode(ShoulderButton.L1))
+    }
+
     private fun chooseAction(activity: SettingsActivity, title: String, actionRes: Int) {
         clickRow(activity, title)
         val dialog = ShadowAlertDialog.getLatestAlertDialog()
         val adapter = dialog.listView.adapter
-        val index = (0 until adapter.count).first { adapter.getItem(it).toString() == activity.getString(actionRes) }
+        val index = (0 until adapter.count).first { adapter.getItem(it).toString().substringBefore('\n') == activity.getString(actionRes) }
         dialog.listView.performItemClick(null, index, index.toLong())
     }
 

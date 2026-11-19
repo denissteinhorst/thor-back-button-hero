@@ -28,6 +28,14 @@ object ActionGroups {
             "brightness", R.string.group_brightness,
             listOf(Option(Prefs.SHOULDER_BRIGHTNESS_UP, R.string.group_up), Option(Prefs.SHOULDER_BRIGHTNESS_DOWN, R.string.group_down)),
         ),
+        MEDIA(
+            "media", R.string.group_media,
+            listOf(
+                Option(Prefs.SHOULDER_MEDIA_PLAY_PAUSE, R.string.media_play_pause),
+                Option(Prefs.SHOULDER_MEDIA_NEXT, R.string.media_next),
+                Option(Prefs.SHOULDER_MEDIA_PREVIOUS, R.string.media_previous),
+            ),
+        ),
         FLICK(
             "flick", R.string.group_flick,
             listOf(Option(Prefs.SHOULDER_FLICK_LEFT, R.string.group_left), Option(Prefs.SHOULDER_FLICK_RIGHT, R.string.group_right)),

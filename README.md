@@ -62,16 +62,30 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 **Available actions:**
 
 - **Launch an app** on the top or bottom screen
-- **Navigation flick** to the previous or next app.
 - **Home**
+- **Back** sends a normal Android Back.
 - **Recents**
+- **Switch both apps** swaps the apps on the top and the bottom screen.
+- **Switch to last app** returns to the app you used before on the screen the controller is on; press again to flip between the two. If that app has been closed, a message says so.
 - **Screenshot** of the top screen, the bottom screen, or both. Every image uses Android's native screenshot actions; "both" creates one image with the smaller bottom screen centered below the top screen.
-- **Volume up / down** on both screens, only the top, or only the bottom.
+- **Record video** of the top screen, the bottom screen, or both, with optional microphone and push-to-talk voice. Press again to stop; videos are saved under Videos/BBH-Records. A recording also ends when the screens go off.
+- **Macro** plays a recorded button sequence through the controller, as if you pressed it yourself. Record it with the red button in the macro editor or add buttons by hand, then tap a step to change it, hold and drag it to move it or drop it on the bin, and undo anything; a preview shows the timing without sending input; inputs pressed together form one step, and sticks are recorded in eight directions. Saved macros get a name and can be picked for any other hotkey, edited from the list, renamed or deleted; an edit reaches every hotkey that plays it. The macro starts once you let go of Back, and pressing the same hotkey again stops it. Up to 60 seconds and 200 steps. Not available for Back's own gestures, and only while AYN's root service is reachable.
+- **Navigation flick** to the previous or next app.
+- **Volume up / down / mute** on both screens, only the top, or only the bottom.
 - **Brightness up / down** on both screens, only the top, or only the bottom.
+- **Media control:** play / pause, next track and previous track for whatever is playing music or podcasts, without leaving the game.
 - **Set controller focus** to the top or bottom screen, either as a toggle or fixed to one screen. A short pictogram confirms the active screen. Its position (a 3 × 3 grid), display time, and visibility can be set; tapping the pictogram opens these settings.
 - **Switch active app** moves the foreground app on the controller/input screen to the other screen. The other app stays there in the background. **Gamepad focus follows the app** is enabled by default and can be switched off for each hotkey; AYN Auto-lock stays enabled when in use.
-- **Active App Control** minimizes the app in front (as if you swiped up) or force-closes it, on the top screen, the bottom screen, both, or asks each time. "Ask" opens a small prompt on the screen the controller is on, which you steer with the D-pad or stick. **Force-Close ends the app immediately and does not save anything for you, so unsaved progress and files can be lost.** For a fixed screen it can optionally ask first.
-- **Macro** plays a recorded button sequence through the controller, as if you pressed it yourself. Record it with the red button in the macro editor or add buttons by hand, then tap a step to change it, hold and drag it to move it or drop it on the bin, and undo anything; a preview shows the timing without sending input; inputs pressed together form one step, and sticks are recorded in eight directions. Saved macros get a name and can be picked for any other hotkey, edited from the list, renamed or deleted; an edit reaches every hotkey that plays it. The macro starts once you let go of Back, and pressing the same hotkey again stops it. Up to 60 seconds and 200 steps. Not available for Back's own gestures, and only while AYN's root service is reachable.
+- **Active App Control** minimizes the app in front (as if you swiped up), force-closes it, or restarts it on the same screen, on the top screen, the bottom screen, both, or asks each time. "Ask" opens a small prompt on the screen the controller is on, which you steer with the D-pad or stick. **Force-Close and Restart end the app immediately and do not save anything for you, so unsaved progress and files can be lost.** For a fixed screen it can optionally ask first.
+- **Close Apps** ends every app on the chosen screens at once, or only the ones in the background. It asks first unless you switch that off.
+- **Power Menu** opens Android's power dialog, ready for the D-pad. **Standby** switches the screens off like a short press of the power button, optionally after asking.
+- **Status Overlay** shows the battery level, the time left or until full, and the temperature.
+- **AYN controls**, each confirmed by a short message:
+  - **Performance Mode** (Standard, Medium, High), **Fan Control** (Turned Off, Quiet, Smart, Sports) and **Handle Style** (Standard, XBox, Ban On Use), either fixed or chosen in a small prompt each time.
+  - **Toggle Display Power** turns the top or the bottom screen off and on; the other one always stays on.
+  - **Refresh Rate** toggles between 60 and 120 Hz or sets one of them.
+  - **Stick Lighting** turns the LEDs of both sticks, the left or the right one off and on.
+  - On/off switches: **Direct Power Supply**, **Vibration**, **Force Landscape**, **Virtual Mouse** (a stick moves a mouse cursor), **Do Not Disturb** and **Mute Microphone** (blocks the microphone for every app).
 - **Quick Settings** and **notifications**
 - **System settings pages:** Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb, Battery Saver
 - **Not set**

@@ -4,12 +4,12 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.widget.Toast
 import java.util.concurrent.Executors
 
 /** Routes the Thor's controller buttons to one display through AYN's own pservice sequence. */
 class ControllerFocus(
     private val context: Context,
+    private val notice: (String) -> Unit,
     private val onFailed: () -> Unit,
 ) {
     private val worker = Executors.newSingleThreadExecutor()
@@ -72,7 +72,7 @@ class ControllerFocus(
     }
 
     private fun unavailable() {
-        Toast.makeText(context, R.string.shoulder_action_unavailable, Toast.LENGTH_SHORT).show()
+        notice(context.getString(R.string.shoulder_action_unavailable))
     }
 
     companion object {

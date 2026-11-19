@@ -42,7 +42,7 @@ class ControllerFocusTest {
 @RunWith(RobolectricTestRunner::class)
 class ControllerFocusRoutingTest {
     private val context: Context get() = ApplicationProvider.getApplicationContext()
-    private val focus get() = ControllerFocus(context) {}
+    private val focus get() = ControllerFocus(context, {}) {}
 
     private fun routeIs(value: String?) {
         Settings.System.putString(context.contentResolver, ControllerFocus.FOCUS_SETTING, value)

@@ -181,7 +181,7 @@ class MacroSettingsTest {
 
     private fun actionLabels(): List<String> {
         val dialog = ShadowAlertDialog.getLatestAlertDialog() as AlertDialog
-        return (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString() }
+        return (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString().substringBefore('\n') }
     }
 
     private fun chooseAction(label: String) {

@@ -8,6 +8,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.io.File
 import android.graphics.Path
+import android.media.AudioManager
+import android.os.BatteryManager
 import android.os.SystemClock
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -22,7 +24,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import android.view.Display
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -72,7 +73,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             onReplay = ::replayUnpaired,
             onToggle = ::toggleInterception)
     }
-    private var noticeToast: Toast? = null
+    private val notice by lazy { NoticeOverlay(this) }
     private val autoControllerFocus by lazy { AutoControllerFocus(this) }
     private var switchingActiveApp = false
     @Volatile private var activeAppSwitchSession = 0
@@ -243,10 +244,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::restorePanel,
             ::closeAynPanel,
         )
-        levels = LevelControl(this) { bottomDisplay()?.displayId }
+        levels = LevelControl(this, { notice.show(it) }) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
-        controllerFocus = ControllerFocus(this, onFailed = focusIndicator::dismiss)
-        aynControls = AynControls(this)
+        controllerFocus = ControllerFocus(this, { notice.show(it) }, onFailed = focusIndicator::dismiss)
+        aynControls = AynControls(this) { notice.show(it) }
         padHelper = PadHelper(
             this,
             ::handleDpad,
@@ -259,6 +260,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
+        runCatching { unregisterReceiver(standbyReceiver) }
+        registerReceiver(standbyReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
         updatePadHelper()
         handler.post(panelStateRunnable)
     }
@@ -310,8 +313,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun allowsCombo(button: ComboButton) = backException?.allows(ExceptionControl.of(button)) ?: true
 
     override fun holdSwapBlocked() {
-        noticeToast?.cancel()
-        noticeToast = Toast.makeText(this, R.string.swap_blocked_by_exceptions, Toast.LENGTH_SHORT).also { it.show() }
+        notice.show(R.string.swap_blocked_by_exceptions)
     }
 
     override fun nativeBack(longPress: Boolean) {
@@ -344,18 +346,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         interceptionEnabled = !interceptionEnabled
         Log.i(TAG, "Back interception active=$interceptionEnabled")
         interceptionGate.changed()
-        backGesture.reset()
-        shoulderKeys.clear()
-        pendingFocusTargets.clear()
-        pendingDpadFocus = null
-        stopLevelRepeat()
-        stickClicks.values.forEach(StickClickMachine::reset)
-        stickKeys.clear()
-        switcherBackDown = false
-        switcherBackDeviceId = Int.MIN_VALUE
-        topRecentsBackClosePending = false
-        recentsConfirmKeys.clear()
-        nativeBackDevices.clear()
+        forgetHeldKeys()
         padHelper.setSuspended(!interceptionEnabled)
         if (!interceptionEnabled) {
             cancelBottomSwitcherOpen()
@@ -370,10 +361,34 @@ class SwitcherService : AccessibilityService(), GestureActions {
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
         }
         val buttons = ServiceToggleGesture.label(prefs.toggleButtons)
-        noticeToast?.cancel()
         val message = if (buttons == null) getString(R.string.service_toggle_no_shortcut)
         else getString(if (interceptionEnabled) R.string.service_toggle_active else R.string.service_toggle_inactive, buttons)
-        noticeToast = Toast.makeText(this, message, Toast.LENGTH_LONG).also { it.show() }
+        notice.show(message, long = true)
+    }
+
+    /** Every key as released. Standby needs this too: the releases of the press that locked the
+     *  device never reach the service, and a key still counted as held swallows its next press. */
+    private fun forgetHeldKeys() {
+        backGesture.reset()
+        shoulderKeys.clear()
+        pendingFocusTargets.clear()
+        pendingDpadFocus = null
+        stopLevelRepeat()
+        stickClicks.values.forEach(StickClickMachine::reset)
+        stickKeys.clear()
+        switcherBackDown = false
+        switcherBackDeviceId = Int.MIN_VALUE
+        topRecentsBackClosePending = false
+        recentsConfirmKeys.clear()
+        nativeBackDevices.clear()
+    }
+
+    private val standbyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            forgetHeldKeys()
+            toggleGesture.reset()
+            homeAsBack.reset()
+        }
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
@@ -935,8 +950,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             playingMacro = button
             dlog("MACRO  play ${button.prefKey} steps=${macro.steps.size}")
         } else {
-            noticeToast?.cancel()
-            noticeToast = Toast.makeText(this, R.string.macro_helper_missing, Toast.LENGTH_SHORT).also { it.show() }
+            notice.show(R.string.macro_helper_missing)
         }
     }
 
@@ -1000,11 +1014,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             Prefs.SHOULDER_RECORD_VIDEO -> toggleRecording(button)
             Prefs.SHOULDER_MACRO -> runMacro(button)
+            Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            Prefs.SHOULDER_MEDIA_NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            Prefs.SHOULDER_MEDIA_PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            Prefs.SHOULDER_STATUS -> showStatus()
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
             Prefs.SHOULDER_SWITCHER -> showSwitcherNow()
             Prefs.SHOULDER_SWAP_APPS -> swapScreensNow()
+            Prefs.SHOULDER_LAST_APP -> switchToLastApp()
             Prefs.SHOULDER_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
             Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
             Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
@@ -1029,6 +1048,35 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
         }
     }
+
+    /** Brings back the app used before the current one on the controller's screen; see [LastApp]. */
+    private fun switchToLastApp() {
+        val display = controllerDisplayId()
+        val previous = LastApp.previous(source.appsOnDisplay(display).map { it.packageName }, source.topApp(display), packageName)
+            ?: return notice.show(R.string.last_app_none)
+        if (!PService.cachedAvailable()) {
+            // Without root the task cannot be checked; the launch still brings an existing one back.
+            runCatching { launchOn(previous, display) }.onFailure { toastUnavailable() }
+            return
+        }
+        Thread {
+            val result = PService.runEntryPoint(this, "RecentsTaskLauncher", previous, display.toString())
+            Log.d(TAG, "Last app $previous on $display: $result")
+            handler.post {
+                when {
+                    result?.startsWith("OK ") == true -> Unit
+                    result == LastApp.TASK_GONE -> {
+                        source.forget(previous)
+                        notice.show(getString(R.string.last_app_gone, appLabel(previous)))
+                    }
+                    else -> notice.show(R.string.swap_unavailable, long = true)
+                }
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun appLabel(pkg: String): String =
+        runCatching { packageManager.getApplicationInfo(pkg, 0).loadLabel(packageManager).toString() }.getOrDefault(pkg)
 
     private fun cancelActiveAppSwitch() {
         activeAppSwitchSession++
@@ -1068,7 +1116,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 val target = if (from == top) bottom else top
                 if (pkg == null) {
                     switchingActiveApp = false
-                    Toast.makeText(this, R.string.app_control_no_app, Toast.LENGTH_SHORT).show()
+                    notice.show(R.string.app_control_no_app)
                     return@resolved
                 }
                 if (task == null) {
@@ -1082,7 +1130,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     if (!active()) return@refresh
                     if (panels.preventsSwap(pkg, null)) {
                         switchingActiveApp = false
-                        Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
+                        notice.show(R.string.panel_swap_unavailable, long = true)
                         return@refresh
                     }
                     prepareBottomLaunch(target) {
@@ -1139,16 +1187,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return
         }
         val targets = resolve(screen)
-        if (mode == Prefs.APP_FORCE_CLOSE && prefs.appConfirm(button) && targets.isNotEmpty()) {
+        if (mode != Prefs.APP_MINIMIZE && prefs.appConfirm(button) && targets.isNotEmpty()) {
             val pm = packageManager
             val names = targets.joinToString(", ") {
                 runCatching { pm.getApplicationInfo(it.packageName, 0).loadLabel(pm).toString() }.getOrDefault(it.packageName)
             }
+            val restart = mode == Prefs.APP_RESTART
             val options = listOf(
-                AppControlPrompt.Option("yes", getString(R.string.app_control_prompt_close_yes)),
+                AppControlPrompt.Option("yes", getString(if (restart) R.string.app_control_prompt_restart_yes else R.string.app_control_prompt_close_yes)),
                 AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
             )
-            appControlPrompt.show(promptDisplay(), getString(R.string.app_control_prompt_close_title, names), options) {
+            val title = getString(if (restart) R.string.app_control_prompt_restart_title else R.string.app_control_prompt_close_title, names)
+            appControlPrompt.show(promptDisplay(), title, options) {
                 if (it == "yes") applyAppControl(mode, targets)
             }
             return
@@ -1163,7 +1213,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val packages = CloseApps.packages(displays, all, keepForeground, { id -> source.appsOnDisplay(id).map { it.packageName } }, source::topApp)
         Log.d(TAG, "Close apps on $displays (keep foreground: $keepForeground): $packages")
         if (packages.isEmpty()) {
-            Toast.makeText(this, R.string.close_apps_none, Toast.LENGTH_SHORT).show()
+            notice.show(R.string.close_apps_none)
             return
         }
         // Every screen, not only the chosen ones: a closed app may have moved in front of the other one.
@@ -1233,15 +1283,58 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun applyAppControl(mode: String, targets: List<AppControlTarget>) {
         if (targets.isEmpty()) {
-            Toast.makeText(this, R.string.app_control_no_app, Toast.LENGTH_SHORT).show()
+            notice.show(R.string.app_control_no_app)
             return
         }
         if (mode == Prefs.APP_FORCE_CLOSE) {
             // killOnly already leaves the app for Home first and falls back to an unprivileged kill.
             killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet())
+        } else if (mode == Prefs.APP_RESTART) {
+            // Each app comes back on the screen it left; our own settings only lose their task, see killOnly.
+            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet()) {
+                targets.filter { it.packageName != packageName }.forEach { launchOn(it.packageName, it.displayId) }
+            }
         } else {
             targets.forEach { goHome(it.displayId, dismissSwitcher = false) }
         }
+    }
+
+    /** Media keys go to whichever session plays, as a headset button would; no root needed. */
+    private fun sendMediaKey(keyCode: Int) {
+        val audio = getSystemService(AudioManager::class.java)
+        val now = SystemClock.uptimeMillis()
+        audio.dispatchMediaKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0))
+        audio.dispatchMediaKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0))
+    }
+
+    /** One line of battery facts as a toast on the top screen, the one AYN's assistant leaves visible. */
+    private fun showStatus() {
+        val battery = getSystemService(BatteryManager::class.java)
+        // Sticky: no receiver is registered, the last battery broadcast is only read.
+        val sticky = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val level = battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        val plugged = (sticky?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0
+        val tenths = sticky?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE) ?: Int.MIN_VALUE
+        val minutes = if (plugged) {
+            battery.computeChargeTimeRemaining().takeIf { it > 0 }?.let { (it / 60_000L).toInt() }
+        } else {
+            StatusSummary.minutesLeft(
+                battery.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER),
+                battery.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
+            )
+        }
+        fun duration(m: Int) = if (m >= 60) getString(R.string.status_hours_minutes, m / 60, m % 60) else getString(R.string.status_minutes, m)
+        val parts = listOfNotNull(
+            getString(R.string.status_battery, level),
+            when {
+                plugged && minutes != null -> getString(R.string.status_full_in, duration(minutes))
+                plugged -> getString(R.string.status_plugged)
+                minutes != null -> getString(R.string.status_left, duration(minutes))
+                else -> null
+            },
+            if (tenths == Int.MIN_VALUE) null else getString(R.string.status_temperature, tenths / 10f),
+        )
+        notice.show(parts.joinToString(" · "), long = true)
     }
 
     private fun toggleRecording(button: ComboButton) {
@@ -1280,7 +1373,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ScreenRecording.Event.FAILED -> R.string.record_failed
             ScreenRecording.Event.NEEDS_ROOT -> R.string.record_needs_root
         }
-        Toast.makeText(this, message, if (event == ScreenRecording.Event.NEEDS_ROOT) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).show()
+        notice.show(message, long = event == ScreenRecording.Event.NEEDS_ROOT)
     }
 
     /**
@@ -1378,7 +1471,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     val saved = bitmap != null && ScreenshotSaver.save(this@SwitcherService, bitmap, suffix)
                     buffer.close()
                     handler.post {
-                        if (saved) Toast.makeText(this@SwitcherService, R.string.screenshot_saved, Toast.LENGTH_SHORT).show()
+                        if (saved) notice.show(R.string.screenshot_saved)
                         else toastUnavailable()
                     }
                 }.start()
@@ -1397,7 +1490,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun toastUnavailable() =
-        Toast.makeText(this, R.string.shoulder_action_unavailable, Toast.LENGTH_SHORT).show()
+        notice.show(R.string.shoulder_action_unavailable)
 
     private fun shoulderDisplayId(button: ComboButton): Int =
         if (prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) Display.DEFAULT_DISPLAY
@@ -1409,7 +1502,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val fallbackIntent = Intent(fallback).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         runCatching { startActivity(primary) }
             .recoverCatching { startActivity(fallbackIntent) }
-            .onFailure { Toast.makeText(this, R.string.shoulder_action_unavailable, Toast.LENGTH_SHORT).show() }
+            .onFailure { notice.show(R.string.shoulder_action_unavailable) }
     }
 
     /** Replays the fast bottom-edge flick measured from the Thor's navigation pill. */
@@ -1444,6 +1537,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         macroRecordListener = null
         playingMacro = null
         endRecording()
+        runCatching { unregisterReceiver(standbyReceiver) }
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
@@ -1467,6 +1561,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         macroRecordListener = null
         playingMacro = null
         endRecording()
+        runCatching { unregisterReceiver(standbyReceiver) }
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
@@ -1485,7 +1580,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         toggleGesture.reset()
         backGesture.reset()
         interceptionGate.clear()
-        noticeToast?.cancel()
+        notice.dismiss()
         cancelActiveAppSwitch()
         // isConnected is shared with a replacement service. Retire this instance's focus workers
         // explicitly so they cannot initialize an old Recents session after reconnection.
@@ -1761,7 +1856,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
                 return true
             }
-            handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
+            handler.post { notice.show(R.string.swap_unavailable, long = true) }
         }
         return launched
     }
@@ -1770,7 +1865,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
      *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
      *  if that fails, the unprivileged kill below still runs. Our own package only loses its tasks:
      *  this process hosts the service, so stopping it would end every gesture. */
-    private fun killOnly(closing: List<String>, displays: Set<Int>) {
+    private fun killOnly(closing: List<String>, displays: Set<Int>, afterwards: (() -> Unit)? = null) {
         val activityManager = getSystemService(ActivityManager::class.java)
         val closesOwn = packageName in closing
         val packages = closing - packageName
@@ -1783,6 +1878,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             if (closesOwn) activityManager.appTasks.forEach { it.finishAndRemoveTask() }
             if (rootable.isEmpty()) {
                 packages.forEach { activityManager.killBackgroundProcesses(it) }
+                afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
                 return@postDelayed
             }
             Thread {
@@ -1791,6 +1887,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (removed?.startsWith("OK") != true || !stopped.all { it }) {
                     handler.post { packages.forEach { activityManager.killBackgroundProcesses(it) } }
                 }
+                afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
             }.start()
         }, 500)
     }
@@ -1826,14 +1923,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 return@refresh
             }
             if (panels.preventsSwap(topApp, bottomApp)) {
-                Toast.makeText(this, R.string.panel_swap_unavailable, Toast.LENGTH_LONG).show()
+                notice.show(R.string.panel_swap_unavailable, long = true)
                 return@refresh
             }
             Thread {
                 val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
                 val moves = TaskMovePolicy.planSwap(topApp, bottomApp, top, bottom, states, ::canRelaunch)
                 if (moves.isNullOrEmpty()) {
-                    handler.post { Toast.makeText(this, R.string.swap_unavailable, Toast.LENGTH_LONG).show() }
+                    handler.post { notice.show(R.string.swap_unavailable, long = true) }
                     return@Thread
                 }
                 for (move in moves) {
@@ -2397,6 +2494,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val TOP_RECENTS_DELETE_SETTLE_MS = 260L
         const val TOP_RECENTS_DISMISS_MS = 110L
         const val POWER_MENU_FOCUS_RETRY_MS = 80L
+        /** After a restart's kill: the force-stop must have settled, or the launch could land in the dying process. */
+        const val RESTART_DELAY_MS = 400L
         const val POWER_MENU_FOCUS_ATTEMPTS = 20
         const val CONTROLLER_FLIP_SETTING = "flip_button_layout"
         const val ACTION_EXTRA_DIM_SETTINGS = "android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"

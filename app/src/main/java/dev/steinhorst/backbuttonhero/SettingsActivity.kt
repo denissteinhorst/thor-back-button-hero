@@ -9,6 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.graphics.Color
 import android.graphics.Rect
@@ -440,17 +444,20 @@ class SettingsActivity : Activity() {
             Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
             group(ActionGroups.Group.APP_SWITCHER),
             Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
+            Choice(Prefs.SHOULDER_LAST_APP, getString(R.string.shoulder_last_app)),
             Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
             Choice(Prefs.SHOULDER_RECORD_VIDEO, getString(R.string.shoulder_record_video)),
             Choice(Prefs.SHOULDER_MACRO, getString(R.string.shoulder_macro)).takeIf { macro },
             group(ActionGroups.Group.FLICK),
             group(ActionGroups.Group.VOLUME),
             group(ActionGroups.Group.BRIGHTNESS),
+            group(ActionGroups.Group.MEDIA),
             Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
             Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
             Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
             group(ActionGroups.Group.CLOSE_APPS),
             group(ActionGroups.Group.POWER),
+            Choice(Prefs.SHOULDER_STATUS, getString(R.string.shoulder_status)),
         ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
     }
 
@@ -458,6 +465,54 @@ class SettingsActivity : Activity() {
     private fun aynChoices(): List<Choice> =
         Ayn.Group.values().map { Choice(it.action, getString(it.titleRes)) } +
             Ayn.Toggle.values().map { Choice(it.action, getString(it.titleRes)) }
+
+    /** What an entry of the action list does, shown below its name; "Not set" needs none. */
+    private fun actionDescription(value: String): Int? = when (value) {
+        ACTION_APP -> R.string.action_desc_launch_app
+        Prefs.SHOULDER_HOME -> R.string.action_desc_home
+        Prefs.SHOULDER_BACK -> R.string.action_desc_back
+        ActionGroups.Group.APP_SWITCHER.entry -> R.string.action_desc_app_switcher
+        Prefs.SHOULDER_SWAP_APPS -> R.string.action_desc_swap_apps
+        Prefs.SHOULDER_SCREENSHOT -> R.string.action_desc_screenshot
+        Prefs.SHOULDER_RECORD_VIDEO -> R.string.action_desc_record_video
+        Prefs.SHOULDER_MACRO -> R.string.action_desc_macro
+        ActionGroups.Group.FLICK.entry -> R.string.action_desc_flick
+        ActionGroups.Group.VOLUME.entry -> R.string.action_desc_volume
+        ActionGroups.Group.BRIGHTNESS.entry -> R.string.action_desc_brightness
+        ActionGroups.Group.MEDIA.entry -> R.string.action_desc_media
+        Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.action_desc_controller_focus
+        Prefs.SHOULDER_SWITCH_APP -> R.string.action_desc_switch_app
+        Prefs.SHOULDER_LAST_APP -> R.string.action_desc_last_app
+        Prefs.SHOULDER_APP_CONTROL -> R.string.action_desc_app_control
+        ActionGroups.Group.CLOSE_APPS.entry -> R.string.action_desc_close_apps
+        ActionGroups.Group.POWER.entry -> R.string.action_desc_power
+        Prefs.SHOULDER_STATUS -> R.string.action_desc_status
+        Ayn.Group.PERFORMANCE.action -> R.string.action_desc_performance
+        Ayn.Group.FAN.action -> R.string.action_desc_fan
+        Ayn.Group.HANDLE.action -> R.string.action_desc_handle
+        Ayn.Group.DISPLAY.action -> R.string.action_desc_display
+        Ayn.Group.REFRESH_RATE.action -> R.string.action_desc_refresh_rate
+        Ayn.Group.STICK_LIGHT.action -> R.string.action_desc_stick_light
+        Ayn.Toggle.DIRECT_POWER.action -> R.string.action_desc_direct_power
+        Ayn.Toggle.VIBRATION.action -> R.string.action_desc_vibration
+        Ayn.Toggle.FORCE_LANDSCAPE.action -> R.string.action_desc_force_landscape
+        Ayn.Toggle.VIRTUAL_MOUSE.action -> R.string.action_desc_virtual_mouse
+        Ayn.Toggle.DO_NOT_DISTURB.action -> R.string.action_desc_do_not_disturb
+        Ayn.Toggle.MUTE_MICROPHONE.action -> R.string.action_desc_mute_microphone
+        ActionGroups.Group.PANELS.entry -> R.string.action_desc_panels
+        ActionGroups.Group.SETTINGS.entry -> R.string.action_desc_settings
+        else -> null
+    }
+
+    /** An entry's name with its description on a second, smaller line in the secondary text colour. */
+    private fun describedEntry(choice: Choice): CharSequence {
+        val description = actionDescription(choice.value)?.let(::getString) ?: return choice.label
+        val start = choice.label.length + 1
+        return SpannableString("${choice.label}\n$description").apply {
+            setSpan(RelativeSizeSpan(DESCRIPTION_SCALE), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(ForegroundColorSpan(themedColor(android.R.attr.textColorSecondary, Color.GRAY)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+    }
 
     private fun aynOptions(group: Ayn.Group): List<Choice> =
         (if (group.hasModal) listOf(Choice(Ayn.MODAL, getString(R.string.ayn_modal))) else emptyList()) +
@@ -492,6 +547,7 @@ class SettingsActivity : Activity() {
     private fun appModes(): List<Choice> = listOf(
         Choice(Prefs.APP_MINIMIZE, getString(R.string.app_control_minimize)),
         Choice(Prefs.APP_FORCE_CLOSE, getString(R.string.app_control_force_close)),
+        Choice(Prefs.APP_RESTART, getString(R.string.app_control_restart)),
     )
 
     private fun appScreens(): List<Choice> = levelTargets().let { targets ->
@@ -778,7 +834,7 @@ class SettingsActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.shoulder_choose_action_title, row.label))
             .setSingleChoiceItems(
-                choices.map { it.label }.toTypedArray(),
+                choices.map(::describedEntry).toTypedArray(),
                 choices.indexOfFirst { it.value == current }.coerceAtLeast(0),
             ) { dialog, which ->
                 dialog.dismiss()
@@ -931,13 +987,15 @@ class SettingsActivity : Activity() {
                 if (!mode) {
                     prefs.setAppScreen(row.button, value)
                     updateShoulderRow(row)
-                } else if (value == Prefs.APP_FORCE_CLOSE && prefs.appMode(row.button) != value) {
-                    // The close skips the app's own save path, so say so before it can be assigned.
+                } else if (value != Prefs.APP_MINIMIZE && prefs.appMode(row.button) != value) {
+                    // The close skips the app's own save path, so say so before it can be assigned;
+                    // a restart closes the same way before it reopens the app.
+                    val restart = value == Prefs.APP_RESTART
                     AlertDialog.Builder(this)
-                        .setTitle(R.string.app_control_force_close)
+                        .setTitle(if (restart) R.string.app_control_restart else R.string.app_control_force_close)
                         .setMessage(R.string.app_control_force_close_warning)
                         .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(R.string.app_control_force_close_use) { _, _ ->
+                        .setPositiveButton(if (restart) R.string.app_control_restart_use else R.string.app_control_force_close_use) { _, _ ->
                             prefs.setAppMode(row.button, value)
                             updateShoulderRow(row)
                         }
@@ -1133,7 +1191,7 @@ class SettingsActivity : Activity() {
             )
         }
         row.appOptions?.let { options ->
-            val close = prefs.appMode(row.button) == Prefs.APP_FORCE_CLOSE
+            val close = prefs.appMode(row.button) != Prefs.APP_MINIMIZE
             options.row.visibility = if (appControl) View.VISIBLE else View.GONE
             options.mode.value.text = describeAppMode(row.button)
             options.screen.value.text = describeAppScreen(row.button)
@@ -1589,5 +1647,7 @@ class SettingsActivity : Activity() {
         private const val REQUEST_BACKUP_SAVE = 2
         private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
+        /** The description line of an action-list entry, relative to its name. */
+        private const val DESCRIPTION_SCALE = 0.8f
     }
 }

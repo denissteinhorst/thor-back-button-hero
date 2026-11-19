@@ -151,7 +151,7 @@ object SettingsBackup {
     private val SCREENS = setOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM)
     private val TARGETS = SCREENS + Prefs.TARGET_BOTH
     private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_MODAL
-    private val APP_MODES = setOf(Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE)
+    private val APP_MODES = setOf(Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE, Prefs.APP_RESTART)
     private val APP_SCREENS = TARGETS + Prefs.APP_SCREEN_ASK
     private val RECORD_QUALITIES = setOf(Prefs.RECORD_SMALL, Prefs.RECORD_MEDIUM, Prefs.RECORD_LARGE)
     private val DUCKS = setOf(Prefs.DUCK_OFF, Prefs.DUCK_VIDEO, Prefs.DUCK_DEVICE)

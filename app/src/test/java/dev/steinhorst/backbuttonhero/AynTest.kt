@@ -76,4 +76,70 @@ class AynTest {
         assertEquals("settings put system vibrate_on 1", Ayn.toggleCommand(Ayn.Toggle.VIBRATION, true))
         assertEquals("settings put system is_charging_separation 0", Ayn.toggleCommand(Ayn.Toggle.DIRECT_POWER, false))
     }
+
+    @Test
+    fun `refresh rate writes minimum and peak together, as AYN's tile does`() {
+        assertEquals("settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 120.0", cmd(Ayn.Group.REFRESH_RATE, "120"))
+        assertEquals("settings put system min_refresh_rate 60.0 && settings put system peak_refresh_rate 60.0", cmd(Ayn.Group.REFRESH_RATE, "60"))
+        assertEquals(Ayn.REFRESH_TOGGLE, Ayn.Group.REFRESH_RATE.defaultOption)
+    }
+
+    @Test
+    fun `refresh toggle flips between the two rates`() {
+        assertEquals(120, Ayn.refreshTarget(60f))
+        assertEquals(60, Ayn.refreshTarget(120f))
+        assertEquals(60, Ayn.refreshTarget(240f))
+    }
+
+    @Test
+    fun `stick lights flip one side alone and both together`() {
+        assertEquals(true to false, Ayn.lightTarget(Ayn.STICKS_LEFT, "0,0"))
+        assertEquals(false to true, Ayn.lightTarget(Ayn.STICKS_RIGHT, "0,0"))
+        assertEquals(false to true, Ayn.lightTarget(Ayn.STICKS_LEFT, "1,1"))
+        // Both: any lit stick means both go dark; only an all-dark pair lights up.
+        assertEquals(false to false, Ayn.lightTarget(Ayn.STICKS_BOTH, "1,0"))
+        assertEquals(true to true, Ayn.lightTarget(Ayn.STICKS_BOTH, "0,0"))
+        assertEquals(true to true, Ayn.lightTarget(Ayn.STICKS_BOTH, null))
+        assertEquals(Ayn.STICKS_BOTH, Ayn.Group.STICK_LIGHT.defaultOption)
+        assertEquals("settings put system joystick_light_enabled 1,0", Ayn.lightCommand(true to false))
+    }
+
+    @Test
+    fun `Do Not Disturb and the microphone go through Android's services`() {
+        assertEquals("cmd notification set_dnd priority", Ayn.toggleCommand(Ayn.Toggle.DO_NOT_DISTURB, true))
+        assertEquals("cmd notification set_dnd off", Ayn.toggleCommand(Ayn.Toggle.DO_NOT_DISTURB, false))
+        assertTrue(Ayn.toggleCommand(Ayn.Toggle.MUTE_MICROPHONE, true).startsWith("cmd sensor_privacy enable "))
+        assertTrue(Ayn.toggleCommand(Ayn.Toggle.MUTE_MICROPHONE, false).endsWith(" microphone"))
+        assertEquals("settings put system global_gamepad_to_mouse_mode 1", Ayn.toggleCommand(Ayn.Toggle.VIRTUAL_MOUSE, true))
+    }
+
+    @Test
+    fun `microphone state is read from the sensor privacy dump`() {
+        fun dump(sensor: Int, state: Int) = """
+            SENSOR PRIVACY MANAGER STATE (dumpsys sensor_privacy)
+            {
+              users={
+                user_id=0
+                sensors={
+                  sensor=$sensor
+                  toggles={
+                    toggle_type=1
+                    state_type=$state
+                    last_change=26368671
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        assertTrue(Ayn.microphoneBlocked(dump(1, 1)))
+        assertFalse(Ayn.microphoneBlocked(dump(1, 2)))
+        // The camera (sensor 2) says nothing about the microphone.
+        assertFalse(Ayn.microphoneBlocked(dump(2, 1)))
+        assertFalse(Ayn.microphoneBlocked("{\n  storage_implementation=x\n}"))
+        assertFalse(Ayn.microphoneBlocked(null))
+        // pservice hands back one line, so the command strips all whitespace; the parser must cope.
+        assertTrue(Ayn.microphoneBlocked(dump(1, 1).filterNot(Char::isWhitespace)))
+        assertFalse(Ayn.microphoneBlocked(dump(10, 1).filterNot(Char::isWhitespace)))
+        assertTrue(Ayn.MICROPHONE_STATE_COMMAND.contains("tr -d"))
+    }
 }

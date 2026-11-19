@@ -210,7 +210,7 @@ class Prefs(context: Context) {
             ?: if (shoulderAction(button) == SHOULDER_SCREENSHOT) DISPLAY_TOP else TARGET_BOTH
     fun setLevelTarget(button: ComboButton, target: String) { sp.edit().putString("${button.prefKey}_target", target).apply() }
 
-    /** [APP_MINIMIZE] or [APP_FORCE_CLOSE] for the active-app-control action. */
+    /** [APP_MINIMIZE], [APP_FORCE_CLOSE] or [APP_RESTART] for the active-app-control action. */
     fun appMode(button: ComboButton): String =
         sp.getString("${button.prefKey}_app_mode", APP_MINIMIZE) ?: APP_MINIMIZE
     fun setAppMode(button: ComboButton, mode: String) { sp.edit().putString("${button.prefKey}_app_mode", mode).apply() }
@@ -554,9 +554,11 @@ class Prefs(context: Context) {
         const val SHOULDER_BRIGHTNESS_DOWN = "@brightness_down"
         const val SHOULDER_CONTROLLER_FOCUS = "@controller_focus"
         const val SHOULDER_SWITCH_APP = "@switch_active_app"
+        const val SHOULDER_LAST_APP = "@last_app"
         const val SHOULDER_APP_CONTROL = "@app_control"
         const val APP_MINIMIZE = "minimize"
         const val APP_FORCE_CLOSE = "force_close"
+        const val APP_RESTART = "restart"
         const val APP_SCREEN_ASK = "ask"
         const val SHOULDER_CLOSE_APPS = "@close_apps"
         const val SHOULDER_CLOSE_BACKGROUND_APPS = "@close_background_apps"
@@ -565,6 +567,10 @@ class Prefs(context: Context) {
         const val SHOULDER_VOLUME_MUTE = "@volume_mute"
         const val SHOULDER_RECORD_VIDEO = "@record_video"
         const val SHOULDER_MACRO = "@macro"
+        const val SHOULDER_MEDIA_PLAY_PAUSE = "@media_play_pause"
+        const val SHOULDER_MEDIA_NEXT = "@media_next"
+        const val SHOULDER_MEDIA_PREVIOUS = "@media_previous"
+        const val SHOULDER_STATUS = "@status_overlay"
         const val RECORD_SMALL = "small"
         const val RECORD_MEDIUM = "medium"
         const val RECORD_LARGE = "large"
@@ -582,7 +588,8 @@ class Prefs(context: Context) {
             SHOULDER_VOLUME_UP, SHOULDER_VOLUME_DOWN, SHOULDER_BRIGHTNESS_UP, SHOULDER_BRIGHTNESS_DOWN,
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
-            SHOULDER_RECORD_VIDEO, SHOULDER_MACRO,
+            SHOULDER_RECORD_VIDEO, SHOULDER_MACRO, SHOULDER_MEDIA_PLAY_PAUSE, SHOULDER_MEDIA_NEXT, SHOULDER_MEDIA_PREVIOUS,
+            SHOULDER_STATUS, SHOULDER_LAST_APP,
         ) + Ayn.ACTIONS
 
         /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
