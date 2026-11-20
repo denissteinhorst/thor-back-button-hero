@@ -17,6 +17,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.ImageView
@@ -309,7 +310,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
                 .filter { it.layoutParams.height != dp(1) && it.tag != NO_BRANCH }
             return SettingsOptionsTree(activity).apply {
                 tag = "settings_sub_options"
-                setPaddingRelative(dp(16), 0, 0, dp(8))
+                setPaddingRelative(dp(16), 0, 0, gap)
                 trailingControl = endControl
                 setOptions(children, rows, secondaryTextColor())
                 container.addView(this)
@@ -317,6 +318,12 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
         }
 
         fun customRow(view: View) = addRow(view)
+
+        /** The option rows shown under this card's main row, top to bottom across every group. */
+        fun optionRows(): List<View> = (0 until container.childCount).map(container::getChildAt)
+            .filterIsInstance<SettingsOptionsTree>()
+            .filter { it.visibility == View.VISIBLE }
+            .flatMap { it.shownRows() }
 
         fun settingsActions(
             enabled: Boolean,
@@ -580,10 +587,44 @@ private class SettingsOptionsTree(context: Context) : FrameLayout(context) {
             val end = control.measuredWidth + dp(12)
             if (paddingEnd != end) setPaddingRelative(paddingStart, paddingTop, end, paddingBottom)
         }
+        updateJoin()
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
+    /** Space under the options before the card goes on; dropped when another group follows. */
+    val gap = dp(8)
+
+    // Groups stacked in one card read as one tree: the upper one gives up its gap and runs its stem
+    // into the next. A sibling shown or hidden re-measures neither group, hence the pre-draw check.
+    private var joinsNext = false
+    private val joinWatcher = ViewTreeObserver.OnPreDrawListener { !updateJoin() }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        viewTreeObserver.addOnPreDrawListener(joinWatcher)
+    }
+
+    override fun onDetachedFromWindow() {
+        viewTreeObserver.removeOnPreDrawListener(joinWatcher)
+        super.onDetachedFromWindow()
+    }
+
+    /** True when the join changed, so the frame about to be drawn is stale. */
+    private fun updateJoin(): Boolean {
+        val group = parent as? ViewGroup
+        val next = group?.let { g ->
+            (g.indexOfChild(this) + 1 until g.childCount).map(g::getChildAt).firstOrNull { it.visibility != View.GONE }
+        }
+        val joins = next is SettingsOptionsTree && next.shownRows().isNotEmpty()
+        if (joins == joinsNext) return false
+        joinsNext = joins
+        setPaddingRelative(paddingStart, paddingTop, paddingEnd, if (joins) 0 else gap)
+        invalidate()
+        return true
+    }
+
     private val stemInset = dp(8).toFloat()
     private val branchWidth = dp(24).toFloat()
     private var rows: List<View> = emptyList()
@@ -591,6 +632,8 @@ private class SettingsOptionsTree(context: Context) : FrameLayout(context) {
         strokeWidth = dp(1).toFloat()
         strokeCap = Paint.Cap.SQUARE
     }
+
+    fun shownRows(): List<View> = rows.filter { it.visibility != View.GONE }
 
     fun setOptions(children: View, options: List<View>, color: Int) {
         rows = options
@@ -605,14 +648,15 @@ private class SettingsOptionsTree(context: Context) : FrameLayout(context) {
     override fun dispatchDraw(canvas: Canvas) {
         val children = getChildAt(0)
         // Rows hidden by the page take their branch with them; the stem ends at the last one shown.
-        val shown = rows.filter { it.visibility != View.GONE }
+        val shown = shownRows()
         if (children != null && shown.isNotEmpty()) {
             val rtl = layoutDirection == View.LAYOUT_DIRECTION_RTL
             val start = if (rtl) width - paddingRight.toFloat() else paddingLeft.toFloat()
             val stem = start + if (rtl) -stemInset else stemInset
             val end = start + if (rtl) -branchWidth else branchWidth
             val last = shown.last()
-            canvas.drawLine(stem, paddingTop.toFloat(), stem, children.top + last.top + last.height / 2f, line)
+            val stemEnd = if (joinsNext) height.toFloat() else children.top + last.top + last.height / 2f
+            canvas.drawLine(stem, paddingTop.toFloat(), stem, stemEnd, line)
             for (row in shown) {
                 val middle = children.top + row.top + row.height / 2f
                 canvas.drawLine(stem, middle, end, middle, line)

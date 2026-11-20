@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.res.ColorStateList
@@ -14,11 +15,13 @@ import android.view.View
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Typeface
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -57,6 +60,7 @@ class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = Prefs(this)
+        layoutDual = prefs.dualMode
         title = getString(R.string.app_name)
         actionBar?.hide()
         // The light theme's pale status bar left the clock and icons unreadable on the Thor; black with
@@ -135,15 +139,29 @@ class SettingsActivity : Activity() {
     override fun onResume() {
         super.onResume()
         appLabels.clear()
-        refresh()
+        prefs.registerListener(storedChange)
+        if (prefs.dualMode != layoutDual) invalidatePages() else refresh()
         // A service rebind can finish just after the activity resumes.
         navigation.view.postDelayed({ if (!isFinishing && !isDestroyed) refresh() }, 600)
         PService.probeAsync { runOnUiThread { if (!isFinishing && !isDestroyed) refresh() } }
     }
 
     override fun onPause() {
+        prefs.unregisterListener(storedChange)
         macroEditor?.pause()
         super.onPause()
+    }
+
+    // Settings also change while the page stays open (the service, a restored backup, a device test);
+    // the page must show what is stored, or Unbind and the previews judge something it does not show.
+    private var layoutDual = false
+    private val storedRefresh = Runnable {
+        if (isFinishing || isDestroyed) return@Runnable
+        if (prefs.dualMode != layoutDual) invalidatePages() else refresh()
+    }
+    private val storedChange: () -> Unit = {
+        navigation.view.removeCallbacks(storedRefresh)
+        navigation.view.post(storedRefresh)
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -595,7 +613,9 @@ class SettingsActivity : Activity() {
     private fun refresh() {
         pages.values.forEach { it.refresh() }
         stickPages.forEach { it.refresh() }
+        refreshingRows = true
         comboRows.values.forEach { updateShoulderRow(it) }
+        refreshingRows = false
         toggleButtonsValue?.text = toggleButtonsLabel()
         toggleDurationOptions?.visibility = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) View.GONE else View.VISIBLE
         val status = currentServiceStatus()
@@ -921,14 +941,13 @@ class SettingsActivity : Activity() {
     private fun chooseRecordDuck(row: ComboRow) {
         val choices = recordDucks()
         AlertDialog.Builder(this)
-            .setTitle(R.string.record_duck_title)
-            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(),
+            .bindingTitle(crumb(row), R.string.record_duck_title)
+            .chooseOne(choices.map { it.label }.toTypedArray(),
                 choices.indexOfFirst { it.value == prefs.recordDuck(row.button) }.coerceAtLeast(0)) { dialog, which ->
                 prefs.setRecordDuck(row.button, choices[which].value)
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -936,6 +955,8 @@ class SettingsActivity : Activity() {
     private fun choosePushToTalkKey(row: ComboRow) = chooseKey(
         R.string.record_ptt_key_title, R.string.record_ptt_dialog_message, R.string.record_ptt_dialog_warning,
         R.string.record_ptt_key_rejected,
+        onKeep = { updateShoulderRow(row) },
+        binding = crumb(row),
     ) { keyCode ->
         prefs.setRecordPttKey(row.button, keyCode)
         updateShoulderRow(row)
@@ -945,13 +966,24 @@ class SettingsActivity : Activity() {
      * Waits for the next button press; one [PushToTalk] does not reserve goes to [onChosen]. With
      * [onNone] the dialog also offers to choose no button.
      */
-    private fun chooseKey(titleRes: Int, messageRes: Int, warningRes: Int, rejectedRes: Int, onNone: (() -> Unit)? = null, onChosen: (Int) -> Unit) {
+    private fun chooseKey(
+        titleRes: Int,
+        messageRes: Int,
+        warningRes: Int,
+        rejectedRes: Int,
+        onNone: (() -> Unit)? = null,
+        onKeep: (() -> Unit)? = null,
+        binding: String? = null,
+        onChosen: (Int) -> Unit,
+    ) {
         val warning = getString(warningRes)
         val dialog = AlertDialog.Builder(this)
-            .setTitle(titleRes)
+            .apply { if (binding != null) bindingTitle(binding, titleRes) else setTitle(titleRes) }
             .setMessage("${getString(messageRes)}\n\n$warning")
             .setNegativeButton(android.R.string.cancel, null)
             .apply { if (onNone != null) setNeutralButton(R.string.gyro_hold_none_button) { _, _ -> onNone() } }
+            // Keeps the button already set, the way the confirm button takes a preselected answer.
+            .apply { if (onKeep != null) setPositiveButton(confirmLabel()) { _, _ -> onKeep() } }
             .create()
         dialog.setOnKeyListener { _, keyCode, event ->
             // Back still cancels; every other key is an answer, never a dialog navigation.
@@ -980,7 +1012,7 @@ class SettingsActivity : Activity() {
     private fun openGyroSettings(row: ComboRow) {
         GyroSettingsDialog(this, row.button.prefKey, prefs.gyro(row.button), { hasKey, onChosen ->
             chooseKey(R.string.gyro_hold_key_title, R.string.gyro_key_dialog_message, R.string.gyro_key_dialog_warning,
-                R.string.gyro_key_rejected, if (hasKey) ({ onChosen(0) }) else null, onChosen)
+                R.string.gyro_key_rejected, if (hasKey) ({ onChosen(0) }) else null, onChosen = onChosen)
         }) { prefs.setGyro(row.button, it) }.show { updateShoulderRow(row) }
     }
 
@@ -991,14 +1023,13 @@ class SettingsActivity : Activity() {
     private fun chooseRecordQuality(row: ComboRow) {
         val choices = recordQualities()
         AlertDialog.Builder(this)
-            .setTitle(R.string.record_quality_title)
-            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(),
+            .bindingTitle(crumb(row), R.string.record_quality_title)
+            .chooseOne(choices.map { it.label }.toTypedArray(),
                 choices.indexOfFirst { it.value == prefs.recordQuality(row.button) }.coerceAtLeast(0)) { dialog, which ->
                 prefs.setRecordQuality(row.button, choices[which].value)
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1109,9 +1140,9 @@ class SettingsActivity : Activity() {
         refresh()
         preview()
         AlertDialog.Builder(this)
-            .setTitle(R.string.focus_position_title)
+            .bindingTitle(crumb(row), R.string.focus_position_title)
             .setView(ScrollView(this).apply { addView(content) })
-            .setPositiveButton(android.R.string.ok, null)
+            .setPositiveButton(confirmLabel(), null)
             .setOnDismissListener { updateShoulderRow(row) }
             .show().also { dialog ->
                 // The default landscape dialog width can leave too little room for two columns.
@@ -1182,6 +1213,8 @@ class SettingsActivity : Activity() {
                 }
                 updateShoulderRow(row)
                 refresh()
+                // The option was just picked in the chooser itself; the walk asks only for the rest.
+                if (prefs.shoulderAction(row.button) != stored) startGuide(row, setOfNotNull(row.option?.row))
             } else if (action == ACTION_APP) {
                 chooseShoulderApp(row)
             } else if (action == Prefs.SHOULDER_MACRO && !PService.cachedAvailable()) {
@@ -1204,9 +1237,142 @@ class SettingsActivity : Activity() {
                 // A fresh macro hotkey has nothing to play yet: pick a saved one or record one right away.
                 if (action == Prefs.SHOULDER_MACRO && stored != action && prefs.macro(row.button) == null) {
                     if (prefs.macroLibrary.isEmpty()) openMacroEditor(row) else openMacroLibrary(row)
+                } else if (prefs.shoulderAction(row.button) != stored) {
+                    startGuide(row)
                 }
             }
         }.show()
+    }
+
+    /**
+     * Leads through a freshly chosen action's options, one dialog after the other, in the order the card
+     * shows them; options that only appear after an earlier answer join in. Leaving a dialog without an
+     * answer ends the walk and keeps everything chosen so far.
+     */
+    private class OptionGuide(val row: ComboRow, skip: Set<View>) {
+        val done = skip.toMutableSet()
+        var pending = false
+        var chosen = false
+    }
+
+    private var guide: OptionGuide? = null
+    private var refreshingRows = false
+
+    // Dialogs are judged once the activity holds the focus again: a dialog that opens a confirmation
+    // right away hands it back only for a moment, so the check waits briefly and keeps only the latest.
+    private val guideSettle = Runnable {
+        val walk = guide ?: return@Runnable
+        if (!hasWindowFocus()) return@Runnable
+        if (walk.pending && !walk.chosen) guide = null else guideNext()
+    }
+
+    private fun startGuide(row: ComboRow, skip: Set<View> = emptySet()) {
+        guide = OptionGuide(row, skip)
+        // The action chooser is still closing; the walk starts when the page has the focus back.
+        if (hasWindowFocus()) guideNext()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        val decor = window.decorView
+        decor.removeCallbacks(guideSettle)
+        if (hasFocus && guide != null) decor.postDelayed(guideSettle, GUIDE_SETTLE_MS)
+    }
+
+    /** The options the walk still has to ask, as the card shows them now. */
+    private fun guideSteps(walk: OptionGuide): List<View> = walk.row.card.optionRows().filter { option ->
+        option !in walk.done && option.isEnabled && (toggleOf(option) != null || option.findViewWithTag<View>(CHEVRON_TAG) != null)
+    }
+
+    /** "Next" while the walk has another option to ask after this dialog, otherwise "OK". */
+    private fun confirmLabel(): String {
+        val walk = guide?.takeIf { it.pending } ?: return getString(android.R.string.ok)
+        return getString(if (guideSteps(walk).isNotEmpty()) R.string.guide_next else android.R.string.ok)
+    }
+
+    /** Button › function, the path to what a dialog edits; the function stays while the steps change below it. */
+    private fun crumb(row: ComboRow, function: String? = functionName(prefs.shoulderAction(row.button))): String =
+        function?.let { getString(R.string.dialog_breadcrumb, row.label, it) } ?: row.label
+
+    /** The action as the action list names it: a group or AYN tile by its own name, not by its option. */
+    private fun functionName(action: String): String? = when {
+        action.isEmpty() -> null
+        else -> ActionGroups.groupOf(action)?.let { getString(it.titleRes) }
+            ?: Ayn.groupOf(action)?.let { getString(it.titleRes) }
+            ?: describeAction(action)
+    }
+
+    private fun AlertDialog.Builder.bindingTitle(binding: String, titleRes: Int): AlertDialog.Builder =
+        bindingTitle(binding, getString(titleRes))
+
+    /** The dialog's title with the path to what it edits above it, small and in the accent colour of the section heads. */
+    private fun AlertDialog.Builder.bindingTitle(binding: String, title: CharSequence): AlertDialog.Builder = setCustomTitle(
+        LinearLayout(this@SettingsActivity).apply {
+            tag = "settings_binding_title"
+            orientation = LinearLayout.VERTICAL
+            setPaddingRelative(dp(24), dp(18), dp(24), 0)
+            addView(TextView(context).apply {
+                tag = "settings_binding_title_button"
+                text = binding
+                maxLines = 1
+                ellipsize = TextUtils.TruncateAt.END
+                // A long path gets smaller rather than cut; only at the smallest size does it end in an ellipsis.
+                setAutoSizeTextTypeUniformWithConfiguration(9, 13, 1, TypedValue.COMPLEX_UNIT_SP)
+                setTypeface(typeface, Typeface.BOLD)
+                letterSpacing = 0.04f
+                setTextColor(themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4")))
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(20)))
+            addView(TextView(context).apply {
+                text = title
+                setTextAppearance(android.R.style.TextAppearance_DeviceDefault_DialogWindowTitle)
+                isAccessibilityHeading = true
+                setPadding(0, dp(2), 0, 0)
+            })
+        },
+    )
+
+    /**
+     * An answer per tap as before; the confirm button takes the checked answer as it stands, so a
+     * preselected value needs no tap of its own.
+     */
+    private fun AlertDialog.Builder.chooseOne(
+        labels: Array<out CharSequence>,
+        checked: Int,
+        onChoose: (DialogInterface, Int) -> Unit,
+    ): AlertDialog.Builder = setSingleChoiceItems(labels, checked) { dialog, which -> onChoose(dialog, which) }
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(confirmLabel()) { dialog, _ ->
+            onChoose(dialog, (dialog as AlertDialog).listView.checkedItemPosition.takeIf { it >= 0 } ?: checked)
+        }
+
+    private fun guideNext() {
+        val walk = guide ?: return
+        val next = guideSteps(walk).firstOrNull()
+        if (next == null) {
+            guide = null
+            return
+        }
+        walk.done += next
+        walk.pending = true
+        walk.chosen = false
+        val toggle = toggleOf(next)
+        if (toggle != null) askToggle(toggle) else next.performClick()
+    }
+
+    private fun toggleOf(option: View): CompoundButton? =
+        (option as? ViewGroup)?.let { row -> (0 until row.childCount).map(row::getChildAt).filterIsInstance<CompoundButton>().firstOrNull() }
+
+    /** A switch has no dialog of its own; in the walk it is asked like the other options. */
+    private fun askToggle(toggle: CompoundButton) {
+        val choices = arrayOf(getString(R.string.settings_on), getString(R.string.settings_off))
+        AlertDialog.Builder(this)
+            .apply { guide?.let { bindingTitle(crumb(it.row), toggle.contentDescription) } ?: setTitle(toggle.contentDescription) }
+            .chooseOne(choices, if (toggle.isChecked) 0 else 1) { dialog, which ->
+                guide?.chosen = true
+                dialog.dismiss()
+                toggle.isChecked = which == 0
+            }
+            .show()
     }
 
     private fun showMacroUnavailable() {
@@ -1284,6 +1450,7 @@ class SettingsActivity : Activity() {
                     dialog.dismiss()
                     updateShoulderRow(row)
                     refresh()
+                    if (value != current) startGuide(row)
                 }
             }
             line.addView(TextView(this).apply {
@@ -1321,7 +1488,7 @@ class SettingsActivity : Activity() {
         }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)).apply { setMargins(dp(24), dp(4), dp(24), dp(4)) })
         apps.forEach { entry(it.value, it.label, it.value in favorites) }
         dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.shoulder_choose_app_title)
+            .bindingTitle(crumb(row, getString(R.string.shoulder_launch_app)), R.string.shoulder_choose_app_title)
             .setView(ScrollView(this).apply { addView(list) })
             .setNegativeButton(android.R.string.cancel, null)
             .create()
@@ -1334,14 +1501,13 @@ class SettingsActivity : Activity() {
         val group = ActionGroups.groupOf(action) ?: return
         val labels = group.options.map { getString(it.labelRes) }
         AlertDialog.Builder(this)
-            .setTitle(group.titleRes)
-            .setSingleChoiceItems(labels.toTypedArray(), group.options.indexOfFirst { it.action == action }.coerceAtLeast(0)) { dialog, which ->
+            .bindingTitle(crumb(row), row.option?.title?.text ?: getString(group.titleRes))
+            .chooseOne(labels.toTypedArray(), group.options.indexOfFirst { it.action == action }.coerceAtLeast(0)) { dialog, which ->
                 prefs.setShoulderAction(row.button, group.options[which].action)
                 dialog.dismiss()
                 updateShoulderRow(row)
                 refresh()
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1349,13 +1515,12 @@ class SettingsActivity : Activity() {
         val choices = aynOptions(group)
         val selected = prefs.aynOption(row.button, group)
         AlertDialog.Builder(this)
-            .setTitle(group.titleRes)
-            .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == selected }.coerceAtLeast(0)) { dialog, which ->
+            .bindingTitle(crumb(row), row.option?.title?.text ?: getString(group.titleRes))
+            .chooseOne(choices.map { it.label }.toTypedArray(), choices.indexOfFirst { it.value == selected }.coerceAtLeast(0)) { dialog, which ->
                 prefs.setAynOption(row.button, choices[which].value)
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1364,8 +1529,8 @@ class SettingsActivity : Activity() {
         val targets = if (focus) focusTargets() else levelTargets()
         val selected = if (focus) prefs.focusTarget(row.button) else prefs.levelTarget(row.button)
         AlertDialog.Builder(this)
-            .setTitle(if (focus) R.string.focus_target_dialog_title else R.string.level_target_dialog_title)
-            .setSingleChoiceItems(
+            .bindingTitle(crumb(row), if (focus) R.string.focus_target_dialog_title else R.string.level_target_dialog_title)
+            .chooseOne(
                 targets.map { it.label }.toTypedArray(),
                 targets.indexOfFirst { it.value == selected }.coerceAtLeast(0),
             ) { dialog, which ->
@@ -1374,7 +1539,6 @@ class SettingsActivity : Activity() {
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1382,8 +1546,8 @@ class SettingsActivity : Activity() {
         // Ask is offered where an app opens; Home goes to a fixed screen.
         val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) launchScreens() else screenTargets()
         AlertDialog.Builder(this)
-            .setTitle(R.string.level_target_dialog_title)
-            .setSingleChoiceItems(
+            .bindingTitle(crumb(row), R.string.level_target_dialog_title)
+            .chooseOne(
                 targets.map { it.label }.toTypedArray(),
                 targets.indexOfFirst { it.value == prefs.shoulderDisplay(row.button) }.coerceAtLeast(0),
             ) { dialog, which ->
@@ -1391,7 +1555,6 @@ class SettingsActivity : Activity() {
                 dialog.dismiss()
                 updateShoulderRow(row)
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1399,8 +1562,8 @@ class SettingsActivity : Activity() {
         val choices = if (mode) appModes() else appScreens()
         val selected = if (mode) prefs.appMode(row.button) else prefs.appScreen(row.button)
         AlertDialog.Builder(this)
-            .setTitle(if (mode) R.string.app_control_mode_dialog_title else R.string.app_control_screen_dialog_title)
-            .setSingleChoiceItems(
+            .bindingTitle(crumb(row), if (mode) R.string.app_control_mode_dialog_title else R.string.app_control_screen_dialog_title)
+            .chooseOne(
                 choices.map { it.label }.toTypedArray(),
                 choices.indexOfFirst { it.value == selected }.coerceAtLeast(0),
             ) { dialog, which ->
@@ -1414,7 +1577,7 @@ class SettingsActivity : Activity() {
                     // a restart closes the same way before it reopens the app.
                     val restart = value == Prefs.APP_RESTART
                     AlertDialog.Builder(this)
-                        .setTitle(if (restart) R.string.app_control_restart else R.string.app_control_force_close)
+                        .bindingTitle(crumb(row), if (restart) R.string.app_control_restart else R.string.app_control_force_close)
                         .setMessage(R.string.app_control_force_close_warning)
                         .setNegativeButton(android.R.string.cancel, null)
                         .setPositiveButton(if (restart) R.string.app_control_restart_use else R.string.app_control_force_close_use) { _, _ ->
@@ -1427,7 +1590,6 @@ class SettingsActivity : Activity() {
                     updateShoulderRow(row)
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -1478,8 +1640,13 @@ class SettingsActivity : Activity() {
     }
 
     private fun updateShoulderRow(row: ComboRow) {
-        row.action.value.text = describeShoulderAction(row.button)
+        // A guided dialog that writes its choice updates its row itself; a page-wide refresh says nothing about it.
+        guide?.let { if (it.row === row && it.pending && !refreshingRows) it.chosen = true }
         val action = prefs.shoulderAction(row.button)
+        val described = describeShoulderAction(row.button)
+        // The chosen action stands out from the options under it; "Not set" stays plain.
+        row.action.value.text = if (action.isEmpty()) described else getString(R.string.shoulder_action_selected, described)
+        row.action.value.typeface = if (action.isEmpty()) Typeface.DEFAULT else Typeface.DEFAULT_BOLD
         row.display.row.visibility = if (Prefs.launchesApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
         row.display.value.text = describeShoulderDisplay(row.button)
         row.display.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.display.value.text)
@@ -1688,7 +1855,8 @@ class SettingsActivity : Activity() {
             card.alpha = if (blocked) 0.5f else 1f
             setTreeEnabled(card, !blocked)
         }
-        row.action.row.contentDescription = getString(R.string.shoulder_action_accessibility, row.label, row.action.value.text)
+        row.action.row.contentDescription =
+            getString(R.string.shoulder_action_accessibility, row.label, if (blocked) row.action.value.text else described)
     }
 
     private fun setTreeEnabled(view: View, enabled: Boolean) {
@@ -1996,6 +2164,7 @@ class SettingsActivity : Activity() {
     }
 
     private fun invalidatePages() {
+        layoutDual = prefs.dualMode
         exceptionsPage?.dispose()
         exceptionsPage = null
         pages.clear()
@@ -2143,6 +2312,8 @@ class SettingsActivity : Activity() {
         private const val REQUEST_BACKUP_SAVE = 2
         private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
+        private const val GUIDE_SETTLE_MS = 150L
+        private const val CHEVRON_TAG = "settings_chooser_chevron"
         /** The pages dual mode splits into a Home and a Back column. */
         private val DUAL_SECTIONS = setOf(
             SettingsSection.BASIC, SettingsSection.FACE, SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS,

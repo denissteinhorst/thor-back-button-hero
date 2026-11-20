@@ -171,6 +171,9 @@
     <string name="search_keywords_mute_microphone">Mikro, Mic, Mikrofon aus, Discord, Voice, Sprachchat, stumm, Privatsphäre</string>
     <string name="shoulder_choose_app_title">Welche App starten?</string>
     <string name="shoulder_action_accessibility">Aktion für %1$s: %2$s. Zum Ändern doppeltippen.</string>
+    <string name="shoulder_action_selected">Ausgewählt: %1$s</string>
+    <string name="guide_next">Weiter</string>
+    <string name="dialog_breadcrumb">%1$s › %2$s</string>
     <string name="shoulder_action_unavailable">Diese Systemaktion ist auf diesem Gerät nicht verfügbar.</string>
     <string name="shoulder_controller_focus">Fokus setzen</string>
     <string name="screenshot_saved">Screenshot gespeichert</string>

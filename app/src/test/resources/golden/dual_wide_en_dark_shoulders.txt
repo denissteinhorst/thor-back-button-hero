@@ -55,7 +55,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + L1 action: Record video. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L1" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Record video" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Record video" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -112,7 +112,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L1 action: Navigation flick. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L1" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -141,7 +141,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + R1 action: Navigation flick. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R1" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -170,7 +170,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R1 action: Navigation flick. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R1" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Navigation flick" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -199,7 +199,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + L2 action: Take screenshot. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Take screenshot" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Take screenshot" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -221,7 +221,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="L2 action: Take screenshot. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Take screenshot" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Take screenshot" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -243,7 +243,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + R2 action: Set controller focus. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Set controller focus" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Set controller focus" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -278,7 +278,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="R2 action: Set controller focus. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Set controller focus" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Set controller focus" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]

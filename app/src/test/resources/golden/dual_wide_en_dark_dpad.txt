@@ -77,7 +77,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad up action: Brightness. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad up" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -106,7 +106,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + D-pad down action: Brightness. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad down" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -135,7 +135,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad down action: Brightness. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad down" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Brightness" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -164,7 +164,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + D-pad left action: Volume. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -193,7 +193,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad left action: Volume. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad left" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -222,7 +222,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home + D-pad right action: Volume. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad right" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -251,7 +251,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="D-pad right action: Volume. Double-tap to change."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="D-pad right" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Selected: Volume" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]

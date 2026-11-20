@@ -177,13 +177,30 @@ class SettingsNavigationTest {
         val activity = controller.get()
         val prefs = Prefs(activity)
         val double = find(page(activity, SettingsSection.BASIC)) {
-            it is TextView && it.text.toString() == activity.getString(R.string.group_app_switcher)
+            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_action_selected, activity.getString(R.string.group_app_switcher))
         } as TextView
         controller.pause()
         prefs.doubleTapEnabled = false
         controller.resume()
         assertEquals(activity.getString(R.string.shoulder_none), double.text.toString())
         assertFalse(prefs.doubleTapEnabled)
+    }
+
+    @Test
+    fun `settings changed while the page stays open show without a pause, so Unbind judges what is shown`() {
+        val activity = open().get()
+        val prefs = Prefs(activity)
+        val double = find(page(activity, SettingsSection.BASIC)) {
+            it is TextView && it.text.toString() == activity.getString(R.string.shoulder_action_selected, activity.getString(R.string.group_app_switcher))
+        } as TextView
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, "")
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(activity.getString(R.string.shoulder_none), double.text.toString())
+
+        // Dual mode switched elsewhere rebuilds the binding pages into their two columns.
+        prefs.dualMode = true
+        shadowOf(Looper.getMainLooper()).idle()
+        assertNotNull(find(root(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.dual_column_home) })
     }
 
     @Test

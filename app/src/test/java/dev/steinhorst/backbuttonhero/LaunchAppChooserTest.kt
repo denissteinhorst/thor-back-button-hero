@@ -106,7 +106,7 @@ class LaunchAppChooserTest {
         assertEquals("org.example.gamma", choices(list).last())
         list.findViewWithTag<View>("settings_app_choice_${Prefs.SHOULDER_APP_FAVORITES}").performClick()
         assertEquals(Prefs.SHOULDER_APP_FAVORITES, prefs.shoulderAction(ShoulderButton.L1))
-        assertEquals("Launch app: Favorites", (row(activity, "L1").let { find(it) { v -> v is TextView && v.text.startsWith("Launch app") } } as TextView).text.toString())
+        assertEquals("Selected: Launch app: Favorites", (row(activity, "L1").let { find(it) { v -> v is TextView && v.text.startsWith("Selected: Launch app") } } as TextView).text.toString())
         // A chosen app opens on a screen, so the screen row shows for Ask and Favorites too.
         assertTrue(find(content(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.level_target_bottom) }?.isShown == true)
 
@@ -124,6 +124,8 @@ class LaunchAppChooserTest {
     fun `favorites without a starred app say so on the row`() {
         prefs.setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_APP_FAVORITES)
         val activity = open()
-        assertTrue(find(content(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.shoulder_launch_app_favorites_empty) } != null)
+        assertTrue(find(content(activity)) { it is TextView && it.text.toString() == activity.getString(
+            R.string.shoulder_action_selected, activity.getString(R.string.shoulder_launch_app_favorites_empty),
+        ) } != null)
     }
 }

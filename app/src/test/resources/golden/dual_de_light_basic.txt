@@ -39,7 +39,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Home + Back-Taste drücken: Home. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Home" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: Home" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -61,7 +61,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste drücken: Home. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Home" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: Home" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -84,7 +84,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Home + Back-Taste doppelt drücken: App-Switcher (Recents). Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste doppelt drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -126,7 +126,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste doppelt drücken: App-Switcher (Recents). Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste doppelt drücken" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -169,7 +169,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Home + Back-Taste tippen und halten: App-Switcher (Recents). Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste tippen und halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -204,7 +204,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste tippen und halten: App-Switcher (Recents). Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste tippen und halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: App-Switcher (Recents)" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -240,7 +240,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Home + Back-Taste halten: Beide Apps tauschen. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Apps tauschen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: Beide Apps tauschen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
@@ -268,7 +268,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aktion für Back-Taste halten: Beide Apps tauschen. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                             TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back-Taste halten" textSizePx=48.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Beide Apps tauschen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Ausgewählt: Beide Apps tauschen" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
                           ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                         SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]

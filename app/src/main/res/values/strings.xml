@@ -172,6 +172,9 @@
     <string name="search_keywords_mute_microphone">mic, mic mute, Discord, voice chat, privacy, mute</string>
     <string name="shoulder_choose_app_title">Launch which app?</string>
     <string name="shoulder_action_accessibility">%1$s action: %2$s. Double-tap to change.</string>
+    <string name="shoulder_action_selected">Selected: %1$s</string>
+    <string name="guide_next">Next</string>
+    <string name="dialog_breadcrumb">%1$s › %2$s</string>
     <string name="shoulder_action_unavailable">This system action is not available on this device.</string>
     <string name="shoulder_controller_focus">Set controller focus</string>
     <string name="screenshot_saved">Screenshot saved</string>
