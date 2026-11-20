@@ -93,6 +93,15 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
 
     fun refresh() = refreshers.forEach { it() }
 
+    /** Adds a view that rebuilds itself from the preferences on every refresh. */
+    fun live(view: View, update: () -> Unit) {
+        content.addView(view, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(16)
+        })
+        refreshers += update
+        update()
+    }
+
     fun sectionHeader(res: Int) {
         TextView(activity).apply {
             setText(res)

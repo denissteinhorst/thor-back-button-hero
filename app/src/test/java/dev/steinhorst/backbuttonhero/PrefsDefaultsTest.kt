@@ -35,17 +35,15 @@ class PrefsDefaultsTest {
     }
 
     @Test
-    fun `navigation panel starts collapsed and its state never reaches the settings listeners`() {
-        assertTrue(prefs.navigationCollapsed)
-        var changes = 0
-        val listener = { changes++; Unit }
-        prefs.registerListener(listener)
-        val before = prefs.snapshot()
-        prefs.navigationCollapsed = false
-        assertFalse(Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed)
-        assertEquals(0, changes)
-        assertEquals(before, prefs.snapshot())
-        prefs.unregisterListener(listener)
+    fun `favorite apps start empty, are shared by every hotkey and Ask and Favorites launch apps`() {
+        assertEquals(emptySet<String>(), prefs.favoriteApps)
+        prefs.setFavorite("org.example.alpha", true)
+        prefs.setFavorite("org.example.beta", true)
+        prefs.setFavorite("org.example.alpha", false)
+        assertEquals(setOf("org.example.beta"), prefs.favoriteApps)
+        listOf(Prefs.SHOULDER_APP_ASK, Prefs.SHOULDER_APP_FAVORITES, "org.example.beta").forEach { assertTrue(it, Prefs.launchesApp(it)) }
+        listOf("", Prefs.SHOULDER_HOME).forEach { assertFalse(it, Prefs.launchesApp(it)) }
+        assertTrue(Prefs.SHOULDER_APP_ASK in Prefs.KNOWN_ACTIONS && Prefs.SHOULDER_APP_FAVORITES in Prefs.KNOWN_ACTIONS)
     }
 
     @Test

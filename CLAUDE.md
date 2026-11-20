@@ -498,15 +498,21 @@ Shoulder actions are stored as either a bare package name (an app to launch)
 or an `@`-prefixed sentinel (`SHOULDER_HOME`, `SHOULDER_FLICK_LEFT`, etc.) —
 `isShoulderApp()` distinguishes the two.
 
-**`SettingsActivity`** + **`SettingsNavigation`** + **`SettingsUiKit`**: six hand-built
-pages (`SettingsSection`: Basic, Shoulders, D-pad, Exceptions, Settings, Help), no
-PreferenceFragment, no XML. `SettingsNavigation` owns the top bar (`settings_top_bar`:
-menu button, page title, accessibility warning on the right), lazily builds and caches
+**`SettingsActivity`** + **`SettingsNavigation`** + **`SettingsUiKit`**: hand-built
+pages (`SettingsSection`: Overview, Basic, Face, Shoulders, Sticks, D-pad, Exceptions, Settings,
+Help), no PreferenceFragment, no XML. The app opens on Overview (`BindingsOverview`): a line
+drawing of the lower half traced from `thor-base.png`'s measured geometry, with leader lines to
+every assigned binding; tapping a part of the drawing opens its page (a stick opens its own tab), the labels only read. `SettingsNavigation` owns the top bar (`settings_top_bar`:
+menu button, page title, accessibility warning on the right; at ≥ 720 dp the band, menu and icon go
+and only a mid-sized page title stays, which on the Overview floats over the page together with the
+tappable service chip), lazily builds and caches
 pages, and switches between a 240 dp left panel at ≥ 720 dp width and a menu dialog
-below that. The wide panel starts as a 76 dp icon rail; its chevron toggles between rail and panel
-(`Prefs.navigationCollapsed`, kept in a separate `settings_ui` file so it never wakes the
-service listener or enters backups); a rail icon opens its page and lays the full panel
-over it until the page is touched or receives focus. Navigation icons are vector drawables `ic_settings_*` with SVG sources in
+below that. The wide panel is always a 76 dp icon rail under the app logo, sized to fit the
+Thor's 421 dp without scrolling (no chevron, no stored state); a rail icon opens its page and lays
+the full panel, with "Back Button Hero" beside the logo, over it until the page is touched or
+receives focus. The touch that closes it is held back: a tap only closes the panel, a drag is
+handed to the page as a scroll. Rail entries span the full width without gaps, and a long press
+clicks too (the rail's tooltip would otherwise eat it). Navigation icons are vector drawables `ic_settings_*` with SVG sources in
 `art/settings-icons/`. `SettingsChanges` builds before/after previews for per-page and
 whole-app defaults/unbind; `Prefs.applySettings` writes accepted plans atomically.
 `ExceptionSettingsPage` edits per-app exceptions (`AppException`); `SwitcherService` applies

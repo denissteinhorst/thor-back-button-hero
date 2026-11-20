@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 
@@ -22,7 +23,7 @@ class SettingsDialogSnapshotTest {
     }
 
 
-    private fun buildActivity() = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
+    private fun buildActivity() = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).get()
 
     private fun latestDialog(): Dialog =
         ShadowDialog.getLatestDialog() ?: error("No dialog was shown")

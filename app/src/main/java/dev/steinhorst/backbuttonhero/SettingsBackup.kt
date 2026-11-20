@@ -170,7 +170,7 @@ object SettingsBackup {
                 ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.MACRO_BUTTONS.any { button -> button.prefKey == key } }
             default.copy(
                 action = action ?: default.action,
-                display = entry.stringOrNull("display")?.takeIf { it in SCREENS } ?: default.display,
+                display = entry.stringOrNull("display")?.takeIf { it in SCREENS || it == Prefs.APP_SCREEN_ASK } ?: default.display,
                 targetOverride = entry.stringOrNull("target")?.takeIf { it in TARGETS },
                 focusTarget = entry.stringOrNull("focusTarget")?.takeIf { it in FOCUS_TARGETS } ?: default.focusTarget,
                 indicator = entry.booleanOrNull("focusIndicator") ?: default.indicator,

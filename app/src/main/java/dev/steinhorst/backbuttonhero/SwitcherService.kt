@@ -16,6 +16,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.IntentFilter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.hardware.display.DisplayManager
@@ -1045,7 +1046,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_GYRO -> toggleGyro(button)
             Prefs.SHOULDER_GYRO_CALIBRATE -> calibrateGyro()
             in Ayn.ACTIONS -> runAynAction(button, action)
-            Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
+            Prefs.SHOULDER_HOME -> onLaunchScreen(button, ::goHome)
+            Prefs.SHOULDER_APP_ASK -> chooseApp(button, favorites = false)
+            Prefs.SHOULDER_APP_FAVORITES -> chooseApp(button, favorites = true)
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
             Prefs.SHOULDER_SWITCHER -> showSwitcherNow()
             Prefs.SHOULDER_SWAP_APPS -> swapScreensNow()
@@ -1067,11 +1070,25 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
             Prefs.SHOULDER_DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
             Prefs.SHOULDER_BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
-            else -> {
-                val displayId = shoulderDisplayId(button)
+            else -> onLaunchScreen(button) { displayId ->
                 dlog("COMBO ${button.name} + Back -> launching $action on display $displayId")
                 launchOn(action, displayId)
             }
+        }
+    }
+
+    /** Lists every launchable app, or only the starred ones, and opens the one chosen on [button]'s screen. */
+    private fun chooseApp(button: ComboButton, favorites: Boolean) {
+        val starred = prefs.favoriteApps
+        val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val apps = packageManager.queryIntentActivities(launcher, PackageManager.MATCH_ALL)
+            .map { AppControlPrompt.Option(it.activityInfo.packageName, it.loadLabel(packageManager).toString()) }
+            .distinctBy { it.value }
+            .filter { !favorites || it.value in starred }
+            .sortedBy { it.label }
+        if (apps.isEmpty()) return notice.show(R.string.app_favorites_none)
+        appControlPrompt.show(promptDisplay(), getString(R.string.shoulder_choose_app_title), apps) { pkg ->
+            onLaunchScreen(button) { displayId -> runCatching { launchOn(pkg, displayId) }.onFailure { toastUnavailable() } }
         }
     }
 
@@ -1225,9 +1242,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 runCatching { pm.getApplicationInfo(it.packageName, 0).loadLabel(pm).toString() }.getOrDefault(it.packageName)
             }
             val restart = mode == Prefs.APP_RESTART
+            // The prompt adds its own Cancel row below.
             val options = listOf(
                 AppControlPrompt.Option("yes", getString(if (restart) R.string.app_control_prompt_restart_yes else R.string.app_control_prompt_close_yes)),
-                AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
             )
             val title = getString(if (restart) R.string.app_control_prompt_restart_title else R.string.app_control_prompt_close_title, names)
             appControlPrompt.show(promptDisplay(), title, options) {
@@ -1261,10 +1278,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val names = packages.joinToString(", ") {
             runCatching { pm.getApplicationInfo(it, 0).loadLabel(pm).toString() }.getOrDefault(it)
         }
-        val options = listOf(
-            AppControlPrompt.Option("yes", getString(R.string.close_apps_prompt_yes)),
-            AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
-        )
+        val options = listOf(AppControlPrompt.Option("yes", getString(R.string.close_apps_prompt_yes)))
         appControlPrompt.show(promptDisplay(), getString(R.string.close_apps_prompt_title, names), options) {
             if (it == "yes") close()
         }
@@ -1276,10 +1290,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
             return
         }
-        val options = listOf(
-            AppControlPrompt.Option("yes", getString(R.string.group_standby)),
-            AppControlPrompt.Option("no", getString(R.string.app_control_prompt_cancel)),
-        )
+        val options = listOf(AppControlPrompt.Option("yes", getString(R.string.group_standby)))
         appControlPrompt.show(promptDisplay(), getString(R.string.standby_prompt_title), options) {
             if (it == "yes") performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         }
@@ -1572,6 +1583,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun toastUnavailable() =
         notice.show(R.string.shoulder_action_unavailable)
+
+    /** Runs [launch] on [button]'s screen, asking for the screen first when it is set to Ask. */
+    private fun onLaunchScreen(button: ComboButton, launch: (Int) -> Unit) {
+        if (prefs.shoulderDisplay(button) != Prefs.APP_SCREEN_ASK) return launch(shoulderDisplayId(button))
+        val options = listOf(
+            AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
+            AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
+        )
+        appControlPrompt.show(promptDisplay(), getString(R.string.launch_screen_prompt_title), options) { chosen ->
+            launch(if (chosen == Prefs.DISPLAY_TOP) Display.DEFAULT_DISPLAY else bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY)
+        }
+    }
 
     private fun shoulderDisplayId(button: ComboButton): Int =
         if (prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP) Display.DEFAULT_DISPLAY

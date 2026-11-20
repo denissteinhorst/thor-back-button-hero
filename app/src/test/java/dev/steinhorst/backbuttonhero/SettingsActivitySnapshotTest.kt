@@ -17,7 +17,7 @@ class SettingsActivitySnapshotTest {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
         val root = activity.findViewById<android.view.View>(android.R.id.content)
         Golden.verify(name, ViewTree.describe(root))
-        SettingsSection.entries.filter { it != SettingsSection.BASIC }.forEach { section ->
+        SettingsSection.entries.filter { it != SettingsSection.OVERVIEW }.forEach { section ->
             selectSettingsPage(activity, section)
             Golden.verify("${name}_${section.name.lowercase()}", ViewTree.describe(root))
         }

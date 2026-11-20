@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.content.Intent
 import android.os.Looper
@@ -29,7 +30,7 @@ class SettingsNavigationTest {
         Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
     }
 
-    private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible()
+    private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible()
 
     private fun layout(activity: SettingsActivity, width: Int = 1000, height: Int = 600) {
         val root = activity.findViewById<View>(android.R.id.content)
@@ -98,9 +99,15 @@ class SettingsNavigationTest {
         assertNull(find(topBar) { it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) })
         val navigation = root(activity).findViewWithTag<View>("settings_navigation")
         val content = root(activity) as ViewGroup
-        val colors = listOf(topBar.background, navigation.background, content.getChildAt(0).background)
+        // The rail names the page, so the wide header keeps only a mid-sized page name, no band or icon.
+        assertNull(topBar.background)
+        assertEquals(View.GONE, topBar.findViewWithTag<View>("settings_app_icon").visibility)
+        val heading = find(topBar) { it is TextView && it.isAccessibilityHeading } as TextView
+        assertEquals(activity.getString(SettingsSection.DPAD.titleRes), heading.text.toString())
+        assertEquals(18f * activity.resources.displayMetrics.scaledDensity, heading.textSize, 0.5f)
+        val colors = listOf(navigation.background, content.getChildAt(0).background)
             .map { (it as android.graphics.drawable.ColorDrawable).color }
-        assertEquals(3, colors.toSet().size)
+        assertEquals(2, colors.toSet().size)
         selectSettingsPage(activity, SettingsSection.HELP)
         listOf(R.string.settings_unbind).forEach { label ->
             assertNull(find(root(activity)) { it is TextView && it.text.toString() == activity.getString(label) })
@@ -359,63 +366,50 @@ class SettingsNavigationTest {
         (root(activity).findViewWithTag<View>("settings_navigation").parent as View).width
 
     @Test
-    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
-    fun `chevron collapses the wide panel to an icon rail and remembers it`() {
-        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = false
-        val controller = open()
-        var activity = controller.get()
-        layout(activity)
-        val toggle = root(activity).findViewWithTag<android.widget.ImageButton>("settings_nav_toggle")
-        val row = toggle.parent as ViewGroup
-        assertEquals(View.VISIBLE, toggle.visibility)
-        assertSame(root(activity).findViewWithTag<View>("settings_app_icon"), row.getChildAt(row.indexOfChild(toggle) + 2))
-        assertEquals("Collapse menu", toggle.contentDescription)
-        assertEquals(activity.dp(240), navigationWidth(activity))
-        toggle.performClick()
-        layout(activity)
-        assertTrue(Prefs(activity).navigationCollapsed)
-        assertEquals("Expand menu", toggle.contentDescription)
+    @Config(qualifiers = "en-w833dp-h421dp-xxhdpi")
+    fun `the wide panel is an icon rail under the logo that fits the Thor without scrolling`() {
+        val activity = open().get()
+        layout(activity, 833, 421)
         assertEquals(activity.dp(76), navigationWidth(activity))
+        assertNull(root(activity).findViewWithTag<View>("settings_nav_toggle"))
+        val column = root(activity).findViewWithTag<ViewGroup>("settings_navigation")
+        assertFalse(column is ScrollView)
+        val logo = root(activity).findViewWithTag<ViewGroup>("settings_nav_logo")
+        assertSame(logo, column.getChildAt(0))
+        assertEquals(View.GONE, logo.getChildAt(1).visibility)
         val dpad = root(activity).findViewWithTag<Button>("settings_nav_DPAD")
         assertEquals("", dpad.text.toString())
         assertEquals(activity.getString(R.string.nav_dpad), dpad.contentDescription)
         assertEquals(activity.getString(R.string.nav_dpad), dpad.tooltipText)
-        // The icon still fits the rail without being clipped.
-        assertTrue(dpad.measuredWidth <= activity.dp(44))
-        controller.recreate()
-        activity = controller.get()
-        layout(activity)
-        assertEquals(activity.dp(76), navigationWidth(activity))
-        activity.findViewById<View>(android.R.id.content).findViewWithTag<View>("settings_nav_toggle").performClick()
-        layout(activity)
-        assertFalse(Prefs(activity).navigationCollapsed)
-        assertEquals(activity.dp(240), navigationWidth(activity))
-        assertEquals(activity.getString(R.string.nav_dpad), root(activity).findViewWithTag<Button>("settings_nav_DPAD").text.toString())
-    }
-
-    @Test
-    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
-    fun `the wide panel starts as an icon rail`() {
-        val activity = open().get()
-        layout(activity)
-        assertEquals(activity.dp(76), navigationWidth(activity))
-        assertEquals("Expand menu", root(activity).findViewWithTag<View>("settings_nav_toggle").contentDescription)
+        // Logo, rule and all nine pages fit the screen, the pages sharing all the height below the logo.
+        val entries = SettingsSection.entries.map { root(activity).findViewWithTag<View>("settings_nav_${it.name}") }
+        assertEquals(column.height - column.paddingBottom, entries.last().bottom)
+        assertTrue(entries.all { kotlin.math.abs(it.height - entries.first().height) <= 1 && it.height >= activity.dp(38) })
+        // No dead space: every entry spans the rail and meets the next, beside and between the icons.
+        assertTrue(entries.all { it.left == 0 && it.width == column.width })
+        assertTrue(entries.zipWithNext().all { (upper, lower) -> upper.bottom == lower.top })
+        // A slow tap still opens its page instead of only showing the tooltip.
+        assertTrue(dpad.performLongClick())
+        assertTrue(dpad.isSelected)
+        assertNotNull(root(activity).findViewWithTag<View>("settings_page_DPAD"))
     }
 
     @Test
     @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
     fun `a rail icon opens the page and lays the full panel over it until the page is touched`() {
-        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
         val activity = open().get()
         layout(activity)
         val pageLeft = IntArray(2).also(page(activity, SettingsSection.BASIC)::getLocationOnScreen)[0]
+        val name = root(activity).findViewWithTag<ViewGroup>("settings_nav_logo").getChildAt(1) as TextView
         root(activity).findViewWithTag<View>("settings_nav_SHOULDERS").performClick()
         layout(activity)
         assertNotNull(page(activity, SettingsSection.SHOULDERS))
         assertEquals(activity.dp(240), navigationWidth(activity))
+        // The full panel names the app beside its logo.
+        assertEquals(View.VISIBLE, name.visibility)
+        assertEquals(activity.getString(R.string.app_name), name.text.toString())
         // The page does not move; the panel covers it.
         assertEquals(pageLeft, IntArray(2).also(page(activity, SettingsSection.SHOULDERS)::getLocationOnScreen)[0])
-        assertTrue(Prefs(activity).navigationCollapsed)
         // Further entries keep the panel open, and so does touching the panel itself.
         val help = root(activity).findViewWithTag<Button>("settings_nav_HELP")
         touch(activity, help)
@@ -427,13 +421,91 @@ class SettingsNavigationTest {
         layout(activity)
         assertEquals(activity.dp(76), navigationWidth(activity))
         assertEquals("", help.text.toString())
-        assertTrue(Prefs(activity).navigationCollapsed)
+        assertEquals(View.GONE, name.visibility)
     }
 
     @Test
     @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
-    fun `the chevron pins a peeking panel open and controller focus in the page closes a peek`() {
-        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
+    fun `the tap that closes a peek opens nothing on the page but a scroll still reaches it`() {
+        // With the service on, no blocker lies over the page.
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        android.provider.Settings.Secure.putString(
+            context.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+            "${context.packageName}/${SwitcherService::class.java.name}",
+        )
+        val activity = open().get()
+        layout(activity)
+        val rail = root(activity).findViewWithTag<Button>("settings_nav_SHOULDERS")
+        fun peek() {
+            rail.performClick()
+            layout(activity)
+            assertEquals(activity.dp(240), navigationWidth(activity))
+        }
+        fun gesture(view: View, vararg steps: Pair<Int, Float>) {
+            val at = IntArray(2).also(view::getLocationOnScreen)
+            val x = at[0] + view.width / 2f
+            val y = at[1] + view.height / 2f
+            steps.forEach { (action, dy) ->
+                val event = android.view.MotionEvent.obtain(0L, 0L, action, x, y + dy, 0)
+                activity.dispatchTouchEvent(event)
+                event.recycle()
+            }
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+        peek()
+        val page = page(activity, SettingsSection.SHOULDERS)
+        val target = find(page) { view -> view is Button && android.graphics.Rect().let { view.getGlobalVisibleRect(it) && it.height() == view.height } }!!
+        var clicks = 0
+        target.setOnClickListener { clicks++ }
+        val tap = arrayOf(android.view.MotionEvent.ACTION_DOWN to 0f, android.view.MotionEvent.ACTION_UP to 0f)
+        gesture(target, *tap)
+        layout(activity)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        assertEquals(0, clicks)
+        // Without a peek the same tap is an ordinary click.
+        gesture(target, *tap)
+        assertEquals(1, clicks)
+        // A drag beside the peek reaches the page from its first touch on, as a scroll and never a click.
+        peek()
+        val seen = mutableListOf<Int>()
+        target.setOnTouchListener { _, event -> seen += event.actionMasked; false }
+        val far = activity.dp(48).toFloat()
+        gesture(target, android.view.MotionEvent.ACTION_DOWN to 0f, android.view.MotionEvent.ACTION_MOVE to 1f,
+            android.view.MotionEvent.ACTION_MOVE to -far, android.view.MotionEvent.ACTION_UP to -far)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        // The held-back press arrives first, so the page can take the drag over as a scroll.
+        assertEquals(android.view.MotionEvent.ACTION_DOWN, seen.first())
+        assertEquals(1, clicks)
+    }
+
+    @Test
+    @Config(qualifiers = "en-w833dp-h421dp-xxhdpi")
+    fun `the keyboard shrinking the window leaves the rail's entries their full height`() {
+        val activity = open().get()
+        var keyboard = false
+        val column = RailColumn(activity) { keyboard }
+        fun measure(height: Int): Int {
+            column.measure(
+                View.MeasureSpec.makeMeasureSpec(activity.dp(76), View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+            )
+            return column.measuredHeight
+        }
+        assertEquals(1000, measure(1000))
+        keyboard = true
+        assertEquals(1000, measure(400))
+        // Once the keyboard is gone the rail follows the window again, smaller or larger.
+        keyboard = false
+        assertEquals(800, measure(800))
+        assertEquals(1000, measure(1000))
+        // The real rail uses this column.
+        layout(activity, 833, 421)
+        assertTrue(root(activity).findViewWithTag<View>("settings_navigation") is RailColumn)
+    }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `controller focus moving into the page closes a peek`() {
         val controller = open()
         val activity = controller.get()
         // An enabled service lifts the blocker, which would otherwise keep focus out of the page.
@@ -443,7 +515,6 @@ class SettingsNavigationTest {
         )
         controller.pause().resume()
         layout(activity)
-        val toggle = root(activity).findViewWithTag<View>("settings_nav_toggle")
         root(activity).findViewWithTag<View>("settings_nav_FACE").performClick()
         layout(activity)
         assertEquals(activity.dp(240), navigationWidth(activity))
@@ -451,29 +522,68 @@ class SettingsNavigationTest {
         assertTrue(target.requestFocus())
         layout(activity)
         assertEquals(activity.dp(76), navigationWidth(activity))
-
-        root(activity).findViewWithTag<View>("settings_nav_DPAD").performClick()
-        layout(activity)
-        touch(activity, toggle)
-        toggle.performClick()
-        layout(activity)
-        assertFalse(Prefs(activity).navigationCollapsed)
-        assertEquals(activity.dp(240), navigationWidth(activity))
-        touch(activity, page(activity, SettingsSection.DPAD))
-        layout(activity)
-        assertEquals(activity.dp(240), navigationWidth(activity))
     }
 
     @Test
-    fun `compact layout has no chevron and its menu never collapses`() {
-        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
+    fun `compact layout has no logo slot and its menu never collapses`() {
         val activity = open().get()
         layout(activity, 380)
-        assertEquals(View.GONE, root(activity).findViewWithTag<View>("settings_nav_toggle").visibility)
+        assertNull(root(activity).findViewWithTag<View>("settings_nav_logo"))
         root(activity).findViewWithTag<View>("settings_menu").performClick()
-        val entry = ShadowDialog.getLatestDialog()!!.window!!.decorView.findViewWithTag<Button>("settings_nav_STICKS")
+        val dialog = ShadowDialog.getLatestDialog()!!.window!!.decorView
+        assertNull(dialog.findViewWithTag<View>("settings_nav_logo"))
+        val entry = dialog.findViewWithTag<Button>("settings_nav_STICKS")
         assertEquals(activity.getString(R.string.nav_sticks), entry.text.toString())
         entry.performClick()
         assertNotNull(page(activity, SettingsSection.STICKS))
     }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `the wide overview drops the header and floats its service chip over the page`() {
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        layout(activity)
+        val bar = root(activity).findViewWithTag<View>("settings_top_bar")
+        val chip = root(activity).findViewWithTag<TextView>("settings_service_warning")
+        fun floating() = (chip.parent as View).tag == "settings_floating_header"
+        fun paneTitle() = (page(activity, activity.navigationSelected()).parent as View).accessibilityPaneTitle
+        assertEquals(View.GONE, bar.visibility)
+        assertTrue(floating())
+        assertEquals("Overview", paneTitle())
+        assertEquals(View.VISIBLE, chip.visibility)
+        // The chip is the only sign of a stuck service here, so it leads to the repair steps.
+        chip.performClick()
+        assertEquals(activity.getString(R.string.repair_service_title), shadowOf(ShadowAlertDialog.getLatestAlertDialog()).title)
+        ShadowAlertDialog.getLatestAlertDialog().dismiss()
+
+        selectSettingsPage(activity, SettingsSection.BASIC)
+        layout(activity)
+        assertEquals(View.VISIBLE, bar.visibility)
+        assertFalse(floating())
+        assertSame(bar, generateSequence(chip.parent) { it.parent }.firstOrNull { it === bar })
+        assertNull(paneTitle())
+        assertNull(root(activity).findViewWithTag<View>("settings_floating_header"))
+
+        selectSettingsPage(activity, SettingsSection.OVERVIEW)
+        layout(activity)
+        assertEquals(View.GONE, bar.visibility)
+        assertTrue(floating())
+        // Rebuilt pages keep the floating header on top of the new overview.
+        activity.javaClass.getDeclaredField("navigation").apply { isAccessible = true }.get(activity).let { (it as SettingsNavigation).invalidatePages() }
+        layout(activity)
+        val host = page(activity, SettingsSection.OVERVIEW).parent as ViewGroup
+        assertSame(root(activity).findViewWithTag<View>("settings_floating_header"), host.getChildAt(host.childCount - 1))
+    }
+
+    @Test
+    fun `the compact overview keeps its header for the menu button`() {
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        layout(activity, 380)
+        assertNotNull(page(activity, SettingsSection.OVERVIEW))
+        assertEquals(View.VISIBLE, root(activity).findViewWithTag<View>("settings_top_bar").visibility)
+        assertEquals(View.VISIBLE, root(activity).findViewWithTag<View>("settings_menu").visibility)
+    }
+
+    private fun SettingsActivity.navigationSelected() =
+        (javaClass.getDeclaredField("navigation").apply { isAccessible = true }.get(this) as SettingsNavigation).selected
 }

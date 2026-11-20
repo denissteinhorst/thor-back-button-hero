@@ -61,7 +61,7 @@ class SettingsChangesTest {
                     allApps = factory.allApps, controller = factory.controller, homeAsBack = factory.homeAsBack,
                     toggleButtons = factory.toggleButtons, toggleMs = factory.toggleMs,
                 ), after)
-                SettingsSection.HELP, SettingsSection.EXCEPTIONS -> assertTrue(plan.isEmpty)
+                SettingsSection.OVERVIEW, SettingsSection.HELP, SettingsSection.EXCEPTIONS -> assertTrue(plan.isEmpty)
             }
             assertTrue(prefs.applySettings(prefs.snapshot(), before))
             assertTrue(prefs.applySettings(plan.before, after))

@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -33,7 +34,7 @@ class HomeAsBackSettingsTest {
     fun `the option blocks the Back + Home row and keeps its binding`() {
         prefs.setShoulderAction(AndroidButton.HOME, Prefs.SHOULDER_SCREENSHOT)
         prefs.homeAsBack = true
-        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get()
         val root = activity.findViewById<View>(android.R.id.content)
         val blocked = checkNotNull(text(root, activity.getString(R.string.home_as_back_combo_blocked)))
         val card = generateSequence(blocked) { it.parent as? View }.first { it.alpha == 0.5f }
@@ -54,7 +55,7 @@ class HomeAsBackSettingsTest {
         prefs.setShoulderAction(AndroidButton.HOME, Prefs.SHOULDER_SCREENSHOT)
         prefs.homeAsBack = true
         prefs.toggleButtons = Prefs.TOGGLE_BACK_HOME
-        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get()
         val root = activity.findViewById<View>(android.R.id.content)
         val blocked = checkNotNull(text(root, activity.getString(R.string.toggle_combo_blocked)))
         assertNull(text(root, activity.getString(R.string.home_as_back_combo_blocked)))

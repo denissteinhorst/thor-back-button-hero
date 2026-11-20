@@ -1,0 +1,161 @@
+BindingsOverview visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0]
+  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false text="Combos work while Back is held. Tap a button in the drawing to change it." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Activate / deactivate: Hold L2 + R2"
+    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Activate / deactivate" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold L2 + R2" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="L2: Screenshot; L1: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="R2: Screenshot; R1: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Left stick: ↑: Screenshot, ↓: Screenshot, ←: Screenshot, →: Screenshot, Click: Screenshot, 2× click: Screenshot, Tap + hold: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Right stick: ↑: Screenshot, ↓: Screenshot, ←: Screenshot, →: Screenshot, Click: Screenshot, 2× click: Screenshot, Tap + hold: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="D-pad: ↑: Volume +, ↓: Screenshot, ←: Screenshot, →: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Face buttons: A: Screenshot, B: Screenshot, X: Screenshot, Y: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Select: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Start: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Home: Screenshot. Double-tap to change."
+  AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Back: Press: Screenshot, 2× press: Screenshot, Tap + hold: Screenshot, Hold: Screenshot. Double-tap to change."
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L1" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Select" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="Left stick" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Click" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="2× click" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap + hold" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="D-pad" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Volume +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Volume +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Home" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R1" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Start" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="Face buttons" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="A" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="B" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="X" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Y" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="Right stick" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,42,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,42,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Click" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="2× click" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap + hold" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+    TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="Back" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Press" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="2× press" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap + hold" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false

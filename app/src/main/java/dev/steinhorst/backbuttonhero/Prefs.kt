@@ -6,9 +6,6 @@ import android.content.SharedPreferences
 
 class Prefs(context: Context) {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
-    // Settings-screen view state lives apart, so toggling it never wakes the service's listener
-    // and stays out of backups, resets and change previews.
-    private val ui = context.applicationContext.getSharedPreferences("settings_ui", Context.MODE_PRIVATE)
 
     init {
         // A fresh install starts with nothing assigned. Every migration below exists for installs
@@ -167,11 +164,6 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("home_as_back", DEFAULT_HOME_AS_BACK)
         set(v) = sp.edit().putBoolean("home_as_back", v).apply()
 
-    /** Whether the wide settings layout shows its menu as an icon rail instead of the full panel; the rail is the default. */
-    var navigationCollapsed: Boolean
-        get() = ui.getBoolean("navigation_collapsed", true)
-        set(v) = ui.edit().putBoolean("navigation_collapsed", v).apply()
-
     var toggleButtons: String
         get() = sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) ?: DEFAULT_TOGGLE_BUTTONS
         set(v) = sp.edit().putString("toggle_buttons", v).apply()
@@ -206,7 +198,15 @@ class Prefs(context: Context) {
         sp.edit().putString("${button.prefKey}_package", action).apply()
     }
 
-    /** [DISPLAY_TOP] or [DISPLAY_BOTTOM] - which screen [button]'s app opens on. */
+    /** Apps starred in the app list: one set for every hotkey, offered by [SHOULDER_APP_FAVORITES]. */
+    var favoriteApps: Set<String>
+        get() = (sp.getStringSet("favorite_apps", null) ?: emptySet()).toSet()
+        set(v) = sp.edit().putStringSet("favorite_apps", v.toSet()).apply()
+    fun setFavorite(pkg: String, favorite: Boolean) {
+        favoriteApps = if (favorite) favoriteApps + pkg else favoriteApps - pkg
+    }
+
+    /** [DISPLAY_TOP], [DISPLAY_BOTTOM] or [APP_SCREEN_ASK] - which screen [button]'s app opens on. */
     fun shoulderDisplay(button: ComboButton): String = sp.getString("${button.prefKey}_display", DISPLAY_BOTTOM) ?: DISPLAY_BOTTOM
     fun setShoulderDisplay(button: ComboButton, display: String) { sp.edit().putString("${button.prefKey}_display", display).apply() }
 
@@ -563,6 +563,10 @@ class Prefs(context: Context) {
         const val SHOULDER_FLICK_LEFT = "@navigation_flick_left"
         const val SHOULDER_FLICK_RIGHT = "@navigation_flick_right"
         const val SHOULDER_HOME = "@home"
+        /** Opens a list of every app when pressed and launches the one chosen. */
+        const val SHOULDER_APP_ASK = "@app_ask"
+        /** Like [SHOULDER_APP_ASK], limited to [favoriteApps]. */
+        const val SHOULDER_APP_FAVORITES = "@app_favorites"
         const val SHOULDER_BACK = "@back"
         const val SHOULDER_SWITCHER = "@switcher"
         const val SHOULDER_SWAP_APPS = "@swap_apps"
@@ -624,7 +628,7 @@ class Prefs(context: Context) {
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
             SHOULDER_RECORD_VIDEO, SHOULDER_MACRO, SHOULDER_MEDIA_PLAY_PAUSE, SHOULDER_MEDIA_NEXT, SHOULDER_MEDIA_PREVIOUS,
             SHOULDER_STATUS, SHOULDER_LAST_APP, SHOULDER_GYRO,
-            SHOULDER_GYRO_CALIBRATE,
+            SHOULDER_GYRO_CALIBRATE, SHOULDER_APP_ASK, SHOULDER_APP_FAVORITES,
         ) + Ayn.ACTIONS
 
         /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
@@ -637,6 +641,10 @@ class Prefs(context: Context) {
         private val ALL_BUTTONS: List<ComboButton> by lazy { MACRO_BUTTONS + BackGestureButton.entries }
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
+
+        /** A fixed app or one chosen when pressed; either opens on [shoulderDisplay]. */
+        fun launchesApp(action: String): Boolean =
+            isShoulderApp(action) || action == SHOULDER_APP_ASK || action == SHOULDER_APP_FAVORITES
 
         /** Volume and brightness actions, which apply to [levelTarget] rather than one launch screen. */
         fun isLevelAction(action: String): Boolean = action in setOf(

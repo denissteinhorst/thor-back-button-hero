@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import android.content.Intent
 import android.provider.Settings
 import android.view.View
@@ -25,7 +26,7 @@ class ServiceBlockerTest {
 
     @Test
     fun `with the service off the scrim covers everything but the header and swallows touches`() {
-        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get()
         val blocker = root(activity).findViewWithTag<View>("settings_service_blocker")
         assertEquals(View.VISIBLE, blocker.visibility)
         assertTrue(blocker.isClickable)
@@ -51,7 +52,7 @@ class ServiceBlockerTest {
     @Test
     @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
     fun `in the wide layout the full-height menu gets its own scrim while the header stays free`() {
-        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get()
         val navigation = root(activity).findViewWithTag<View>("settings_navigation")
         val scrim = root(activity).findViewWithTag<View>("settings_navigation_scrim")
         val bar = root(activity).findViewWithTag<View>("settings_top_bar")
@@ -68,7 +69,7 @@ class ServiceBlockerTest {
 
     @Test
     fun `the button opens the accessibility settings`() {
-        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get()
         val button = root(activity).findViewWithTag<Button>("settings_service_blocker_button")
         assertEquals(activity.getString(R.string.enable_service), button.text.toString())
         button.performClick()
@@ -77,7 +78,7 @@ class ServiceBlockerTest {
 
     @Test
     fun `the scrim is gone once the service is on and the old inline button no longer exists`() {
-        val controller = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible()
+        val controller = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible()
         val activity = controller.get()
         Settings.Secure.putString(
             activity.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,

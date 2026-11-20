@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.app.AlertDialog
 import android.os.Looper
@@ -25,7 +26,7 @@ class SettingsChangeDialogTest {
         Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
     }
 
-    private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
+    private fun open() = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).get()
     private fun find(root: View, match: (View) -> Boolean): View? {
         if (match(root)) return root
         if (root is ViewGroup) for (i in 0 until root.childCount) find(root.getChildAt(i), match)?.let { return it }

@@ -59,7 +59,8 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `AppExceptions.kt` | 58 | `ExceptionControl` columns and `AppException` rules, plus their stored line format. |
 | `SettingsActivity.kt` | 907 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, triggers the update check, offers the page and whole-app defaults/unbind actions, and hosts the indicator-appearance popup (also opened directly from the focus pictogram). |
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
-| `SettingsNavigation.kt` | 221 | Adaptive eight-page navigation (left panel from 720 dp, menu dialog below), top bar, lazy page cache and scroll state. |
+| `SettingsNavigation.kt` | 469 | Adaptive nine-page navigation (a non-scrolling icon rail under the app logo from 720 dp, whose icons lay the full panel over the page until a tap or drag on the page closes it; menu dialog below), top bar (a bare page title from 720 dp, floating with the service chip on the Overview), lazy page cache and scroll state. |
+| `BindingsOverview.kt` | 535 | The Overview page: a line drawing of the Thor's lower half, traced from the measured geometry of `thor-base.png`, with a leader line from each assigned control to its labels; tapping a part of the drawing (faintly tinted) opens its page, the labels only read. |
 | `SettingsChanges.kt` | 97 | Immutable settings snapshots and scoped defaults/unbind change plans. |
 | `ExceptionGroups.kt` | 41 | The four input groups of an exception and their controls. |
 | `ExceptionGroupDialog.kt` | 288 | The modal of one group: glyph, name and switch per control, all-switches. |

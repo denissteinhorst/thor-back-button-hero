@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.view.Display
 import android.view.Gravity
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 /** One foreground app an active-app-control press acts on. */
@@ -35,8 +37,9 @@ object AppControl {
 }
 
 /**
- * A small focusable list window for the "Ask" screen choice and the optional force-close
- * confirmation. It takes window focus on the display the controller drives, because joystick and
+ * A small focusable list window for the "Ask" choices and the optional confirmations. A long list
+ * scrolls; a red Cancel row below a rule closes it, reached like any other row, so a controller
+ * never needs a hidden button to back out. It takes window focus on the display the controller drives, because joystick and
  * hat events only reach the focused window - the same reason [DpadOverlay] exists. The app behind it
  * is untouched until a choice is made, and it is resolved before this opens.
  */
@@ -61,6 +64,7 @@ class AppControlPrompt(
         val text = if (dark) Color.WHITE else Color.BLACK
         val highlight = if (dark) 0x44FFFFFF else 0x33000000
         var selected = 0
+        // The options, then Cancel as the last row.
         val rows = mutableListOf<TextView>()
         fun paint() = rows.forEachIndexed { i, row ->
             row.background = if (i == selected) GradientDrawable().apply {
@@ -70,12 +74,38 @@ class AppControlPrompt(
         }
         fun finish(index: Int?) {
             dismiss()
-            index?.let { onChoice(options[it].value) }
+            index?.let(options::getOrNull)?.let { onChoice(it.value) }
         }
         fun move(by: Int) {
-            selected = (selected + by).mod(options.size)
+            selected = (selected + by).mod(rows.size)
             paint()
+            rows[selected].let { it.requestRectangleOnScreen(Rect(0, 0, it.width, it.height), true) }
         }
+        fun row(label: String, color: Int, index: Int) = TextView(ctx).apply {
+            this.text = label
+            setTextColor(color)
+            textSize = 17f
+            gravity = Gravity.CENTER_VERTICAL
+            minHeight = dp(52)
+            setPadding(dp(12), 0, dp(12), 0)
+            setOnClickListener { finish(index) }
+            rows += this
+        }
+        val full = ViewGroup.LayoutParams.MATCH_PARENT
+        val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
+        // Keeps title and Cancel on the screen however many apps the list holds.
+        val maxList = (ctx.resources.displayMetrics.heightPixels * LIST_SHARE).toInt()
+        val list = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        options.forEachIndexed { i, option -> list.addView(row(option.label, text, i), LinearLayout.LayoutParams(full, wrap)) }
+        val scroll = object : ScrollView(ctx) {
+            override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) =
+                super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(maxList, MeasureSpec.AT_MOST))
+        }.apply {
+            isFocusable = false
+            descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+            addView(list)
+        }
+        val cancel = row(ctx.getString(R.string.app_control_prompt_cancel), if (dark) Color.rgb(255, 138, 128) else Color.rgb(211, 47, 47), options.size)
 
         val view = object : LinearLayout(ctx) {
             private var lastY = 0f
@@ -117,19 +147,10 @@ class AppControlPrompt(
                 textSize = 18f
                 setPadding(dp(8), 0, dp(8), dp(10))
             })
-            options.forEachIndexed { i, option ->
-                val row = TextView(ctx).apply {
-                    this.text = option.label
-                    setTextColor(text)
-                    textSize = 17f
-                    gravity = Gravity.CENTER_VERTICAL
-                    minHeight = dp(52)
-                    setPadding(dp(12), 0, dp(12), 0)
-                    setOnClickListener { finish(i) }
-                }
-                rows += row
-                addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            }
+            addView(scroll, LinearLayout.LayoutParams(full, wrap))
+            addView(View(ctx).apply { setBackgroundColor(if (dark) 0x33FFFFFF else 0x22000000) },
+                LinearLayout.LayoutParams(full, dp(1)).apply { setMargins(dp(8), dp(6), dp(8), dp(6)) })
+            addView(cancel, LinearLayout.LayoutParams(full, wrap))
         }
         paint()
         val params = WindowManager.LayoutParams(
@@ -154,5 +175,7 @@ class AppControlPrompt(
 
     private companion object {
         const val AXIS_THRESHOLD = 0.5f
+        /** The most of the screen's height the options take before they scroll. */
+        const val LIST_SHARE = 0.6f
     }
 }

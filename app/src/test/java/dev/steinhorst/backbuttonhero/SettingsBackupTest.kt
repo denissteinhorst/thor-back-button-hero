@@ -22,6 +22,7 @@ class SettingsBackupTest {
                 when (key) {
                     "back_double" -> value.copy(action = Prefs.SHOULDER_SWITCHER)
                     "l1" -> value.copy(action = "com.example.game", display = Prefs.DISPLAY_TOP)
+                    "r1" -> value.copy(action = Prefs.SHOULDER_APP_FAVORITES, display = Prefs.APP_SCREEN_ASK)
                     "dpad_up" -> value.copy(action = Prefs.SHOULDER_BRIGHTNESS_UP, targetOverride = Prefs.DISPLAY_BOTTOM)
                     "r2" -> value.copy(action = Prefs.SHOULDER_CONTROLLER_FOCUS, focusTarget = Prefs.DISPLAY_TOP,
                         indicator = false, duration = 900, position = Prefs.FOCUS_POS_TOP_LEFT)

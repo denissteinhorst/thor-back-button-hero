@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -161,7 +162,7 @@ class MacroSettingsTest {
         assertEquals(BindingSettings(BackGestureButton.SINGLE.defaultAction).action, read.bindings.getValue("back_single").action)
     }
 
-    private fun open(): SettingsActivity = Robolectric.buildActivity(SettingsActivity::class.java).setup().visible().get().also {
+    private fun open(): SettingsActivity = Robolectric.buildActivity(SettingsActivity::class.java).setup(startOnBasic()).visible().get().also {
         shadowOf(android.os.Looper.getMainLooper()).idle()
     }
 
