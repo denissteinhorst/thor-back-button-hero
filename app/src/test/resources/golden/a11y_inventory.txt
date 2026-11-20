@@ -1,4 +1,5 @@
 Page: BASIC
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=Back button press action: Not set. Double-tap to change.
@@ -25,6 +26,7 @@ clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Select s
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: FACE
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=A action: Not set. Double-tap to change.
@@ -42,6 +44,7 @@ clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Y screen
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SHOULDERS
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=L1 action: Not set. Double-tap to change.
@@ -59,6 +62,7 @@ clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=R2 scree
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: STICKS
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=TextView minHeightDp=0 focusable=true contentDescription=(none)
@@ -108,6 +112,7 @@ clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=Right st
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: DPAD
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=D-pad up action: Not set. Double-tap to change.
@@ -125,12 +130,14 @@ clickable=LinearLayout minHeightDp=48 focusable=true contentDescription=D-pad ri
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: EXCEPTIONS
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: SETTINGS
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
@@ -143,6 +150,7 @@ clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=FrameLayout minHeightDp=0 focusable=true contentDescription=(none)
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 Page: HELP
+clickable=ImageButton minHeightDp=48 focusable=true contentDescription=Expand menu
 clickable=Button minHeightDp=48 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)

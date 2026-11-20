@@ -6,6 +6,9 @@ import android.content.SharedPreferences
 
 class Prefs(context: Context) {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
+    // Settings-screen view state lives apart, so toggling it never wakes the service's listener
+    // and stays out of backups, resets and change previews.
+    private val ui = context.applicationContext.getSharedPreferences("settings_ui", Context.MODE_PRIVATE)
 
     init {
         // A fresh install starts with nothing assigned. Every migration below exists for installs
@@ -163,6 +166,11 @@ class Prefs(context: Context) {
     var homeAsBack: Boolean
         get() = sp.getBoolean("home_as_back", DEFAULT_HOME_AS_BACK)
         set(v) = sp.edit().putBoolean("home_as_back", v).apply()
+
+    /** Whether the wide settings layout shows its menu as an icon rail instead of the full panel; the rail is the default. */
+    var navigationCollapsed: Boolean
+        get() = ui.getBoolean("navigation_collapsed", true)
+        set(v) = ui.edit().putBoolean("navigation_collapsed", v).apply()
 
     var toggleButtons: String
         get() = sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) ?: DEFAULT_TOGGLE_BUTTONS

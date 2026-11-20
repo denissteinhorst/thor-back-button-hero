@@ -35,6 +35,20 @@ class PrefsDefaultsTest {
     }
 
     @Test
+    fun `navigation panel starts collapsed and its state never reaches the settings listeners`() {
+        assertTrue(prefs.navigationCollapsed)
+        var changes = 0
+        val listener = { changes++; Unit }
+        prefs.registerListener(listener)
+        val before = prefs.snapshot()
+        prefs.navigationCollapsed = false
+        assertFalse(Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed)
+        assertEquals(0, changes)
+        assertEquals(before, prefs.snapshot())
+        prefs.unregisterListener(listener)
+    }
+
+    @Test
     fun `doubleTapEnabled defaults to false`() {
         assertFalse(prefs.doubleTapEnabled)
     }

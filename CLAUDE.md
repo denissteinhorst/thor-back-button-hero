@@ -503,7 +503,10 @@ pages (`SettingsSection`: Basic, Shoulders, D-pad, Exceptions, Settings, Help), 
 PreferenceFragment, no XML. `SettingsNavigation` owns the top bar (`settings_top_bar`:
 menu button, page title, accessibility warning on the right), lazily builds and caches
 pages, and switches between a 240 dp left panel at ≥ 720 dp width and a menu dialog
-below that. Navigation icons are vector drawables `ic_settings_*` with SVG sources in
+below that. The wide panel starts as a 76 dp icon rail; its chevron toggles between rail and panel
+(`Prefs.navigationCollapsed`, kept in a separate `settings_ui` file so it never wakes the
+service listener or enters backups); a rail icon opens its page and lays the full panel
+over it until the page is touched or receives focus. Navigation icons are vector drawables `ic_settings_*` with SVG sources in
 `art/settings-icons/`. `SettingsChanges` builds before/after previews for per-page and
 whole-app defaults/unbind; `Prefs.applySettings` writes accepted plans atomically.
 `ExceptionSettingsPage` edits per-app exceptions (`AppException`); `SwitcherService` applies

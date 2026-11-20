@@ -283,6 +283,8 @@
     <string name="nav_settings_hint">Adjust the app switcher, choose a quick on/off shortcut or reset the app.</string>
     <string name="nav_help_hint">Check the service status, find updates or open the project page.</string>
     <string name="settings_menu">Menu</string>
+    <string name="settings_nav_collapse">Collapse menu</string>
+    <string name="settings_nav_expand">Expand menu</string>
     <string name="settings_unbind">Clear bindings</string>
     <string name="settings_switcher">App Switcher</string>
     <string name="settings_service">Service</string>

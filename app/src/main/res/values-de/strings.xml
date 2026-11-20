@@ -282,6 +282,8 @@
     <string name="nav_settings_hint">Passe den App-Switcher an, wähle eine Ein-/Aus-Tastenkombination oder setze die App zurück.</string>
     <string name="nav_help_hint">Prüfe den Dienststatus, suche nach Updates oder öffne die Projektseite.</string>
     <string name="settings_menu">Menü</string>
+    <string name="settings_nav_collapse">Menü einklappen</string>
+    <string name="settings_nav_expand">Menü ausklappen</string>
     <string name="settings_unbind">Belegungen lösen</string>
     <string name="settings_switcher">App-Switcher</string>
     <string name="settings_service">Dienst</string>

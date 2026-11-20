@@ -16,6 +16,7 @@ import android.graphics.Typeface
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -134,6 +135,11 @@ class SettingsActivity : Activity() {
     override fun onPause() {
         macroEditor?.pause()
         super.onPause()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        navigation.onWindowTouch(event)
+        return super.dispatchTouchEvent(event)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

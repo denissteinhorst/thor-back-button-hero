@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
@@ -341,4 +342,138 @@ class SettingsNavigationTest {
         }
     }
 
+    /** A finger landing on [view]; the press is cancelled so only the window-level reaction is tested. */
+    private fun touch(activity: SettingsActivity, view: View) {
+        val at = IntArray(2).also(view::getLocationOnScreen)
+        val x = at[0] + view.width / 2f
+        val y = at[1] + view.height / 2f
+        listOf(android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_CANCEL).forEach { action ->
+            val event = android.view.MotionEvent.obtain(0L, 0L, action, x, y, 0)
+            activity.dispatchTouchEvent(event)
+            event.recycle()
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun navigationWidth(activity: SettingsActivity) =
+        (root(activity).findViewWithTag<View>("settings_navigation").parent as View).width
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `chevron collapses the wide panel to an icon rail and remembers it`() {
+        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = false
+        val controller = open()
+        var activity = controller.get()
+        layout(activity)
+        val toggle = root(activity).findViewWithTag<android.widget.ImageButton>("settings_nav_toggle")
+        val row = toggle.parent as ViewGroup
+        assertEquals(View.VISIBLE, toggle.visibility)
+        assertSame(root(activity).findViewWithTag<View>("settings_app_icon"), row.getChildAt(row.indexOfChild(toggle) + 2))
+        assertEquals("Collapse menu", toggle.contentDescription)
+        assertEquals(activity.dp(240), navigationWidth(activity))
+        toggle.performClick()
+        layout(activity)
+        assertTrue(Prefs(activity).navigationCollapsed)
+        assertEquals("Expand menu", toggle.contentDescription)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        val dpad = root(activity).findViewWithTag<Button>("settings_nav_DPAD")
+        assertEquals("", dpad.text.toString())
+        assertEquals(activity.getString(R.string.nav_dpad), dpad.contentDescription)
+        assertEquals(activity.getString(R.string.nav_dpad), dpad.tooltipText)
+        // The icon still fits the rail without being clipped.
+        assertTrue(dpad.measuredWidth <= activity.dp(44))
+        controller.recreate()
+        activity = controller.get()
+        layout(activity)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        activity.findViewById<View>(android.R.id.content).findViewWithTag<View>("settings_nav_toggle").performClick()
+        layout(activity)
+        assertFalse(Prefs(activity).navigationCollapsed)
+        assertEquals(activity.dp(240), navigationWidth(activity))
+        assertEquals(activity.getString(R.string.nav_dpad), root(activity).findViewWithTag<Button>("settings_nav_DPAD").text.toString())
+    }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `the wide panel starts as an icon rail`() {
+        val activity = open().get()
+        layout(activity)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        assertEquals("Expand menu", root(activity).findViewWithTag<View>("settings_nav_toggle").contentDescription)
+    }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `a rail icon opens the page and lays the full panel over it until the page is touched`() {
+        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
+        val activity = open().get()
+        layout(activity)
+        val pageLeft = IntArray(2).also(page(activity, SettingsSection.BASIC)::getLocationOnScreen)[0]
+        root(activity).findViewWithTag<View>("settings_nav_SHOULDERS").performClick()
+        layout(activity)
+        assertNotNull(page(activity, SettingsSection.SHOULDERS))
+        assertEquals(activity.dp(240), navigationWidth(activity))
+        // The page does not move; the panel covers it.
+        assertEquals(pageLeft, IntArray(2).also(page(activity, SettingsSection.SHOULDERS)::getLocationOnScreen)[0])
+        assertTrue(Prefs(activity).navigationCollapsed)
+        // Further entries keep the panel open, and so does touching the panel itself.
+        val help = root(activity).findViewWithTag<Button>("settings_nav_HELP")
+        touch(activity, help)
+        help.performClick()
+        layout(activity)
+        assertNotNull(page(activity, SettingsSection.HELP))
+        assertEquals(activity.getString(R.string.nav_help), help.text.toString())
+        touch(activity, page(activity, SettingsSection.HELP))
+        layout(activity)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+        assertEquals("", help.text.toString())
+        assertTrue(Prefs(activity).navigationCollapsed)
+    }
+
+    @Test
+    @Config(qualifiers = "en-w1000dp-h600dp-xxhdpi")
+    fun `the chevron pins a peeking panel open and controller focus in the page closes a peek`() {
+        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
+        val controller = open()
+        val activity = controller.get()
+        // An enabled service lifts the blocker, which would otherwise keep focus out of the page.
+        android.provider.Settings.Secure.putString(
+            activity.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+            "${activity.packageName}/${SwitcherService::class.java.name}",
+        )
+        controller.pause().resume()
+        layout(activity)
+        val toggle = root(activity).findViewWithTag<View>("settings_nav_toggle")
+        root(activity).findViewWithTag<View>("settings_nav_FACE").performClick()
+        layout(activity)
+        assertEquals(activity.dp(240), navigationWidth(activity))
+        val target = find(page(activity, SettingsSection.FACE)) { it.isFocusable && it.isShown && it !is ScrollView }!!
+        assertTrue(target.requestFocus())
+        layout(activity)
+        assertEquals(activity.dp(76), navigationWidth(activity))
+
+        root(activity).findViewWithTag<View>("settings_nav_DPAD").performClick()
+        layout(activity)
+        touch(activity, toggle)
+        toggle.performClick()
+        layout(activity)
+        assertFalse(Prefs(activity).navigationCollapsed)
+        assertEquals(activity.dp(240), navigationWidth(activity))
+        touch(activity, page(activity, SettingsSection.DPAD))
+        layout(activity)
+        assertEquals(activity.dp(240), navigationWidth(activity))
+    }
+
+    @Test
+    fun `compact layout has no chevron and its menu never collapses`() {
+        Prefs(ApplicationProvider.getApplicationContext()).navigationCollapsed = true
+        val activity = open().get()
+        layout(activity, 380)
+        assertEquals(View.GONE, root(activity).findViewWithTag<View>("settings_nav_toggle").visibility)
+        root(activity).findViewWithTag<View>("settings_menu").performClick()
+        val entry = ShadowDialog.getLatestDialog()!!.window!!.decorView.findViewWithTag<Button>("settings_nav_STICKS")
+        assertEquals(activity.getString(R.string.nav_sticks), entry.text.toString())
+        entry.performClick()
+        assertNotNull(page(activity, SettingsSection.STICKS))
+    }
 }
