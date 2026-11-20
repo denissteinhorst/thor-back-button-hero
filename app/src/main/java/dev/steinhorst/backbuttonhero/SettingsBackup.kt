@@ -61,6 +61,7 @@ object SettingsBackup {
             bindings.put(key, JSONObject()
                 .apply { value.aynOption?.let { put("aynOption", it) } }
                 .apply { value.macro?.let { put("macro", it) } }
+                .apply { value.gyro?.let { put("gyro", it) } }
                 .put("action", value.action)
                 .put("display", value.display)
                 .put("target", value.targetOverride ?: JSONObject.NULL)
@@ -191,6 +192,8 @@ object SettingsBackup {
                 aynOption = entry.stringOrNull("aynOption")?.takeIf { it in Ayn.OPTION_KEYS },
                 // Only a macro the backup's own library holds; anything else would point at nothing.
                 macro = entry.stringOrNull("macro")?.takeIf { id -> macros.any { it.id == id } },
+                // Read field by field like every other value; a setup that reads as the defaults is none.
+                gyro = GyroSettings.canonical(entry.stringOrNull("gyro")),
             )
         }
 

@@ -181,6 +181,12 @@ class PadHelper(
         runCatching { client?.outputStream?.write("MSTOP\n".toByteArray()) }
     }
 
+    /** Adds a gyro deflection in per mille to [stick]; a null stick ends it. Sent as it comes, about 100 times a second. */
+    fun setGyro(stick: Stick?, x: Int, y: Int) {
+        val wire = when (stick) { null -> 0; Stick.LEFT -> 1; Stick.RIGHT -> 2 }
+        runCatching { client?.outputStream?.write("GYRO $wire $x $y\n".toByteArray()) }
+    }
+
     private fun sendStickPassthrough() {
         runCatching { client?.outputStream?.write("SPASS $stickPassthrough\n".toByteArray()) }
     }

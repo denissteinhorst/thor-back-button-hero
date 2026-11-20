@@ -49,6 +49,8 @@ data class BindingSettings(
     val recordDuck: String = Prefs.DUCK_VIDEO,
     /** The [SavedMacro.id] of the library macro it plays; null until one is chosen. */
     val macro: String? = null,
+    /** The stored [GyroSettings] line; null until the gyro setup is changed. */
+    val gyro: String? = null,
 ) {
     fun screenshotTarget(): String = targetOverride ?: Prefs.DISPLAY_TOP
     fun levelTarget(): String = targetOverride ?: Prefs.TARGET_BOTH

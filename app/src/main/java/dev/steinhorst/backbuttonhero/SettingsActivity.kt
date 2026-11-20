@@ -444,6 +444,8 @@ class SettingsActivity : Activity() {
             Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
             Choice(Prefs.SHOULDER_RECORD_VIDEO, getString(R.string.shoulder_record_video)),
             Choice(Prefs.SHOULDER_MACRO, getString(R.string.shoulder_macro)).takeIf { macro },
+            Choice(Prefs.SHOULDER_GYRO, getString(R.string.shoulder_gyro)),
+            Choice(Prefs.SHOULDER_GYRO_CALIBRATE, getString(R.string.shoulder_gyro_calibrate)),
             group(ActionGroups.Group.FLICK),
             group(ActionGroups.Group.VOLUME),
             group(ActionGroups.Group.BRIGHTNESS),
@@ -472,6 +474,8 @@ class SettingsActivity : Activity() {
         Prefs.SHOULDER_SCREENSHOT -> R.string.action_desc_screenshot
         Prefs.SHOULDER_RECORD_VIDEO -> R.string.action_desc_record_video
         Prefs.SHOULDER_MACRO -> R.string.action_desc_macro
+        Prefs.SHOULDER_GYRO -> R.string.action_desc_gyro
+        Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.action_desc_gyro_calibrate
         ActionGroups.Group.FLICK.entry -> R.string.action_desc_flick
         ActionGroups.Group.VOLUME.entry -> R.string.action_desc_volume
         ActionGroups.Group.BRIGHTNESS.entry -> R.string.action_desc_brightness
@@ -518,6 +522,8 @@ class SettingsActivity : Activity() {
         Prefs.SHOULDER_SCREENSHOT -> R.string.search_keywords_screenshot
         Prefs.SHOULDER_RECORD_VIDEO -> R.string.search_keywords_record_video
         Prefs.SHOULDER_MACRO -> R.string.search_keywords_macro
+        Prefs.SHOULDER_GYRO -> R.string.search_keywords_gyro
+        Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.search_keywords_gyro_calibrate
         ActionGroups.Group.FLICK.entry -> R.string.search_keywords_flick
         Prefs.SHOULDER_FLICK_LEFT -> R.string.search_keywords_flick_left
         Prefs.SHOULDER_FLICK_RIGHT -> R.string.search_keywords_flick_right
@@ -715,27 +721,55 @@ class SettingsActivity : Activity() {
     }
 
     /** Waits for the next button press and takes it as the push-to-talk button. */
-    private fun choosePushToTalkKey(row: ComboRow) {
-        val warning = getString(R.string.record_ptt_dialog_warning)
+    private fun choosePushToTalkKey(row: ComboRow) = chooseKey(
+        R.string.record_ptt_key_title, R.string.record_ptt_dialog_message, R.string.record_ptt_dialog_warning,
+        R.string.record_ptt_key_rejected,
+    ) { keyCode ->
+        prefs.setRecordPttKey(row.button, keyCode)
+        updateShoulderRow(row)
+    }
+
+    /**
+     * Waits for the next button press; one [PushToTalk] does not reserve goes to [onChosen]. With
+     * [onNone] the dialog also offers to choose no button.
+     */
+    private fun chooseKey(titleRes: Int, messageRes: Int, warningRes: Int, rejectedRes: Int, onNone: (() -> Unit)? = null, onChosen: (Int) -> Unit) {
+        val warning = getString(warningRes)
         val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.record_ptt_key_title)
-            .setMessage("${getString(R.string.record_ptt_dialog_message)}\n\n$warning")
+            .setTitle(titleRes)
+            .setMessage("${getString(messageRes)}\n\n$warning")
             .setNegativeButton(android.R.string.cancel, null)
+            .apply { if (onNone != null) setNeutralButton(R.string.gyro_hold_none_button) { _, _ -> onNone() } }
             .create()
         dialog.setOnKeyListener { _, keyCode, event ->
             // Back still cancels; every other key is an answer, never a dialog navigation.
             if (keyCode == KeyEvent.KEYCODE_BACK) return@setOnKeyListener false
             if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return@setOnKeyListener true
             if (!PushToTalk.isAllowed(keyCode)) {
-                dialog.setMessage("${getString(R.string.record_ptt_key_rejected, PushToTalk.label(keyCode))}\n\n$warning")
+                dialog.setMessage("${getString(rejectedRes, PushToTalk.label(keyCode))}\n\n$warning")
                 return@setOnKeyListener true
             }
-            prefs.setRecordPttKey(row.button, keyCode)
             dialog.dismiss()
-            updateShoulderRow(row)
+            onChosen(keyCode)
             true
         }
         dialog.show()
+    }
+
+    /** The gyro setup in a few words: stick, sideways turn, following turns, speed and the hold key. */
+    private fun describeGyro(settings: GyroSettings): String = listOfNotNull(
+        getString(if (settings.stick == Stick.LEFT) R.string.gyro_stick_left else R.string.gyro_stick_right),
+        getString(if (settings.axis == GyroAxis.YAW) R.string.gyro_axis_yaw else R.string.gyro_axis_roll),
+        if (settings.rate) getString(R.string.gyro_summary_rate) else null,
+        getString(R.string.gyro_percent, settings.sensitivity),
+        settings.holdKeyInUse?.let { getString(R.string.gyro_hold_summary, PushToTalk.label(it)) },
+    ).joinToString(", ")
+
+    private fun openGyroSettings(row: ComboRow) {
+        GyroSettingsDialog(this, row.button.prefKey, prefs.gyro(row.button), { hasKey, onChosen ->
+            chooseKey(R.string.gyro_hold_key_title, R.string.gyro_key_dialog_message, R.string.gyro_key_dialog_warning,
+                R.string.gyro_key_rejected, if (hasKey) ({ onChosen(0) }) else null, onChosen)
+        }) { prefs.setGyro(row.button, it) }.show { updateShoulderRow(row) }
     }
 
     private fun describeRecordIndicator(button: ComboButton): String =
@@ -899,6 +933,8 @@ class SettingsActivity : Activity() {
         var appOptions: SettingsPage.AppControlOptionsHandle? = null
         var macroOptions: View? = null
         var macroLibrary: SettingsPage.ChooserHandle? = null
+        var gyroOptions: View? = null
+        var gyroSetup: SettingsPage.ChooserHandle? = null
         val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
     }
 
@@ -938,6 +974,12 @@ class SettingsActivity : Activity() {
                 chooseShoulderApp(row)
             } else if (action == Prefs.SHOULDER_MACRO && !PService.cachedAvailable()) {
                 showMacroUnavailable()
+            } else if (action == Prefs.SHOULDER_GYRO && !PService.cachedAvailable()) {
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.gyro_unavailable_title)
+                    .setMessage(R.string.gyro_unavailable_body)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
             } else {
                 // A group stores its option's own action; re-picking the group keeps the option.
                 val group = ActionGroups.groupOfEntry(action)
@@ -1276,6 +1318,19 @@ class SettingsActivity : Activity() {
             library.value.text = describeMacro(prefs.savedMacro(row.button))
             library.row.contentDescription = getString(R.string.macro_library_accessibility, row.label, library.value.text)
         }
+        val gyroAction = action == Prefs.SHOULDER_GYRO
+        if (gyroAction && row.gyroOptions == null) {
+            lateinit var setup: SettingsPage.ChooserHandle
+            row.gyroOptions = row.card.subOptions {
+                setup = chooserRow(R.string.gyro_setup_title, describeGyro(prefs.gyro(row.button))) { openGyroSettings(row) }
+            }
+            row.gyroSetup = setup
+        }
+        row.gyroOptions?.visibility = if (gyroAction) View.VISIBLE else View.GONE
+        row.gyroSetup?.let { setup ->
+            setup.value.text = describeGyro(prefs.gyro(row.button))
+            setup.row.contentDescription = getString(R.string.gyro_setup_accessibility, row.label, setup.value.text)
+        }
         if (appControl && row.appOptions == null) {
             row.appOptions = row.card.appControlOptions(
                 describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
@@ -1584,6 +1639,7 @@ class SettingsActivity : Activity() {
             extra(R.string.record_quality_title, quality(old.recordQuality), quality(new.recordQuality))
             extra(R.string.record_indicator_title, onOff(old.recordIndicator), onOff(new.recordIndicator))
             extra(R.string.record_indicator_row, position(old.recordPosition), position(new.recordPosition))
+            extra(R.string.gyro_setup_title, describeGyro(GyroSettings.decode(old.gyro)), describeGyro(GyroSettings.decode(new.gyro)))
             extra(R.string.macro_title, describeMacro(a.macros.firstOrNull { it.id == old.macro }),
                 describeMacro(b.macros.firstOrNull { it.id == new.macro }))
             extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))

@@ -282,6 +282,28 @@ class Prefs(context: Context) {
         sp.edit().putString("${button.prefKey}_record_position", position).apply()
     }
 
+    /** The gyro setup of [button] for [SHOULDER_GYRO]. */
+    fun gyro(button: ComboButton): GyroSettings = GyroSettings.decode(sp.getString("${button.prefKey}_gyro", null))
+    fun setGyro(button: ComboButton, settings: GyroSettings) {
+        val key = "${button.prefKey}_gyro"
+        // Defaults are stored as nothing, the same way a backup reads them back.
+        sp.edit().apply { if (settings == GyroSettings()) remove(key) else putString(key, settings.encode()) }.apply()
+    }
+
+    /** Legacy offset retained for compatibility; live steering uses the quality-checked profile below. */
+    var gyroBias: FloatArray
+        get() = GyroBias.decode(sp.getString("gyro_bias", null))
+        set(v) = sp.edit().putString("gyro_bias", GyroBias.encode(v)).apply()
+
+    /** Versioned quality-checked calibration; legacy offsets lack the measurements needed to trust them. */
+    var gyroCalibration: GyroCalibration?
+        get() = GyroCalibration.decode(sp.getString("gyro_calibration_v1", null))
+        set(value) = sp.edit().putString("gyro_calibration_v1", value?.encode()).apply()
+
+    /** Whether any hotkey turns the gyro on - the helper must then already hold the pad, so turning
+     *  it on never recreates the controller under a running game. */
+    fun hasGyroAction(): Boolean = ALL_BUTTONS.any { shoulderAction(it) == SHOULDER_GYRO }
+
     /** The named macros, in the order they were first saved. Hotkeys refer to them by id. */
     var macroLibrary: List<SavedMacro>
         get() = SavedMacro.decode(sp.getString("macro_library", null))
@@ -403,6 +425,7 @@ class Prefs(context: Context) {
                 recordMic(button), recordQuality(button), recordIndicator(button), recordPosition(button),
                 recordPtt(button), recordPttKey(button), recordDuck(button),
                 sp.getString("${button.prefKey}_macro", null)?.takeIf { id -> library.any { it.id == id } },
+                sp.getString("${button.prefKey}_gyro", null),
             )
         },
         appExceptions,
@@ -462,6 +485,7 @@ class Prefs(context: Context) {
             int("${key}_record_ptt_key", old.recordPttKey, value.recordPttKey)
             string("${key}_record_duck", old.recordDuck, value.recordDuck)
             string("${key}_macro", old.macro, value.macro)
+            string("${key}_gyro", old.gyro, value.gyro)
         }
         before.stickTimings.forEach { (prefix, old) ->
             val value = after.stickTimings.getValue(prefix)
@@ -571,6 +595,8 @@ class Prefs(context: Context) {
         const val SHOULDER_MEDIA_NEXT = "@media_next"
         const val SHOULDER_MEDIA_PREVIOUS = "@media_previous"
         const val SHOULDER_STATUS = "@status_overlay"
+        const val SHOULDER_GYRO = "@gyro"
+        const val SHOULDER_GYRO_CALIBRATE = "@gyro_calibrate"
         const val RECORD_SMALL = "small"
         const val RECORD_MEDIUM = "medium"
         const val RECORD_LARGE = "large"
@@ -589,7 +615,8 @@ class Prefs(context: Context) {
             SHOULDER_CONTROLLER_FOCUS, SHOULDER_SWITCH_APP, SHOULDER_APP_CONTROL,
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
             SHOULDER_RECORD_VIDEO, SHOULDER_MACRO, SHOULDER_MEDIA_PLAY_PAUSE, SHOULDER_MEDIA_NEXT, SHOULDER_MEDIA_PREVIOUS,
-            SHOULDER_STATUS, SHOULDER_LAST_APP,
+            SHOULDER_STATUS, SHOULDER_LAST_APP, SHOULDER_GYRO,
+            SHOULDER_GYRO_CALIBRATE,
         ) + Ayn.ACTIONS
 
         /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
@@ -597,6 +624,9 @@ class Prefs(context: Context) {
             ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries +
                 AndroidButton.entries + FaceButton.entries
         }
+
+        /** Every hotkey, Back's own gestures included. */
+        private val ALL_BUTTONS: List<ComboButton> by lazy { MACRO_BUTTONS + BackGestureButton.entries }
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

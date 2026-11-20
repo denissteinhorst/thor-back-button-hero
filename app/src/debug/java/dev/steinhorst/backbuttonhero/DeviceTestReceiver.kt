@@ -27,6 +27,8 @@ import android.view.KeyEvent
  * - `media` with `value` start or stop: a playing media session that logs each media key it gets.
  *   It plays silence, because Android hands media keys to the session whose app plays audio; without
  *   it they would reach whichever player the owner used last.
+ * - `gyro` with `value` "x,y,z" (rad/s around the sensor's axes) or off: replaces the gyroscope's
+ *   readings while the gyro hotkey is on, since a test cannot turn the device.
  */
 class DeviceTestReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -49,6 +51,11 @@ class DeviceTestReceiver : BroadcastReceiver() {
                 "put" -> put(prefs.edit(), intent).let { if (it.commit()) "OK" else "FAIL" }
                 "remove" -> if (prefs.edit().remove(intent.getStringExtra("key")).commit()) "OK" else "FAIL"
                 "media" -> media(app, intent.getStringExtra("value") == "start")
+                "gyro" -> {
+                    val rates = intent.getStringExtra("value")?.split(',')?.mapNotNull { it.trim().toFloatOrNull() }
+                        ?.takeIf { it.size == 3 }?.toFloatArray()
+                    SwitcherService.gyroOverride?.let { it(rates); "OK" } ?: "ERR service not connected"
+                }
                 "probe" -> {
                     if (intent.getStringExtra("value") == "start") {
                         val display = intent.getStringExtra("display")?.toIntOrNull() ?: 0

@@ -131,6 +131,40 @@ gamepad keys (`BTN_GAMEPAD`..`BTN_THUMBR`) and axes up to the hat are accepted. 
 Back press, `MSTOP`, a new recording or a lost pad stops it and releases every key and axis it touched.
 `MACRO_DONE <id>` reports the end, `MACRO_STOPPED <id>` a stop the app did not ask for.
 
+### Gyro
+
+`GYRO <1|2> <x> <y>` adds a deflection (per mille, x right, y down) to the left (1) or right (2) stick; `GYRO 0 0 0`
+ends it. `GyroControl` reads the gyroscope and accelerometer at a requested 100 Hz. It prefers
+`TYPE_GYROSCOPE_UNCALIBRATED` (factory/temperature compensation remains Android's responsibility),
+falling back to `TYPE_GYROSCOPE`; a saved profile applies only to the same sensor pair. `GyroFusion`
+subtracts the measured offset before either rate mapping or three-dimensional rotation integration.
+Acceleration provides a bounded gravity correction for tilt, rejecting large magnitude/direction
+inconsistencies. It cannot establish absolute heading around gravity. There is no magnetometer input.
+Neither the output deadzone nor stick saturation affects integration. The preview displays the same
+mapped samples that the service sends to the helper, with no independent sensor integration.
+
+Calibration allows one second to settle and requires three continuous seconds of stable gyro and
+acceleration data, with a twenty-second timeout. It measures offsets and noise; it does not assume a
+level table or manufacture accelerometer offsets from a single unknown posture. Movement, excessive
+noise, bias trends, missing sensors or data gaps reject the window. A failed/cancelled calibration
+keeps the last accepted profile. The versioned device profile is excluded from settings backups and
+resets. Earlier `gyro_bias` values remain stored but are not accepted as quality-checked profiles.
+Recentring changes only the reference posture. After calibration on a table, the user sets their
+playing posture by toggling the gyro, pressing its hold button, or tapping the preview.
+
+A conservative rest tracker adjusts small bias changes within the measured noise, without recentering.
+Constant rotation exactly around gravity cannot be distinguished from bias using these sensors alone;
+very slow heading motion and sustained linear acceleration remain physical observability limits.
+The algorithm is independently written in this app; there are no added libraries or copied filters.
+
+Only the debug test's explicit rate override bypasses physical gravity correction. Invalid/stale sensor
+input releases the stick, and a missing stream releases it after 250 ms. A resting gyro is sent once.
+While an offset is active the helper
+writes that stick's axes itself: every real event of it is replaced by the sum of the real position and the gyro,
+clamped to the axis range, and each `GYRO` line emits both axes plus a frame. A deflection withheld under Back
+counts as centred, so the game then sees the gyro alone. A changed stick lets go of the old one first. Nothing is
+emitted while a macro is recorded. The offset needs no restore on exit: the clone is destroyed with the helper.
+
 ### Controller style switches
 
 AYN's style switch (Xbox Style / Standard Style / Ban on Use) destroys its pad and creates a new one

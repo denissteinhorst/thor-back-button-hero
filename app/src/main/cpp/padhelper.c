@@ -27,6 +27,9 @@
 //     and start a macro, which the clone plays once Back is released; pressing Back again, "MSTOP" or
 //     a lost pad stops it and releases everything it held. "MACRO_DONE <id>" reports the end, and
 //     "MACRO_STOPPED <id>" a stop the app did not ask for.
+//   * Gyro: "GYRO <1|2> <x> <y>" adds the app's gyro deflection (per mille) to the left (1) or right (2)
+//     stick, so the game sees the real stick and the gyro as one stick; "GYRO 0 0 0" ends it. While a
+//     deflection of that stick is withheld, the game sees the gyro alone.
 //
 // AYN's controller-style switch (Xbox / Standard / Ban on Use) destroys the pad and creates a new one
 // with another name and product id. read() then fails, the clone is torn down, and the helper takes
@@ -95,6 +98,8 @@ struct stick {
 static struct stick sticks[2];
 static int stick_mask = 0;  // bit 0 left, bit 1 right: sticks the app has actions for
 static int stick_pass_mask = 0;  // bit stick*4 + (U0 D1 L2 R3): directions the focused app keeps for itself
+static int gyro_stick = -1;      // the stick the gyro is added to, or -1
+static float gyro_value[2];      // the gyro deflection, -1..1
 
 static int ufd = -1, sock = -1;
 static volatile sig_atomic_t stop;
@@ -354,6 +359,38 @@ static int stick_neutral(const struct stick *st) {
     return fabsf_(st->value[0]) < STICK_NEUTRAL && fabsf_(st->value[1]) < STICK_NEUTRAL;
 }
 
+// What the game sees on one axis: the real stick (centred while withheld) plus the gyro, if it is this one.
+static int stick_out(int s, int a) {
+    const struct stick *st = &sticks[s];
+    float v = st->withheld ? 0.0f : st->value[a];
+    if (s == gyro_stick) v += gyro_value[a];
+    if (v < -1.0f) v = -1.0f;
+    if (v > 1.0f) v = 1.0f;
+    return st->center[a] + (int)(v * (float)st->half[a]);
+}
+
+static void emit_stick(int s) {
+    if (!sticks[s].present) return;
+    emit(EV_ABS, sticks[s].code[0], stick_out(s, 0));
+    emit(EV_ABS, sticks[s].code[1], stick_out(s, 1));
+}
+
+static void set_gyro(int s, int x, int y) {
+    int old = gyro_stick;
+    gyro_stick = s >= 1 && s <= 2 && sticks[s - 1].present ? s - 1 : -1;
+    if (x < -1000) x = -1000;
+    if (x > 1000) x = 1000;
+    if (y < -1000) y = -1000;
+    if (y > 1000) y = 1000;
+    gyro_value[0] = gyro_stick < 0 ? 0.0f : (float)x / 1000.0f;
+    gyro_value[1] = gyro_stick < 0 ? 0.0f : (float)y / 1000.0f;
+    // A recording withholds the pad from the clone; the gyro joins in again once it ends.
+    if (ufd < 0 || recording || (old < 0 && gyro_stick < 0)) return;
+    if (old >= 0 && old != gyro_stick) emit_stick(old);
+    if (gyro_stick >= 0) emit_stick(gyro_stick);
+    emit(EV_SYN, SYN_REPORT, 0);
+}
+
 // Returns 1 when the event belonged to a stick we own and must not reach the game. Only the start of
 // a capture is decided here; engaging and returning to neutral are judged per frame (stick_frame), so
 // a stick swept across the centre, whose two axes arrive one after the other, is never seen half-way.
@@ -368,11 +405,14 @@ static int handle_stick(const struct input_event *e, int back, int switcher) {
         if (st->withheld) return 1;
         // A deflection that starts while Back is held is ours; one that started before Back stays the
         // game's. Mode 3 suspends all new captures, the switchers use the D-pad, not the sticks.
-        if (!(st->rest && back && switcher == 0 && (stick_mask & (1 << s)) && !stick_neutral(st))) return 0;
+        if (!(st->rest && back && switcher == 0 && (stick_mask & (1 << s)) && !stick_neutral(st))) {
+            if (s != gyro_stick) return 0;
+            emit(EV_ABS, e->code, stick_out(s, a));
+            return 1;
+        }
         st->withheld = 1;
         st->engaged = 0;
-        emit(EV_ABS, st->code[0], st->center[0]);
-        emit(EV_ABS, st->code[1], st->center[1]);
+        emit_stick(s);
         return 1;
     }
     return 0;
@@ -395,8 +435,7 @@ static void stick_frame(void) {
                 // missed only the swing up to the threshold; once released the stick is its own again.
                 st->withheld = 0;
                 st->rest = 0;
-                emit(EV_ABS, st->code[0], st->center[0] + (int)(st->value[0] * (float)st->half[0]));
-                emit(EV_ABS, st->code[1], st->center[1] + (int)(st->value[1] * (float)st->half[1]));
+                emit_stick(s);
                 continue;
             }
             st->engaged = 1;
@@ -554,6 +593,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "MEV %ld %c %d %d", &at, &kind, &code, &value) == 4) macro_add(at, kind, code, value);
         if (sscanf(line, "MPLAY %d", &value) == 1 && macro_len > 0 && !recording) { macro_stop(0); macro_id = value; macro_state = 1; }
         if (strcmp(line, "MSTOP") == 0) macro_stop(0);
+        if (sscanf(line, "GYRO %d %d %d", &mode, &code, &value) == 3) set_gyro(mode, code, value);
         line = newline + 1;
     }
     size_t remaining = *used - (size_t)(line - buffer);

@@ -276,6 +276,10 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "Macro" to "1.00", "MacroRecorder" to "1.00", "MacroButton" to "1.00", "MacroDirection" to "1.00",
             "Evdev" to "1.00", "MacroEditor" to "0.97", "SavedMacro" to "1.00", "MacroLibraryDialog" to "1.00",
             "MacroEdits" to "1.00", "MacroUi" to "1.00", "MacroUi\$Sheet" to "1.00", "MacroWidgetsKt" to "1.00", "StepStrip" to "0.80", "ScrollIndicator" to "1.00",
+            "GyroSettings" to "1.00", "GyroSettings\$Companion" to "1.00", "GyroAxis" to "1.00", "GyroMapper" to "1.00",
+            "GyroFusion" to "1.00", "GyroRest" to "1.00", "GyroRest\$Companion" to "1.00",
+            "GyroCalibration" to "1.00", "GyroCalibration\$Companion" to "1.00",
+            "GyroControl" to "1.00", "GyroTilt" to "1.00", "GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

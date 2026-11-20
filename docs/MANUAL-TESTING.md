@@ -26,7 +26,7 @@ Find the highest tier any touched file falls into. Mixed changes take the highes
 | **S0** | `docs/**`, `README.md`, `CLAUDE.md`, `.github/**`, `.githooks/**`, test sources, goldens, `lint-baseline.xml` | None | — |
 | **S1** | `Prefs.kt`, `SettingsUiKit.kt`, `SettingsActivity.kt`, `UpdateChecker.kt`, `res/values*/strings.xml`, `colors.xml`, version bumps | [A — Settings smoke](#procedure-a--settings-smoke) | ~3 min |
 | **S2** | `BackGestureMachine.kt`, `DoubleTapDetector.kt`, `CardTouch.kt`, `ShoulderButton.kt` | A + [B — Gesture pass](#procedure-b--gesture-pass) | ~12 min |
-| **S3** | `SwitcherService.kt`, `SwitcherOverlay.kt`, `ControllerFocus.kt`, `FocusIndicatorOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AppControl.kt`, the D-pad path (`PadHelper.kt`, `padhelper.c`, `DpadOverlay.kt`, `LevelControl.kt`, `BrightnessControl.kt`), the Recents, panel and parking classes (`Recents*.kt`, `TopRecents*.kt`, `Panel*.kt`, `BottomPanels.kt`, `FrontendParking.kt`, `TaskParker.kt`, `TaskRemover.kt`), `PService.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
+| **S3** | `SwitcherService.kt`, `GyroControl.kt`, `GyroFusion.kt`, `SwitcherOverlay.kt`, `ControllerFocus.kt`, `FocusIndicatorOverlay.kt`, `AccessibilityAppSource.kt`, `RunningApp.kt`, `AppControl.kt`, the D-pad path (`PadHelper.kt`, `padhelper.c`, `DpadOverlay.kt`, `LevelControl.kt`, `BrightnessControl.kt`), the Recents, panel and parking classes (`Recents*.kt`, `TopRecents*.kt`, `Panel*.kt`, `BottomPanels.kt`, `FrontendParking.kt`, `TaskParker.kt`, `TaskRemover.kt`), `PService.kt`, `AndroidManifest.xml`, `accessibility_config.xml`, or any Kotlin/AGP/Gradle version change | A + B + [C — Overlay and shoulder pass](#procedure-c--overlay-and-shoulder-pass) | ~30 min |
 | **S4** | Publishing a release | S3 plus [D — Release acceptance](#procedure-d--release-acceptance) | ~40 min |
 
 Two notes on the boundaries. A **version bump alone is S1** even though it edits
@@ -179,6 +179,35 @@ consuming a key event unconditionally, and no test can catch it.
 | C17w | Settings → *Use the Home button as Back* on; use Home for a tap, double tap, hold, tap-and-hold and Home + L1, D-pad, stick | Each behaves exactly as with Back, the game keeps focus and never sees Home; the Back + Home row is disabled with its binding kept |
 | C17x | With the option on, hold Back and press Home (and the reverse); hold both 6 s | The second key does nothing, the first acts alone; the pad is not released |
 | C17y | Option on, game exception with native Back; then pause interception with the activation shortcut | Home gives the game a Back; paused, Home goes home again |
+
+### Gyro calibration and aiming
+
+For gyro sensor changes, also run the `gyro` device suite. It replaces aiming rates to check the
+actual pad output, but calibration still uses the physical sensors. It cannot validate hand motions.
+On the newest debug APK, check:
+
+1. Calibrate with the handheld resting untouched on its shoulder bumps, then on a stable inclined
+   support. Neither position needs to be level. Success normally takes about four seconds; gently
+   moving the device must delay success, and continuous movement must eventually fail without
+   replacing the previous profile. Stop moving before starting a fresh successful calibration.
+2. For the return test use tilt mode, sensitivity 100 %, deadzone 0, minimum output 0. Centre once
+   in the starting posture, then tip away/back twenty times, slowly and quickly, without recentering
+   in between. Repeat sideways and with combined turns. The centre must not progressively migrate.
+3. Hold a deliberate tilt: it must remain a deflection, without automatically returning to centre.
+   Check small, slow intentional turns and a minute of rest, both cold and after playing for a while.
+4. Repeat with "Follow turning speed": a stationary handheld must release the stick in every posture.
+   This mode represents camera velocity; its integrated preview position is not an absolute posture.
+5. Check actual aiming in a game, with the physical stick used at the same time, both output sticks,
+   hold-to-aim/release, on/off, and screen off/on. Releasing or stopping must leave no stuck offset.
+6. The preview must match the live gyro output, including when settings are on the other display.
+   Tapping it recentres the running gyro; it must not merely move the drawing. Close/reopen settings
+   and restart the service: the sensor calibration persists. Inspect the calibration instructions in
+   both themes for clipping; settings defaults and backup restore must not erase device calibration.
+
+Restore the owner's aiming settings after these checks. Heading about gravity has no absolute
+reference without a magnetometer, and sustained linear acceleration cannot always be separated from
+gravity; record any observed drift quantitatively where sensor traces are available. Do not hide it
+by increasing the output deadzone or by adding a return-to-centre animation.
 
 ### D-pad shortcuts and the root helper
 

@@ -48,6 +48,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var panels: BottomPanels
     private lateinit var parking: FrontendParking
     private lateinit var padHelper: PadHelper
+    private val gyro by lazy {
+        GyroControl(this, { stick, x, y -> if (::padHelper.isInitialized) padHelper.setGyro(stick, x, y) }) { status ->
+            gyroStatus = status
+            gyroStatusListener?.invoke(status)
+        }
+    }
+    /** The devices holding the gyro's hold key, while it has one. */
+    private val gyroHoldDevices = mutableSetOf<Int>()
     private lateinit var dpadOverlay: DpadOverlay
     private lateinit var appControlPrompt: AppControlPrompt
     private lateinit var levels: LevelControl
@@ -257,11 +265,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
             onRecord = { line -> macroRecordListener?.invoke(line) },
             onMacroEnd = ::onMacroEnd,
         )
+        gyroOverride = { rates -> handler.post { gyro.override = rates } }
+        gyroRecenter = { gyro.recenter() }
+        gyroCalibrate = { calibrateGyro() }
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
         runCatching { unregisterReceiver(standbyReceiver) }
-        registerReceiver(standbyReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        registerReceiver(standbyReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF).apply { addAction(Intent.ACTION_SCREEN_ON) })
         updatePadHelper()
         handler.post(panelStateRunnable)
     }
@@ -274,6 +285,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (prefs.toggleButtons == Prefs.TOGGLE_NONE && !interceptionEnabled) toggleInterception()
         updatePadHelper()
         updateDpadPassthrough(currentException())
+        val calibration = prefs.gyroCalibration
+        if (calibration != gyro.calibration) gyro.calibration = calibration
+        val gyroButton = gyro.button
+        if (gyroButton != null) {
+            if (prefs.shoulderAction(gyroButton) == Prefs.SHOULDER_GYRO) gyro.update(prefs.gyro(gyroButton)) else stopGyro()
+        }
     }
 
     /** The display AYN routes the controller to, which is where a native Back would go. */
@@ -336,7 +353,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
         val needed = prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled ||
-            prefs.hasMacroAction() || macroRecordListener != null
+            prefs.hasMacroAction() || macroRecordListener != null || prefs.hasGyroAction()
         if (needed) padHelper.start() else padHelper.stop()
         padHelper.setHomeAsBack(prefs.homeAsBack)
         updateStickCapture(backException)
@@ -381,10 +398,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
         topRecentsBackClosePending = false
         recentsConfirmKeys.clear()
         nativeBackDevices.clear()
+        gyroHoldDevices.clear()
+        gyro.setHeld(false)
     }
 
     private val standbyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            val on = intent.action == Intent.ACTION_SCREEN_ON
+            gyro.setScreenOn(on)
+            if (on) return
             forgetHeldKeys()
             toggleGesture.reset()
             homeAsBack.reset()
@@ -594,6 +616,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return consumed
         }
         if (handlePushToTalk(event)) return true
+        if (handleGyroHold(event)) return true
         comboButton(event)?.let { return handleShoulder(event, it) }
         Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
@@ -1018,6 +1041,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Prefs.SHOULDER_MEDIA_NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
             Prefs.SHOULDER_MEDIA_PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             Prefs.SHOULDER_STATUS -> showStatus()
+            Prefs.SHOULDER_GYRO -> toggleGyro(button)
+            Prefs.SHOULDER_GYRO_CALIBRATE -> calibrateGyro()
             in Ayn.ACTIONS -> runAynAction(button, action)
             Prefs.SHOULDER_HOME -> goHome(shoulderDisplayId(button))
             Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
@@ -1396,6 +1421,55 @@ class SwitcherService : AccessibilityService(), GestureActions {
         return true
     }
 
+    /**
+     * With holding chosen, the gyro steers only while its key is held. The key still reaches the game
+     * unless the setup keeps it back; with Back held it stays the button of its Back combination.
+     */
+    private fun handleGyroHold(event: KeyEvent): Boolean {
+        val key = gyro.settings.holdKeyInUse?.takeIf { gyro.on } ?: return false
+        if (event.keyCode != key) return false
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (gyroHoldDevices.isEmpty() && backGesture.backDown) return false
+                if (gyroHoldDevices.add(event.deviceId) && gyroHoldDevices.size == 1) gyro.setHeld(true)
+            }
+            KeyEvent.ACTION_UP -> {
+                if (!gyroHoldDevices.remove(event.deviceId)) return false
+                if (gyroHoldDevices.isEmpty()) gyro.setHeld(false)
+            }
+        }
+        return !gyro.settings.holdPasses
+    }
+
+    /** Turns the gyro on with [button]'s setup, or off again; a notice says which. */
+    private fun toggleGyro(button: ComboButton) {
+        if (gyro.on) {
+            stopGyro()
+            return notice.show(R.string.gyro_off)
+        }
+        if (!gyro.available) return notice.show(R.string.gyro_no_sensor)
+        if (!padHelper.active) return notice.show(R.string.gyro_helper_missing)
+        gyroHoldDevices.clear()
+        gyro.calibration = prefs.gyroCalibration
+        gyro.start(button, prefs.gyro(button))
+        notice.show(R.string.gyro_on)
+    }
+
+    /** Calibration measures rest independently of the posture used to aim. */
+    private fun calibrateGyro() {
+        if (!gyro.available) return notice.show(R.string.gyro_no_sensor)
+        notice.show(R.string.gyro_calibration_started)
+        gyro.calibrate { result ->
+            if (result != null) prefs.gyroCalibration = result
+            notice.show(if (result != null) R.string.gyro_calibrated else R.string.gyro_calibration_failed)
+        }
+    }
+
+    private fun stopGyro() {
+        gyroHoldDevices.clear()
+        gyro.stop()
+    }
+
     private fun setTalking(on: Boolean) {
         recording.talk(on)
         recordIndicator.setTalking(on)
@@ -1574,6 +1648,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
+        stopGyro()
+        gyroOverride = null
+        gyroCalibrate = null
+        gyroRecenter = null
         stopLevelRepeat()
         stickClicks.values.forEach(StickClickMachine::reset)
         stickKeys.clear()
@@ -2453,6 +2531,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
         /** Lets the settings screen preview the focus pictogram, which only the service may draw. */
         @Volatile
         var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long) -> Unit)? = null
+        /** What the gyro does now, and who wants to know: the settings preview shows it live. */
+        @Volatile var gyroStatus = GyroStatus()
+        var gyroStatusListener: ((GyroStatus) -> Unit)? = null
+        var gyroCalibrate: (() -> Unit)? = null
+        var gyroRecenter: (() -> Unit)? = null
+        /** Debug builds' device test only: fixed rotation rates (rad/s) instead of the sensor's, or null. */
+        var gyroOverride: ((FloatArray?) -> Unit)? = null
             private set
 
         /** Lets the macro editor record through the helper, which only the service talks to. */
