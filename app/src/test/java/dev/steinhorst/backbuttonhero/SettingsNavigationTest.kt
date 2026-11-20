@@ -218,17 +218,18 @@ class SettingsNavigationTest {
         }
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         selectSettingsPage(activity, SettingsSection.SETTINGS)
-        var unbind = find(root(activity)) { it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) }!!
+        var unbind = find(root(activity)) { it.isShown && it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind) }!!
         while (!unbind.isClickable) unbind = unbind.parent as View
         unbind.performClick()
         ShadowAlertDialog.getLatestAlertDialog().getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(Prefs.TOGGLE_NONE, Prefs(activity).toggleButtons)
         assertNotNull(page(activity, SettingsSection.SETTINGS))
+        // The settings page unbinds the whole app; the cached shoulder page must show that, not its old L1.
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
-        assertNotNull(find(page(activity, SettingsSection.SHOULDERS)) {
-            it is TextView && it.text.toString() == activity.getString(R.string.group_flick)
-        })
+        val shoulders = page(activity, SettingsSection.SHOULDERS)
+        assertNull(find(shoulders) { it is TextView && it.text.toString() == activity.getString(R.string.group_flick) })
+        assertNotNull(find(shoulders) { it.contentDescription?.toString() == "L1 action: Not set. Double-tap to change." })
     }
 
     @Test

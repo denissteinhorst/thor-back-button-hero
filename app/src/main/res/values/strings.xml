@@ -152,7 +152,6 @@
     <string name="search_keywords_do_not_disturb">DND, focus mode, game mode, no notifications, silence</string>
     <string name="search_keywords_mute_microphone">mic, mic mute, Discord, voice chat, privacy, mute</string>
     <string name="shoulder_choose_app_title">Launch which app?</string>
-    <string name="shoulder_top_screen">Use top screen</string>
     <string name="shoulder_action_accessibility">%1$s action: %2$s. Double-tap to change.</string>
     <string name="shoulder_action_unavailable">This system action is not available on this device.</string>
     <string name="shoulder_controller_focus">Set controller focus</string>
@@ -167,7 +166,6 @@
     <string name="app_control_force_close">Instant Exit / Force-Close</string>
     <string name="app_control_force_close_use">Use Force-Close</string>
     <string name="app_control_force_close_warning">Force-Close ends the app immediately and does not save anything for you. Unsaved progress and files can be lost.</string>
-    <string name="app_control_screen_ask">Ask</string>
     <string name="app_control_screen_dialog_title">Control the app on which screen?</string>
     <string name="app_control_confirm_title">Ask before closing</string>
     <string name="app_control_prompt_title">Which screen\'s app?</string>
@@ -219,12 +217,8 @@
     <string name="level_target_bottom">Bottom screen</string>
     <string name="level_target_dialog_title">Apply to which screen?</string>
     <string name="level_target_accessibility">%1$s screen: %2$s. Double-tap to change.</string>
-    <string name="focus_target_title">Focus mode</string>
     <string name="focus_target_toggle">Toggle focus</string>
-    <string name="focus_target_top">Top screen</string>
-    <string name="focus_target_bottom">Bottom screen</string>
     <string name="focus_target_dialog_title">Set controller focus</string>
-    <string name="focus_target_accessibility">%1$s focus: %2$s. Double-tap to change.</string>
     <string name="focus_overlay_top">Controller focus: Top screen</string>
     <string name="focus_overlay_bottom">Controller focus: Bottom screen</string>
     <string name="focus_indicator_title">Show indicator</string>
@@ -402,7 +396,7 @@
     <string name="backup_restore_title">Restore backup</string>
     <string name="backup_matches">The backup matches your current settings.</string>
     <string name="backup_restored">Backup restored</string>
-    <string name="ayn_modal">Show modal</string>
+    <string name="ayn_modal">Ask</string>
     <string name="ayn_on">On</string>
     <string name="ayn_off">Off</string>
     <string name="ayn_notice_value">%1$s: %2$s</string>
@@ -424,15 +418,11 @@
     <string name="ayn_force_landscape">Force Landscape</string>
     <string name="ayn_display">Toggle Display Power</string>
     <string name="ayn_display_dual">Dual-screen display</string>
-    <string name="ayn_display_top">Top display</string>
-    <string name="ayn_display_bottom">Bottom display</string>
     <string name="ayn_display_only_top">Only top screen</string>
     <string name="ayn_display_only_bottom">Only bottom screen</string>
     <string name="ayn_option_title">Option</string>
     <string name="ayn_option_accessibility">%1$s option: %2$s. Double-tap to change.</string>
     <string name="group_app_switcher">App Switcher (Recents)</string>
-    <string name="group_top_display">Top display</string>
-    <string name="group_bottom_display">Bottom display</string>
     <string name="group_volume">Volume</string>
     <string name="group_brightness">Brightness</string>
     <string name="group_flick">Navigation flick</string>

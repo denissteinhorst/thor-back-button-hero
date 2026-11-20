@@ -44,7 +44,7 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold button(s)" textSizePx=48.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
                         TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Not set" textSizePx=42.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                       ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                    SettingsOptionsTree visibility=VISIBLE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
+                    SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[24,18,48,12] clickable=false focusable=false margin=[0,0,0,0]
                           TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hold time: 300 ms" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false

@@ -12,8 +12,8 @@ object ActionGroups {
         APP_SWITCHER(
             "app_switcher", R.string.group_app_switcher,
             listOf(
-                Option(Prefs.SHOULDER_RECENTS, R.string.group_top_display),
-                Option(Prefs.SHOULDER_SWITCHER, R.string.group_bottom_display),
+                Option(Prefs.SHOULDER_RECENTS, R.string.level_target_top),
+                Option(Prefs.SHOULDER_SWITCHER, R.string.level_target_bottom),
             ),
         ),
         VOLUME(

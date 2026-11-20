@@ -230,6 +230,37 @@ class SettingsActionsTest {
     }
 
     @Test
+    fun `Home picks its screen from the same top and bottom list as every screen row`() {
+        val prefs = Prefs(context)
+        prefs.setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_HOME)
+        val activity = open().get()
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        val root = activity.findViewById<View>(android.R.id.content)
+        val screen = find(root) { it.isShown && it.contentDescription?.toString() == "L1 screen: Bottom screen. Double-tap to change." }!!
+        screen.performClick()
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        assertEquals(listOf("Top screen", "Bottom screen"), (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString() })
+        dialog.listView.performItemClick(null, 0, 0L)
+        assertEquals(Prefs.DISPLAY_TOP, prefs.shoulderDisplay(ShoulderButton.L1))
+        assertEquals("L1 screen: Top screen. Double-tap to change.", screen.contentDescription.toString())
+    }
+
+    @Test
+    fun `screen-like grouped options read as a screen row, other groups keep the option row`() {
+        val prefs = Prefs(context)
+        prefs.setShoulderAction(ShoulderButton.L1, Prefs.SHOULDER_RECENTS)
+        prefs.setShoulderAction(ShoulderButton.R1, Ayn.Group.DISPLAY.action)
+        prefs.setShoulderAction(ShoulderButton.L2, Ayn.Group.FAN.action)
+        val activity = open().get()
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        val root = activity.findViewById<View>(android.R.id.content)
+        fun shown(text: String) = find(root) { it.isShown && it.contentDescription?.toString() == text }
+        assertNotNull(shown("L1 screen: Top screen. Double-tap to change."))
+        assertNotNull(shown("R1 screen: Top screen. Double-tap to change."))
+        assertNotNull(shown(activity.getString(R.string.ayn_option_accessibility, "L2", "Ask")))
+    }
+
+    @Test
     fun `focus subtree hides for other actions and is reused when focus is selected again`() {
         val activity = open().get()
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
@@ -241,14 +272,15 @@ class SettingsActionsTest {
         assertTrue(target.minimumHeight >= activity.dp(48))
         chooseAction(activity, "R2", R.string.shoulder_screenshot)
         assertEquals(View.GONE, group.visibility)
-        val screen = find(root) { it.contentDescription?.toString()?.startsWith("R2 screen:") == true }!!
+        // Every screen row of R2 reads "R2 screen:"; the shown one is the screenshot's.
+        val screen = find(root) { it.isShown && it.contentDescription?.toString()?.startsWith("R2 screen:") == true }!!
         assertEquals(View.VISIBLE, screen.visibility)
         val subtree = screen.parent.parent as View
         assertEquals("settings_sub_options", subtree.tag)
         assertEquals(View.VISIBLE, subtree.visibility)
         screen.performClick()
         val screenDialog = ShadowAlertDialog.getLatestAlertDialog()
-        screenDialog.listView.performItemClick(null, 2, 2L)
+        screenDialog.listView.performItemClick(null, 1, 1L)
         assertEquals(Prefs.DISPLAY_BOTTOM, Prefs(context).levelTarget(ShoulderButton.R2))
         chooseAction(activity, "R2", R.string.shoulder_controller_focus)
         assertSame(group, root.findViewWithTag<View>("settings_focus_options"))
@@ -267,7 +299,7 @@ class SettingsActionsTest {
         val screenBefore = prefs.levelTarget(DpadDirection.UP)
         group.findViewWithTag<View>("settings_focus_target").performClick()
         val dialog = ShadowAlertDialog.getLatestAlertDialog()
-        dialog.listView.performItemClick(null, 2, 2)
+        dialog.listView.performItemClick(null, 1, 1)
         assertEquals(Prefs.DISPLAY_BOTTOM, prefs.focusTarget(DpadDirection.UP))
         assertEquals(screenBefore, prefs.levelTarget(DpadDirection.UP))
         assertEquals(Prefs.FOCUS_TOGGLE, prefs.focusTarget(ShoulderButton.R2))

@@ -949,8 +949,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return
         }
         val options = listOf(
-            AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
-            AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
+            AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
+            AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
         )
         appControlPrompt.show(promptDisplay(), getString(R.string.focus_target_dialog_title), options) { chosen ->
             showFocusIndicator(button, chosen)

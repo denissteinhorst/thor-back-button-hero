@@ -36,7 +36,8 @@ class SettingsActivity : Activity() {
     private lateinit var serviceWarning: TextView
     private lateinit var rootWarning: SettingsPage.WarningHandle
     private var toggleButtonsValue: TextView? = null
-    private var toggleDuration: SettingsPage.SliderHandle? = null
+    /** The hold-time slider below the on/off shortcut; without a shortcut there is nothing to time. */
+    private var toggleDurationOptions: View? = null
     private var statusLabel: TextView? = null
     private val comboRows = mutableMapOf<String, ComboRow>()
     private val stickPages = mutableListOf<SettingsPage>()
@@ -150,13 +151,16 @@ class SettingsActivity : Activity() {
     private fun buildPage(section: SettingsSection, content: LinearLayout) {
         val page = SettingsPage(this, content)
         pages[section] = page
-        fun change(action: SettingsChangeAction) = { showChanges(SettingsChangePlan.create(prefs.snapshot(), section, action)) }
+        fun change(action: SettingsChangeAction, scope: SettingsSection? = section) =
+            { showChanges(SettingsChangePlan.create(prefs.snapshot(), scope, action)) }
         val actions = when (section) {
             SettingsSection.HELP -> emptyList()
             SettingsSection.EXCEPTIONS -> listOf(
                 R.string.exceptions_add_app to { exceptionsPage?.addApp() ?: Unit },
                 R.string.exceptions_remove_all to change(SettingsChangeAction.PRESET),
             )
+            // The settings page is where the whole app is managed, so its Unbind reaches every page's buttons.
+            SettingsSection.SETTINGS -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND, scope = null))
             else -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND))
         }
         page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
@@ -295,11 +299,11 @@ class SettingsActivity : Activity() {
         page.card {
             val buttons = chooserRow(R.string.service_toggle_buttons, toggleButtonsLabel()) { chooseToggleButtons() }
             toggleButtonsValue = buttons.value
-            subOptions(endControl = buttons.row.findViewWithTag("settings_chooser_chevron")) {
-                toggleDuration = sliderRow(R.string.service_toggle_duration, 100, 3000, 100, prefs.toggleHoldMs, R.string.service_toggle_hint, readValue = { prefs.toggleHoldMs }) {
+            toggleDurationOptions = subOptions(endControl = buttons.row.findViewWithTag("settings_chooser_chevron")) {
+                sliderRow(R.string.service_toggle_duration, 100, 3000, 100, prefs.toggleHoldMs, R.string.service_toggle_hint, readValue = { prefs.toggleHoldMs }) {
                     prefs.toggleHoldMs = it
                 }
-            }
+            }.apply { visibility = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) View.GONE else View.VISIBLE }
         }
 
         page.sectionHeader(R.string.backup_section)
@@ -398,7 +402,7 @@ class SettingsActivity : Activity() {
         stickPages.forEach { it.refresh() }
         comboRows.values.forEach { updateShoulderRow(it) }
         toggleButtonsValue?.text = toggleButtonsLabel()
-        toggleDuration?.setEnabled(prefs.toggleButtons != Prefs.TOGGLE_NONE)
+        toggleDurationOptions?.visibility = if (prefs.toggleButtons == Prefs.TOGGLE_NONE) View.GONE else View.VISIBLE
         val status = currentServiceStatus()
         serviceWarning.text = serviceChipText(status)
         serviceWarning.contentDescription = serviceStatusText(status)
@@ -640,10 +644,8 @@ class SettingsActivity : Activity() {
         Choice(Prefs.APP_RESTART, getString(R.string.app_control_restart)),
     )
 
-    private fun appScreens(): List<Choice> = levelTargets().let { targets ->
-        // The same screens as everywhere else, in the order the shoulder rows use, plus the prompt.
-        listOf(targets[1], targets[2], targets[0], Choice(Prefs.APP_SCREEN_ASK, getString(R.string.app_control_screen_ask)))
-    }
+    // The same screens as everywhere else, plus the prompt.
+    private fun appScreens(): List<Choice> = levelTargets() + Choice(Prefs.APP_SCREEN_ASK, getString(R.string.ayn_modal))
 
     private fun describeAppMode(button: ComboButton): String =
         (appModes().firstOrNull { it.value == prefs.appMode(button) } ?: appModes().first()).label
@@ -651,26 +653,34 @@ class SettingsActivity : Activity() {
     private fun describeAppScreen(button: ComboButton): String =
         (appScreens().firstOrNull { it.value == prefs.appScreen(button) } ?: appScreens().last()).label
 
-    private fun levelTargets(): List<Choice> = listOf(
-        Choice(Prefs.TARGET_BOTH, getString(R.string.level_target_both)),
+    /** Every screen choice lists top, bottom, then both; special values like the prompt follow. */
+    private fun screenTargets(): List<Choice> = listOf(
         Choice(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
         Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
     )
 
+    private fun levelTargets(): List<Choice> = screenTargets() + Choice(Prefs.TARGET_BOTH, getString(R.string.level_target_both))
+
     private fun describeLevelTarget(button: ComboButton): String = levelTargets().let { targets ->
-        (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.first()).label
+        (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.last()).label
     }
 
-    private fun focusTargets(): List<Choice> = listOf(
+    private fun describeShoulderDisplay(button: ComboButton): String = screenTargets().let { targets ->
+        (targets.firstOrNull { it.value == prefs.shoulderDisplay(button) } ?: targets.last()).label
+    }
+
+    private fun focusTargets(): List<Choice> = screenTargets() + listOf(
         Choice(Prefs.FOCUS_TOGGLE, getString(R.string.focus_target_toggle)),
-        Choice(Prefs.DISPLAY_TOP, getString(R.string.focus_target_top)),
-        Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.focus_target_bottom)),
         Choice(Prefs.FOCUS_MODAL, getString(R.string.ayn_modal)),
     )
 
     private fun describeFocusTarget(button: ComboButton): String = focusTargets().let { targets ->
-        (targets.firstOrNull { it.value == prefs.focusTarget(button) } ?: targets.first()).label
+        (targets.firstOrNull { it.value == prefs.focusTarget(button) } ?: targets.first { it.value == Prefs.FOCUS_TOGGLE }).label
     }
+
+    /** Grouped actions whose choice below is really a screen, so the row reads like every other screen row. */
+    private fun isScreenOption(action: String): Boolean =
+        ActionGroups.groupOf(action) == ActionGroups.Group.APP_SWITCHER || Ayn.groupOf(action) == Ayn.Group.DISPLAY
 
     /** The nine pictogram positions, row by row as the picker lays them out. */
     private fun focusPositions(): List<Choice> = listOf(
@@ -913,7 +923,7 @@ class SettingsActivity : Activity() {
         val button: ComboButton,
         val label: String,
         val action: SettingsPage.ChooserHandle,
-        val display: View,
+        val display: SettingsPage.ChooserHandle,
         val target: SettingsPage.ChooserHandle,
         val displayOptions: View,
         val targetOptions: View,
@@ -1108,6 +1118,22 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    private fun chooseShoulderDisplay(row: ComboRow) {
+        val targets = screenTargets()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.level_target_dialog_title)
+            .setSingleChoiceItems(
+                targets.map { it.label }.toTypedArray(),
+                targets.indexOfFirst { it.value == prefs.shoulderDisplay(row.button) }.coerceAtLeast(0),
+            ) { dialog, which ->
+                prefs.setShoulderDisplay(row.button, targets[which].value)
+                dialog.dismiss()
+                updateShoulderRow(row)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun chooseAppControl(row: ComboRow, mode: Boolean) {
         val choices = if (mode) appModes() else appScreens()
         val selected = if (mode) prefs.appMode(row.button) else prefs.appScreen(row.button)
@@ -1154,17 +1180,15 @@ class SettingsActivity : Activity() {
         lateinit var row: ComboRow
         val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
         val timing = extra?.let { card.it() }
-        lateinit var display: SettingsPage.ToggleHandle
+        lateinit var display: SettingsPage.ChooserHandle
         val displayOptions = card.subOptions {
-            display = toggleRow(R.string.shoulder_top_screen, null, prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP, readValue = { prefs.shoulderDisplay(button) == Prefs.DISPLAY_TOP }) {
-                prefs.setShoulderDisplay(button, if (it) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM)
-            }
+            display = chooserRow(R.string.level_target_title, describeShoulderDisplay(button)) { chooseShoulderDisplay(row) }
         }
         lateinit var target: SettingsPage.ChooserHandle
         val targetOptions = card.subOptions {
             target = chooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
         }
-        row = ComboRow(card, button, getString(titleRes), action, display.row, target, displayOptions, targetOptions, timing)
+        row = ComboRow(card, button, getString(titleRes), action, display, target, displayOptions, targetOptions, timing)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
@@ -1172,12 +1196,14 @@ class SettingsActivity : Activity() {
     private fun updateShoulderRow(row: ComboRow) {
         row.action.value.text = describeShoulderAction(row.button)
         val action = prefs.shoulderAction(row.button)
-        row.display.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
+        row.display.row.visibility = if (Prefs.isShoulderApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
+        row.display.value.text = describeShoulderDisplay(row.button)
+        row.display.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.display.value.text)
         val hasOption = Ayn.groupOf(action) != null || ActionGroups.groupOf(action) != null
         val hasTarget = Prefs.hasScreenTarget(action)
         val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
         row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
-        row.displayOptions.visibility = row.display.visibility
+        row.displayOptions.visibility = row.display.row.visibility
         row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
         val switcher = action == Prefs.SHOULDER_SWITCHER
         if (switcher && row.switcherOptions == null) {
@@ -1192,7 +1218,7 @@ class SettingsActivity : Activity() {
         val switchApp = action == Prefs.SHOULDER_SWITCH_APP
         val appControl = action == Prefs.SHOULDER_APP_CONTROL
         row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.visibility == View.VISIBLE) 0 else 10))
+            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.row.visibility == View.VISIBLE) 0 else 10))
         if (hasOption && row.option == null) {
             lateinit var created: SettingsPage.ChooserHandle
             val options = row.card.subOptions {
@@ -1210,7 +1236,10 @@ class SettingsActivity : Activity() {
             option.row.visibility = if (hasOption) View.VISIBLE else View.GONE
             row.optionOptions?.visibility = option.row.visibility
             option.value.text = describeOption(row.button)
-            option.row.contentDescription = getString(R.string.ayn_option_accessibility, row.label, option.value.text)
+            val screen = isScreenOption(action)
+            option.title.setText(if (screen) R.string.level_target_title else R.string.ayn_option_title)
+            option.row.contentDescription =
+                getString(if (screen) R.string.level_target_accessibility else R.string.ayn_option_accessibility, row.label, option.value.text)
         }
         row.target.value.text = describeLevelTarget(row.button)
         row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
@@ -1357,7 +1386,7 @@ class SettingsActivity : Activity() {
         row.focusOptions?.let { options ->
             options.row.visibility = if (focus) View.VISIBLE else View.GONE
             options.target.value.text = describeFocusTarget(row.button)
-            options.target.row.contentDescription = getString(R.string.focus_target_accessibility, row.label, options.target.value.text)
+            options.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.target.value.text)
             options.position.value.text = describeFocusPosition(row.button)
             options.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, options.position.value.text)
         }
@@ -1616,7 +1645,7 @@ class SettingsActivity : Activity() {
             val label = getString(R.string.settings_binding_label, getString(labelRes))
             addChange(label, binding(old), binding(new))
             fun extra(res: Int, from: String, to: String) = addChange(getString(R.string.settings_property_label, label, getString(res)), from, to)
-            if (!(launches(old) && launches(new))) extra(R.string.shoulder_top_screen, target(old.display), target(new.display))
+            if (!(launches(old) && launches(new))) extra(R.string.level_target_title, target(old.display), target(new.display))
             if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
                 extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
             fun screenTarget(action: String) =
@@ -1625,7 +1654,7 @@ class SettingsActivity : Activity() {
             if (!(screenTarget(old.action) && screenTarget(new.action)))
                 extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
             if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
-                extra(R.string.focus_target_title, focus(old.focusTarget), focus(new.focusTarget))
+                extra(R.string.level_target_title, focus(old.focusTarget), focus(new.focusTarget))
             extra(R.string.app_control_mode_title, appMode(old.appMode), appMode(new.appMode))
             extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
             extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
@@ -1657,7 +1686,7 @@ class SettingsActivity : Activity() {
         stickTabBar = null
         comboRows.clear()
         toggleButtonsValue = null
-        toggleDuration = null
+        toggleDurationOptions = null
         statusLabel = null
         repairHandle = null
         updateHandle = null

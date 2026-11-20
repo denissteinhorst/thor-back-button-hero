@@ -182,7 +182,7 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             lateinit var target: ChooserHandle
             lateinit var position: ChooserHandle
             val group = subOptions {
-                target = chooserRow(R.string.focus_target_title, targetValue, onTarget)
+                target = chooserRow(R.string.level_target_title, targetValue, onTarget)
                 position = chooserRow(R.string.focus_position_title, positionValue, onPosition)
             }.apply { tag = "settings_focus_options" }
             target.row.tag = "settings_focus_target"

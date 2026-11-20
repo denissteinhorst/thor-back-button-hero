@@ -151,7 +151,6 @@
     <string name="search_keywords_do_not_disturb">DND, Ruhe, Fokusmodus, Gaming-Modus, keine Benachrichtigungen, lautlos</string>
     <string name="search_keywords_mute_microphone">Mikro, Mic, Mikrofon aus, Discord, Voice, Sprachchat, stumm, Privatsphäre</string>
     <string name="shoulder_choose_app_title">Welche App starten?</string>
-    <string name="shoulder_top_screen">Oberen Bildschirm verwenden</string>
     <string name="shoulder_action_accessibility">Aktion für %1$s: %2$s. Zum Ändern doppeltippen.</string>
     <string name="shoulder_action_unavailable">Diese Systemaktion ist auf diesem Gerät nicht verfügbar.</string>
     <string name="shoulder_controller_focus">Fokus setzen</string>
@@ -166,7 +165,6 @@
     <string name="app_control_force_close">Sofort beenden / Force-Close</string>
     <string name="app_control_force_close_use">Force-Close verwenden</string>
     <string name="app_control_force_close_warning">Force-Close beendet die App sofort und speichert nichts für dich. Nicht gespeicherter Fortschritt und Dateien können verloren gehen.</string>
-    <string name="app_control_screen_ask">Nachfragen</string>
     <string name="app_control_screen_dialog_title">App auf welchem Bildschirm steuern?</string>
     <string name="app_control_confirm_title">Vor dem Beenden nachfragen</string>
     <string name="app_control_prompt_title">App von welchem Bildschirm?</string>
@@ -218,12 +216,8 @@
     <string name="level_target_bottom">Unterer Bildschirm</string>
     <string name="level_target_dialog_title">Für welchen Bildschirm?</string>
     <string name="level_target_accessibility">Bildschirm für %1$s: %2$s. Zum Ändern doppeltippen.</string>
-    <string name="focus_target_title">Fokus-Mode</string>
     <string name="focus_target_toggle">Fokus umschalten</string>
-    <string name="focus_target_top">Oberer Bildschirm</string>
-    <string name="focus_target_bottom">Unterer Bildschirm</string>
     <string name="focus_target_dialog_title">Controller-Fokus setzen</string>
-    <string name="focus_target_accessibility">Fokus für %1$s: %2$s. Zum Ändern doppeltippen.</string>
     <string name="focus_overlay_top">Controller-Fokus: Oberer Bildschirm</string>
     <string name="focus_overlay_bottom">Controller-Fokus: Unterer Bildschirm</string>
     <string name="focus_indicator_title">Indikator anzeigen</string>
@@ -401,7 +395,7 @@
     <string name="backup_restore_title">Backup wiederherstellen</string>
     <string name="backup_matches">Das Backup entspricht deinen aktuellen Einstellungen.</string>
     <string name="backup_restored">Backup wiederhergestellt</string>
-    <string name="ayn_modal">Auswahl anzeigen</string>
+    <string name="ayn_modal">Nachfragen</string>
     <string name="ayn_on">Aktiv</string>
     <string name="ayn_off">Inaktiv</string>
     <string name="ayn_notice_value">%1$s: %2$s</string>
@@ -423,15 +417,11 @@
     <string name="ayn_force_landscape">Querformat erzwingen</string>
     <string name="ayn_display">Display-Power umschalten</string>
     <string name="ayn_display_dual">Beide Bildschirme</string>
-    <string name="ayn_display_top">Oberes Display</string>
-    <string name="ayn_display_bottom">Unteres Display</string>
     <string name="ayn_display_only_top">Nur oberer Bildschirm</string>
     <string name="ayn_display_only_bottom">Nur unterer Bildschirm</string>
     <string name="ayn_option_title">Option</string>
     <string name="ayn_option_accessibility">Option für %1$s: %2$s. Zum Ändern doppeltippen.</string>
     <string name="group_app_switcher">App-Switcher (Recents)</string>
-    <string name="group_top_display">Oberes Display</string>
-    <string name="group_bottom_display">Unteres Display</string>
     <string name="group_volume">Lautstärke</string>
     <string name="group_brightness">Helligkeit</string>
     <string name="group_flick">Navigation-Flick</string>

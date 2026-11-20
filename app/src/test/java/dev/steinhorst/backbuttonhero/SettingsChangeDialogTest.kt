@@ -49,6 +49,45 @@ class SettingsChangeDialogTest {
     }
 
     @Test
+    fun `every page unbinds its own buttons and the settings page unbinds every optional button`() {
+        val activity = open()
+        val prefs = Prefs(activity)
+        val pages = mapOf(
+            SettingsSection.BASIC to AndroidButton.entries + BackGestureButton.entries,
+            SettingsSection.FACE to FaceButton.entries,
+            SettingsSection.SHOULDERS to ShoulderButton.entries,
+            SettingsSection.STICKS to StickButton.entries + StickClickButton.entries,
+            SettingsSection.DPAD to DpadDirection.entries,
+        )
+        val all = pages.values.flatten()
+        fun bindAll() = all.forEach { prefs.setShoulderAction(it, Prefs.SHOULDER_SCREENSHOT) }
+        fun unbind(section: SettingsSection) {
+            selectSettingsPage(activity, section)
+            var view = find(activity.findViewById(android.R.id.content)) {
+                it.isShown && it is TextView && it.text.toString() == activity.getString(R.string.settings_unbind)
+            }!!
+            while (!view.isClickable) view = view.parent as View
+            view.performClick()
+            accept()
+        }
+        pages.forEach { (section, buttons) ->
+            bindAll()
+            unbind(section)
+            all.forEach { button ->
+                assertEquals("$section ${button.prefKey}", if (button in buttons) "" else Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(button))
+            }
+        }
+        bindAll()
+        prefs.toggleButtons = Prefs.TOGGLE_L1_R1
+        unbind(SettingsSection.SETTINGS)
+        // The whole-app Unbind leaves the primary Back gestures alone, like it always has.
+        all.forEach { button ->
+            assertEquals(button.prefKey, if (button is BackGestureButton) Prefs.SHOULDER_SCREENSHOT else "", prefs.shoulderAction(button))
+        }
+        assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
+    }
+
+    @Test
     fun `unbind preview names current action and target and cancel changes nothing`() {
         val activity = open()
         val prefs = Prefs(activity)
@@ -65,7 +104,7 @@ class SettingsChangeDialogTest {
     }
 
     @Test
-    fun `selecting not set requires confirmation and disables only the hold duration`() {
+    fun `selecting not set requires confirmation and hides only the hold duration`() {
         val activity = open()
         val prefs = Prefs(activity)
         prefs.toggleButtons = Prefs.TOGGLE_L2_R2
@@ -82,11 +121,11 @@ class SettingsChangeDialogTest {
         accept()
         assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
         val slider = find(activity.findViewById(android.R.id.content)) { it is SeekBar && it.max == 29 }!!
-        assertFalse(slider.isEnabled)
+        assertFalse(slider.isShown)
         assertEquals(300L, prefs.toggleHoldMs)
         click(activity, R.string.service_toggle_buttons)
         dialog().listView.performItemClick(null, 0, 0)
-        assertTrue(slider.isEnabled)
+        assertTrue(slider.isShown)
         assertEquals(Prefs.TOGGLE_L1_R1, prefs.toggleButtons)
     }
 

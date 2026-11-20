@@ -36,10 +36,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick up screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick up screen: Both screens. Double-tap to change."
@@ -55,10 +56,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick down screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick down screen: Both screens. Double-tap to change."
@@ -74,10 +76,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick left screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick left screen: Both screens. Double-tap to change."
@@ -93,10 +96,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick right screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick right screen: Both screens. Double-tap to change."
@@ -113,10 +117,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick press screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick press screen: Both screens. Double-tap to change."
@@ -139,10 +144,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                             TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximum time between two presses. Higher is easier, but a single press waits this long before it acts when a double press is assigned. Default: 300 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick double press screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick double press screen: Both screens. Double-tap to change."
@@ -165,10 +171,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                             TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Press the stick once, then press and hold it again. A plain single press waits a bit longer while a double press is assigned. Default: 1000 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick tap and hold screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Left stick tap and hold screen: Both screens. Double-tap to change."
@@ -186,10 +193,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick up screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick up screen: Both screens. Double-tap to change."
@@ -205,10 +213,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick down screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick down screen: Both screens. Double-tap to change."
@@ -224,10 +233,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick left screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick left screen: Both screens. Double-tap to change."
@@ -243,10 +253,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick right screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick right screen: Both screens. Double-tap to change."
@@ -263,10 +274,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                         ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick press screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick press screen: Both screens. Double-tap to change."
@@ -289,10 +301,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                             TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximum time between two presses. Higher is easier, but a single press waits this long before it acts when a double press is assigned. Default: 300 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick double press screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick double press screen: Both screens. Double-tap to change."
@@ -315,10 +328,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                             TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Press the stick once, then press and hold it again. A plain single press waits a bit longer while a double press is assigned. Default: 1000 ms." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                          LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick tap and hold screen: Bottom screen. Double-tap to change."
                             LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Use top screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
-                            Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Use top screen" text="" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screen" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                              TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bottom screen" textSizePx=39.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                            ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                       SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                         LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                           LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Right stick tap and hold screen: Both screens. Double-tap to change."

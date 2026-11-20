@@ -32,10 +32,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                       ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste drücken: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste drücken: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -58,10 +59,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst, wenn ein Doppeldruck belegt ist. Standard: 300 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste doppelt drücken: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste doppelt drücken: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -84,10 +86,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Back einmal drücken, dann erneut drücken und halten. Ein einfacher Tipp wartet etwas länger, solange ein Doppeldruck belegt ist. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste tippen und halten: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste tippen und halten: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -110,10 +113,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                           TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,24] clickable=false focusable=false margin=[0,0,0,0] text="Wie lange Back gehalten werden muss. Standard: 1000 ms." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste halten: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Back-Taste halten: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -130,10 +134,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                       ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Home: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Home: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -149,10 +154,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                       ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Start: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Start: Beide Bildschirme. Zum Ändern doppeltippen."
@@ -168,10 +174,11 @@ FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false foc
                       ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
-                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0]
+                        LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Select: Unterer Bildschirm. Zum Ändern doppeltippen."
                           LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
-                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Oberen Bildschirm verwenden" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
-                          Switch visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Oberen Bildschirm verwenden" text="" textSizePx=42.0 textColor=#FF000000 maxLines=2147483647 bold=false checked=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Bildschirm" textSizePx=42.0 textColor=#FF70777C maxLines=2147483647 bold=false
+                            TextView visibility=VISIBLE minHeight=0 padding=[0,6,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Unterer Bildschirm" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                          ImageView visibility=VISIBLE minHeight=0 padding=[24,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
                     SettingsOptionsTree visibility=GONE minHeight=0 padding=[48,0,0,24] clickable=false focusable=false margin=[0,0,0,0]
                       LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[72,0,0,0]
                         LinearLayout visibility=GONE minHeight=144 padding=[24,18,48,18] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Bildschirm für Select: Beide Bildschirme. Zum Ändern doppeltippen."

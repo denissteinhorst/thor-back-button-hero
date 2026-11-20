@@ -53,8 +53,8 @@ object Ayn {
         DISPLAY(
             "@display", R.string.ayn_display, false,
             listOf(
-                Option("top", R.string.ayn_display_top),
-                Option("bottom", R.string.ayn_display_bottom),
+                Option("top", R.string.level_target_top),
+                Option("bottom", R.string.level_target_bottom),
             ),
         ),
         // Toggling is first: it is what a single hotkey for this tile most likely wants.
