@@ -85,7 +85,10 @@ class Device:
         return [b for b in blocks if f"Process: {PKG}" in b]
 
     def service_bound(self):
-        return "Back Button Hero" in self.sh("dumpsys accessibility | grep 'Bound services'")
+        # Android wraps this section when another accessibility service is also bound.
+        dump = self.sh("dumpsys accessibility")
+        bound = dump.partition("Bound services:")[2].partition("Enabled services:")[0]
+        return "Service[label=Back Button Hero," in bound
 
     def helper_pid(self):
         return self.sh("pidof libpadhelper.so")
