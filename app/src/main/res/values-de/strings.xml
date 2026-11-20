@@ -3,6 +3,8 @@
     <string name="close_all">Alle Apps schließen</string>
     <string name="switcher_screenshot">Screenshot</string>
     <string name="recents_memory">%1$s available | %2$s</string>
+    <string name="memory_released">Release %1$s memory, %2$s available now.</string>
+    <string name="memory_nothing_released">Nothing to clear in cache</string>
     <string name="no_recent_apps">Keine kürzlich verwendeten Elemente</string>
     <string name="status_on">Bedienungshilfen-Dienst ist aktiv</string>
     <string name="status_unresponsive">Bedienungshilfen-Dienst ist aktiviert, reagiert aber nicht.</string>

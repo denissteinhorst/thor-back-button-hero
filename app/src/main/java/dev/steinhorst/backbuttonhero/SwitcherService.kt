@@ -24,6 +24,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.text.format.Formatter
 import android.view.Display
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -1250,7 +1251,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         // Every screen, not only the chosen ones: a closed app may have moved in front of the other one.
         fun close() {
             packages.forEach(source::forget)
-            killOnly(packages, all.toSet())
+            killOnly(packages, all.toSet(), reportMemory = true)
         }
         if (!prefs.closeConfirm(button)) {
             close()
@@ -1319,7 +1320,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         if (mode == Prefs.APP_FORCE_CLOSE) {
             // killOnly already leaves the app for Home first and falls back to an unprivileged kill.
-            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet())
+            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet(), reportMemory = true)
         } else if (mode == Prefs.APP_RESTART) {
             // Each app comes back on the screen it left; our own settings only lose their task, see killOnly.
             killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet()) {
@@ -1838,7 +1839,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** Swiping a card up closes the app on the bottom screen. */
     private fun closeApp(pkg: String) {
         val bottom = bottomDisplay()?.displayId ?: return
-        killOnly(listOf(pkg), setOf(bottom))
+        killOnly(listOf(pkg), setOf(bottom), reportMemory = true)
     }
 
     /** Close all: every app task on the bottom screen, or on both screens when [bothScreens] is set. */
@@ -1846,7 +1847,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val displays = if (bothScreens) getSystemService(DisplayManager::class.java).displays
             .filterNot(FrontendParking::isParkingDisplay).map { it.displayId }.toSet()
         else setOfNotNull(bottomDisplay()?.displayId)
-        killOnly(packages, displays)
+        killOnly(packages, displays, reportMemory = true)
     }
 
     private fun launchFromRecents(pkg: String, displayId: Int) = launchFromRecents(pkg, displayId, null)
@@ -1948,9 +1949,17 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** A normal app can only kill background processes, so leave the app first. With AYN's root
      *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
      *  if that fails, the unprivileged kill below still runs. Our own package only loses its tasks:
-     *  this process hosts the service, so stopping it would end every gesture. */
-    private fun killOnly(closing: List<String>, displays: Set<Int>, afterwards: (() -> Unit)? = null) {
+     *  this process hosts the service, so stopping it would end every gesture. With [reportMemory]
+     *  the released memory is shown afterwards, as the stock launcher's Clear all does. */
+    private fun killOnly(
+        closing: List<String>,
+        displays: Set<Int>,
+        reportMemory: Boolean = false,
+        afterwards: (() -> Unit)? = null,
+    ) {
         val activityManager = getSystemService(ActivityManager::class.java)
+        // Measured before the app leaves the screen, so the whole release is counted.
+        val availableBefore = if (reportMemory) RecentsMemory.read(this).available else null
         val closesOwn = packageName in closing
         val packages = closing - packageName
         if (::parking.isInitialized) packages.forEach(parking::forget)
@@ -1962,6 +1971,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             if (closesOwn) activityManager.appTasks.forEach { it.finishAndRemoveTask() }
             if (rootable.isEmpty()) {
                 packages.forEach { activityManager.killBackgroundProcesses(it) }
+                availableBefore?.let(::reportReleasedMemory)
                 afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
                 return@postDelayed
             }
@@ -1971,9 +1981,23 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 if (removed?.startsWith("OK") != true || !stopped.all { it }) {
                     handler.post { packages.forEach { activityManager.killBackgroundProcesses(it) } }
                 }
+                availableBefore?.let { before -> handler.post { reportReleasedMemory(before) } }
                 afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
             }.start()
         }, 500)
+    }
+
+    /** The kernel hands memory back with a short lag; the stock launcher measures after the same wait. */
+    private fun reportReleasedMemory(availableBefore: Long) {
+        handler.postDelayed({
+            val available = RecentsMemory.read(this).available
+            val released = RecentsMemory.released(availableBefore, available)
+            fun size(bytes: Long) = Formatter.formatShortFileSize(this, bytes).uppercase()
+            notice.show(
+                if (released > 0) getString(R.string.memory_released, size(released), size(available))
+                else getString(R.string.memory_nothing_released),
+            )
+        }, MEMORY_REPORT_DELAY_MS)
     }
 
     /** Move the two captured foreground tasks; the first move must not change the second target. */
@@ -2587,6 +2611,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val POWER_MENU_FOCUS_RETRY_MS = 80L
         /** After a restart's kill: the force-stop must have settled, or the launch could land in the dying process. */
         const val RESTART_DELAY_MS = 400L
+        const val MEMORY_REPORT_DELAY_MS = 600L
         const val POWER_MENU_FOCUS_ATTEMPTS = 20
         const val CONTROLLER_FLIP_SETTING = "flip_button_layout"
         const val ACTION_EXTRA_DIM_SETTINGS = "android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"

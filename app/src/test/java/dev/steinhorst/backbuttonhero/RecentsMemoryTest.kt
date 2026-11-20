@@ -24,4 +24,11 @@ class RecentsMemoryTest {
     fun `zero and malformed totals never divide by zero`() {
         assertEquals(RecentsMemory(0, 0), RecentsMemory.calculate("MemTotal: 0 kB\nMemAvailable: 0 kB", 0, 0))
     }
+
+    @Test
+    fun `released memory is the rise in available memory and never negative`() {
+        assertEquals(1_500_000_000L, RecentsMemory.released(4_000_000_000L, 5_500_000_000L))
+        assertEquals(0L, RecentsMemory.released(4_000_000_000L, 4_000_000_000L))
+        assertEquals(0L, RecentsMemory.released(4_000_000_000L, 3_900_000_000L))
+    }
 }

@@ -29,5 +29,8 @@ data class RecentsMemory(val available: Long, val total: Long) {
             val available = if (realTotal > 0) (realAvailable.toFloat() * (total.toFloat() / realTotal.toFloat())).toLong() else realAvailable
             return RecentsMemory(available, total)
         }
+
+        /** As in the OEM release notice: only a rise counts, other apps may have grown meanwhile. */
+        fun released(availableBefore: Long, availableAfter: Long): Long = (availableAfter - availableBefore).coerceAtLeast(0)
     }
 }

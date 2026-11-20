@@ -4,6 +4,8 @@
     <string name="close_all">Close all</string>
     <string name="switcher_screenshot">Screenshot</string>
     <string name="recents_memory">%1$s available | %2$s</string>
+    <string name="memory_released">Release %1$s memory, %2$s available now.</string>
+    <string name="memory_nothing_released">Nothing to clear in cache</string>
     <string name="no_recent_apps">No recent items</string>
     <string name="status_on">Accessibility service is on</string>
     <string name="status_unresponsive">Accessibility service is enabled, but is not responding.</string>
