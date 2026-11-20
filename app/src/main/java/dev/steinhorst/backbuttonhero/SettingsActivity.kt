@@ -9,10 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.graphics.Color
 import android.graphics.Rect
@@ -504,14 +500,102 @@ class SettingsActivity : Activity() {
         else -> null
     }
 
-    /** An entry's name with its description on a second, smaller line in the secondary text colour. */
-    private fun describedEntry(choice: Choice): CharSequence {
-        val description = actionDescription(choice.value)?.let(::getString) ?: return choice.label
-        val start = choice.label.length + 1
-        return SpannableString("${choice.label}\n$description").apply {
-            setSpan(RelativeSizeSpan(DESCRIPTION_SCALE), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(ForegroundColorSpan(themedColor(android.R.attr.textColorSecondary, Color.GRAY)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
+    /**
+     * Words the action search also finds for an entry, beyond its name and description: what players
+     * actually type. [key] is the action, or "tile action:option" for an option inside an AYN tile,
+     * whose option keys repeat between tiles.
+     */
+    private fun searchKeywords(key: String): String = when (key) {
+        "" -> R.string.search_keywords_none
+        ACTION_APP -> R.string.search_keywords_launch_app
+        Prefs.SHOULDER_HOME -> R.string.search_keywords_home
+        Prefs.SHOULDER_BACK -> R.string.search_keywords_back
+        ActionGroups.Group.APP_SWITCHER.entry -> R.string.search_keywords_app_switcher
+        Prefs.SHOULDER_RECENTS -> R.string.search_keywords_recents
+        Prefs.SHOULDER_SWITCHER -> R.string.search_keywords_switcher
+        Prefs.SHOULDER_SWAP_APPS -> R.string.search_keywords_swap_apps
+        Prefs.SHOULDER_LAST_APP -> R.string.search_keywords_last_app
+        Prefs.SHOULDER_SCREENSHOT -> R.string.search_keywords_screenshot
+        Prefs.SHOULDER_RECORD_VIDEO -> R.string.search_keywords_record_video
+        Prefs.SHOULDER_MACRO -> R.string.search_keywords_macro
+        ActionGroups.Group.FLICK.entry -> R.string.search_keywords_flick
+        Prefs.SHOULDER_FLICK_LEFT -> R.string.search_keywords_flick_left
+        Prefs.SHOULDER_FLICK_RIGHT -> R.string.search_keywords_flick_right
+        ActionGroups.Group.VOLUME.entry -> R.string.search_keywords_volume
+        Prefs.SHOULDER_VOLUME_UP -> R.string.search_keywords_volume_up
+        Prefs.SHOULDER_VOLUME_DOWN -> R.string.search_keywords_volume_down
+        Prefs.SHOULDER_VOLUME_MUTE -> R.string.search_keywords_volume_mute
+        ActionGroups.Group.BRIGHTNESS.entry -> R.string.search_keywords_brightness
+        Prefs.SHOULDER_BRIGHTNESS_UP -> R.string.search_keywords_brightness_up
+        Prefs.SHOULDER_BRIGHTNESS_DOWN -> R.string.search_keywords_brightness_down
+        ActionGroups.Group.MEDIA.entry -> R.string.search_keywords_media
+        Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> R.string.search_keywords_media_play_pause
+        Prefs.SHOULDER_MEDIA_NEXT -> R.string.search_keywords_media_next
+        Prefs.SHOULDER_MEDIA_PREVIOUS -> R.string.search_keywords_media_previous
+        Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.search_keywords_controller_focus
+        Prefs.SHOULDER_SWITCH_APP -> R.string.search_keywords_switch_app
+        Prefs.SHOULDER_APP_CONTROL -> R.string.search_keywords_app_control
+        ActionGroups.Group.CLOSE_APPS.entry -> R.string.search_keywords_close_apps_group
+        Prefs.SHOULDER_CLOSE_APPS -> R.string.search_keywords_close_apps
+        Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> R.string.search_keywords_close_background
+        ActionGroups.Group.POWER.entry -> R.string.search_keywords_power
+        Prefs.SHOULDER_POWER_MENU -> R.string.search_keywords_power_menu
+        Prefs.SHOULDER_STANDBY -> R.string.search_keywords_standby
+        Prefs.SHOULDER_STATUS -> R.string.search_keywords_status
+        ActionGroups.Group.PANELS.entry -> R.string.search_keywords_panels
+        Prefs.SHOULDER_QUICK_SETTINGS -> R.string.search_keywords_quick_settings
+        Prefs.SHOULDER_NOTIFICATIONS -> R.string.search_keywords_notifications
+        ActionGroups.Group.SETTINGS.entry -> R.string.search_keywords_settings
+        Prefs.SHOULDER_INTERNET -> R.string.search_keywords_internet
+        Prefs.SHOULDER_BLUETOOTH -> R.string.search_keywords_bluetooth
+        Prefs.SHOULDER_NIGHT_LIGHT -> R.string.search_keywords_night_light
+        Prefs.SHOULDER_EXTRA_DIM -> R.string.search_keywords_extra_dim
+        Prefs.SHOULDER_DISPLAY_SETTINGS -> R.string.search_keywords_display_settings
+        Prefs.SHOULDER_SOUND_SETTINGS -> R.string.search_keywords_sound_settings
+        Prefs.SHOULDER_LOCATION_SETTINGS -> R.string.search_keywords_location_settings
+        Prefs.SHOULDER_CAST_SETTINGS -> R.string.search_keywords_cast_settings
+        Prefs.SHOULDER_DND_SETTINGS -> R.string.search_keywords_dnd_settings
+        Prefs.SHOULDER_BATTERY_SAVER -> R.string.search_keywords_battery_saver
+        Ayn.Group.PERFORMANCE.action -> R.string.search_keywords_performance
+        "${Ayn.Group.PERFORMANCE.action}:standard" -> R.string.search_keywords_performance_standard
+        "${Ayn.Group.PERFORMANCE.action}:medium" -> R.string.search_keywords_performance_medium
+        "${Ayn.Group.PERFORMANCE.action}:high" -> R.string.search_keywords_performance_high
+        Ayn.Group.FAN.action -> R.string.search_keywords_fan
+        "${Ayn.Group.FAN.action}:off" -> R.string.search_keywords_fan_off
+        "${Ayn.Group.FAN.action}:quiet" -> R.string.search_keywords_fan_quiet
+        "${Ayn.Group.FAN.action}:smart" -> R.string.search_keywords_fan_smart
+        "${Ayn.Group.FAN.action}:sports" -> R.string.search_keywords_fan_sports
+        Ayn.Group.HANDLE.action -> R.string.search_keywords_handle
+        "${Ayn.Group.HANDLE.action}:standard" -> R.string.search_keywords_handle_standard
+        "${Ayn.Group.HANDLE.action}:xbox" -> R.string.search_keywords_handle_xbox
+        "${Ayn.Group.HANDLE.action}:ban" -> R.string.search_keywords_handle_ban
+        Ayn.Group.DISPLAY.action -> R.string.search_keywords_display
+        "${Ayn.Group.DISPLAY.action}:top" -> R.string.search_keywords_display_top
+        "${Ayn.Group.DISPLAY.action}:bottom" -> R.string.search_keywords_display_bottom
+        Ayn.Group.REFRESH_RATE.action -> R.string.search_keywords_refresh_rate
+        "${Ayn.Group.REFRESH_RATE.action}:60" -> R.string.search_keywords_refresh_60
+        "${Ayn.Group.REFRESH_RATE.action}:120" -> R.string.search_keywords_refresh_120
+        Ayn.Group.STICK_LIGHT.action -> R.string.search_keywords_stick_light
+        Ayn.Toggle.DIRECT_POWER.action -> R.string.search_keywords_direct_power
+        Ayn.Toggle.VIBRATION.action -> R.string.search_keywords_vibration
+        Ayn.Toggle.FORCE_LANDSCAPE.action -> R.string.search_keywords_force_landscape
+        Ayn.Toggle.VIRTUAL_MOUSE.action -> R.string.search_keywords_virtual_mouse
+        Ayn.Toggle.DO_NOT_DISTURB.action -> R.string.search_keywords_do_not_disturb
+        Ayn.Toggle.MUTE_MICROPHONE.action -> R.string.search_keywords_mute_microphone
+        else -> null
+    }?.let(::getString).orEmpty()
+
+    /**
+     * What the search finds inside groups and AYN tiles: each option as "Group › Option", carrying the
+     * group's description. Picking one sets the group and its option in one go.
+     */
+    private fun actionOptions(choices: List<Choice>): List<ActionChooser.Entry> = choices.flatMap { choice ->
+        val description = actionDescription(choice.value)?.let(::getString)
+        fun entry(option: String, label: String, key: String = option) =
+            ActionChooser.Entry(choice.value, getString(R.string.action_search_option, choice.label, label), description, option, searchKeywords(key))
+        ActionGroups.groupOfEntry(choice.value)?.options?.map { entry(it.action, getString(it.labelRes)) }
+            ?: Ayn.groupOf(choice.value)?.let { group -> aynOptions(group).map { entry(it.value, it.label, "${group.action}:${it.value}") } }
+            ?: emptyList()
     }
 
     private fun aynOptions(group: Ayn.Group): List<Choice> =
@@ -831,35 +915,44 @@ class SettingsActivity : Activity() {
         val choices = shoulderActions(macro = row.button !is BackGestureButton)
         val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.isShoulderApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.shoulder_choose_action_title, row.label))
-            .setSingleChoiceItems(
-                choices.map(::describedEntry).toTypedArray(),
-                choices.indexOfFirst { it.value == current }.coerceAtLeast(0),
-            ) { dialog, which ->
-                dialog.dismiss()
-                val action = choices[which].value
-                if (action == ACTION_APP) {
-                    chooseShoulderApp(row)
-                } else if (action == Prefs.SHOULDER_MACRO && !PService.cachedAvailable()) {
-                    showMacroUnavailable()
+        ActionChooser(
+            this,
+            getString(R.string.shoulder_choose_action_title, row.label),
+            choices.map { ActionChooser.Entry(it.value, it.label, actionDescription(it.value)?.let(::getString), keywords = searchKeywords(it.value)) },
+            actionOptions(choices),
+            current,
+        ) { entry ->
+            val action = entry.value
+            val option = entry.option
+            if (option != null) {
+                // A group stores the option's own action; an AYN tile stores its action and the option apart.
+                if (ActionGroups.groupOfEntry(action) != null) {
+                    prefs.setShoulderAction(row.button, option)
                 } else {
-                    // A group stores its option's own action; re-picking the group keeps the option.
-                    val group = ActionGroups.groupOfEntry(action)
-                    prefs.setShoulderAction(
-                        row.button,
-                        if (group == null) action else if (group.option(stored) != null) stored else group.options.first().action,
-                    )
-                    updateShoulderRow(row)
-                    refresh()
-                    // A fresh macro hotkey has nothing to play yet: pick a saved one or record one right away.
-                    if (action == Prefs.SHOULDER_MACRO && stored != action && prefs.macro(row.button) == null) {
-                        if (prefs.macroLibrary.isEmpty()) openMacroEditor(row) else openMacroLibrary(row)
-                    }
+                    prefs.setShoulderAction(row.button, action)
+                    prefs.setAynOption(row.button, option)
+                }
+                updateShoulderRow(row)
+                refresh()
+            } else if (action == ACTION_APP) {
+                chooseShoulderApp(row)
+            } else if (action == Prefs.SHOULDER_MACRO && !PService.cachedAvailable()) {
+                showMacroUnavailable()
+            } else {
+                // A group stores its option's own action; re-picking the group keeps the option.
+                val group = ActionGroups.groupOfEntry(action)
+                prefs.setShoulderAction(
+                    row.button,
+                    if (group == null) action else if (group.option(stored) != null) stored else group.options.first().action,
+                )
+                updateShoulderRow(row)
+                refresh()
+                // A fresh macro hotkey has nothing to play yet: pick a saved one or record one right away.
+                if (action == Prefs.SHOULDER_MACRO && stored != action && prefs.macro(row.button) == null) {
+                    if (prefs.macroLibrary.isEmpty()) openMacroEditor(row) else openMacroLibrary(row)
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        }.show()
     }
 
     private fun showMacroUnavailable() {
@@ -1647,7 +1740,5 @@ class SettingsActivity : Activity() {
         private const val REQUEST_BACKUP_SAVE = 2
         private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
-        /** The description line of an action-list entry, relative to its name. */
-        private const val DESCRIPTION_SCALE = 0.8f
     }
 }

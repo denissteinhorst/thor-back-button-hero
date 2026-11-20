@@ -161,7 +161,7 @@ class SettingsActionsTest {
         selectSettingsPage(activity, SettingsSection.SHOULDERS)
         clickRow(activity, "L1")
         val adapter = ShadowAlertDialog.getLatestAlertDialog().listView.adapter
-        val items = (0 until adapter.count).map { adapter.getItem(it).toString() }
+        val items = (0 until adapter.count).filter { adapter.isEnabled(it) }.map { adapter.getItem(it).toString() }
         fun entry(name: Int) = items.first { it.substringBefore('\n') == activity.getString(name) }
         // "Not set" does nothing, so it stays a single line; everything else carries its description.
         assertEquals(activity.getString(R.string.shoulder_none), items.first())
