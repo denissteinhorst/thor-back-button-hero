@@ -167,6 +167,11 @@ own accessibility service.
 - **Use the Home button as Back** (Settings page, off by default) makes the house
   key act exactly like Back: every gesture, shortcut and app exception. Back + Home
   is unavailable while it is on; its binding is kept.
+- **Dual mode** (Settings page, off by default, not together with Home as Back) makes
+  the house key a second modifier with its own complete set of bindings and timings:
+  Back + L1 and Home + L1 can run different actions. The first activation copies the
+  Back bindings (Home's single tap stays Home); the binding pages then show Home and
+  Back side by side. Turning it off keeps the Home bindings for later.
 - **Backup** (Settings page) saves all bindings, timings, switches, the activation
   shortcut and the app exceptions as one JSON file, named
   `back-button-hero-backup_v<version>_<date>.json`, through Android's file picker, so

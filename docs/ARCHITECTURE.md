@@ -245,6 +245,17 @@ on release instead. Back + Home cannot be pressed meanwhile, so its row is shown
 `PadHelper` sends `HOMEBACK 0/1` so the helper counts Home as Back for D-pad and stick captures, which also turns
 its Home + Back emergency release off.
 
+**Dual mode** (`Prefs.dualMode`, Settings page, off by default, exclusive with Home as Back) makes the pad's Home a
+second modifier with its own complete binding set; `docs/DUAL-MODE.md` is the spec. Home-layer bindings are the
+same `ComboButton`s wrapped in `HomeLayerButton`, whose `prefKey` carries a `dual_` prefix, so every prefKey-based
+read, write, snapshot and backup handles them unchanged; `ComboButton.base` gets the wrapped button back for type
+checks and exceptions, which both layers share. The service reuses the Home-as-Back route (the first modifier owns
+the press, the other is swallowed) and latches at DOWN whether the press is Home's: Home then drives its own
+`BackGestureMachine` (`homeGesture`, over `Prefs.homeGestures` with the Home layer's timings) and every combo held
+under it resolves through `layered()` to the Home layer. Home's native fallback is `GLOBAL_ACTION_HOME`, not Back.
+`PadHelper` sends `HOMEBACK 2`: Home counts as held for captures, and the emergency release stays on. Turning dual
+mode off keeps the Home layer's bindings but makes them rest; only a whole-app reset clears them.
+
 **Back + Home as the activation shortcut** (`Prefs.TOGGLE_BACK_HOME`) must toggle and nothing else, in either order,
 active or paused, with Home as Back on or off. `ServiceToggleGesture` therefore runs first in `onKeyEvent`, ahead of
 the Home-as-Back routing, and tracks one press per key across mirrored devices. Once both keys are down the second

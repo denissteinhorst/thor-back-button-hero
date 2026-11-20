@@ -159,6 +159,8 @@ clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Control Recents with the controller
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=Switch minHeightDp=48 focusable=true contentDescription=Use the Home button as Back
+clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
+clickable=Switch minHeightDp=48 focusable=true contentDescription=Dual mode
 clickable=LinearLayout minHeightDp=56 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)
 clickable=LinearLayout minHeightDp=72 focusable=true contentDescription=(none)

@@ -47,6 +47,8 @@ class SettingsActivity : Activity() {
     private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
     private var stickTabBar: LinearLayout? = null
     private var stickTab = Stick.LEFT
+    /** Which layer the overview draws in dual mode. */
+    private var overviewHome = false
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
     private var updateDialog: AlertDialog? = null
@@ -104,18 +106,17 @@ class SettingsActivity : Activity() {
     private fun openIndicatorFromIntent() {
         val key = intent?.getStringExtra(EXTRA_INDICATOR_BUTTON) ?: return
         intent.removeExtra(EXTRA_INDICATOR_BUTTON)
-        val button = (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
-            AndroidButton.entries + FaceButton.entries).firstOrNull { it.prefKey == key } ?: return
+        val button = Prefs.STORED_BUTTONS.firstOrNull { it.prefKey == key } ?: return
         if (prefs.shoulderAction(button) != Prefs.SHOULDER_CONTROLLER_FOCUS) return
-        when (button) {
+        when (val control = button.base) {
             is ShoulderButton -> navigation.show(SettingsSection.SHOULDERS)
-            is StickButton -> showStickButton(button.stick)
-            is StickClickButton -> showStickButton(button.stick)
+            is StickButton -> showStickButton(control.stick)
+            is StickClickButton -> showStickButton(control.stick)
             is BackGestureButton, is AndroidButton -> navigation.show(SettingsSection.BASIC)
             is FaceButton -> navigation.show(SettingsSection.FACE)
             else -> navigation.show(SettingsSection.DPAD)
         }
-        val row = comboRows.getValue(key)
+        val row = comboRows[key] ?: return
         row.position.row.post {
             if (isFinishing || isDestroyed) return@post
             row.position.row.requestRectangleOnScreen(Rect(0, 0, row.position.row.width, row.position.row.height), true)
@@ -165,8 +166,11 @@ class SettingsActivity : Activity() {
     private fun buildPage(section: SettingsSection, content: LinearLayout) {
         val page = SettingsPage(this, content)
         pages[section] = page
-        fun change(action: SettingsChangeAction, scope: SettingsSection? = section) =
-            { showChanges(SettingsChangePlan.create(prefs.snapshot(), scope, action)) }
+        fun change(action: SettingsChangeAction, scope: SettingsSection? = section) = {
+            if (prefs.dualMode && SettingsChangePlan.hasLayers(scope)) chooseLayers { layers ->
+                showChanges(SettingsChangePlan.create(prefs.snapshot(), scope, action, layers))
+            } else showChanges(SettingsChangePlan.create(prefs.snapshot(), scope, action))
+        }
         val actions = when (section) {
             SettingsSection.HELP, SettingsSection.OVERVIEW -> emptyList()
             SettingsSection.EXCEPTIONS -> listOf(
@@ -179,6 +183,7 @@ class SettingsActivity : Activity() {
         }
         // The overview needs the room for its drawing; it explains itself in one line underneath.
         if (section != SettingsSection.OVERVIEW) page.introduction(section.hintRes, actions, primary = R.string.exceptions_add_app)
+        if (prefs.dualMode && section in DUAL_SECTIONS && section != SettingsSection.STICKS) dualHeader(page)
         when (section) {
             SettingsSection.OVERVIEW -> buildOverview(page)
             SettingsSection.BASIC -> buildBasic(page)
@@ -227,8 +232,20 @@ class SettingsActivity : Activity() {
             setPadding(dp(16), dp(4), dp(16), dp(4))
         }
         val empty = note(R.string.overview_empty)
+        // Dual mode draws one layer at a time; the switch sits above the drawing.
+        if (prefs.dualMode) {
+            lateinit var tabs: LinearLayout
+            tabs = tabBar(listOf(R.string.dual_column_home, R.string.dual_column_back), if (overviewHome) 0 else 1,
+                listOf(R.drawable.ic_exc_home, R.drawable.ic_exc_back)) {
+                overviewHome = it == 0
+                selectTab(tabs, it)
+                page.refresh()
+            }
+            tabs.tag = "settings_overview_layers"
+            page.live(tabs) {}
+        }
         page.live(overview) {
-            val groups = overviewGroups()
+            val groups = overviewGroups(overviewHome && prefs.dualMode)
             overview.setGroups(groups)
             overview.setToggle(getString(R.string.service_toggle_title),
                 ServiceToggleGesture.label(prefs.toggleButtons)?.let { getString(R.string.overview_toggle_hold, it) })
@@ -290,9 +307,10 @@ class SettingsActivity : Activity() {
         return describeAction(action)
     }
 
-    /** One group per physical control, holding only the bindings that are assigned. */
-    private fun overviewGroups(): List<OverviewGroup> {
-        fun label(button: ComboButton): String? {
+    /** One group per physical control, holding only the bindings that are assigned; [home] draws dual mode's Home layer. */
+    private fun overviewGroups(home: Boolean = false): List<OverviewGroup> {
+        fun label(control: ComboButton): String? {
+            val button = if (home) HomeLayerButton.of(control) else control
             val action = prefs.shoulderAction(button).ifEmpty { return null }
             // AYN's switches name their chosen value too, like "Performance · Max".
             val ayn = describeAynOption(button).takeIf { Ayn.groupOf(action) != null && it.isNotEmpty() }
@@ -308,10 +326,21 @@ class SettingsActivity : Activity() {
         fun pad(control: OverviewControl, title: Int, section: SettingsSection, of: (DpadDirection) -> ComboButton, vararg rows: Pair<String, ComboButton>) =
             OverviewGroup(control, getString(title), bound(*rows), section, directions(of))
                 .takeIf { it.rows.isNotEmpty() || it.directions.isNotEmpty() }
-        // Back mode blocks the Back + Home shortcut, so Home shows either its mode or its shortcut.
-        fun home() = if (prefs.homeAsBack) OverviewGroup(OverviewControl.HOME, getString(R.string.button_home),
-            listOf("" to getString(R.string.overview_home_back_mode)), SettingsSection.BASIC)
-        else group(OverviewControl.HOME, R.string.button_home, SettingsSection.BASIC, "" to AndroidButton.HOME)
+        fun gestures(control: OverviewControl, title: Int) = group(control, title, SettingsSection.BASIC,
+            getString(R.string.overview_press) to BackGestureButton.SINGLE,
+            getString(R.string.overview_double_press) to BackGestureButton.DOUBLE,
+            getString(R.string.overview_tap_hold) to BackGestureButton.TAP_HOLD,
+            getString(R.string.overview_hold) to BackGestureButton.HOLD,
+        )
+        // Back mode and dual mode block the Back + Home shortcut, so Home shows its mode or its shortcut;
+        // in the Home layer, Home holds the gestures Back holds in the Back layer.
+        fun home() = when {
+            home -> gestures(OverviewControl.HOME, R.string.button_home)
+            prefs.homeAsBack || prefs.dualMode -> OverviewGroup(OverviewControl.HOME, getString(R.string.button_home),
+                listOf("" to getString(if (prefs.dualMode) R.string.overview_home_dual_mode else R.string.overview_home_back_mode)),
+                SettingsSection.BASIC)
+            else -> group(OverviewControl.HOME, R.string.button_home, SettingsSection.BASIC, "" to AndroidButton.HOME)
+        }
         fun stick(stick: Stick, control: OverviewControl, title: Int) = pad(control, title, SettingsSection.STICKS, { StickButton.of(stick, it) },
             getString(R.string.overview_click) to StickClickButton.of(stick, StickClick.PRESS),
             getString(R.string.overview_double_click) to StickClickButton.of(stick, StickClick.DOUBLE),
@@ -330,12 +359,7 @@ class SettingsActivity : Activity() {
             group(OverviewControl.FACE, R.string.overview_face, SettingsSection.FACE,
                 "A" to FaceButton.A, "B" to FaceButton.B, "X" to FaceButton.X, "Y" to FaceButton.Y),
             stick(Stick.RIGHT, OverviewControl.RIGHT_STICK, R.string.stick_tab_right),
-            group(OverviewControl.BACK, R.string.overview_back, SettingsSection.BASIC,
-                getString(R.string.overview_press) to BackGestureButton.SINGLE,
-                getString(R.string.overview_double_press) to BackGestureButton.DOUBLE,
-                getString(R.string.overview_tap_hold) to BackGestureButton.TAP_HOLD,
-                getString(R.string.overview_hold) to BackGestureButton.HOLD,
-            ),
+            if (home) null else gestures(OverviewControl.BACK, R.string.overview_back),
         )
     }
 
@@ -368,25 +392,30 @@ class SettingsActivity : Activity() {
             val page = SettingsPage(this, box)
             stickPages += page
             stickBoxes[stick] = box
+            if (prefs.dualMode) dualHeader(page)
             page.sectionHeader(if (stick == Stick.LEFT) R.string.stick_left_bindings_section else R.string.stick_right_bindings_section)
             StickButton.entries.filter { it.stick == stick }.forEach { buildShoulderRow(page, it, titles.getValue(it)) }
             // Same three sections, in the same order, as the Back page: the action replaces the switch.
-            fun clickRow(click: StickClick, extra: (SettingsPage.Card.() -> View)? = null) {
+            fun clickRow(click: StickClick, extra: (SettingsPage.Card.(ComboButton) -> View)? = null) {
                 val button = StickClickButton.of(stick, click)
                 buildShoulderRow(page, button, clickTitles.getValue(button), extra)
             }
             page.sectionHeader(R.string.single_section_title)
             clickRow(StickClick.PRESS)
             page.sectionHeader(R.string.double_section_title)
-            clickRow(StickClick.DOUBLE) {
+            clickRow(StickClick.DOUBLE) { button ->
+                val home = button is HomeLayerButton
                 subOptions {
-                    sliderRow(R.string.stick_double_speed, 150, 600, 50, prefs.stickDoubleMs(stick), R.string.stick_double_hint, readValue = { prefs.stickDoubleMs(stick) }) { prefs.setStickDoubleMs(stick, it) }
+                    sliderRow(R.string.stick_double_speed, 150, 600, 50, prefs.stickDoubleMs(stick, home), R.string.stick_double_hint,
+                        readValue = { prefs.stickDoubleMs(stick, home) }) { prefs.setStickDoubleMs(stick, it, home) }
                 }
             }
             page.sectionHeader(R.string.tap_hold_section_title)
-            clickRow(StickClick.TAP_HOLD) {
+            clickRow(StickClick.TAP_HOLD) { button ->
+                val home = button is HomeLayerButton
                 subOptions {
-                    sliderRow(R.string.stick_tap_hold_speed, 500, 2000, 100, prefs.stickTapHoldMs(stick), R.string.stick_tap_hold_hint, readValue = { prefs.stickTapHoldMs(stick) }) { prefs.setStickTapHoldMs(stick, it) }
+                    sliderRow(R.string.stick_tap_hold_speed, 500, 2000, 100, prefs.stickTapHoldMs(stick, home), R.string.stick_tap_hold_hint,
+                        readValue = { prefs.stickTapHoldMs(stick, home) }) { prefs.setStickTapHoldMs(stick, it, home) }
                 }
             }
         }
@@ -406,19 +435,33 @@ class SettingsActivity : Activity() {
 
     private fun buildBasic(page: SettingsPage) {
         // Every gesture takes any action; its timing only shows once it has one.
-        fun gesture(section: Int, button: BackGestureButton, row: Int, slider: (SettingsPage.Card.() -> View)? = null) {
+        fun gesture(section: Int, button: BackGestureButton, row: Int, slider: (SettingsPage.Card.(ComboButton) -> View)? = null) {
             page.sectionHeader(section)
             buildShoulderRow(page, button, row, slider)
         }
+        // In dual mode the Home column times its own gestures.
+        fun timing(button: ComboButton, back: () -> Long, home: () -> Long, set: (Long, Boolean) -> Unit): Pair<() -> Long, (Long) -> Unit> {
+            val ofHome = button is HomeLayerButton
+            return (if (ofHome) home else back) to { value: Long -> set(value, ofHome) }
+        }
         gesture(R.string.single_section_title, BackGestureButton.SINGLE, R.string.back_single_row)
-        gesture(R.string.double_section_title, BackGestureButton.DOUBLE, R.string.back_double_row) {
-            subOptions { sliderRow(R.string.double_speed, 150, 600, 50, prefs.doubleTapMs, R.string.double_hint, readValue = { prefs.doubleTapMs }) { prefs.doubleTapMs = it } }
+        gesture(R.string.double_section_title, BackGestureButton.DOUBLE, R.string.back_double_row) { button ->
+            val (read, write) = timing(button, { prefs.doubleTapMs }, { prefs.homeDoubleTapMs }) { v, home ->
+                if (home) prefs.homeDoubleTapMs = v else prefs.doubleTapMs = v
+            }
+            subOptions { sliderRow(R.string.double_speed, 150, 600, 50, read(), R.string.double_hint, readValue = read, onChange = write) }
         }
-        gesture(R.string.tap_hold_section_title, BackGestureButton.TAP_HOLD, R.string.back_tap_hold_row) {
-            subOptions { sliderRow(R.string.tap_hold_speed, 500, 2000, 100, prefs.tapHoldMs, R.string.tap_hold_hint, readValue = { prefs.tapHoldMs }) { prefs.tapHoldMs = it } }
+        gesture(R.string.tap_hold_section_title, BackGestureButton.TAP_HOLD, R.string.back_tap_hold_row) { button ->
+            val (read, write) = timing(button, { prefs.tapHoldMs }, { prefs.homeTapHoldMs }) { v, home ->
+                if (home) prefs.homeTapHoldMs = v else prefs.tapHoldMs = v
+            }
+            subOptions { sliderRow(R.string.tap_hold_speed, 500, 2000, 100, read(), R.string.tap_hold_hint, readValue = read, onChange = write) }
         }
-        gesture(R.string.hold_section_title, BackGestureButton.HOLD, R.string.back_hold_row) {
-            subOptions { sliderRow(R.string.hold_speed, 500, 2000, 100, prefs.holdMs, R.string.hold_hint, readValue = { prefs.holdMs }) { prefs.holdMs = it } }
+        gesture(R.string.hold_section_title, BackGestureButton.HOLD, R.string.back_hold_row) { button ->
+            val (read, write) = timing(button, { prefs.holdMs }, { prefs.homeHoldMs }) { v, home ->
+                if (home) prefs.homeHoldMs = v else prefs.holdMs = v
+            }
+            subOptions { sliderRow(R.string.hold_speed, 500, 2000, 100, read(), R.string.hold_hint, readValue = read, onChange = write) }
         }
         page.sectionHeader(R.string.android_bindings_section)
         buildShoulderRow(page, AndroidButton.HOME, R.string.button_home)
@@ -436,8 +479,15 @@ class SettingsActivity : Activity() {
         page.sectionHeader(R.string.home_as_back_section)
         page.card {
             toggleRow(R.string.home_as_back, R.string.home_as_back_hint, prefs.homeAsBack, readValue = { prefs.homeAsBack }) {
+                val wasDual = prefs.dualMode
                 prefs.homeAsBack = it
-                comboRows[AndroidButton.HOME.prefKey]?.let(::updateShoulderRow)
+                if (wasDual != prefs.dualMode) invalidatePages()
+                else comboRows[AndroidButton.HOME.prefKey]?.let(::updateShoulderRow)
+            }
+            // The two Home modes exclude each other; dual mode also rebuilds the binding pages into columns.
+            toggleRow(R.string.dual_mode, R.string.dual_mode_hint, prefs.dualMode, readValue = { prefs.dualMode }) {
+                prefs.dualMode = it
+                invalidatePages()
             }
         }
         page.sectionHeader(R.string.service_toggle_title)
@@ -1110,7 +1160,7 @@ class SettingsActivity : Activity() {
     )
 
     private fun chooseShoulderAction(row: ComboRow) {
-        val choices = shoulderActions(macro = row.button !is BackGestureButton)
+        val choices = shoulderActions(macro = row.button.base !is BackGestureButton)
         val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.launchesApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
         ActionChooser(
@@ -1381,16 +1431,37 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    /** Dual mode's column heads above a page's bindings. */
+    private fun dualHeader(page: SettingsPage) = page.dualHeader(
+        R.drawable.ic_exc_home, getString(R.string.dual_column_home), R.drawable.ic_exc_back, getString(R.string.dual_column_back),
+    )
+
+    /**
+     * One binding's card, or in dual mode the Home layer's and the Back layer's side by side. Back + Home
+     * has no Home counterpart, so its Home side stays empty.
+     */
     private fun buildShoulderRow(
         page: SettingsPage,
         button: ComboButton,
         titleRes: Int,
-        extra: (SettingsPage.Card.() -> View)? = null,
+        extra: (SettingsPage.Card.(ComboButton) -> View)? = null,
+    ) {
+        if (!prefs.dualMode) return buildBindingCard(page, button, titleRes, extra)
+        val (home, back) = page.columns()
+        if (button in Prefs.HOME_LAYER_BASES) buildBindingCard(home, HomeLayerButton.of(button), titleRes, extra)
+        buildBindingCard(back, button, titleRes, extra)
+    }
+
+    private fun buildBindingCard(
+        page: SettingsPage,
+        button: ComboButton,
+        titleRes: Int,
+        extra: (SettingsPage.Card.(ComboButton) -> View)?,
     ) {
         val card = page.card {}
         lateinit var row: ComboRow
         val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
-        val timing = extra?.let { card.it() }
+        val timing = extra?.let { card.it(button) }
         lateinit var display: SettingsPage.ChooserHandle
         val displayOptions = card.subOptions {
             display = chooserRow(R.string.level_target_title, describeShoulderDisplay(button)) { chooseShoulderDisplay(row) }
@@ -1399,7 +1470,9 @@ class SettingsActivity : Activity() {
         val targetOptions = card.subOptions {
             target = chooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
         }
-        row = ComboRow(card, button, getString(titleRes), action, display, target, displayOptions, targetOptions, timing)
+        // The Home column's label names its layer, so the dialogs and screen readers say which binding it is.
+        val label = if (button is HomeLayerButton) getString(R.string.settings_home_binding_label, getString(titleRes)) else getString(titleRes)
+        row = ComboRow(card, button, label, action, display, target, displayOptions, targetOptions, timing)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
@@ -1604,8 +1677,13 @@ class SettingsActivity : Activity() {
         // With Home standing in for Back, or Back + Home as the activation shortcut, Back + Home cannot
         // run its own shortcut; the binding stays stored.
         val toggleBlocks = row.button == AndroidButton.HOME && prefs.toggleButtons == Prefs.TOGGLE_BACK_HOME
-        val blocked = toggleBlocks || row.button == AndroidButton.HOME && prefs.homeAsBack
-        if (blocked) row.action.value.text = getString(if (toggleBlocks) R.string.toggle_combo_blocked else R.string.home_as_back_combo_blocked)
+        val dualBlocks = row.button == AndroidButton.HOME && prefs.dualMode
+        val blocked = toggleBlocks || dualBlocks || row.button == AndroidButton.HOME && prefs.homeAsBack
+        if (blocked) row.action.value.text = getString(when {
+            toggleBlocks -> R.string.toggle_combo_blocked
+            dualBlocks -> R.string.dual_mode_combo_blocked
+            else -> R.string.home_as_back_combo_blocked
+        })
         (row.action.row.parent as View).let { card ->
             card.alpha = if (blocked) 0.5f else 1f
             setTreeEnabled(card, !blocked)
@@ -1726,6 +1804,20 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    /** Dual mode's Unbind asks first which layer it reaches; the answer goes to [then]. */
+    private fun chooseLayers(then: (Set<BindingLayer>) -> Unit) {
+        val choices = listOf(
+            R.string.unbind_layer_home to setOf(BindingLayer.HOME),
+            R.string.unbind_layer_back to setOf(BindingLayer.BACK),
+            R.string.unbind_layer_both to setOf(BindingLayer.HOME, BindingLayer.BACK),
+        )
+        AlertDialog.Builder(this)
+            .setTitle(R.string.unbind_layer_title)
+            .setItems(choices.map { getString(it.first) }.toTypedArray()) { _, which -> then(choices[which].second) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun showChanges(plan: SettingsChangePlan) {
         val scope = getString(plan.section?.titleRes ?: R.string.settings_entire_app)
         val restore = plan.action == SettingsChangeAction.RESTORE
@@ -1771,7 +1863,7 @@ class SettingsActivity : Activity() {
                 } else {
                     // A preview is a promise: changed preferences require a new confirmation.
                     showChanges(if (restore) plan.copy(before = prefs.snapshot())
-                    else SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action))
+                    else SettingsChangePlan.create(prefs.snapshot(), plan.section, plan.action, plan.layers))
                 }
             }
         builder.show()
@@ -1822,6 +1914,13 @@ class SettingsActivity : Activity() {
         addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
         addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
         addChange(getString(R.string.home_as_back), onOff(a.homeAsBack), onOff(b.homeAsBack))
+        addChange(getString(R.string.dual_mode), onOff(a.dualMode), onOff(b.dualMode))
+        val homeSide = getString(R.string.dual_column_home)
+        fun homeTiming(res: Int, old: Long, new: Long) =
+            addChange(getString(R.string.settings_property_label, homeSide, getString(res)), ms(old), ms(new))
+        homeTiming(R.string.settings_double_time, a.homeDoubleMs, b.homeDoubleMs)
+        homeTiming(R.string.settings_tap_hold_time, a.homeTapHoldMs, b.homeTapHoldMs)
+        homeTiming(R.string.settings_hold_time, a.homeHoldMs, b.homeHoldMs)
         addChange(getString(R.string.service_toggle_buttons), toggleLabel(a.toggleButtons), toggleLabel(b.toggleButtons))
         addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
         fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
@@ -1849,11 +1948,19 @@ class SettingsActivity : Activity() {
             val side = getString(if (stick == Stick.LEFT) R.string.stick_tab_left else R.string.stick_tab_right)
             addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_double_title)), ms(old.doubleMs), ms(new.doubleMs))
             addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_tap_hold_title)), ms(old.tapHoldMs), ms(new.tapHoldMs))
+            val oldHome = a.homeStickTimings.getValue(stick.prefix)
+            val newHome = b.homeStickTimings.getValue(stick.prefix)
+            val homeStick = getString(R.string.settings_property_label, homeSide, side)
+            addChange(getString(R.string.settings_property_label, homeStick, getString(R.string.stick_double_title)), ms(oldHome.doubleMs), ms(newHome.doubleMs))
+            addChange(getString(R.string.settings_property_label, homeStick, getString(R.string.stick_tap_hold_title)), ms(oldHome.tapHoldMs), ms(newHome.tapHoldMs))
         }
-        buttons.forEach { (button, labelRes) ->
+        // The Home layer follows the Back layer, binding by binding.
+        val layers = buttons.map { (button, labelRes) -> Triple(button, labelRes, R.string.settings_binding_label) } +
+            buttons.map { (button, labelRes) -> Triple(HomeLayerButton.of(button), labelRes, R.string.settings_home_binding_label) }
+        layers.forEach { (button, labelRes, layerRes) ->
             val old = a.bindings.getValue(button.prefKey)
             val new = b.bindings.getValue(button.prefKey)
-            val label = getString(R.string.settings_binding_label, getString(labelRes))
+            val label = getString(layerRes, getString(labelRes))
             addChange(label, binding(old), binding(new))
             fun extra(res: Int, from: String, to: String) = addChange(getString(R.string.settings_property_label, label, getString(res)), from, to)
             if (!(launches(old) && launches(new))) extra(R.string.level_target_title, target(old.display), target(new.display))
@@ -2036,5 +2143,9 @@ class SettingsActivity : Activity() {
         private const val REQUEST_BACKUP_SAVE = 2
         private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = "@choose_app"
+        /** The pages dual mode splits into a Home and a Back column. */
+        private val DUAL_SECTIONS = setOf(
+            SettingsSection.BASIC, SettingsSection.FACE, SettingsSection.SHOULDERS, SettingsSection.DPAD, SettingsSection.STICKS,
+        )
     }
 }

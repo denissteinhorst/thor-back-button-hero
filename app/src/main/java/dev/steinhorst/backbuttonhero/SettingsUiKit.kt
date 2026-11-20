@@ -9,6 +9,10 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.DynamicDrawableSpan
+import android.text.style.ImageSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -102,9 +106,13 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
         update()
     }
 
+    // Set by [dualHeader]: below the Home | Back heads a section heading spans both columns, so it is centred.
+    private var centeredHeaders = false
+
     fun sectionHeader(res: Int) {
         TextView(activity).apply {
             setText(res)
+            if (centeredHeaders) gravity = Gravity.CENTER_HORIZONTAL
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             setTypeface(typeface, Typeface.BOLD)
             letterSpacing = 0.04f
@@ -128,6 +136,67 @@ class SettingsPage(private val activity: Activity, private val content: LinearLa
             }
             if (actions.isNotEmpty()) settingsActions(true, actions, primary)
         }
+    }
+
+    /**
+     * Dual mode's column heads: Home left, Back right, split by the same rule as the columns below
+     * and underlined by a second one (see [columns]).
+     */
+    fun dualHeader(leftIcon: Int, leftText: String, rightIcon: Int, rightText: String) {
+        centeredHeaders = true
+        fun head(icon: Int, text: String) = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(12), dp(4), dp(10))
+            val color = themeColor(android.R.attr.textColorPrimary, Color.BLACK)
+            addView(ImageView(activity).apply {
+                setImageResource(icon)
+                imageTintList = ColorStateList.valueOf(color)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(8) })
+            addView(TextView(activity).apply {
+                this.text = text
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(color)
+            })
+        }
+        val row = LinearLayout(activity).apply {
+            tag = "settings_dual_header"
+            orientation = LinearLayout.HORIZONTAL
+            addView(head(leftIcon, leftText), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(rule(), LinearLayout.LayoutParams(dp(1), ViewGroup.LayoutParams.MATCH_PARENT))
+            addView(head(rightIcon, rightText), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        content.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(8)
+        })
+        content.addView(rule(), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply { bottomMargin = dp(8) })
+    }
+
+    /**
+     * Two equal columns split by a rule, for one binding of dual mode's two layers. Each pair is one
+     * row, so both bindings start on the same line and the shorter side leaves its space empty.
+     */
+    fun columns(): Pair<SettingsPage, SettingsPage> {
+        fun column() = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
+        val left = column()
+        val right = column()
+        val row = LinearLayout(activity).apply {
+            tag = "settings_dual_row"
+            orientation = LinearLayout.HORIZONTAL
+            addView(left, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(8) })
+            addView(rule(), LinearLayout.LayoutParams(dp(1), ViewGroup.LayoutParams.MATCH_PARENT))
+            addView(right, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(8) })
+        }
+        content.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        val pages = SettingsPage(activity, left) to SettingsPage(activity, right)
+        refreshers += { pages.first.refresh(); pages.second.refresh() }
+        return pages
+    }
+
+    private fun rule() = View(activity).apply {
+        setBackgroundColor((secondaryTextColor() and 0x00FFFFFF) or 0x40000000)
     }
 
     /** Starts a new rounded, elevated group; add rows to the returned [Card]. */
@@ -637,8 +706,9 @@ fun Activity.settingsSurfaceColor(surface: SettingsSurface): Int {
         channel(Color.blue(background), Color.blue(foreground)))
 }
 
-/** Two or more equal-width tabs in one rounded strip; [onSelect] gets the tapped index. */
-fun Activity.tabBar(labels: List<Int>, selected: Int, onSelect: (Int) -> Unit): LinearLayout {
+/** Two or more equal-width tabs in one rounded strip; [onSelect] gets the tapped index. [icons], if given,
+ *  go before the labels, drawn inline so they stay centred with the text and take its colour. */
+fun Activity.tabBar(labels: List<Int>, selected: Int, icons: List<Int> = emptyList(), onSelect: (Int) -> Unit): LinearLayout {
     val accent = themedColor(android.R.attr.colorAccent, Color.parseColor("#6750A4"))
     val strip = LinearLayout(this).apply {
         tag = "settings_tabs"
@@ -651,7 +721,14 @@ fun Activity.tabBar(labels: List<Int>, selected: Int, onSelect: (Int) -> Unit): 
     }
     labels.forEachIndexed { index, label ->
         strip.addView(TextView(this).apply {
-            setText(label)
+            val icon = icons.getOrNull(index)
+            if (icon == null) setText(label) else {
+                val drawable = checkNotNull(getDrawable(icon)).mutate().apply { setBounds(0, 0, dp(20), dp(20)) }
+                text = SpannableString("\uFFFC  " + getString(label)).apply {
+                    setSpan(ImageSpan(drawable, DynamicDrawableSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                contentDescription = getString(label)
+            }
             gravity = Gravity.CENTER
             textSize = 15f
             minHeight = dp(44)
@@ -673,6 +750,7 @@ fun Activity.selectTab(strip: LinearLayout, selected: Int) {
         val on = index == selected
         tab.isSelected = on
         tab.setTextColor(if (on) accent else primary)
+        (tab.text as? Spanned)?.getSpans(0, tab.text.length, ImageSpan::class.java)?.forEach { it.drawable.setTint(if (on) accent else primary) }
         tab.setTypeface(null, if (on) Typeface.BOLD else Typeface.NORMAL)
         tab.background = GradientDrawable().apply {
             cornerRadius = dp(9).toFloat()

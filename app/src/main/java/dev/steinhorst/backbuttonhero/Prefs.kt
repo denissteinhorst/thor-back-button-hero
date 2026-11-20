@@ -4,7 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 
-class Prefs(context: Context) {
+class Prefs(context: Context) : GestureSettings {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
 
     init {
@@ -141,11 +141,11 @@ class Prefs(context: Context) {
     private fun setGestureEnabled(gesture: BackGestureButton, on: Boolean) =
         setShoulderAction(gesture, if (on) gesture.earlierDefault else "")
 
-    var doubleTapEnabled: Boolean
+    override var doubleTapEnabled: Boolean
         get() = gestureEnabled(BackGestureButton.DOUBLE)
         set(v) = setGestureEnabled(BackGestureButton.DOUBLE, v)
 
-    var doubleTapMs: Long
+    override var doubleTapMs: Long
         get() = sp.getLong("double_ms", DEFAULT_DOUBLE_TAP_MS)
         set(v) = sp.edit().putLong("double_ms", v).apply()
 
@@ -159,10 +159,27 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
         set(v) = sp.edit().putBoolean("switcher_controller_enabled", v).apply()
 
-    /** Whether the pad's Home key acts exactly like Back: every gesture, combo and exception. */
+    /** Whether the pad's Home key acts exactly like Back: every gesture, combo and exception. Excludes [dualMode]. */
     var homeAsBack: Boolean
         get() = sp.getBoolean("home_as_back", DEFAULT_HOME_AS_BACK)
-        set(v) = sp.edit().putBoolean("home_as_back", v).apply()
+        set(v) {
+            val edit = sp.edit().putBoolean("home_as_back", v)
+            if (v) edit.putBoolean("dual_mode", false)
+            edit.apply()
+        }
+
+    /**
+     * Whether the pad's Home key is a second modifier with its own bindings (docs/DUAL-MODE.md). Excludes
+     * [homeAsBack]. The first switch-on copies the Back layer once; later ones find the stored Home layer.
+     */
+    var dualMode: Boolean
+        get() = sp.getBoolean("dual_mode", DEFAULT_DUAL_MODE)
+        set(v) {
+            val before = snapshot()
+            var after = before.copy(dualMode = v, homeAsBack = before.homeAsBack && !v)
+            if (v && !before.dualSeeded) after = after.seededHomeLayer()
+            applySettings(before, after)
+        }
 
     var toggleButtons: String
         get() = sp.getString("toggle_buttons", DEFAULT_TOGGLE_BUTTONS) ?: DEFAULT_TOGGLE_BUTTONS
@@ -172,24 +189,45 @@ class Prefs(context: Context) {
         get() = sp.getLong("toggle_hold_ms", DEFAULT_TOGGLE_HOLD_MS).coerceIn(100L, 3000L)
         set(v) = sp.edit().putLong("toggle_hold_ms", v).apply()
 
-    var holdEnabled: Boolean
+    override var holdEnabled: Boolean
         get() = gestureEnabled(BackGestureButton.HOLD)
         set(v) = setGestureEnabled(BackGestureButton.HOLD, v)
 
-    var holdMs: Long
+    override var holdMs: Long
         get() = sp.getLong("hold_ms", DEFAULT_HOLD_MS)
         set(v) = sp.edit().putLong("hold_ms", v).apply()
 
     /** Tap, then hold again for [tapHoldMs] opens the top screen's Recents
      *  instead of swapping screens. Only takes effect while double-tap is enabled, since
      *  it needs the "was there a pending tap" window double-tap already tracks. */
-    var tapHoldEnabled: Boolean
+    override var tapHoldEnabled: Boolean
         get() = gestureEnabled(BackGestureButton.TAP_HOLD)
         set(v) = setGestureEnabled(BackGestureButton.TAP_HOLD, v)
 
-    var tapHoldMs: Long
+    override var tapHoldMs: Long
         get() = sp.getLong("tap_hold_ms", DEFAULT_TAP_HOLD_MS)
         set(v) = sp.edit().putLong("tap_hold_ms", v).apply()
+
+    /** The Home layer's own gesture timings in dual mode. */
+    var homeDoubleTapMs: Long
+        get() = sp.getLong("${HomeLayerButton.PREFIX}double_ms", DEFAULT_DOUBLE_TAP_MS)
+        set(v) = sp.edit().putLong("${HomeLayerButton.PREFIX}double_ms", v).apply()
+    var homeTapHoldMs: Long
+        get() = sp.getLong("${HomeLayerButton.PREFIX}tap_hold_ms", DEFAULT_TAP_HOLD_MS)
+        set(v) = sp.edit().putLong("${HomeLayerButton.PREFIX}tap_hold_ms", v).apply()
+    var homeHoldMs: Long
+        get() = sp.getLong("${HomeLayerButton.PREFIX}hold_ms", DEFAULT_HOLD_MS)
+        set(v) = sp.edit().putLong("${HomeLayerButton.PREFIX}hold_ms", v).apply()
+
+    /** What the Home key's own gestures do in dual mode, read like Back's from this instance. */
+    val homeGestures: GestureSettings = object : GestureSettings {
+        override val doubleTapEnabled get() = shoulderAction(HomeLayerButton.of(BackGestureButton.DOUBLE)).isNotEmpty()
+        override val doubleTapMs get() = homeDoubleTapMs
+        override val tapHoldEnabled get() = shoulderAction(HomeLayerButton.of(BackGestureButton.TAP_HOLD)).isNotEmpty()
+        override val tapHoldMs get() = homeTapHoldMs
+        override val holdEnabled get() = shoulderAction(HomeLayerButton.of(BackGestureButton.HOLD)).isNotEmpty()
+        override val holdMs get() = homeHoldMs
+    }
 
     /** Holding Back and pressing [button] runs this action. Plain values are app package names. */
     fun shoulderAction(button: ComboButton): String =
@@ -310,7 +348,7 @@ class Prefs(context: Context) {
 
     /** Whether any hotkey turns the gyro on - the helper must then already hold the pad, so turning
      *  it on never recreates the controller under a running game. */
-    fun hasGyroAction(): Boolean = ALL_BUTTONS.any { shoulderAction(it) == SHOULDER_GYRO }
+    fun hasGyroAction(): Boolean = withHomeLayer(ALL_BUTTONS).any { shoulderAction(it) == SHOULDER_GYRO }
 
     /** The named macros, in the order they were first saved. Hotkeys refer to them by id. */
     var macroLibrary: List<SavedMacro>
@@ -340,7 +378,7 @@ class Prefs(context: Context) {
     }
 
     /** The hotkeys that play library macro [id]. */
-    fun macroUsers(id: String): List<ComboButton> = MACRO_BUTTONS.filter { sp.getString("${it.prefKey}_macro", null) == id }
+    fun macroUsers(id: String): List<ComboButton> = ALL_MACRO_BUTTONS.filter { sp.getString("${it.prefKey}_macro", null) == id }
 
     /** Removes macro [id] from the library and from every hotkey that played it, in one write. */
     fun deleteMacro(id: String) {
@@ -350,7 +388,7 @@ class Prefs(context: Context) {
     }
 
     /** Whether any hotkey plays a recorded macro - only then must the helper hold the pad for it. */
-    fun hasMacroAction(): Boolean = MACRO_BUTTONS.any { shoulderAction(it) == SHOULDER_MACRO && macro(it) != null }
+    fun hasMacroAction(): Boolean = withHomeLayer(MACRO_BUTTONS).any { shoulderAction(it) == SHOULDER_MACRO && macro(it) != null }
 
     /** Each screen's volume before a mute toggle set it to 0; 0 when none is stored. */
     var topVolumeBeforeMute: Int
@@ -389,25 +427,35 @@ class Prefs(context: Context) {
     }
 
     /** Whether any D-pad direction has an action - only then is the D-pad worth intercepting. */
-    fun hasDpadAction(): Boolean = DpadDirection.entries.any { shoulderAction(it).isNotEmpty() }
+    fun hasDpadAction(): Boolean = withHomeLayer(DpadDirection.entries).any { shoulderAction(it).isNotEmpty() }
 
     /** Whether [stick] (either one when null) has an action - only then are its axes worth intercepting. */
     fun hasStickAction(stick: Stick? = null): Boolean =
-        StickButton.entries.any { (stick == null || it.stick == stick) && shoulderAction(it).isNotEmpty() }
+        withHomeLayer(StickButton.entries.filter { stick == null || it.stick == stick }).any { shoulderAction(it).isNotEmpty() }
 
     /** Whether [stick]'s click gestures have any action - only then is its L3/R3 press ours. */
     fun hasStickClickAction(stick: Stick): Boolean =
-        StickClickButton.entries.any { it.stick == stick && shoulderAction(it).isNotEmpty() }
+        withHomeLayer(StickClickButton.entries.filter { it.stick == stick }).any { shoulderAction(it).isNotEmpty() }
 
-    /** Longest pause between the two presses of a stick's double press. */
-    fun stickDoubleMs(stick: Stick): Long =
-        sp.getLong("${stick.prefix}_double_ms", DEFAULT_DOUBLE_TAP_MS).coerceIn(150L, 600L)
-    fun setStickDoubleMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_double_ms", ms).apply() }
+    /** The Home layer counts only in dual mode; otherwise its stored bindings rest. */
+    private fun withHomeLayer(buttons: List<ComboButton>): List<ComboButton> =
+        if (dualMode) buttons + buttons.filter { it in HOME_LAYER_BASES }.map(HomeLayerButton::of) else buttons
+
+    private fun stickPrefix(stick: Stick, home: Boolean) = (if (home) HomeLayerButton.PREFIX else "") + stick.prefix
+
+    /** Longest pause between the two presses of a stick's double press; [home] reads the Home layer's. */
+    fun stickDoubleMs(stick: Stick, home: Boolean = false): Long =
+        sp.getLong("${stickPrefix(stick, home)}_double_ms", DEFAULT_DOUBLE_TAP_MS).coerceIn(150L, 600L)
+    fun setStickDoubleMs(stick: Stick, ms: Long, home: Boolean = false) {
+        sp.edit().putLong("${stickPrefix(stick, home)}_double_ms", ms).apply()
+    }
 
     /** How long a stick has to be held in after its first press for the tap-and-hold gesture. */
-    fun stickTapHoldMs(stick: Stick): Long =
-        sp.getLong("${stick.prefix}_tap_hold_ms", DEFAULT_TAP_HOLD_MS).coerceIn(500L, 2000L)
-    fun setStickTapHoldMs(stick: Stick, ms: Long) { sp.edit().putLong("${stick.prefix}_tap_hold_ms", ms).apply() }
+    fun stickTapHoldMs(stick: Stick, home: Boolean = false): Long =
+        sp.getLong("${stickPrefix(stick, home)}_tap_hold_ms", DEFAULT_TAP_HOLD_MS).coerceIn(500L, 2000L)
+    fun setStickTapHoldMs(stick: Stick, ms: Long, home: Boolean = false) {
+        sp.edit().putLong("${stickPrefix(stick, home)}_tap_hold_ms", ms).apply()
+    }
 
     /** Per-app opt-outs in the order the user added them. */
     var appExceptions: List<AppException>
@@ -423,8 +471,7 @@ class Prefs(context: Context) {
 
     private fun snapshot(library: List<SavedMacro>): SettingsState = SettingsState(
         doubleTapMs, tapHoldMs, holdMs, switcherShowsAllApps, switcherControllerEnabled, toggleButtons, toggleHoldMs,
-        (ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
-            AndroidButton.entries + FaceButton.entries).associate { button ->
+        STORED_BUTTONS.associate { button ->
             button.prefKey to BindingSettings(
                 shoulderAction(button), shoulderDisplay(button), sp.getString("${button.prefKey}_target", null),
                 focusTarget(button), focusIndicator(button), focusDuration(button), focusPosition(button),
@@ -440,6 +487,12 @@ class Prefs(context: Context) {
         Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it), stickTapHoldMs(it)) },
         homeAsBack = homeAsBack,
         macros = library,
+        dualMode = dualMode,
+        dualSeeded = sp.getBoolean("dual_seeded", false),
+        homeDoubleMs = homeDoubleTapMs,
+        homeTapHoldMs = homeTapHoldMs,
+        homeHoldMs = homeHoldMs,
+        homeStickTimings = Stick.entries.associate { it.prefix to StickTimings(stickDoubleMs(it, true), stickTapHoldMs(it, true)) },
     )
 
     /** Refuse stale previews; one editor makes listeners observe the complete new configuration. */
@@ -467,6 +520,11 @@ class Prefs(context: Context) {
         boolean("switcher_shows_all_apps", before.allApps, after.allApps)
         boolean("switcher_controller_enabled", before.controller, after.controller)
         boolean("home_as_back", before.homeAsBack, after.homeAsBack)
+        boolean("dual_mode", before.dualMode, after.dualMode)
+        boolean("dual_seeded", before.dualSeeded, after.dualSeeded)
+        long("${HomeLayerButton.PREFIX}double_ms", before.homeDoubleMs, after.homeDoubleMs)
+        long("${HomeLayerButton.PREFIX}tap_hold_ms", before.homeTapHoldMs, after.homeTapHoldMs)
+        long("${HomeLayerButton.PREFIX}hold_ms", before.homeHoldMs, after.homeHoldMs)
         string("toggle_buttons", before.toggleButtons, after.toggleButtons)
         long("toggle_hold_ms", before.toggleMs, after.toggleMs)
         before.bindings.forEach { (key, old) ->
@@ -499,6 +557,11 @@ class Prefs(context: Context) {
             val value = after.stickTimings.getValue(prefix)
             long("${prefix}_double_ms", old.doubleMs, value.doubleMs)
             long("${prefix}_tap_hold_ms", old.tapHoldMs, value.tapHoldMs)
+        }
+        before.homeStickTimings.forEach { (prefix, old) ->
+            val value = after.homeStickTimings.getValue(prefix)
+            long("${HomeLayerButton.PREFIX}${prefix}_double_ms", old.doubleMs, value.doubleMs)
+            long("${HomeLayerButton.PREFIX}${prefix}_tap_hold_ms", old.tapHoldMs, value.tapHoldMs)
         }
         if (before.exceptions != after.exceptions) edit.putString("app_exceptions", AppException.encode(after.exceptions))
         if (before.macros != after.macros) edit.putString("macro_library", SavedMacro.encode(after.macros))
@@ -534,6 +597,7 @@ class Prefs(context: Context) {
         const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false
         const val DEFAULT_SWITCHER_CONTROLLER_ENABLED = true
         const val DEFAULT_HOME_AS_BACK = false
+        const val DEFAULT_DUAL_MODE = false
         const val DEFAULT_TAP_HOLD_ENABLED = true
         const val DEFAULT_TAP_HOLD_MS = 1000L
         const val DEFAULT_HOLD_ENABLED = true
@@ -639,6 +703,21 @@ class Prefs(context: Context) {
 
         /** Every hotkey, Back's own gestures included. */
         private val ALL_BUTTONS: List<ComboButton> by lazy { MACRO_BUTTONS + BackGestureButton.entries }
+
+        /** The Back layer bindings the Home layer has too: all but Back + Home, which Home + Home cannot mirror. */
+        val HOME_LAYER_BASES: List<ComboButton> by lazy { ALL_BUTTONS - AndroidButton.HOME }
+
+        /** The Home layer, in the Back layer's order. */
+        val HOME_LAYER_BUTTONS: List<ComboButton> by lazy { HOME_LAYER_BASES.map(HomeLayerButton::of) }
+
+        /** Every stored binding of both layers, Back's first. */
+        val STORED_BUTTONS: List<ComboButton> by lazy {
+            ShoulderButton.entries + DpadDirection.entries + StickButton.entries + StickClickButton.entries + BackGestureButton.entries +
+                AndroidButton.entries + FaceButton.entries + HOME_LAYER_BUTTONS
+        }
+
+        /** Every hotkey of either layer that can play a macro. */
+        val ALL_MACRO_BUTTONS: List<ComboButton> by lazy { MACRO_BUTTONS + MACRO_BUTTONS.filter { it in HOME_LAYER_BASES }.map(HomeLayerButton::of) }
 
         fun isShoulderApp(action: String): Boolean = action.isNotEmpty() && !action.startsWith('@')
 

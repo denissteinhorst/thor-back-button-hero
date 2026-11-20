@@ -46,7 +46,7 @@ class PadHelper(
     @Volatile private var passthrough = 0
     @Volatile private var stickMask = 0
     @Volatile private var stickPassthrough = 0
-    @Volatile private var homeAsBack = false
+    @Volatile private var homeMode = HOME_PLAIN
     @Volatile private var recording = false
     private var listening = false
     private var failedLaunches = 0
@@ -140,15 +140,18 @@ class PadHelper(
         sendStickPassthrough()
     }
 
-    /** Lets the pad's Home key count as Back for captures; also turns the Home + Back release off. */
-    fun setHomeAsBack(value: Boolean) {
-        if (value == homeAsBack) return
-        homeAsBack = value
-        sendHomeAsBack()
+    /**
+     * [HOME_AS_BACK] and [HOME_DUAL] let the pad's Home key count as a held modifier for captures. Only
+     * [HOME_AS_BACK] also turns the Home + Back release off: there both keys are one, in dual mode they are not.
+     */
+    fun setHomeMode(mode: Int) {
+        if (mode == homeMode) return
+        homeMode = mode
+        sendHomeMode()
     }
 
-    private fun sendHomeAsBack() {
-        runCatching { client?.outputStream?.write("HOMEBACK ${if (homeAsBack) 1 else 0}\n".toByteArray()) }
+    private fun sendHomeMode() {
+        runCatching { client?.outputStream?.write("HOMEBACK $homeMode\n".toByteArray()) }
     }
 
     /** While on, the pad's buttons, sticks and D-pad reach only [onRecord], not the foreground app. */
@@ -244,7 +247,7 @@ class PadHelper(
                 sendPassthrough()
                 sendSticks()
                 sendStickPassthrough()
-                sendHomeAsBack()
+                sendHomeMode()
                 sendRecording()
             }
             "PAD_GONE" -> setActive(false)
@@ -317,6 +320,9 @@ class PadHelper(
     }
 
     companion object {
+        const val HOME_PLAIN = 0
+        const val HOME_AS_BACK = 1
+        const val HOME_DUAL = 2
         private const val TAG = "PadHelper"
         private const val RELAUNCH_DELAY_MS = 3000L
         private const val MAX_FAILED_LAUNCHES = 5

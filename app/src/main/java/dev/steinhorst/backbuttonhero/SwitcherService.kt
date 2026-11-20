@@ -78,8 +78,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val toggleGesture by lazy {
         ServiceToggleGesture(prefs, gestureScheduler,
             // Paused, both keys reach Android at DOWN; active, so does the pad's Home unless it acts as Back.
-            defers = { key -> !interceptionEnabled || key == KeyEvent.KEYCODE_HOME && !prefs.homeAsBack },
-            onPaired = { if (backGesture.backDown) backGesture.markComboFired() },
+            defers = { key -> !interceptionEnabled || key == KeyEvent.KEYCODE_HOME && !prefs.homeAsBack && !prefs.dualMode },
+            onPaired = { if (modifierDown) heldGesture.markComboFired() },
             onReplay = ::replayUnpaired,
             onToggle = ::toggleInterception)
     }
@@ -96,17 +96,19 @@ class SwitcherService : AccessibilityService(), GestureActions {
             StickClickMachine(
                 gestureScheduler,
                 gestureClock,
-                { prefs.stickDoubleMs(stick) },
-                { prefs.stickTapHoldMs(stick) },
-                { prefs.shoulderAction(StickClickButton.of(stick, it)).isNotEmpty() },
-            ) { runStickClick(StickClickButton.of(stick, it)) }
+                { prefs.stickDoubleMs(stick, stickClickHome[stick] == true) },
+                { prefs.stickTapHoldMs(stick, stickClickHome[stick] == true) },
+                { prefs.shoulderAction(stickClickButton(stick, it)).isNotEmpty() },
+            ) { runStickClick(stickClickButton(stick, it)) }
         }
     }
+    /** Per stick: whether its click gesture began under Home in dual mode, so it runs the Home layer. */
+    private val stickClickHome = mutableMapOf<Stick, Boolean>()
     private var repeatingButton: ComboButton? = null
     private val levelRepeater by lazy {
         LevelRepeater(gestureScheduler, gestureClock) {
             val button = repeatingButton
-            if (button == null || !interceptionEnabled || !backGesture.backDown) {
+            if (button == null || !interceptionEnabled || !modifierDown) {
                 repeatingButton = null
                 false
             } else {
@@ -207,6 +209,35 @@ class SwitcherService : AccessibilityService(), GestureActions {
         BackGestureMachine(prefs, gestureClock, gestureScheduler, this, ::dlog,
             { backException }, ViewConfiguration.getLongPressTimeout().toLong())
     }
+    // Dual mode (docs/DUAL-MODE.md): the Home key's own gestures, bound and timed by the Home layer.
+    private val homeGesture by lazy {
+        BackGestureMachine(prefs.homeGestures, gestureClock, gestureScheduler, HomeGestureActions(), ::dlog,
+            { backException }, ViewConfiguration.getLongPressTimeout().toLong())
+    }
+    /** Latched at the DOWN of a Home press that owns the virtual Back: whether it is dual mode's Home layer. */
+    private var homePressDual = false
+    /** The machine of the press being handled on the Back path: Home's in dual mode, otherwise Back's. */
+    private val pressGesture: BackGestureMachine get() = if (translatingHome && homePressDual) homeGesture else backGesture
+    /** The machine of the modifier that is held. Only one can be: the other key is swallowed meanwhile. */
+    private val heldGesture: BackGestureMachine get() = if (homeGesture.backDown) homeGesture else backGesture
+    /** Whether Back, or Home in dual mode, is held: only then are combos ours. */
+    private val modifierDown: Boolean get() = backGesture.backDown || homeGesture.backDown
+
+    /** [button] in the layer of the held modifier: its Home layer copy while Home is held in dual mode. */
+    private fun layered(button: ComboButton): ComboButton = if (homeGesture.backDown) HomeLayerButton.of(button) else button
+
+    private fun stickClickButton(stick: Stick, click: StickClick): ComboButton =
+        StickClickButton.of(stick, click).let { if (stickClickHome[stick] == true) HomeLayerButton.of(it) else it }
+
+    /** The Home key's gestures run the Home layer's bindings; an excepted one is the app's own Home press. */
+    private inner class HomeGestureActions : GestureActions {
+        override fun swapScreens() = runBackGesture(HomeLayerButton.of(BackGestureButton.HOLD))
+        override fun openTopRecents() = runBackGesture(HomeLayerButton.of(BackGestureButton.TAP_HOLD))
+        override fun showSwitcher() = runBackGesture(HomeLayerButton.of(BackGestureButton.DOUBLE))
+        override fun onSingleTap() = runSingleTap(HomeLayerButton.of(BackGestureButton.SINGLE))
+        override fun nativeBack(longPress: Boolean) { performGlobalAction(GLOBAL_ACTION_HOME) }
+        override fun holdSwapBlocked() = this@SwitcherService.holdSwapBlocked()
+    }
 
     override fun onServiceConnected() {
         if (::panels.isInitialized) panels.close()
@@ -220,6 +251,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         toggleGesture.reset()
         homeAsBack.reset()
         backGesture.reset()
+        homeGesture.reset()
+        homePressDual = false
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         if (::recording.isInitialized) endRecording()
@@ -324,7 +357,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
     // keeps for itself is handed back to the game the moment that deflection is recognised.
     private fun updateStickCapture(exception: AppException?) {
         if (!::padHelper.isInitialized) return
-        fun ours(button: StickButton) = prefs.shoulderAction(button).isNotEmpty() && exception?.allows(ExceptionControl.of(button)) != false
+        fun bound(button: StickButton) = prefs.shoulderAction(button).isNotEmpty() ||
+            prefs.dualMode && prefs.shoulderAction(HomeLayerButton.of(button)).isNotEmpty()
+        fun ours(button: StickButton) = bound(button) && exception?.allows(ExceptionControl.of(button)) != false
         padHelper.setSticks(Stick.entries.filter { stick -> StickButton.entries.any { it.stick == stick && ours(it) } }.toSet())
         padHelper.setStickPassthrough(StickButton.entries.filter { exception?.allows(ExceptionControl.of(it)) == false }.toSet())
     }
@@ -357,7 +392,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val needed = prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled ||
             prefs.hasMacroAction() || macroRecordListener != null || prefs.hasGyroAction()
         if (needed) padHelper.start() else padHelper.stop()
-        padHelper.setHomeAsBack(prefs.homeAsBack)
+        padHelper.setHomeMode(when {
+            prefs.homeAsBack -> PadHelper.HOME_AS_BACK
+            prefs.dualMode -> PadHelper.HOME_DUAL
+            else -> PadHelper.HOME_PLAIN
+        })
         updateStickCapture(backException)
     }
 
@@ -389,6 +428,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
      *  device never reach the service, and a key still counted as held swallows its next press. */
     private fun forgetHeldKeys() {
         backGesture.reset()
+        homeGesture.reset()
+        stickClickHome.clear()
         shoulderKeys.clear()
         pendingFocusTargets.clear()
         pendingDpadFocus = null
@@ -441,6 +482,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val route = homeAsBackRoute(event)
         if (route == HomeAsBack.Route.SWALLOW) return true
         if (route == HomeAsBack.Route.AS_BACK) {
+            // The owning press decides its layer once; mirrored devices and the UP keep it.
+            if (event.action == KeyEvent.ACTION_DOWN && !homeGesture.backDown && !backGesture.backDown) homePressDual = prefs.dualMode
             translatingHome = true
             try {
                 interceptionGate.handle(asBack(event), interceptionEnabled, ::handleActiveKeyEvent)
@@ -460,7 +503,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (!home && event.keyCode != KeyEvent.KEYCODE_BACK) return HomeAsBack.Route.PASS
         // Injected Back (virtual device) is ours to let through, never a physical press to pair.
         if (event.deviceId < 0) return HomeAsBack.Route.PASS
-        return homeAsBack.route(event.keyCode, event.deviceId, event.action, event.repeatCount, interceptionEnabled && prefs.homeAsBack)
+        return homeAsBack.route(event.keyCode, event.deviceId, event.action, event.repeatCount,
+            interceptionEnabled && (prefs.homeAsBack || prefs.dualMode))
     }
 
     private fun asBack(event: KeyEvent): KeyEvent = KeyEvent(
@@ -551,7 +595,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 return true
             }
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                if (overlay.isShowing && !backGesture.followsRecentTap()) {
+                if (overlay.isShowing && !pressGesture.followsRecentTap()) {
                     switcherBackDown = true
                     switcherBackDeviceId = event.deviceId
                     overlay.dismiss()
@@ -571,7 +615,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
         handleRecentsControllerKey(event)?.let { return it }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
-            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !backGesture.backDown) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !pressGesture.backDown) {
                 // The helper stops the macro on this press too; mirror it and remember whose it was.
                 if (playingMacro != null) {
                     macroCancelled = playingMacro
@@ -589,18 +633,24 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             if (event.deviceId in nativeBackDevices) {
                 if (event.action == KeyEvent.ACTION_UP) nativeBackDevices -= event.deviceId
-                backGesture.observeNativeBack(event, nativeBackDevices.size)
+                pressGesture.observeNativeBack(event, nativeBackDevices.size)
                 dlog("BACK   native passthrough action=${event.action} device=${event.deviceId} home=$translatingHome")
                 // Passing a translated Home on would hand Android a Home press; the app gets a Back instead.
+                // In dual mode Home is its own key, so the app gets the Home it pressed.
                 if (translatingHome) {
-                    if (event.action == KeyEvent.ACTION_UP) nativeBack(longPress = false)
+                    if (event.action == KeyEvent.ACTION_UP) {
+                        if (homePressDual) performGlobalAction(GLOBAL_ACTION_HOME) else nativeBack(longPress = false)
+                    }
                     return true
                 }
                 return false
             }
             // Without the root helper the D-pad can only be caught by taking window focus; see DpadOverlay.
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !padHelper.active &&
-                (DpadDirection.entries + StickButton.entries).any { prefs.shoulderAction(it).isNotEmpty() && allowsCombo(it) }) {
+                (DpadDirection.entries + StickButton.entries).any { base ->
+                    val button = if (pressGesture === homeGesture) HomeLayerButton.of(base) else base
+                    prefs.shoulderAction(button).isNotEmpty() && allowsCombo(button)
+                }) {
                 dpadOverlay.attach()
             }
             if (event.action == KeyEvent.ACTION_UP) {
@@ -614,12 +664,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     commitDpadFocus()
                 }
             }
-            val consumed = backGesture.handleBack(event)
-            return consumed
+            return pressGesture.handleBack(event)
         }
         if (handlePushToTalk(event)) return true
         if (handleGyroHold(event)) return true
-        comboButton(event)?.let { return handleShoulder(event, it) }
+        comboButton(event)?.let { return handleShoulder(event, layered(it)) }
         Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
     }
@@ -699,45 +748,46 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             return
         }
-        if (!backGesture.backDown) return
-        val action = prefs.shoulderAction(direction)
+        if (!modifierDown) return
+        val button = layered(direction)
+        val action = prefs.shoulderAction(button)
         if (action.isEmpty()) return
-        if (!allowsCombo(direction)) {
+        if (!allowsCombo(button)) {
             // The helper already forwarded this press to the game; see handleShoulder.
-            backGesture.markComboFired()
-            dlog("DPAD   $direction passthrough action=$action")
+            heldGesture.markComboFired()
+            dlog("DPAD   $button passthrough action=$action")
             return
         }
-        backGesture.markComboFired()
+        heldGesture.markComboFired()
         pendingDpadFocus = null
         // Same firmware race as for the shoulder buttons (see handleShoulder): arm on press,
         // commit on release.
         if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
-            pendingDpadFocus = direction
+            pendingDpadFocus = button
             pendingDpadReleased = false
-            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(direction)
+            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
         } else {
             stopLevelRepeat()
-            runComboAction(direction, action)
-            startLevelRepeat(direction, action)
+            runComboAction(button, action)
+            startLevelRepeat(button, action)
         }
     }
 
     /** Back + analog stick, from [PadHelper] or [DpadOverlay]; a null [direction] is the stick returning to neutral. */
     private fun handleStick(stick: Stick, direction: DpadDirection?) {
         if (direction == null) {
-            if ((repeatingButton as? StickButton)?.stick == stick) stopLevelRepeat()
-            if ((pendingDpadFocus as? StickButton)?.stick == stick) {
+            if ((repeatingButton?.base as? StickButton)?.stick == stick) stopLevelRepeat()
+            if ((pendingDpadFocus?.base as? StickButton)?.stick == stick) {
                 pendingDpadReleased = true
                 commitDpadFocus()
             }
             return
         }
-        if (!interceptionEnabled || overlay.isShowing || topRecentsControllerActive || !backGesture.backDown) return
-        val button = StickButton.of(stick, direction)
+        if (!interceptionEnabled || overlay.isShowing || topRecentsControllerActive || !modifierDown) return
+        val button = layered(StickButton.of(stick, direction))
         val action = prefs.shoulderAction(button)
         if (action.isEmpty() || !allowsCombo(button)) return
-        backGesture.markComboFired()
+        heldGesture.markComboFired()
         pendingDpadFocus = null
         stopLevelRepeat()
         // One deflection is one action, except the stepping ones, which repeat while it is held.
@@ -768,18 +818,19 @@ class SwitcherService : AccessibilityService(), GestureActions {
         val machine = stickClicks.getValue(stick)
         return when (event.action) {
             KeyEvent.ACTION_DOWN -> {
-                if (!interceptionEnabled || !backGesture.backDown || !allowsCombo(StickClickButton.of(stick, StickClick.PRESS))) return false
+                if (!interceptionEnabled || !modifierDown || !allowsCombo(StickClickButton.of(stick, StickClick.PRESS))) return false
                 val first = stickKeys.down(event.keyCode, event.deviceId)
                 if (first && event.repeatCount == 0) {
+                    stickClickHome[stick] = homeGesture.backDown
                     if (!machine.down()) { stickKeys.up(event.keyCode, event.deviceId); return false }
-                    backGesture.markComboFired()
+                    heldGesture.markComboFired()
                 }
                 stickKeys.isDown(event.keyCode)
             }
             KeyEvent.ACTION_UP -> {
                 val tracked = stickKeys.up(event.keyCode, event.deviceId)
                 if (tracked && !stickKeys.isDown(event.keyCode)) {
-                    if ((repeatingButton as? StickClickButton)?.stick == stick) stopLevelRepeat()
+                    if ((repeatingButton?.base as? StickClickButton)?.stick == stick) stopLevelRepeat()
                     machine.up()
                 }
                 tracked
@@ -788,11 +839,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    private fun runStickClick(button: StickClickButton) {
+    private fun runStickClick(button: ComboButton) {
         val action = prefs.shoulderAction(button)
         if (action.isEmpty() || !interceptionEnabled) return
         dlog("STICK  $button action=$action")
-        if (button.click == StickClick.TAP_HOLD) {
+        if ((button.base as StickClickButton).click == StickClick.TAP_HOLD) {
             // Fires while still held, like Back's tap-and-hold; stepping actions keep repeating until release.
             stopLevelRepeat()
             runComboAction(button, action)
@@ -808,10 +859,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun handleDpadRelease(horizontal: Boolean) {
-        (repeatingButton as? DpadDirection)?.let {
+        (repeatingButton?.base as? DpadDirection)?.let {
             if ((it == DpadDirection.LEFT || it == DpadDirection.RIGHT) == horizontal) stopLevelRepeat()
         }
-        val pending = pendingDpadFocus as? DpadDirection ?: return
+        val pending = pendingDpadFocus?.base as? DpadDirection ?: return
         if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
         pendingDpadReleased = true
         commitDpadFocus()
@@ -882,16 +933,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
             KeyEvent.ACTION_DOWN -> {
                 // Outside an active Back combo the controller belongs entirely to the foreground
                 // app. Do not even track the key in that case, so its UP remains untouched too.
-                if (!backGesture.backDown || action.isEmpty()) return false
+                if (!modifierDown || action.isEmpty()) return false
                 if (!allowsCombo(button)) {
                     // The app gets the button, yet the press was still a combo: Back's release must
                     // not turn into a tap that opens something on top of the app's own shortcut.
-                    backGesture.markComboFired()
+                    heldGesture.markComboFired()
                     dlog("SHOULDER $button passthrough action=$action")
                     return false
                 }
                 if (shoulderKeys.down(event.keyCode, event.deviceId) && event.repeatCount == 0) {
-                    backGesture.markComboFired()
+                    heldGesture.markComboFired()
                     // Changing the controller route while its trigger is physically held is racy
                     // in AYN's firmware: the setting changes, but the route can stay on the old
                     // display. Arm focus here and commit after both mirrored devices report UP.
@@ -1428,7 +1479,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (event.keyCode != key) return false
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
-                if (pushToTalkDevices.isEmpty() && backGesture.backDown) return false
+                if (pushToTalkDevices.isEmpty() && modifierDown) return false
                 if (pushToTalkDevices.add(event.deviceId) && pushToTalkDevices.size == 1) setTalking(true)
             }
             KeyEvent.ACTION_UP -> {
@@ -1448,7 +1499,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (event.keyCode != key) return false
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
-                if (gyroHoldDevices.isEmpty() && backGesture.backDown) return false
+                if (gyroHoldDevices.isEmpty() && modifierDown) return false
                 if (gyroHoldDevices.add(event.deviceId) && gyroHoldDevices.size == 1) gyro.setHeld(true)
             }
             KeyEvent.ACTION_UP -> {
@@ -1687,6 +1738,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         stickKeys.clear()
         toggleGesture.reset()
         backGesture.reset()
+        homeGesture.reset()
         interceptionGate.clear()
         notice.dismiss()
         cancelActiveAppSwitch()
@@ -2029,7 +2081,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun openTopRecents() = runBackGesture(BackGestureButton.TAP_HOLD)
     override fun showSwitcher() = runBackGesture(BackGestureButton.DOUBLE)
 
-    private fun runBackGesture(gesture: BackGestureButton) {
+    private fun runBackGesture(gesture: ComboButton) {
         val action = prefs.shoulderAction(gesture)
         dlog("BACK   gesture $gesture action=${action.ifEmpty { "(none)" }}")
         if (action.isNotEmpty()) runComboAction(gesture, action)
@@ -2525,10 +2577,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
         focusIndicator.showPersistent(top, Prefs.DEFAULT_FOCUS_POSITION)
     }
 
-    override fun onSingleTap() {
+    override fun onSingleTap() = runSingleTap(BackGestureButton.SINGLE)
+
+    private fun runSingleTap(gesture: ComboButton) {
         if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { dlog("ACTION onSingleTap: overlay was showing -> dismiss only"); overlay.dismiss(); return }
-        runBackGesture(BackGestureButton.SINGLE)
+        runBackGesture(gesture)
     }
 
     private fun goHome(displayId: Int? = null, dismissSwitcher: Boolean = true, component: ComponentName? = null) {

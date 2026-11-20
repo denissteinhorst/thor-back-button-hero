@@ -47,6 +47,10 @@ s() { sendevent "$f" 0 0 0; }
 """
 
 
+# The modifier the layer under test is pressed with: Back, or Home in dual mode (see runner.LAYERS).
+modifier = BACK
+
+
 class Seq:
     """A timed sequence of pad events; [script] turns it into a root shell script."""
 
@@ -87,10 +91,10 @@ class Seq:
         return self.abs(axis, value).wait(ms).abs(axis, 0).wait(after)
 
     def with_back(self, inner, lead=250, trail=200):
-        """Back held around [inner], the way every Back + button shortcut is pressed."""
-        self.key(BACK, True).wait(lead)
+        """The layer's modifier (Back, or Home in dual mode) held around [inner], the way every shortcut is pressed."""
+        self.key(modifier, True).wait(lead)
         inner(self)
-        return self.wait(trail).key(BACK, False)
+        return self.wait(trail).key(modifier, False)
 
     def combo(self, code, lead=250, trail=200):
         return self.with_back(lambda s: s.tap(code, after=0), lead, trail)

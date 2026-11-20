@@ -28,6 +28,17 @@
     <string name="home_as_back">Use the Home button as Back</string>
     <string name="home_as_back_hint">Home then behaves exactly like Back: every Back gesture, every Back + button shortcut and the app exceptions. Back + Home is unavailable meanwhile.</string>
     <string name="home_as_back_combo_blocked">Unavailable while Home acts as Back</string>
+    <string name="dual_mode">Dual mode</string>
+    <string name="dual_mode_hint">Home becomes a second hotkey button with its own bindings: Home + button can run something else than Back + button. Whichever of the two you press first counts. Back + Home is unavailable meanwhile.</string>
+    <string name="dual_mode_combo_blocked">Unavailable in dual mode</string>
+    <string name="dual_column_home">Home button</string>
+    <string name="dual_column_back">Back button</string>
+    <string name="overview_home_dual_mode">Dual mode</string>
+    <string name="settings_home_binding_label">Home + %1$s</string>
+    <string name="unbind_layer_title">Which bindings?</string>
+    <string name="unbind_layer_home">Only Home</string>
+    <string name="unbind_layer_back">Only Back</string>
+    <string name="unbind_layer_both">Home and Back</string>
     <string name="toggle_combo_blocked">Unavailable while Back + Home turns Back Button Hero on or off</string>
     <string name="hold_speed">Hold time: %d ms</string>
     <string name="hold_section_title">Hold</string>

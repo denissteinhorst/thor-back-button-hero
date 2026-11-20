@@ -115,7 +115,8 @@ only the swing up to the threshold, and the stick is its own again until it retu
 With an empty mask the behaviour is unchanged. The mask is resent when the helper takes over a new pad.
 
 `HOMEBACK 1` (the app's *Use the Home button as Back* option) makes the pad's Home key count as a held
-Back for every capture above; `HOMEBACK 0` restores Back alone. It is resent on every takeover.
+Back for every capture above; `HOMEBACK 2` (dual mode, `docs/DUAL-MODE.md`) does the same for Home as the
+second modifier; `HOMEBACK 0` restores Back alone. It is resent on every takeover.
 
 ### Macros
 
@@ -234,7 +235,8 @@ SELinux" off). It is the same requirement swipe-to-close has.
     first recreates any `/dev/input` node that the kernel still has a device for.
   - **Emergency release:** holding **Home + Back for 5 seconds** makes the helper hand the pad back
     and tells the app not to restart it until the service restarts. While Home stands in for Back
-    (`HOMEBACK 1`) holding both is ordinary use, so the release is off then.
+    (`HOMEBACK 1`) holding both is ordinary use, so the release is off then. In dual mode
+    (`HOMEBACK 2`) Home and Back are separate modifiers and the release stays on.
   - **Style switch:** switching the controller style creates a fresh pad and node in any case.
 - **A restarted helper recreates the pad.** Whenever the helper starts again (an app update, a
   reinstall, a service restart), Android sees the pad vanish and reappear with a new device id.

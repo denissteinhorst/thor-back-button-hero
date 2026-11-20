@@ -14,6 +14,16 @@ interface GestureScheduler {
     fun hasCallbacks(runnable: Runnable): Boolean
 }
 
+/** What one modifier's gestures are bound to and how they are timed: Back's in [Prefs], Home's in [Prefs.homeGestures]. */
+interface GestureSettings {
+    val doubleTapEnabled: Boolean
+    val doubleTapMs: Long
+    val tapHoldEnabled: Boolean
+    val tapHoldMs: Long
+    val holdEnabled: Boolean
+    val holdMs: Long
+}
+
 /** The side effects a completed gesture triggers - implemented by SwitcherService. */
 interface GestureActions {
     fun swapScreens()
@@ -27,7 +37,7 @@ interface GestureActions {
 }
 
 class BackGestureMachine(
-    private val prefs: Prefs,
+    private val prefs: GestureSettings,
     private val clock: GestureClock,
     private val scheduler: GestureScheduler,
     private val actions: GestureActions,

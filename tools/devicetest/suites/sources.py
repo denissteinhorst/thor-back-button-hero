@@ -22,22 +22,24 @@ BUTTONS = [
 ANDROID_FACE = {304: "A", 305: "B", 307: "X", 308: "Y"}
 
 
-@test("sources", "Back + every button runs its binding")
+@test("sources", "Back + every button runs its binding", layered=True)
 def buttons(d):
     ensure_helper(d)
     media_session(d)
-    for pref, _ in BUTTONS:
+    # Back + Home has no Home layer counterpart.
+    buttons = [(p, c) for p, c in BUTTONS if not (d.layer == "home" and p == "home")]
+    for pref, _ in buttons:
         d.bind(pref, "@media_play_pause")
-    for pref, code in BUTTONS:
+    for pref, code in buttons:
         code = d.face(code) if isinstance(code, str) else code
         try:
             expect_media(d, lambda: d.press(Seq().combo(code)), ["MEDIA_PLAY_PAUSE"])
         except Fail as e:
             raise Fail(f"Back + {pref}: {e}")
-    d.unbind(*(p for p, _ in BUTTONS))
+    d.unbind(*(p for p, _ in buttons))
 
 
-@test("sources", "Back + every D-pad direction and stick direction runs its binding")
+@test("sources", "Back + every D-pad direction and stick direction runs its binding", layered=True)
 def directions(d):
     ensure_helper(d)
     media_session(d)
@@ -58,7 +60,7 @@ def directions(d):
             d.unbind(pref)
 
 
-@test("sources", "Stick clicks tell press, double press and tap-and-hold apart")
+@test("sources", "Stick clicks tell press, double press and tap-and-hold apart", layered=True)
 def stick_clicks(d):
     ensure_helper(d)
     media_session(d)
@@ -81,7 +83,7 @@ def stick_clicks(d):
         d.unbind(f"{side}_press", f"{side}_double", f"{side}_tap_hold")
 
 
-@test("sources", "Bound presses are withheld from the game, unbound ones reach it")
+@test("sources", "Bound presses are withheld from the game, unbound ones reach it", layered=True)
 def passthrough(d):
     """A stand-in game on the top screen logs what it receives: unbound presses arrive, while
     Back + a bound button or any D-pad direction does not reach it."""

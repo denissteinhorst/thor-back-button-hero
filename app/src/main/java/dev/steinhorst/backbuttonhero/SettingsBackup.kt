@@ -83,9 +83,10 @@ object SettingsBackup {
                 .put("recordPttKey", value.recordPttKey)
                 .put("recordDuck", value.recordDuck))
         }
-        val sticks = JSONObject()
-        state.stickTimings.toSortedMap().forEach { (key, value) ->
-            sticks.put(key, JSONObject().put("doubleMs", value.doubleMs).put("tapHoldMs", value.tapHoldMs))
+        fun sticks(timings: Map<String, StickTimings>) = JSONObject().apply {
+            timings.toSortedMap().forEach { (key, value) ->
+                put(key, JSONObject().put("doubleMs", value.doubleMs).put("tapHoldMs", value.tapHoldMs))
+            }
         }
         val exceptions = JSONArray()
         state.exceptions.forEach {
@@ -106,8 +107,12 @@ object SettingsBackup {
                 .put("backTimings", JSONObject().put("doubleMs", state.doubleMs).put("tapHoldMs", state.tapHoldMs).put("holdMs", state.holdMs))
                 .put("switcher", JSONObject().put("showsAllApps", state.allApps).put("controllerNavigation", state.controller))
                 .put("homeAsBack", state.homeAsBack)
+                .put("dualMode", JSONObject().put("enabled", state.dualMode).put("seeded", state.dualSeeded)
+                    .put("timings", JSONObject().put("doubleMs", state.homeDoubleMs).put("tapHoldMs", state.homeTapHoldMs)
+                        .put("holdMs", state.homeHoldMs))
+                    .put("stickTimings", sticks(state.homeStickTimings)))
                 .put("activationShortcut", JSONObject().put("buttons", state.toggleButtons).put("holdMs", state.toggleMs))
-                .put("stickTimings", sticks)
+                .put("stickTimings", sticks(state.stickTimings))
                 .put("bindings", bindings)
                 .put("exceptions", exceptions)
                 .put("macros", macros))
@@ -130,13 +135,24 @@ object SettingsBackup {
         val switcher = settings?.objectOrNull("switcher")
         val activation = settings?.objectOrNull("activationShortcut")
         val macros = readMacros(settings?.optJSONArray("macros"))
+        val dual = settings?.objectOrNull("dualMode")
+        val homeTimings = dual?.objectOrNull("timings")
+        val dualMode = dual?.booleanOrNull("enabled") ?: factory.dualMode
         val state = factory.copy(
             doubleMs = back.time("doubleMs", factory.doubleMs, 150, 600),
             tapHoldMs = back.time("tapHoldMs", factory.tapHoldMs, 500, 2000),
             holdMs = back.time("holdMs", factory.holdMs, 500, 2000),
             allApps = switcher?.booleanOrNull("showsAllApps") ?: factory.allApps,
             controller = switcher?.booleanOrNull("controllerNavigation") ?: factory.controller,
-            homeAsBack = settings?.booleanOrNull("homeAsBack") ?: factory.homeAsBack,
+            // The two Home modes exclude each other; a file claiming both keeps dual mode, the newer one.
+            homeAsBack = (settings?.booleanOrNull("homeAsBack") ?: factory.homeAsBack) && !dualMode,
+            dualMode = dualMode,
+            // A dual-mode Home layer is already a copy; switching on again must not overwrite it.
+            dualSeeded = (dual?.booleanOrNull("seeded") ?: factory.dualSeeded) || dualMode,
+            homeDoubleMs = homeTimings.time("doubleMs", factory.homeDoubleMs, 150, 600),
+            homeTapHoldMs = homeTimings.time("tapHoldMs", factory.homeTapHoldMs, 500, 2000),
+            homeHoldMs = homeTimings.time("holdMs", factory.homeHoldMs, 500, 2000),
+            homeStickTimings = readStickTimings(dual?.objectOrNull("stickTimings"), factory.homeStickTimings),
             toggleButtons = activation?.stringOrNull("buttons")?.takeIf { it in TOGGLE_VALUES } ?: factory.toggleButtons,
             toggleMs = activation.time("holdMs", factory.toggleMs, 100, 3000),
             bindings = readBindings(settings?.objectOrNull("bindings"), factory.bindings, macros),
@@ -167,7 +183,7 @@ object SettingsBackup {
             val entry = json?.objectOrNull(key) ?: return@mapValues default
             val action = entry.stringOrNull("action")?.takeIf { it.isEmpty() || it in Prefs.KNOWN_ACTIONS || Shell.isPkg(it) }
                 // Back's own gestures cannot play macros: the macro would wait for the very Back it started with.
-                ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.MACRO_BUTTONS.any { button -> button.prefKey == key } }
+                ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.ALL_MACRO_BUTTONS.any { button -> button.prefKey == key } }
             default.copy(
                 action = action ?: default.action,
                 display = entry.stringOrNull("display")?.takeIf { it in SCREENS || it == Prefs.APP_SCREEN_ASK } ?: default.display,

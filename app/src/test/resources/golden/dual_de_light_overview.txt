@@ -1,0 +1,101 @@
+FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=168 padding=[24,12,24,12] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Menü" textSizePx=42.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[24,24,24,24] clickable=false focusable=false margin=[0,0,0,0] text="Übersicht" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[36,12,36,12] clickable=true focusable=true margin=[24,0,24,0] contentDescription="Bedienungshilfen-Dienst ist inaktiv. Back Button Hero braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen." text="Dienst inaktiv" textSizePx=39.0 textColor=#FFFF5722 maxLines=1 bold=false
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,48,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,48]
+              LinearLayout visibility=VISIBLE minHeight=168 padding=[48,30,48,30] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar." textSizePx=45.0 textColor=#FFFF5722 maxLines=2147483647 bold=false
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[12,12,12,12] clickable=false focusable=false margin=[0,48,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Home-Taste" text="￼  Home-Taste" textSizePx=45.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Back-Taste" text="￼  Back-Taste" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                  BindingsOverview visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false text="Kombinationen gelten, solange Back gehalten wird. Tippe auf eine Taste in der Zeichnung, um sie zu ändern." textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Aktivieren / deaktivieren: L2 + R2 halten"
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Aktivieren / deaktivieren" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2 + R2 halten" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="L2: Screenshot; L1: Flick links. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="R2: Controller-Fokus; R1: Flick rechts. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Linker Stick: Nicht belegt. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Rechter Stick: Nicht belegt. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="D-Pad: ↑: Helligkeit +, ↓: Helligkeit −, ←: Lautstärke −, →: Lautstärke +. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Aktionstasten: Nicht belegt. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Select: Nicht belegt. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Start: Nicht belegt. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Home: Dual-Mode. Zum Ändern doppeltippen."
+                    AreaView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true contentDescription="Back: Tippen: Home, 2× Tippen: Recents unten, Tippen + Halten: Recents oben, Halten: Beide Apps tauschen. Zum Ändern doppeltippen."
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Screenshot" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L2" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Flick links" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="L1" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="D-Pad" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Helligkeit +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Helligkeit −" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Lautstärke −" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,42,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Lautstärke +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Helligkeit +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↑" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Helligkeit −" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="↓" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Lautstärke −" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="←" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                      LinearLayout visibility=GONE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Lautstärke +" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="→" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] text="Dual-Mode" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Home" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R2" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Controller-Fokus" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="R1" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Flick rechts" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[18,6,18,6] clickable=false focusable=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0] text="Back" textSizePx=36.0 textColor=#FF00668B maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tippen" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Home" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="2× Tippen" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Recents unten" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tippen + Halten" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Recents oben" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,3,0,3] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Halten" textSizePx=36.0 textColor=#B3191C1E maxLines=1 bold=false
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[18,0,0,0] text="Beide Apps tauschen" textSizePx=36.0 textColor=#FF191C1E maxLines=1 bold=false
+                  TextView visibility=GONE minHeight=0 padding=[48,12,48,12] clickable=false focusable=false margin=[0,48,0,0] text="Noch ist nichts belegt." textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[72,72,72,72] clickable=false focusable=false margin=[0,0,0,0]
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back Button Hero benötigt die Berechtigung „Bedienungshilfen“, um arbeiten zu können." textSizePx=54.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0] text="Tippe auf den Button, aktiviere Back Button Hero in den Bedienungshilfen und kehre danach zur App zurück." textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,60,0,0] text="Bedienungshilfen-Dienst einschalten" textSizePx=45.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false

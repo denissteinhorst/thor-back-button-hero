@@ -23,7 +23,8 @@ visual.
 ```sh
 python3 tools/devicetest/run.py --changed          # areas the branch's changes can affect (the default habit)
 python3 tools/devicetest/run.py --only windows,ayn # chosen areas
-python3 tools/devicetest/run.py --full             # everything, only on request (about 15 minutes)
+python3 tools/devicetest/run.py --full             # everything in both layers, only on request (about 20 minutes)
+python3 tools/devicetest/run.py --only sources --layers home   # chosen areas in dual mode's Home layer
 python3 tools/devicetest/run.py --list             # areas and their tests
 python3 tools/devicetest/run.py --restore          # put back what an interrupted run left behind
 ```
@@ -39,6 +40,13 @@ next one.
 `tools/devicetest/dt/runner.py`. A change to `SwitcherService`, `Prefs`, `PService`, `Shell`, the
 manifest or the accessibility config selects every area. Changed files that map to no area (settings
 UI, texts, backup) select nothing. Add new source files to `FILE_AREAS` when you add them.
+
+**Layers.** Tests registered with `layered=True` (every `sources` and `gestures` check of a shortcut)
+run once per dual-mode layer: as written with Back, and again as "… [Home layer]" with dual mode on,
+the pad's Home as the modifier and every binding and timing written to the Home layer's `dual_` keys
+(`Device.layer`, `Device.binding`, `pad.modifier`). `--full` runs both layers, and so does `--changed`
+when it selects every area or the `dual` area; otherwise only Back's layer runs. `--layers back`,
+`home` or `back,home` overrides that.
 
 ## Safety: what the suite touches and restores
 
@@ -79,6 +87,7 @@ The order keeps related checks together and the most disruptive ones last.
 | `media` | Play/pause, next, previous reach the media session; the status overlay's parts |
 | `sources` | Back + every button, D-pad and stick direction, stick-click gestures; bound input is withheld from the game, unbound input reaches it |
 | `gestures` | Back single, double, tap-and-hold and hold, timing rules, unassigned gestures, Home as Back |
+| `dual` | Dual mode: Back + L1 and Home + L1 run their own layer, the first modifier owns the press, each modifier's gestures run its own layer, and with dual mode off the Home layer rests |
 | `toggle` | Every pause/resume pair, too-short holds, input passing through while paused |
 | `windows` | Launch on top/bottom, Home, Back, bottom switcher (open, controller launch, close all), top Recents (open, controller launch), swap apps, hold-to-swap, controller focus and its pictogram, switch active app, switch to last app (flipping, fast flipping on both screens, closed app, each screen keeps its own pair, after a swap), navigation flicks |
 | `appcontrol` | Minimize, force-close, restart on the same screen, confirmation prompt, screen prompt, close all and close background apps, the close prompt |
@@ -109,6 +118,7 @@ Android's `BUTTON_X` is always the left button (evdev 307).
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in
 `tools/devicetest/suites/`. Use `d.bind(pref, action, **options)` for hotkeys and `d.press(Seq()…)`
-for input, and assert on device state with `d.eventually`. Restore anything the test changes outside
-the app's preferences and the recorded system values (apps it started, files it created) in a
+for input. A test of a modifier shortcut should be `layered=True` and press `d.modifier` (or
+`Seq.with_back`/`combo`, which follow it) instead of `BACK`, so it covers both layers. Assert on
+device state with `d.eventually`. Restore anything the test changes outside the app's preferences and the recorded system values (apps it started, files it created) in a
 `finally` block. A new area also needs an entry in `FILE_AREAS` and in the table above.

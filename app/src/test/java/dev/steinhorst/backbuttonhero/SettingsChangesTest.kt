@@ -100,7 +100,8 @@ class SettingsChangesTest {
         val before = customized()
         val plan = SettingsChangePlan.create(before, null, SettingsChangeAction.UNBIND)
         assertTrue(plan.removesToggle)
-        val primary = BackGestureButton.entries.map { it.prefKey }
+        // Outside dual mode the resting Home layer is not touched either.
+        val primary = BackGestureButton.entries.map { it.prefKey } + Prefs.HOME_LAYER_BUTTONS.map { it.prefKey }
         assertEquals(before.copy(toggleButtons = Prefs.TOGGLE_NONE,
             bindings = before.bindings.mapValues { (key, value) -> if (key in primary) value else value.copy(action = "") }), plan.after)
         assertTrue(prefs.applySettings(prefs.snapshot(), before))

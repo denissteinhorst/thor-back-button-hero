@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """The complete on-device test of Back Button Hero, driven over adb on a connected AYN Thor.
 
-  python3 tools/devicetest/run.py --full            every area (run on request; takes a while)
+  python3 tools/devicetest/run.py --full            every area, layered tests in both of dual mode's layers
+  python3 tools/devicetest/run.py --only sources --layers home   chosen areas in the Home layer
   python3 tools/devicetest/run.py --only ayn,media  selected areas
-  python3 tools/devicetest/run.py --changed         areas the current branch's changes can affect
+  python3 tools/devicetest/run.py --changed         areas the current branch's changes can affect (both layers
+                                                    when they touch dual mode)
   python3 tools/devicetest/run.py --list            the areas and their tests
   python3 tools/devicetest/run.py --restore         put back settings a crashed run left behind
 
@@ -44,11 +46,16 @@ def main():
     mode.add_argument("--list", action="store_true")
     mode.add_argument("--restore", action="store_true")
     parser.add_argument("--serial")
+    parser.add_argument("--layers", help="back, home or back,home: which layers layered tests run in "
+                        "(default: both with --full or when --changed touches dual mode, otherwise back)")
     args = parser.parse_args()
+    layers = tuple(args.layers.split(",")) if args.layers else None
+    if layers and any(layer not in runner.LAYERS for layer in layers):
+        parser.error(f"--layers takes {', '.join(runner.LAYERS)}")
 
     if args.list:
         areas = {}
-        for a, title, _ in runner.TESTS:
+        for a, title, _ in runner.expand(runner.LAYERS):
             areas.setdefault(a, []).append(title)
         for a, titles in areas.items():
             print(f"\n{a}")
@@ -65,7 +72,11 @@ def main():
         if selected is not None and not selected:
             print("No on-device area is affected.")
             return 0
-    print("Areas: " + ("all" if selected is None else ", ".join(sorted(selected))))
+    if layers is None:
+        # A change that can affect dual mode proves both layers; anything else keeps to Back's.
+        both = args.full or (args.changed and (selected is None or "dual" in selected))
+        layers = runner.LAYERS if both else ("back",)
+    print("Areas: " + ("all" if selected is None else ", ".join(sorted(selected))) + " — layers: " + ", ".join(layers))
 
     device = Device(args.serial)
     device.prepare()
@@ -75,7 +86,7 @@ def main():
 
     device.begin()
     try:
-        results, path = runner.run(device, selected, f"report-{time.strftime('%Y%m%d-%H%M%S')}.json")
+        results, path = runner.run(device, selected, f"report-{time.strftime('%Y%m%d-%H%M%S')}.json", layers)
     finally:
         device.log("Restoring the owner's settings …")
         device.end()

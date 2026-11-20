@@ -32,6 +32,12 @@ class Fail(AssertionError):
     pass
 
 
+# Keys the Home layer of dual mode stores under its own "dual_" prefix (docs/DUAL-MODE.md). Back + Home
+# ("home") has no Home layer counterpart.
+LAYERED_TIMINGS = {"double_ms", "tap_hold_ms", "hold_ms", "lstick_double_ms", "lstick_tap_hold_ms",
+                   "rstick_double_ms", "rstick_tap_hold_ms"}
+
+
 class Device:
     def __init__(self, serial=None, log=print):
         self.adb = Adb(serial)
@@ -46,6 +52,8 @@ class Device:
         self.text = Strings(self.locale)
         self.warnings = []
         self.last_mark = self.sh("date +'%m-%d %H:%M:%S.000'")
+        # "back", or "home" while a layered test runs in dual mode's Home layer.
+        self.layer = "back"
 
     def sh(self, command, timeout=60):
         return self.adb.sh(command, timeout=timeout)
@@ -106,7 +114,26 @@ class Device:
             raise AdbError(f"app {op} {extras}: {result}")
         return result
 
+    def layered(self, key):
+        """[key] in the layer under test: the Home layer's own key while it runs."""
+        return f"dual_{key}" if self.layer == "home" and key in LAYERED_TIMINGS else key
+
+    def binding(self, pref):
+        """The preference key of hotkey [pref] in the layer under test."""
+        if self.layer != "home":
+            return pref
+        if pref == "home":
+            raise AdbError("Back + Home has no Home layer counterpart")
+        return f"dual_{pref}"
+
+    @property
+    def modifier(self):
+        """The evdev code of the layer's modifier: Back, or Home in dual mode's Home layer."""
+        from . import pad
+        return pad.modifier
+
     def put(self, key, value):
+        key = self.layered(key)
         # Every duration the app stores is a Long; reading an Int there would crash the service.
         kind = ("bool" if isinstance(value, bool) else "long" if isinstance(value, int) and key.endswith("_ms")
                 else "int" if isinstance(value, int) else "float" if isinstance(value, float) else "string")
@@ -114,13 +141,14 @@ class Device:
 
     def bind(self, pref, action, **options):
         """Assigns [action] to the hotkey with preference key [pref]; options are its sub-settings."""
+        pref = self.binding(pref)
         self.put(f"{pref}_package", action)
         for name, value in options.items():
             self.put(f"{pref}_{name}", value)
 
     def unbind(self, *prefs):
         for pref in prefs:
-            self.put(f"{pref}_package", "")
+            self.put(f"{self.binding(pref)}_package", "")
 
     def prefs_xml(self):
         return self.sh(f"run-as {PKG} cat shared_prefs/back_button_hero.xml")

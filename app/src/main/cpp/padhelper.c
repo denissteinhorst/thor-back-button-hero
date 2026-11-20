@@ -20,7 +20,8 @@
 //     is recognised instead of being reported.
 //     Top Recents directions are buffered by the app until Quickstep has keyboard focus, then
 //     replayed through NAV commands on this socket. Card-row Up uses a bounded dismissal gesture.
-//     "HOMEBACK 1" makes the pad's Home key count as Back for all of the above.
+//     "HOMEBACK 1" makes the pad's Home key count as Back for all of the above; "HOMEBACK 2" (dual mode)
+//     does the same for Home as a second modifier but keeps the Home + Back emergency release.
 //   * Macros: "RECORD 1" withholds every pad input except Back, Home and the volume keys from the
 //     clone and reports it instead ("REC <ms> K <code> <0|1>", "REC <ms> A <code> <permille>" and a
 //     "REC <ms> S" per frame). "MCLEAR", "MEV <ms> <K|A> <code> <value>" lines and "MPLAY <id>" load
@@ -557,6 +558,7 @@ static void rest_axes(void) {
 // Directions the focused app keeps while Back is held (bits: up 1, down 2, left 4, right 8).
 static int pass_mask = 0;
 // "HOMEBACK 1": the user lets the pad's Home key stand in for Back, so either one counts as held.
+// "HOMEBACK 2": dual mode, where Home is a second modifier: it counts as held too, but is its own key.
 static int home_back = 0;
 
 static int passes(int code, int value) {
@@ -582,7 +584,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "PASS %d", &mask) == 1 && mask >= 0 && mask <= 15) pass_mask = mask;
         if (sscanf(line, "SPASS %d", &mask) == 1 && mask >= 0 && mask <= 255) stick_pass_mask = mask;
         if (sscanf(line, "NAV %d", &key) == 1 && current == 2) navigation_key(key);
-        if (sscanf(line, "HOMEBACK %d", &mode) == 1 && (mode == 0 || mode == 1)) home_back = mode;
+        if (sscanf(line, "HOMEBACK %d", &mode) == 1 && mode >= 0 && mode <= 2) home_back = mode;
         // Stops the app asks for are not reported back; it already knows.
         if (sscanf(line, "RECORD %d", &mode) == 1 && (mode == 0 || mode == 1) && mode != recording) {
             macro_stop(0);
@@ -688,8 +690,8 @@ int main(int argc, char **argv) {
         }
         // Escape hatch that does not depend on the app: Home + Back for 5 s returns the pad to Android
         // and tells the app not to start us again. With Home standing in for Back the user holds both
-        // as one key and would trip the hatch by accident, so it is off then.
-        if (back_key && home && !home_back) {
+        // as one key and would trip the hatch by accident, so it is off then; in dual mode it stays.
+        if (back_key && home && home_back != 1) {
             if (!both_since) both_since = now_ms();
             else if (now_ms() - both_since > EMERGENCY_HOLD_MS) { emergency = 1; break; }
         } else {

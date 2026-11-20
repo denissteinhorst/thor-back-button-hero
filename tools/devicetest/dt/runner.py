@@ -9,18 +9,41 @@ from .adb import WORK
 from .device import Fail
 
 TESTS = []
+# Dual mode's two binding layers; a layered test runs once per selected layer (docs/DUAL-MODE.md).
+LAYERS = ("back", "home")
 
 
 class Skip(Exception):
     pass
 
 
-def test(area, title):
-    """Registers a test; tests run in the order their modules import them."""
+def test(area, title, layered=False):
+    """Registers a test; tests run in the order their modules import them. A [layered] test presses
+    the layer's modifier and binds through Device.bind, so it also proves dual mode's Home layer."""
     def register(fn):
+        fn.layered = layered
         TESTS.append((area, title, fn))
         return fn
     return register
+
+
+def _in_layer(fn, layer):
+    """Runs [fn] in [layer]: the Home layer switches dual mode on and presses Home instead of Back."""
+    from . import pad
+
+    def run(device):
+        if layer == "back":
+            return fn(device)
+        device.layer = "home"
+        pad.modifier = pad.HOME
+        device.put("dual_mode", True)
+        try:
+            return fn(device)
+        finally:
+            device.layer = "back"
+            pad.modifier = pad.BACK
+            device.put("dual_mode", False)
+    return run
 
 
 # Which areas a changed source file can affect: used by --changed.
@@ -28,12 +51,12 @@ FILE_AREAS = {
     "AynControls.kt": ["ayn"],
     "LevelControl.kt": ["levels"], "LevelRepeater.kt": ["levels"], "LevelSteps.kt": ["levels"], "BrightnessControl.kt": ["levels"],
     "StatusSummary.kt": ["media"],
-    "BackGestureMachine.kt": ["gestures", "toggle"], "DoubleTapDetector.kt": ["gestures"],
-    "StickClickMachine.kt": ["sources"], "StickButton.kt": ["sources"], "ShoulderButton.kt": ["sources", "gestures"],
-    "PadHelper.kt": ["sources", "toggle", "macro", "gyro"], "padhelper.c": ["sources", "toggle", "macro", "gyro"],
+    "BackGestureMachine.kt": ["gestures", "toggle", "dual"], "DoubleTapDetector.kt": ["gestures"],
+    "StickClickMachine.kt": ["sources"], "StickButton.kt": ["sources"], "ShoulderButton.kt": ["sources", "gestures", "dual"],
+    "PadHelper.kt": ["sources", "toggle", "macro", "gyro", "dual"], "padhelper.c": ["sources", "toggle", "macro", "gyro", "dual"],
     "DpadOverlay.kt": ["sources"], "PhysicalKeyTracker.kt": ["sources", "gestures"],
     "ServiceToggleGesture.kt": ["toggle"], "KeyInterceptionGate.kt": ["toggle"],
-    "HomeAsBack.kt": ["gestures"], "AppExceptions.kt": ["exceptions"], "ExceptionGroups.kt": ["exceptions"],
+    "HomeAsBack.kt": ["gestures", "sources", "dual"], "AppExceptions.kt": ["exceptions"], "ExceptionGroups.kt": ["exceptions"],
     "Macro.kt": ["macro"], "Gyro.kt": ["gyro"], "GyroControl.kt": ["gyro"], "GyroFusion.kt": ["gyro"],
     "ControllerFocus.kt": ["windows"], "AutoControllerFocus.kt": ["windows"], "FocusIndicatorOverlay.kt": ["windows"],
     "AppControl.kt": ["appcontrol"], "CloseApps.kt": ["appcontrol"], "TaskRemover.kt": ["appcontrol"],
@@ -60,10 +83,17 @@ def areas_for(files):
     return areas
 
 
-def run(device, selected, report_name):
+def expand(layers):
+    """Every test to run, a layered one once per layer in [layers], the Home layer marked in its title."""
+    for area, title, fn in TESTS:
+        for layer in (layers if getattr(fn, "layered", False) else ("back",)):
+            yield area, title + (" [Home layer]" if layer == "home" else ""), _in_layer(fn, layer)
+
+
+def run(device, selected, report_name, layers=("back",)):
     results = []
     started = time.time()
-    for area, title, fn in TESTS:
+    for area, title, fn in expand(layers):
         if selected is not None and area not in selected and area != "preflight":
             continue
         t0 = time.time()

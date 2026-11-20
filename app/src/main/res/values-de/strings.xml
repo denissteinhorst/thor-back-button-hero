@@ -27,6 +27,17 @@
     <string name="home_as_back">Home-Button wie Back-Taste verwenden</string>
     <string name="home_as_back_hint">Home verhält sich dann genau wie Back: alle Back-Gesten, alle Back + Taste-Kürzel und die App-Ausnahmen. Back + Home ist solange nicht verfügbar.</string>
     <string name="home_as_back_combo_blocked">Nicht verfügbar, solange Home als Back dient</string>
+    <string name="dual_mode">Dual-Mode</string>
+    <string name="dual_mode_hint">Home wird eine zweite Hotkey-Taste mit eigenen Belegungen: Home + Taste kann etwas anderes auslösen als Back + Taste. Es zählt die Taste, die du zuerst drückst. Back + Home ist solange nicht verfügbar.</string>
+    <string name="dual_mode_combo_blocked">Im Dual-Mode nicht verfügbar</string>
+    <string name="dual_column_home">Home-Taste</string>
+    <string name="dual_column_back">Back-Taste</string>
+    <string name="overview_home_dual_mode">Dual-Mode</string>
+    <string name="settings_home_binding_label">Home + %1$s</string>
+    <string name="unbind_layer_title">Welche Belegungen?</string>
+    <string name="unbind_layer_home">Nur Home</string>
+    <string name="unbind_layer_back">Nur Back</string>
+    <string name="unbind_layer_both">Home und Back</string>
     <string name="toggle_combo_blocked">Nicht verfügbar, solange Back + Home Back Button Hero ein- und ausschaltet</string>
     <string name="hold_speed">Haltedauer: %d ms</string>
     <string name="hold_section_title">Halten</string>

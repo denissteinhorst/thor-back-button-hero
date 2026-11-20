@@ -10,6 +10,30 @@ interface ComboButton {
     val defaultAction: String
 }
 
+/**
+ * The Home layer's copy of [base] in dual mode (see docs/DUAL-MODE.md): the same control with its own
+ * binding stored under [PREFIX], so everything keyed by [prefKey] works on it unchanged.
+ */
+class HomeLayerButton private constructor(val base: ComboButton) : ComboButton {
+    override val prefKey: String = PREFIX + base.prefKey
+    override val name: String = "HOME_" + base.name
+    override val defaultAction: String get() = base.defaultAction
+
+    override fun toString(): String = name
+
+    companion object {
+        const val PREFIX = "dual_"
+        private val cache = mutableMapOf<ComboButton, HomeLayerButton>()
+
+        /** One instance per control, so the wrappers compare and hash like the enums they wrap. */
+        fun of(button: ComboButton): HomeLayerButton =
+            button as? HomeLayerButton ?: synchronized(cache) { cache.getOrPut(button) { HomeLayerButton(button) } }
+    }
+}
+
+/** The control behind a binding: itself, or what a [HomeLayerButton] wraps. */
+val ComboButton.base: ComboButton get() = (this as? HomeLayerButton)?.base ?: this
+
 /** The four shoulder buttons that can be combined with holding Back to run a chosen action. */
 enum class ShoulderButton(override val prefKey: String, val keyCode: Int) : ComboButton {
     L1("l1", KeyEvent.KEYCODE_BUTTON_L1),

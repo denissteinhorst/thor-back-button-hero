@@ -179,6 +179,8 @@ consuming a key event unconditionally, and no test can catch it.
 | C17w | Settings → *Use the Home button as Back* on; use Home for a tap, double tap, hold, tap-and-hold and Home + L1, D-pad, stick | Each behaves exactly as with Back, the game keeps focus and never sees Home; the Back + Home row is disabled with its binding kept |
 | C17x | With the option on, hold Back and press Home (and the reverse); hold both 6 s | The second key does nothing, the first acts alone; the pad is not released |
 | C17y | Option on, game exception with native Back; then pause interception with the activation shortcut | Home gives the game a Back; paused, Home goes home again |
+| C17z | Settings → *Dual mode* on (first time), then give Home + L1 and Back + L1 different actions; tap, double tap, hold and tap-and-hold Home and Back; Home + D-pad and stick in a game | Home's layer starts as a copy of Back's with Home's tap going home; each modifier runs its own layer, the game keeps focus; *Use the Home button as Back* turns off; the pages show Home and Back side by side |
+| C17za | Dual mode on: hold Home then press Back (and the reverse) with L1; hold both 6 s; turn dual mode off and on again | The first modifier acts alone; the 5 s emergency release still hands the pad back; off, Home is Android's again and its layer comes back unchanged |
 
 ### Gyro calibration and aiming
 

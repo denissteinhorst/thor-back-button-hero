@@ -25,7 +25,8 @@ enum class ExceptionControl {
         const val BUTTON_SHIFT = 26
         val BACK = listOf(SINGLE, DOUBLE, TAP_HOLD, HOLD)
 
-        fun of(button: ComboButton): ExceptionControl = when (button) {
+        /** The column of [button]'s control; both layers of dual mode share it. */
+        fun of(button: ComboButton): ExceptionControl = when (val control = button.base) {
             ShoulderButton.L1 -> L1
             ShoulderButton.R1 -> R1
             ShoulderButton.L2 -> L2
@@ -34,10 +35,10 @@ enum class ExceptionControl {
             DpadDirection.DOWN -> DOWN
             DpadDirection.LEFT -> LEFT
             DpadDirection.RIGHT -> RIGHT
-            is AndroidButton -> valueOf(button.name)
-            is FaceButton -> valueOf(button.name)
-            is StickButton -> valueOf("${button.stick.name}_STICK_${button.direction.name}")
-            is StickClickButton -> valueOf("${button.stick.name}_STICK_${button.click.name}")
+            is AndroidButton -> valueOf(control.name)
+            is FaceButton -> valueOf(control.name)
+            is StickButton -> valueOf("${control.stick.name}_STICK_${control.direction.name}")
+            is StickClickButton -> valueOf("${control.stick.name}_STICK_${control.click.name}")
             else -> error("Unknown combo button ${button.prefKey}")
         }
     }
