@@ -18,17 +18,24 @@ object RecentsTaskLauncher {
             val pkg = args.getOrNull(0)
             val display = args.getOrNull(1)?.toIntOrNull()
             require(Shell.isPkg(pkg) && display != null && display >= 0)
-            val expectedTask = args.getOrNull(2)?.toIntOrNull()
+            val sameDisplay = args.getOrNull(2) == LastApp.SAME_DISPLAY
+            val expectedTask = if (sameDisplay) null else args.getOrNull(2)?.toIntOrNull()
             val binder = Class.forName("android.os.ServiceManager").getMethod("getService", String::class.java)
                 .invoke(null, "activity_task") as IBinder
             val atm = Class.forName("android.app.IActivityTaskManager\$Stub").getMethod("asInterface", IBinder::class.java)
                 .invoke(null, binder)!!
             val user = ActivityManager::class.java.getMethod("getCurrentUser").invoke(null) as Int
             val tasks = RecentTaskQuery.read(atm, user, includeExcluded = true)
-            val task = tasks.firstOrNull {
+            val matching = tasks.filter {
                 it.taskId >= 0 && (expectedTask == null || it.taskId == expectedTask) &&
                     (it.baseIntent?.component ?: it.baseActivity)?.packageName == pkg
-            } ?: return finish("ERR task unavailable", 1)
+            }
+            if (matching.isEmpty()) return finish(LastApp.TASK_GONE, 1)
+            val task = if (!sameDisplay) matching.first() else {
+                val id = LastApp.taskOn(matching.map { it.taskId to it.javaClass.getField("displayId").getInt(it) }, display)
+                    ?: return finish(LastApp.OTHER_DISPLAY, 1)
+                matching.first { it.taskId == id }
+            }
             val configuration = task.javaClass.getField("configuration").get(task)
             val windowConfiguration = configuration.javaClass.getField("windowConfiguration").get(configuration)
             val type = windowConfiguration.javaClass.getMethod("getActivityType").invoke(windowConfiguration) as Int

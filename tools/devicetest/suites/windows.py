@@ -313,3 +313,103 @@ def last_app(d):
             raise Fail("the closed last app was started again")
     finally:
         _clean(d)
+
+
+@test("windows", "Switch to last app keeps each screen's pair and never pulls an app from the other screen")
+def last_app_per_screen(d):
+    _clean(d)
+    calendar, clock = "com.android.calendar/.AllInOneActivity", "com.android.deskclock/.DeskClock"
+    try:
+        d.start_app(SETTINGS, d.top)
+        d.start_app(GALLERY, d.top)
+        d.start_app(calendar, d.bottom)
+        d.start_app(clock, d.bottom)
+        # Clock leaves the bottom screen: it now belongs to the top pair (clock, gallery), and the
+        # bottom screen keeps only calendar.
+        d.start_app(clock, d.top)
+        _front(d, d.bottom, "com.android.calendar")
+        d.bind(KEY, "@last_app")
+        for display, want, other, other_app in ((d.top, "com.android.gallery3d", d.bottom, "com.android.calendar"),
+                                                (d.top, "com.android.deskclock", d.bottom, "com.android.calendar")):
+            d.focus(display)
+            _press(d)
+            _front(d, display, want, 6)
+            if not d.resumed().get(other, "").startswith(other_app):
+                raise Fail(f"the other screen changed to {d.resumed().get(other)}")
+            time.sleep(1.0)
+        d.focus(d.bottom)
+        d.mark()
+        _press(d)
+        d.eventually(lambda: d.text("last_app_none") in d.notices(), 4, f"no 'no previous app' notice, saw {d.notices()}")
+        time.sleep(0.5)
+        if not d.resumed().get(d.top, "").startswith("com.android.deskclock"):
+            raise Fail(f"the bottom hotkey pulled {d.resumed().get(d.bottom)} away from the top screen")
+    finally:
+        for comp in (calendar, clock):
+            d.stop_app(comp.split("/")[0])
+        _clean(d)
+
+
+@test("windows", "Switch to last app flips fast between each screen's last two apps, also after a swap")
+def last_app_fast(d):
+    calendar, clock = "com.android.calendar/.AllInOneActivity", "com.android.deskclock/.DeskClock"
+    music = "com.android.music/.MusicBrowserActivity"
+    extra = [c.split("/")[0] for c in (calendar, clock, music)]
+
+    def clean():
+        _clean(d)
+        for pkg in extra:
+            d.stop_app(pkg)
+
+    def burst(display, presses):
+        """Presses back to back in one script; every press must pick the other app of the pair."""
+        start = d.resumed().get(display, "").split("/")[0]
+        since = d.mark()
+        seq = Seq()
+        for _ in range(presses):
+            seq.combo(d.face("y")).wait(100)
+        d.press(seq)
+        time.sleep(2.0)
+        log = d.sh(f"logcat -d -v brief -T '{since}' BackButtonHero:D *:S")
+        targets = re.findall(r"Last app (\S+) on \d+: OK task=\d+ from=(-?\d+) to=(\d+)", log)
+        picked = [t[0] for t in targets]
+        if len(picked) != presses or any(a == b for a, b in zip(picked, picked[1:])):
+            raise Fail(f"{presses} fast presses on display {display} did not flip, launched {picked}")
+        if any(src != dst for _, src, dst in targets):
+            raise Fail(f"a fast press on display {display} pulled an app from the other screen: {targets}")
+        _front(d, display, start, 4)
+
+    clean()
+    try:
+        d.bind(KEY, "@last_app")
+        # Four apps per screen: only the last two of each take part.
+        for display in (d.top, d.bottom):
+            for comp in (SETTINGS, GALLERY, calendar, clock):
+                d.start_app(comp, display)
+            d.focus(display)
+            time.sleep(1.0)
+            burst(display, 4)
+            # A new app takes over the pair at once.
+            d.start_app(music, display)
+            time.sleep(0.5)
+            burst(display, 2)
+            clean()
+            time.sleep(0.8)
+        # After a swap each screen flips with its own apps; nothing travels between the screens.
+        d.start_app(SETTINGS, d.top)
+        d.start_app(GALLERY, d.top)
+        d.start_app(calendar, d.bottom)
+        d.start_app(clock, d.bottom)
+        d.bind("face_x", "@swap_apps")
+        d.focus(d.top)
+        d.press(Seq().combo(d.face("x")))
+        _front(d, d.top, "com.android.deskclock")
+        _front(d, d.bottom, "com.android.gallery3d")
+        time.sleep(1.0)
+        for display in (d.top, d.bottom, d.top, d.bottom):
+            d.focus(display)
+            time.sleep(0.5)
+            burst(display, 2)
+    finally:
+        d.unbind("face_x")
+        clean()

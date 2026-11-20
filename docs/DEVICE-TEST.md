@@ -80,7 +80,7 @@ The order keeps related checks together and the most disruptive ones last.
 | `sources` | Back + every button, D-pad and stick direction, stick-click gestures; bound input is withheld from the game, unbound input reaches it |
 | `gestures` | Back single, double, tap-and-hold and hold, timing rules, unassigned gestures, Home as Back |
 | `toggle` | Every pause/resume pair, too-short holds, input passing through while paused |
-| `windows` | Launch on top/bottom, Home, Back, bottom switcher (open, controller launch, close all), top Recents (open, controller launch), swap apps, hold-to-swap, controller focus and its pictogram, switch active app, switch to last app (flipping, closed app), navigation flicks |
+| `windows` | Launch on top/bottom, Home, Back, bottom switcher (open, controller launch, close all), top Recents (open, controller launch), swap apps, hold-to-swap, controller focus and its pictogram, switch active app, switch to last app (flipping, fast flipping on both screens, closed app, each screen keeps its own pair, after a swap), navigation flicks |
 | `appcontrol` | Minimize, force-close, restart on the same screen, confirmation prompt, screen prompt, close all and close background apps, the close prompt |
 | `capture` | Screenshots of top, bottom and both (checked by image size); a recording produces a valid MP4 |
 | `macro` | A library macro plays buttons, D-pad and stick into the game in order |

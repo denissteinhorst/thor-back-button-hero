@@ -1077,17 +1077,23 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** Brings back the app used before the current one on the controller's screen; see [LastApp]. */
     private fun switchToLastApp() {
         val display = controllerDisplayId()
-        val previous = LastApp.previous(source.appsOnDisplay(display).map { it.packageName }, source.topApp(display), packageName)
-            ?: return notice.show(R.string.last_app_none)
+        val candidates = LastApp.candidates(source.appsOnDisplay(display).map { it.packageName }, source.topApp(display), packageName)
+        if (candidates.isEmpty()) return notice.show(R.string.last_app_none)
         if (!PService.cachedAvailable()) {
             // Without root the task cannot be checked; the launch still brings an existing one back.
-            runCatching { launchOn(previous, display) }.onFailure { toastUnavailable() }
+            runCatching { launchOn(candidates.first(), display) }.onFailure { toastUnavailable() }
             return
         }
         Thread {
-            val result = PService.runEntryPoint(this, "RecentsTaskLauncher", previous, display.toString())
-            Log.d(TAG, "Last app $previous on $display: $result")
+            // History is per screen but never drops an app that moved to the other one; the launcher
+            // refuses those, so the next app of this screen becomes the last app instead.
+            val attempt = candidates.firstNotNullOfOrNull { pkg ->
+                val result = PService.runEntryPoint(this, "RecentsTaskLauncher", pkg, display.toString(), LastApp.SAME_DISPLAY)
+                Log.d(TAG, "Last app $pkg on $display: $result")
+                if (result == LastApp.OTHER_DISPLAY) null else pkg to result
+            }
             handler.post {
+                val (previous, result) = attempt ?: return@post notice.show(R.string.last_app_none)
                 when {
                     result?.startsWith("OK ") == true -> Unit
                     result == LastApp.TASK_GONE -> {
