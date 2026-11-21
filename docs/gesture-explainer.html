@@ -417,7 +417,7 @@ button { font: inherit; color: inherit; }
 </style>
 </head>
 <body>
-<main class="shell intro" id="shell">
+<main class="shell" id="shell">
   <section class="stage" id="stage"><div class="device-wrap">
     <div id="dev"></div>
     <!-- last intro card: what can go on a shortcut -->
@@ -437,7 +437,7 @@ button { font: inherit; color: inherit; }
   </div></section>
   <section class="panel">
     <!-- 1. intro running -->
-    <div class="introbar" id="introbar">
+    <div class="introbar" id="introbar" hidden>
       <p class="step" id="step" aria-live="polite">&nbsp;</p>
       <div class="prog"><i id="prog"></i></div>
       <button class="btn" id="skip" type="button">Skip intro</button>
@@ -450,7 +450,7 @@ button { font: inherit; color: inherit; }
     </div>
 
     <!-- 3. explore: groups, each opens a drawer -->
-    <div id="main" hidden>
+    <div id="main">
       <h1>See a function in action</h1>
       <p class="lede">Search for what you want to do, or pick a group. Try an example on Back or Home. Setup features explain how to make the app your own.</p>
       <label class="search-label" for="action-search">Find an action or setting</label>
@@ -459,7 +459,6 @@ button { font: inherit; color: inherit; }
       <p id="search-status" class="search-help" role="status" aria-live="polite"></p>
       <ul class="groups" id="search-results" hidden></ul>
       <ul class="groups" id="groups"></ul>
-      <div class="foot"><button class="btn ghost" type="button" id="replay"></button></div>
     </div>
   </section>
 </main>
@@ -1285,7 +1284,6 @@ const ThorSearch = (() => {
 
   Thor.build($('dev'));
   $('dBack').innerHTML = ico('prev');
-  $('replay').innerHTML = ico('replay') + 'Replay intro';
   $('explore').innerHTML = 'Try them out' + ico('next');
 
   // the portrait drawer starts right below the sticky device
@@ -1332,11 +1330,12 @@ const ThorSearch = (() => {
     Thor.run(c => Thor.introOutro(c));
   }
   $('skip').onclick = () => { Thor.cancel(); Thor.introEnd(); showOverview(); };
-  $('explore').onclick = () => {
+  function enterApp() {
     Thor.cancel(); Thor.leaveIntro(); phase('main'); Thor.setMarks({});
+    Thor.showAllInputs(true);
     window.scrollTo({ top: 0 });
-  };
-  $('replay').onclick = startIntro;
+  }
+  $('explore').onclick = enterApp;
 
   /* ---------- groups ---------- */
   $('groups').innerHTML = CATS.map(c => {
@@ -1451,8 +1450,9 @@ const ThorSearch = (() => {
   search.addEventListener('input', showSearch);
   $('clear-search').onclick = () => { search.value = ''; showSearch(); search.focus(); };
 
-  if (Thor.reducedMotion() && !document.documentElement.classList.contains('recording')) { Thor.introEnd(); showOverview(); }
-  else startIntro();
+  // Keep the opening sequence available only for the explicit video recording mode.
+  if (document.documentElement.classList.contains('recording')) startIntro();
+  else enterApp();
 })();
 </script>
 </body>
