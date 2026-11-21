@@ -82,7 +82,7 @@ of error. The small inferred asymmetries must be checked against a physical unit
 
 ## Verification
 
-`node site/thor-model/check-model.mjs` checks finite vertices and indices, nominal
+`node site/model-editor/check-model.mjs` checks finite vertices and indices, nominal
 shell width/depth, real deck/port apertures, outward-facing cap and inward-facing
 bowl surfaces, stable hinge pivot and closed-lid control clearance. It does not
 prove visual identity. Browser checks cover module loading, console errors,

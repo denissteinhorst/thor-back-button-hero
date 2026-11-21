@@ -12,3 +12,6 @@ captures/
 
 # Local-only release-hardening working docs (purged from history)
 docs/hardening/
+
+# Local video checkpoints
+/checkpoints/

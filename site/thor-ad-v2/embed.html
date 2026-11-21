@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Back Button Hero 2.0 — video</title>
+  <link rel="stylesheet" href="embed.css">
+  <script type="importmap">{"imports":{"three":"../model-editor/vendor/three.module.js"}}</script>
+</head>
+<body>
+  <main class="film-player" aria-label="Back Button Hero 2.0 video">
+    <div class="film-surface">
+      <canvas id="film" width="720" height="1280" role="img" aria-label="A 30-second film showing Back and Home shortcuts on the AYN Thor"></canvas>
+      <p id="status" role="status">Loading video…</p>
+      <noscript>Enable JavaScript to watch this film.</noscript>
+    </div>
+    <div class="film-controls">
+      <div class="film-buttons">
+        <button id="play" type="button" disabled>Play</button>
+        <output id="time" aria-label="Playback time">0:00 / 0:30</output>
+        <button id="fullscreen" type="button" disabled>Full screen</button>
+      </div>
+      <input id="seek" type="range" min="0" max="30" step="0.1" value="0" aria-label="Video position" aria-valuetext="0 of 30 seconds" disabled>
+    </div>
+  </main>
+  <script type="module" src="embed.js"></script>
+</body>
+</html>

@@ -15,7 +15,7 @@ gitignored and therefore absent here.
 | `IMPROVMENTS.md` | Audit notes on memory, performance, code quality and docs. Context, not a queue. |
 | `WIP_BOTTOMSCREEN_OVERWRITES.md` | Investigation note on a rejected and reverted attempt to raise the app's windows above AYN's assistant. Read before retrying. |
 | `art/settings-icons/` | SVG sources of the settings navigation icons that became the `ic_settings_*` vector drawables. |
-| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `site/gesture-explainer.html` is a symlink to the docs copy. |
+| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `site/gesture-explainer.html` is a symlink to the docs copy. `site/thor-ad-v2/` contains the final 2.0 clip; `site/model-editor/` contains the standalone 3D editor and shared model/renderer. |
 | `LICENSE` | 0BSD. Chosen deliberately: the release APK ships no third-party code beyond the Kotlin stdlib (see [`MAINTENANCE.md`](MAINTENANCE.md)). |
 | `.gitignore` | Excludes build output, IDE files, `local.properties`, and — importantly — `*.keystore`/`*.jks` so a signing key can never be committed. |
 | `settings.gradle.kts` | Gradle settings: declares the single `:app` module and the plugin/dependency repositories. |

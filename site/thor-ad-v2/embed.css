@@ -1,0 +1,19 @@
+/* SPDX-License-Identifier: 0BSD */
+:root { color-scheme: light; font: 16px/1.4 system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; background: #f8f9fb; color: #22272e; }
+.film-player { height: 100%; display: flex; flex-direction: column; }
+.film-surface { position: relative; flex: 1; min-height: 0; }
+canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+#status, noscript { position: absolute; inset: 0; margin: 0; display: grid; place-content: center; padding: 24px; background: #f8f9fb; text-align: center; }
+#status[hidden] { display: none; }
+.film-controls { flex: none; padding: 8px 12px; border-top: 1px solid #d9dde1; background: #fff; }
+.film-buttons { display: flex; align-items: center; gap: 8px; }
+button { min-height: 44px; border: 1px solid #c5cbd2; border-radius: 8px; padding: 6px 10px; background: #fff; color: inherit; font: 600 .875rem/1.2 system-ui, sans-serif; cursor: pointer; }
+button:disabled { opacity: .5; cursor: wait; }
+#play { min-width: 62px; background: #22272e; color: #fff; border-color: #22272e; }
+#fullscreen { margin-left: auto; }
+output { font-size: .875rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+input { display: block; width: 100%; height: 24px; margin: 6px 0 0; accent-color: #22272e; cursor: pointer; }
+:focus-visible { outline: 3px solid #0a58ca; outline-offset: 2px; }
+.film-player:fullscreen { width: 100%; height: 100%; background: #f8f9fb; }
