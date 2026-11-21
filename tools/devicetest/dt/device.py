@@ -403,6 +403,11 @@ class Device:
     def pid(self, pkg):
         return self.sh(f"pidof {pkg}").strip()
 
+    def task_ids(self, pkg):
+        """Recent tasks of the stock test apps, whose task affinity is their package name."""
+        pattern = rf"Task\{{\S+ #(\d+) [^}}]*?A=\d+:{re.escape(pkg)}(?:\s|}})"
+        return re.findall(pattern, self.sh("dumpsys activity recents"))
+
     def window_owners(self, display=None):
         """(title, owning pid) of every window, optionally only those on [display]."""
         out, title = [], None

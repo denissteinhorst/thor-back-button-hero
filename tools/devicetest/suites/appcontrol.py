@@ -6,6 +6,7 @@ from dt import pad
 from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
+from .common import expect_closed
 
 from .windows import GALLERY, LAUNCHERS, SETTINGS, _clean, _front, _press
 
@@ -28,10 +29,6 @@ def _settings_on_top(d):
     if not pid:
         raise Fail("Settings has no process after starting")
     return pid
-
-
-def _gone(d, pkg, timeout=6):
-    d.eventually(lambda: not d.pid(pkg), timeout, f"{pkg} still runs (pid {d.pid(pkg)})")
 
 
 def _prompt(d, timeout=4):
@@ -65,10 +62,10 @@ def minimize(d):
 @test("appcontrol", "Force-close ends the top app")
 def force_close(d):
     try:
-        _settings_on_top(d)
+        pid = _settings_on_top(d)
         _app_control(d, "force_close")
         _press(d)
-        _gone(d, SETTINGS_PKG)
+        expect_closed(d, SETTINGS_PKG, pid)
     finally:
         _clean(d)
 
@@ -110,7 +107,7 @@ def confirm(d):
 @test("appcontrol", "Asking for the screen offers top, bottom and both, and acts on the choice")
 def ask_screen(d):
     try:
-        _settings_on_top(d)
+        pid = _settings_on_top(d)
         d.start_app(GALLERY, d.bottom)
         d.focus(d.top)
         time.sleep(1.0)
@@ -119,7 +116,7 @@ def ask_screen(d):
         _press(d)
         _prompt(d)
         _choose(d)
-        _gone(d, SETTINGS_PKG)
+        expect_closed(d, SETTINGS_PKG, pid)
         if d.pid(GALLERY_PKG) != gallery:
             raise Fail("choosing the top screen also closed the bottom app")
     finally:
@@ -129,13 +126,14 @@ def ask_screen(d):
 @test("appcontrol", "Close all apps ends every app on both screens")
 def close_all(d):
     try:
-        _settings_on_top(d)
+        pid = _settings_on_top(d)
         d.start_app(GALLERY, d.bottom)
         time.sleep(1.0)
+        gallery = d.pid(GALLERY_PKG)
         d.bind(KEY, "@close_apps", target="both", close_confirm=False)
         _press(d)
-        _gone(d, SETTINGS_PKG)
-        _gone(d, GALLERY_PKG)
+        expect_closed(d, SETTINGS_PKG, pid)
+        expect_closed(d, GALLERY_PKG, gallery)
     finally:
         _clean(d)
 
@@ -143,13 +141,13 @@ def close_all(d):
 @test("appcontrol", "Close background apps spares the app in front")
 def close_background(d):
     try:
-        _settings_on_top(d)
+        pid = _settings_on_top(d)
         d.start_app(GALLERY, d.top)
         time.sleep(1.0)
         gallery = d.pid(GALLERY_PKG)
         d.bind(KEY, "@close_background_apps", target="top", close_confirm=False)
         _press(d)
-        _gone(d, SETTINGS_PKG)
+        expect_closed(d, SETTINGS_PKG, pid)
         if d.pid(GALLERY_PKG) != gallery:
             raise Fail("the app in front was closed too")
     finally:
@@ -170,7 +168,7 @@ def close_prompt(d):
         _press(d)
         _prompt(d)
         _choose(d)
-        _gone(d, SETTINGS_PKG)
+        expect_closed(d, SETTINGS_PKG, pid)
     finally:
         _clean(d)
         if d.own_windows(d.top):
