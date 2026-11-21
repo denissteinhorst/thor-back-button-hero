@@ -14,8 +14,12 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory site
 Open `http://127.0.0.1:8766/thor-ad-v2/` or add `?autoplay`.
 Play/pause, frame stepping with arrow keys, chapter selection, scrubbing,
 fullscreen and still-frame download remain available. Video recording requests
-60 fps and offers MP4 or WebM according to browser support. Actual delivery rate
-depends on browser and hardware; there is no audio track.
+60 fps at 14 Mbit/s by default. A separate Social Media recording option requests
+30 fps at 2 Mbit/s (approximately 7.5 MB for 30 seconds), preserving 720 × 1280
+and the complete film. Both prefer MP4 and fall back to WebM according to browser
+support; the download shows the actual file size and format. Social exports use
+a distinct `-social` filename. Actual size and delivery rate depend on browser
+and hardware; there is no audio track.
 
 ## Film structure
 
