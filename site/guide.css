@@ -1,0 +1,12 @@
+/* SPDX-License-Identifier: 0BSD */
+:root { color-scheme:light dark; font:100%/1.6 system-ui,sans-serif; }
+body { max-width:64rem; margin:auto; padding:1.5rem; }
+a { color:LinkText; overflow-wrap:anywhere; }
+section,main>details,article { margin-block:2rem; }
+summary { cursor:pointer; font-weight:650; padding-block:.75rem; }
+img { display:block; max-width:100%; height:auto; }
+figure { margin:1.5rem 0; }
+code,pre { overflow-wrap:anywhere; white-space:pre-wrap; }
+.shot-chapters { display:flex; flex-wrap:wrap; gap:1rem; }
+.ver { font-size:.875rem; }
+footer { margin-top:3rem; }

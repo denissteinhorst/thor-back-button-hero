@@ -15,7 +15,7 @@ gitignored and therefore absent here.
 | `IMPROVMENTS.md` | Audit notes on memory, performance, code quality and docs. Context, not a queue. |
 | `WIP_BOTTOMSCREEN_OVERWRITES.md` | Investigation note on a rejected and reverted attempt to raise the app's windows above AYN's assistant. Read before retrying. |
 | `art/settings-icons/` | SVG sources of the settings navigation icons that became the `ic_settings_*` vector drawables. |
-| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `site/gesture-explainer.html` is a symlink to the docs copy. `site/thor-ad-v2/` contains the final 2.0 clip; `site/model-editor/` contains the standalone 3D editor and shared model/renderer. |
+| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `guide.html` is the shared content source and script-free fallback; `hotkey-layers.js` renders the homepage’s Back/Home layers. See `site/README.md`. `site/gesture-explainer.html` is a symlink to the docs copy. `site/thor-ad-v2/` contains the final 2.0 clip; `site/model-editor/` contains the standalone 3D editor and shared model/renderer. |
 | `LICENSE` | 0BSD. Chosen deliberately: the release APK ships no third-party code beyond the Kotlin stdlib (see [`MAINTENANCE.md`](MAINTENANCE.md)). |
 | `.gitignore` | Excludes build output, IDE files, `local.properties`, and — importantly — `*.keystore`/`*.jks` so a signing key can never be committed. |
 | `settings.gradle.kts` | Gradle settings: declares the single `:app` module and the plugin/dependency repositories. |
@@ -224,7 +224,7 @@ first build, so they work right after a clone without a manual step.
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |
 | `hardening/` | The historical, German-language pre-release hardening plan: its 38 step files, reports and checklists. Frozen record, not current instructions. |
-| `gesture-explainer.html` | The App-Simulation: an intro that shows every shortcut on a device diagram, then every function to try out. Fully self-contained: `thor-base.png` and the app icon are embedded as base64 data URIs so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. `?autoplay` is the recording mode (light theme, no Skip button). |
+| `gesture-explainer.html` | The App-Simulation: opens directly on every function to try out on a device diagram. The intro remains available for recording mode. Fully self-contained: `thor-base.png` and the app icon are embedded as base64 data URIs so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. `?autoplay` is the recording mode (light theme, no Skip button). |
 
 ### `docs/assets/`
 
@@ -234,8 +234,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `Back Button Hero 1.4.0.mp4` | The previous 1.4.0 video. The current one, `back-button-hero-1.5.0.mp4` (60 fps, 1200×1500, about 45 seconds), lives only in `site/assets/`; it is recorded frame by frame from `gesture-explainer.html?autoplay`, and the README links to the copy published with the site. |
+| `site/assets/back-button-hero-1.5.0.mp4` | The 1.5.0 video (60 fps, 1200×1500, about 45 seconds), still linked by the README. The current 2.0 film and player live in `site/thor-ad-v2/`. |
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
-| `screenshot-*.png` | Older settings screenshots (1.3.0 layout). Nothing references them any more; the README and the landing page use `site/assets/screenshots/`. |

@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Back Button Hero — feature guide</title><link rel="icon" href="assets/favicon.png"><link rel="stylesheet" href="guide.css"></head><body>
+<header><a href="index.html">Back Button Hero</a><h1>Feature guide</h1><p>Actions, setup and answers. The same content powers the interactive homepage.</p><nav aria-label="Guide"><a href="#actions">Actions</a> · <a href="#screenshots">Screenshots</a> · <a href="#install">Install</a> · <a href="#frontends">Compatibility</a> · <a href="#faq">FAQ</a> · <a href="#changelog">Updates</a></nav></header><main>
+<section id="actions"><h2>Available actions</h2><details id="action-catalog" open>
+        <summary>Explore all available actions</summary>
+        <p class="intro">Pick an action for your shortcut. Macros need a button combination.</p>
+        <div class="action-grid">
+          <div class="action-card">
+            <h4>Apps and navigation</h4>
+            <ul>
+              <li><strong>Back and Home.</strong> Go back or return Home.</li>
+              <li><strong>Launch an app.</strong> Launch a favorite on either screen.</li>
+              <li><strong>App switcher.</strong> Open top Recents or the bottom switcher, with apps from one or both screens.</li>
+              <li><strong>Previous or next app.</strong> Jump between recent apps.</li>
+              <li><strong>Active App Control.</strong> Minimize or force-close on one or both screens, with an optional screen prompt. <strong>Restart</strong> is new in 2.0. Force-closing or restarting can lose unsaved progress.</li>
+              <li><strong>Switch to last app.</strong> <span class="ver new">New in 2.0</span> Flip between the last two apps on the controller’s screen. Each screen keeps its own pair.</li>
+              <li><strong>Close Apps.</strong> <span class="ver new">New in 2.0</span> Close all apps on the selected screens, or keep the apps in front and close only background apps. Confirmation is optional.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Screens and controller focus</h4>
+            <ul>
+              <li><strong>Switch both apps.</strong> Swap what’s open on the top and bottom screens.</li>
+              <li><strong>Switch active app.</strong> Move one app to the other screen. The controller can follow.</li>
+              <li><strong>Controller focus.</strong> Pick a screen, toggle between screens or show a prompt.</li>
+              <li><strong>Screenshot.</strong> Capture the top, bottom, or both screens in a single image.</li>
+              <li><strong>Display power.</strong> Toggle either display, use both, or use just the top or bottom screen.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Thor controls</h4>
+            <ul>
+              <li><strong>Volume and brightness.</strong> Adjust either or both screens. <strong>Toggle mute</strong> is new in 2.0.</li>
+              <li><strong>Performance mode and fan control.</strong> Change profiles from a shortcut.</li>
+              <li><strong>Controller style, direct power supply, vibration and forced landscape.</strong> Access these AYN controls directly.</li>
+              <li><strong>Refresh rate and stick lighting.</strong> <span class="ver new">New in 2.0</span> Toggle 60/120 Hz or choose a rate. Turn either or both sticks’ LEDs on or off.</li>
+              <li><strong>Virtual mouse.</strong> <span class="ver new">New in 2.0</span> Toggle AYN’s stick-controlled mouse cursor.</li>
+              <li><strong>Status Overlay.</strong> <span class="ver new">New in 2.0</span> Show battery level, time remaining or until full, and temperature.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Android shortcuts</h4>
+            <ul>
+              <li><strong>Quick Settings and notifications.</strong> Open either panel from a shortcut.</li>
+              <li><strong>Power Menu and Standby.</strong> <span class="ver new">New in 2.0</span> Open Android’s power dialog or put the Thor into standby, optionally after confirmation.</li>
+              <li><strong>Do Not Disturb and Mute Microphone.</strong> <span class="ver new">New in 2.0</span> Toggle priority mode or block the microphone for all apps.</li>
+              <li><strong>System settings.</strong> Jump to Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb or Battery Saver.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Recording and media <span class="ver new">New in 2.0</span></h4>
+            <ul>
+              <li><strong>Record video.</strong> Capture the top screen, bottom screen or both with game audio. Press again to stop; recordings stay in Videos/BBH-Records.</li>
+              <li><strong>Optional microphone and push-to-talk.</strong> Add commentary, choose a hold button and lower game audio while speaking. Apps that block audio capture remain silent.</li>
+              <li><strong>Media controls.</strong> Play/pause, skip forward or return to the previous track without leaving your game.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Macros and gyro <span class="ver new">New in 2.0</span></h4>
+            <ul>
+              <li><strong>Macro library and editor.</strong> Record or add controller inputs, edit steps and pauses, reorder, undo and preview timing. Reuse named macros across hotkeys. Release the modifier to play; use the hotkey again to stop.</li>
+              <li><strong>Gyro on/off and calibration · Beta.</strong> Steer either stick with the handheld’s tilt or turning speed. Adjust sensitivity, deadzone and axes, with a live preview and an optional hold button.</li>
+              <li>Macros and gyro need AYN’s built-in root service; they do not require rooting your Thor.</li>
+            </ul>
+          </div>
+        </div>
+      </details></section>
+
+<details class="showcase" id="screenshots" open>
+        <summary>See the app’s settings <span class="gallery-label">v2.0 screenshots</span></summary>
+        <div class="shots">
+        <p>See how bindings and settings look on the Thor.</p>
+        <div class="shot-chapters" aria-label="Jump to a settings page">
+          <span data-chapter="welcome">Welcome</span>
+          <span data-chapter="overview">Overview</span>
+          <span data-chapter="basic">Basic</span>
+          <span data-chapter="dual">Dual mode</span>
+          <span data-chapter="face">Face buttons</span>
+          <span data-chapter="shoulders">Shoulder buttons</span>
+          <span data-chapter="sticks">Analog sticks</span>
+          <span data-chapter="dpad">D-pad</span>
+          <span data-chapter="actions">Actions</span>
+          <span data-chapter="exceptions">Exceptions</span>
+          <span data-chapter="settings">Settings</span>
+          <span data-chapter="help">Help</span>
+        </div>
+        <div class="shot-stage">
+          <figure class="shot" data-chapter="welcome">
+            <img src="assets/screenshots/01-welcome.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>On first start, Back Button Hero 2.0 gives you a quick look at its top features.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="welcome">
+            <img src="assets/screenshots/02-welcome-setup.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Start with useful bindings for every button, or with a clean slate where only the Back button does something.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="overview">
+            <img src="assets/screenshots/03-overview.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>The app opens on an overview of the handheld: every binding at a glance. Tap a button in the drawing to change it.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="overview">
+            <img src="assets/screenshots/04-overview-menu.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Every settings page sits in the slim menu on the left. Tap an icon to open its page.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/05-basic-single.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Use a single press of Back to open your launcher on the bottom screen.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/06-basic-action-list.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Pick an action from the full A–Z list…</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/06b-basic-action-search.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>…or type a few letters to find it straight away.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/07-basic-double.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Try a double press for the bottom app switcher, with apps from both screens if you like. Set the timing to suit you.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/08-basic-taphold.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Tap, then hold Back for top Recents, and choose the screen it opens on.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/09-basic-hold.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Assign Switch both apps to a hold. Home, Start and Select get their own Back + button shortcuts too.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/10-basic-clear-preview.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Before anything changes, you see exactly what will happen. Nothing changes until you tap Apply.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/11-back-mode.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Back button mode: turn on Use the Home button as Back, and Home does everything Back does.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/12-back-mode-overview.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>The overview shows that Home is in Back button mode.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="basic">
+            <img src="assets/screenshots/13-back-mode-home.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>While Home acts as Back, the Back + Home shortcut is unavailable, and the page tells you why.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dual">
+            <img src="assets/screenshots/14-dual-mode.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Dual mode turns Home into a second hotkey button. Switch it on in Settings.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dual">
+            <img src="assets/screenshots/15-dual-dpad.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Every binding page then shows two columns: Home + button on the left, Back + button on the right. Here the D-pad controls media with Home and brightness and volume with Back.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dual">
+            <img src="assets/screenshots/16-dual-face.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>The face buttons get their own pair of bindings as well, for example a screenshot with Home + A and Active App Control with Back + A.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dual">
+            <img src="assets/screenshots/17-dual-overview-home.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>The overview switches between both layers. This is everything Home + button does…</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dual">
+            <img src="assets/screenshots/18-dual-overview-back.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>…and this is everything Back + button does.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="face">
+            <img src="assets/screenshots/19-face.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back and press A, B, X or Y for a shortcut. The printed letter counts, whichever controller style is set.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/20-shoulders.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back and press a shoulder button for a shortcut. Buttons without one keep working in your game as usual.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/21-shoulders-details.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Some shortcuts have extra options, like which screen to capture or where the controller should go.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/22-shoulders-screen.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Choose the screen a shortcut works on: top, bottom or both.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/23-shoulders-focus-mode.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Put controller focus on a hotkey to send it to a fixed screen, toggle screens or pick one from a prompt.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="shoulders">
+            <img src="assets/screenshots/24-shoulders-indicator.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>A small icon shows where your controller just went. Choose where it appears, whether it appears at all, and for how long.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="sticks">
+            <img src="assets/screenshots/25-sticks.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Hold Back and push a stick to run a shortcut. Choose the left or the right stick.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="sticks">
+            <img src="assets/screenshots/26-sticks-click.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Press a stick in for a single click, a double click, or tap and then hold.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="sticks">
+            <img src="assets/screenshots/27-sticks-right.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>The right stick has its own set of bindings, here a macro and the gyro.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="dpad">
+            <img src="assets/screenshots/28-dpad.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Try Back + up and down for brightness and Back + left and right for volume. Directions you leave empty go straight to your game.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="actions">
+            <img src="assets/screenshots/29-actions-record.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Record video from both screens, with your voice on a push-to-talk button and the game sound lowered while you talk.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="actions">
+            <img src="assets/screenshots/30-actions-gyro.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Gyro aiming (beta): tilt the handheld to move a stick. Calibrate it once, then tune mode, sensitivity and deadzone with a live preview.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="actions">
+            <img src="assets/screenshots/31-actions-macro-library.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Macros play a sequence of button presses with one shortcut. Save as many as you like and reuse them on any button.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="actions">
+            <img src="assets/screenshots/32-actions-macro-editor.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Record a macro on the controller or add the buttons by hand, then fine-tune every step and pause.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/33-exceptions.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Exceptions: if one app needs a button for itself, add it here. Everywhere else, Back Button Hero works as usual.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/34-exceptions-back.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Choose which of the Back gestures Back Button Hero handles in each app.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/35-exceptions-shoulders.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Let a game keep the shoulder buttons it needs while your other shortcuts stay available.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/36-exceptions-dpad.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Give a game back individual D-pad directions. Face buttons, sticks and Android buttons work the same way.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/37-exceptions-add.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Add an app from the list, or search for it by name.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="exceptions">
+            <img src="assets/screenshots/38-exceptions-start.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Start with everything allowed or blocked, then fine-tune the individual inputs.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/39-settings-switcher.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Load the defaults or clear every binding at once, and steer the app switcher with the controller.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/40-settings-pause.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Pause Back Button Hero with a button pair, for example when an emulator needs Back for its own menu. Hold the pair again to resume.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/41-settings-pause-buttons.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Choose the button pair for pausing, now also Start + Select or Back + Home, or switch this shortcut off.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/42-settings-backup.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Save your bindings, timings, switches and exceptions as a file and load them again later. You see every change before it is applied.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="settings">
+            <img src="assets/screenshots/43-settings-defaults-preview.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Load defaults shows every change for the whole app before you apply it.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="help">
+            <img src="assets/screenshots/44-help-service.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>If the accessibility service is inactive, the app guides you straight to the Android setting.</figcaption>
+          </figure>
+          <figure class="shot" data-chapter="help">
+            <img src="assets/screenshots/45-help-updates.webp?v=20261121" alt="" width="1600" height="854" loading="lazy" decoding="async">
+            <figcaption>Check for a new version from the app. When an update is available, you can install it there too.</figcaption>
+          </figure>
+        </div>
+
+        </div>
+      </details>
+
+<section class="sec" id="changelog">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Changelog</h2>
+    </div>
+    <div class="changelog">
+      <article class="release" id="upcoming-release">
+        <h3>2.0</h3>
+        <p>Since v1.5.0: Home as Back or an independent Dual-mode layer; face-button, Home, Start and Select hotkeys; video recording with optional push-to-talk; editable, reusable macros; and beta gyro control.</p>
+        <p>A bindings overview, action search, guided options and welcome setup make configuration easier. New media, last-app, close-apps, power, display and AYN shortcuts round out the update. <a href="index.html#playground">See what’s new in 2.0</a>.</p>
+      </article>
+      <div id="releases">
+        <article class="release">
+          <h3>v1.5.0 <time datetime="2026-11-14">Nov 14, 2026</time></h3>
+          <p>Both analog sticks are fully customizable, all four Back gestures start blank and take any action, and there are more actions for your Thor: screens on or off, performance and fan modes, vibration and more. Future updates install right from the app, and Settings → Backup saves and loads your setup.</p>
+        </article>
+        <article class="release">
+          <h3>v1.4.2</h3>
+          <p>Move the active app to the other display with a hotkey and let the controller follow if you like. Hold-to-swap also respects app exceptions on both screens.</p>
+        </article>
+        <article class="release">
+          <h3>v1.4.1 <time datetime="2026-10-31">Oct 31, 2026</time></h3>
+          <p>A hotfix for 1.4.0. Recents keeps AYN's Auto-lock, swapping RetroArch no longer locks the controller focus, and bottom Recents shows above AYN's panel. Back Button Hero no longer moves apps or the controller on its own.</p>
+        </article>
+        <article class="release">
+          <h3>v1.4.0 <time datetime="2026-10-31">Oct 31, 2026</time></h3>
+          <p>Frontend compatibility for ES-DE Companion, NeoStation, Cocoon and RetroArch. A new bottom Recents that looks like the system's own, D-pad navigation in both Recents, swaps that keep your game running, a pause shortcut, per-app exceptions, and an Active App Control shortcut that minimizes or force-closes the app in front.</p>
+        </article>
+      </div>
+      <p class="all-link"><a href="https://github.com/denissteinhorst/thor-back-button-hero/releases" target="_blank" rel="noopener noreferrer nofollow">All releases on GitHub →</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="install">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Install – Easy Peasy</h2>
+      <p>Get started in a few taps, straight from GitHub.</p>
+    </div>
+    <ol class="steps">
+      <li><strong>Download</strong> the APK from GitHub on your AYN Thor (Android 13).</li>
+      <li><strong>Open it and tap Install.</strong></li>
+      <li><strong>Enable the accessibility service.</strong> Follow the prompt to Android’s settings, then come back and pick your first binding.</li>
+    </ol>
+    <p class="install-cta"><a class="btn primary" href="https://github.com/denissteinhorst/thor-back-button-hero/releases/latest" target="_blank" rel="noopener noreferrer nofollow">Download the latest APK</a></p>
+    <p>The first-run setup lets you load useful defaults, start with only Back configured, or keep your existing customized settings.</p>
+    <p><strong>In-app updates are available from version 1.5.0.</strong> Tap <em>Check for new version</em> to find and download an update right from Back Button Hero, then confirm the install in Android. On your first in-app update, Android asks you to allow installs from Back Button Hero.</p>
+    <p class="install-note">Android shows a generic warning for every accessibility app; <a href="#faq">here's what this one does</a>.</p>
+    <details class="verify">
+      <summary>Verify your download</summary>
+      <div>
+        <p>Every release is signed with the same key. Signing certificate SHA-256:</p>
+        <p class="hash"><code id="sha">7f8ab05139a406a3d50ba6267c60228b90935f4c02f854c26d69cf1b275df3ee</code> <span class="sr-only" id="copy-status" role="status"></span></p>
+        <pre><code>apksigner verify --print-certs thor-back-button-hero-v&lt;version&gt;.apk</code></pre>
+        <p>The printed digest must match. If Android refuses an update, don't force it. <a href="https://github.com/denissteinhorst/thor-back-button-hero/issues" target="_blank" rel="noopener noreferrer nofollow">Open an issue</a> instead.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section class="sec" id="frontends">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Frontend compatibility</h2>
+      <p>Dual-screen frontends follow no common standard. Some draw their bottom screen as an overlay window, some as a normal app, and some take the screen back whenever anything else appears there. I tested each one below on my own Thor and aimed for the best result it allows, without touching the frontends themselves.</p>
+    </div>
+    <div class="fe-grid">
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>ES-DE + Companion</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
+        </div>
+        <p>Companion stays one card away in bottom Recents while you use another app on the bottom screen. Overlay-based versions get the same treatment: the overlay steps aside and comes back exactly as it was.</p>
+      </article>
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>NeoStation</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
+        </div>
+        <p>The bottom screen is finally yours again. NeoStation's panel normally can't be covered by anything, but Back Button Hero moves it aside whenever you open another app there, and its own card in bottom Recents brings it back exactly as it was.</p>
+        <p>The one limit: the panel can't move to the other screen, so hold-to-swap can't take NeoStation along. Instead of half-swapping, Back Button Hero leaves both screens as they are and shows a short message explaining why.</p>
+      </article>
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>Cocoon</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
+        </div>
+        <p>Cocoon's bottom screen keeps running out of sight while you use another app there, so its top screen stays in the dual-screen layout. Its card in bottom Recents brings it back. If Cocoon reopens its bottom screen by itself, after standby or a game, it's moved away again.</p>
+      </article>
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>RetroArch</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
+        </div>
+        <p>Swapping, the switchers and the Back gestures work as with any other app.</p>
+      </article>
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>A launcher per screen</h3><span class="ver part">Mostly fine</span></div>
+        </div>
+        <p>Android's own home screens stay where they are; a swap involving one is refused. For a launcher that runs as a regular app, add a Hold exception to keep it on its own display during a swap.</p>
+      </article>
+      <article class="fe-card">
+        <div class="fe-top">
+
+          <div><h3>iiSU</h3><span class="ver no">Not supported yet</span></div>
+        </div>
+        <p>iiSU reopens its bottom screen the moment any other app appears there, covering whatever you just opened. Back Button Hero notices this and leaves iiSU alone instead of fighting it in a loop. A proper solution is planned.</p>
+      </article>
+    </div>
+    <aside class="fe-help" aria-labelledby="fe-help-title">
+      <div>
+        <h3 id="fe-help-title">Something doesn't work?</h3>
+        <p>Bugs are still possible, especially with other firmware or frontend versions. As a single developer, I rely on detailed reports to fix things quickly. A good report includes:</p>
+        <ul>
+          <li>the frontend and its version</li>
+          <li>your Thor model and firmware</li>
+          <li>what you did, step by step</li>
+          <li>what you expected, and what happened instead</li>
+        </ul>
+      </div>
+      <a class="btn primary" href="https://github.com/denissteinhorst/thor-back-button-hero/issues" target="_blank" rel="noopener noreferrer nofollow">Report an issue</a>
+    </aside>
+    <p class="compat-note">Frontend handling uses AYN's built-in root service, which every Thor ships with. Nothing extra is installed.</p>
+  </div>
+</section>
+
+<section class="sec" id="faq">
+  <div class="wrap split">
+    <div class="sec-head">
+      <h2>FAQ</h2>
+    </div>
+    <div>
+      <div class="faq-list">
+        <h3>Screenshots &amp; gameplay recording</h3>
+        <details><summary>Can I take screenshots with a button shortcut?</summary>
+          <p>Yes. Assign <strong>Screenshot</strong> to a shortcut and choose the top screen, bottom screen or both. Choosing both saves one image with the two screens together.</p></details>
+        <details><summary>Can I record my gameplay on both screens?</summary>
+          <p>Yes. Assign <strong>Record video</strong> to a shortcut and choose either screen or both, with game sound. Use the shortcut again to stop. Videos stay on your Thor in <strong>Videos/BBH-Records</strong>; recording also stops when the screens go off.</p></details>
+        <details><summary>Can I add my voice to a gameplay video?</summary>
+          <p>Yes. Turn on the microphone in the recording options. You can record your voice throughout, or choose a push-to-talk button so you’re heard only while holding it. You can also lower the game sound while you speak. The push-to-talk button is reserved for talking during recording and won’t reach your game.</p></details>
+        <details><summary>Why is the game sound missing from my recording?</summary>
+          <p>Some games and apps block audio capture. Their sound stays out of the recording even when you can hear it on your Thor. Adding microphone commentary is a separate option.</p></details>
+
+        <h3>Shortcuts &amp; playing</h3>
+        <details><summary>Can the same button do different things with Back and Home?</summary>
+          <p>Yes. Turn on <strong>Dual mode</strong> to give Home its own shortcuts. For example, Back + R1 could take a screenshot, while Home + R1 starts a video. Home’s taps and holds can have their own actions too. These are examples; you choose the actions.</p></details>
+        <details><summary>Can one shortcut play a whole button sequence?</summary>
+          <p>Yes. Save the sequence as a <strong>macro</strong>, then assign it to a button combination. Record the presses or add them yourself, and adjust the pauses. Release Back or Home to start playback; use the same shortcut again to stop. Macros support up to 60 seconds and 200 steps and need AYN’s built-in root service.</p></details>
+        <details><summary>Can I aim by moving my Thor?</summary>
+          <p>Yes, with <strong>gyro control (Beta)</strong>. Tilt or turn your Thor to control either stick, and adjust how strongly it responds. You can make it active only while holding a button. Calibrate the sensors before first use. This feature needs AYN’s built-in root service.</p></details>
+        <details><summary>Can I move just one app to the other screen?</summary>
+          <p>Yes. Use <strong>Switch active app</strong> to move the app on the controller’s screen to the other display. The controller follows by default; you can turn that option off. To exchange the apps on both screens, choose <strong>Switch both apps</strong> instead.</p></details>
+        <details><summary>Can I turn off one screen and keep using the other?</summary>
+          <p>Yes. Assign <strong>Toggle Display Power</strong> to a shortcut and choose the top or bottom screen. The other screen stays on. Use the shortcut again to turn the chosen screen back on.</p></details>
+        <details><summary>Can I change volume, brightness or fan speed without leaving my game?</summary>
+          <p>Yes. Assign those controls to shortcuts. Volume and brightness can target the top screen, bottom screen or both; keep holding the shortcut to adjust them faster. Fan control lets you choose a fixed mode or pick one each time.</p></details>
+
+        <h3>Setup, compatibility &amp; privacy</h3>
+        <details><summary>Will it work on my Thor (Base, Pro, Max512)?</summary>
+          <p>It should. Nothing in the app depends on the Max variant. Only the Max (16GB/1TB, Android 13) has actually been tested, so a short report from other models is welcome.</p></details>
+        <details><summary>Does it work on other devices?</summary>
+          <p>Partly, at best. Screen swap and the bottom-screen switcher need a second display, and the shortcuts are designed for the Thor’s hardware buttons. Other devices are untested.</p></details>
+        <details><summary>An accessibility service can see everything. Why trust this one?</summary>
+          <p>Verify rather than trust: the source is public, releases are built and signed by GitHub Actions, and the app includes no advertising or analytics SDK. It acts on the configured Back/Home gestures and controller shortcuts. Other keys go through as usual. It doesn't read the text inside apps.</p></details>
+        <details><summary>Does it need root?</summary>
+          <p>No, your Thor stays unrooted. A few features use the root service that AYN's firmware already ships: Back + D-pad and stick shortcuts without pausing the game, brightness and bottom-screen volume, AYN hardware controls, controller focus, moving apps between screens, force-close and frontend compatibility. Where it isn't available, the app falls back to a simpler method or reports the action as unavailable.</p></details>
+        <details><summary>What leaves my device?</summary>
+          <p>Back Button Hero checks GitHub for releases and downloads the APK from GitHub if you choose to install an update. Your settings, app list and switcher previews stay on your device. Recordings and macros also stay on your device; nothing is uploaded.</p></details>
+        <details><summary>Does it interfere with my games or emulator bindings?</summary>
+          <p>Hotkeys run while their modifier is held: Back, or optionally Home. Unassigned combo inputs reach your game as usual. For an emulator that needs Back for its own menu, set a per-app exception or use the optional pause shortcut. During recording, a chosen push-to-talk button is reserved for the microphone and does not reach the game.</p></details>
+        <details><summary>Does it work with ES-DE, NeoStation, Cocoon, RetroArch or iiSU?</summary>
+          <p>ES-DE with Companion, NeoStation, Cocoon and RetroArch work and are in public testing. iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
+        <details><summary>An app is missing from the switcher.</summary>
+          <p>Android gives no way to read another app's task history, so the list is rebuilt from windows the service has seen since it started. Open the app on that screen once and it will appear.</p></details>
+        <details><summary>Can I save my setup?</summary>
+          <p>Yes. Go to <strong>Settings → Backup</strong> to save your bindings, timings, preferences, pause shortcut and app exceptions to a file. When you load it, the app previews every change before you apply it.</p></details>
+        <details><summary>Will my settings survive an update?</summary>
+          <p>Yes. Releases are signed with the same key, so updates install in place. A button you assigned, or deliberately left empty, keeps its state.</p></details>
+        <details><summary>Why isn't it on the Play Store?</summary>
+          <p>It's a hobby project for a niche device, and Play distribution would add an account, a review process and policy obligations around an accessibility service. Side-loading from Releases is the distribution model.</p></details>
+      </div>
+      <p class="faq-more"><a href="https://github.com/denissteinhorst/thor-back-button-hero/blob/main/docs/FAQ.md" target="_blank" rel="noopener noreferrer nofollow">More questions in the full FAQ →</a></p>
+    </div>
+  </div>
+</section>
+
+<div class="ai" id="ai">
+      <h2>AI disclaimer</h2>
+      <p>This app was built with AI assistance. I directed, reviewed and tested every part of it myself, using OpenAI's Codex and Anthropic's Claude Code as coding tools. The app icon and the illustrations and animation were created with AI assistance using OpenAI's ChatGPT. I'm a full-stack software engineer, I use the app on my own AYN Thor, and it is a hobby project that may contain bugs.</p>
+    </div>
+</main><footer><a href="index.html">Back to the homepage</a> · Project-owned work: 0BSD.</footer></body></html>
