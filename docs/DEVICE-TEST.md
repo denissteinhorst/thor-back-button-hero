@@ -16,7 +16,7 @@ visual.
 - AYN's pservice is reachable (SELinux permissive, the Thor's default). The suite uses it to press
   buttons as root and to read and restore protected values.
 - JDK 17 at the path `tools/verify.sh` uses, plus the Android SDK build tools. The suite compiles its
-  two small helpers (`tools/devicetest/java`) into a dex on first use.
+  small helpers (`tools/devicetest/java`) into a dex on first use.
 
 ## Running
 
@@ -28,6 +28,9 @@ python3 tools/devicetest/run.py --only sources --layers home   # chosen areas in
 python3 tools/devicetest/run.py --list             # areas and their tests
 python3 tools/devicetest/run.py --restore          # put back what an interrupted run left behind
 ```
+
+The harness reads Android's decimal separator for the device's locale, independently of the
+resource language: English in Germany uses a comma; German in Switzerland uses a point.
 
 `preflight` always runs first and stops the run if the service is not bound, root is unreachable or
 the input helper cannot start. Each line prints `✓`, `✗` (failed), `!` (the test itself broke) or `–`

@@ -62,6 +62,11 @@ class Device:
 
     def prepare(self):
         self.adb.ensure_tools()
+        # Language alone is insufficient: en-DE uses a comma, while de-CH uses a point.
+        decimal = self.sh(f"CLASSPATH={self.adb.dex} app_process /system/bin LocaleProbe {shlex.quote(self.locale)}")
+        if len(decimal) != 1:
+            raise AdbError("the device's decimal separator could not be read")
+        self.text = Strings(self.locale, decimal_separator=decimal)
         self.sh(f"pm grant {PKG} android.permission.POST_NOTIFICATIONS")
         self.reconnect()
 
