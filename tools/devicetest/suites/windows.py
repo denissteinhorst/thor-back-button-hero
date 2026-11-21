@@ -10,6 +10,7 @@ from dt import pad
 from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
+from .common import expect_closed
 
 SETTINGS = "com.android.settings/.Settings"
 GALLERY = "com.android.gallery3d/.app.GalleryActivity"
@@ -254,9 +255,11 @@ def switcher_close_all(d):
         _press(d)
         d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
         time.sleep(0.8)
+        gallery = d.pid("com.android.gallery3d")
         # The switcher listens for what Android calls BUTTON_X: the left face button, evdev 307 in both styles.
         d.press(Seq().tap(pad.X))
-        d.eventually(lambda: not d.pid("com.android.gallery3d"), 6, "X left Gallery running")
+        expect_closed(d, "com.android.gallery3d", gallery)
+        d.eventually(lambda: not d.own_windows(d.bottom), 3, "Close all left the switcher open")
     finally:
         if d.own_windows(d.bottom):
             d.press(Seq().tap(pad.BACK))
@@ -298,7 +301,7 @@ def last_app(d):
             time.sleep(1.0)
         # Gallery, now the last app, is closed and its task removed: the hotkey must say so instead of
         # starting it anew.
-        tasks = re.findall(r"Task\{\S+ #(\d+) [^}]*?A=\d+:com\.android\.gallery3d", d.sh("dumpsys activity recents"))
+        tasks = d.task_ids("com.android.gallery3d")
         d.stop_app("com.android.gallery3d")
         for task in tasks:
             d.sh(f"am stack remove {task}")
@@ -309,8 +312,8 @@ def last_app(d):
         before, after = d.text("last_app_gone", "\0").split("\0")
         d.eventually(lambda: any(n.startswith(before) and n.endswith(after) for n in d.notices()) and d.notice_visible(),
                      4, f"no 'no longer running' notice, saw {d.notices()}")
-        if d.pid("com.android.gallery3d"):
-            raise Fail("the closed last app was started again")
+        if d.task_ids("com.android.gallery3d") or any(front.startswith("com.android.gallery3d/") for front in d.resumed().values()):
+            raise Fail("the closed last app acquired a task or foreground activity again")
     finally:
         _clean(d)
 

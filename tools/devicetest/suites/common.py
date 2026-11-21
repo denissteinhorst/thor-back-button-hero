@@ -46,3 +46,16 @@ def expect_media(d, action, expected, timeout=3.0):
 
 def on_off(d, on):
     return d.text("ayn_on" if on else "ayn_off")
+
+
+def expect_closed(d, pkg, previous_pid, timeout=6):
+    """Proves termination and task removal even when Android preloads a new background process."""
+    previous = set(previous_pid.split())
+    if not previous:
+        raise Fail(f"{pkg} had no process before the close action")
+
+    def closed():
+        return (not previous.intersection(d.pid(pkg).split()) and not d.task_ids(pkg)
+                and not any(front.startswith(pkg + "/") for front in d.resumed().values()))
+
+    d.eventually(closed, timeout, f"{pkg} kept its original process, task or foreground activity")

@@ -16,7 +16,7 @@ visual.
 - AYN's pservice is reachable (SELinux permissive, the Thor's default). The suite uses it to press
   buttons as root and to read and restore protected values.
 - JDK 17 at the path `tools/verify.sh` uses, plus the Android SDK build tools. The suite compiles its
-  two small helpers (`tools/devicetest/java`) into a dex on first use.
+  small helpers (`tools/devicetest/java`) into a dex on first use.
 
 ## Running
 
@@ -28,6 +28,15 @@ python3 tools/devicetest/run.py --only sources --layers home   # chosen areas in
 python3 tools/devicetest/run.py --list             # areas and their tests
 python3 tools/devicetest/run.py --restore          # put back what an interrupted run left behind
 ```
+
+The close-action observers also have host-only regression checks:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tools/devicetest python3 -m unittest discover -s tools/devicetest/tests
+```
+
+The harness reads Android's decimal separator for the device's locale, independently of the
+resource language: English in Germany uses a comma; German in Switzerland uses a point.
 
 `preflight` always runs first and stops the run if the service is not bound, root is unreachable or
 the input helper cannot start. Each line prints `✓`, `✗` (failed), `!` (the test itself broke) or `–`
@@ -106,6 +115,7 @@ The order keeps related checks together and the most disruptive ones last.
 | What a game receives | `DeviceTestKeyActivity` on the top screen logs every key and axis it gets (`PROBE_KEY`, `PROBE_AXIS`) |
 | Media keys | A debug media session logs `MEDIA_KEY` |
 | Messages | The service's `NoticeOverlay` (it replaced Android's toasts, which are rate-limited for background apps): its window `BackButtonHeroNotice` in `dumpsys window`, and the text from the `Notice:` log line |
+| Closing apps | The original process ends, the task disappears and no activity remains in front. Android may preload a new background process; its existence alone does not mean the closed app reopened. |
 | Apps and windows | `dumpsys activity` (resumed activity per display), `dumpsys window` (windows with owner and display) |
 | Controller route | `screen_focus_lock`. AYN's route is independent of Android's focused display |
 | Screen off | AYN covers a dark screen with its own window. Power and backlight stay on |

@@ -82,4 +82,4 @@ jobs:
           files: |
             ${{ steps.apk.outputs.asset }}
             docs/gesture-explainer.html
-          generate_release_notes: true
+          body_path: docs/release-notes/${{ github.ref_name }}.md

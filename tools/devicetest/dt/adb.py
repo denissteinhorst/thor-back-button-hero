@@ -1,4 +1,4 @@
-"""adb access, root through AYN's pservice, and the two small helper dex files the harness pushes."""
+"""adb access, root through AYN's pservice, and the helper dex file the harness pushes."""
 
 import hashlib
 import os
