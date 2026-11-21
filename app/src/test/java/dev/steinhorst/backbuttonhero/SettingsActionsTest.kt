@@ -34,7 +34,11 @@ import org.robolectric.shadows.ShadowDialog
 class SettingsActionsTest {
     @org.junit.Before
     fun earlierDefaults() {
-        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).useEarlierDefaults()
+        Prefs(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()).apply {
+            useEarlierDefaults()
+            // The 2.0 welcome would otherwise be the latest dialog of every fresh start.
+            welcomeSeen = true
+        }
     }
 
 

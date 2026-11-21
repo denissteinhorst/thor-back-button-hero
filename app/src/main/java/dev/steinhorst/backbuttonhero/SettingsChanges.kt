@@ -101,7 +101,8 @@ private fun factoryBindings(): Map<String, BindingSettings> = buildMap {
     Prefs.HOME_LAYER_BUTTONS.forEach { put(it.prefKey, BindingSettings(it.defaultAction)) }
 }
 
-enum class SettingsChangeAction { PRESET, UNBIND, RESTORE }
+/** [DEFAULTS] loads the welcome sheet's defaults ([startSetup]); [PRESET] the empty factory settings. */
+enum class SettingsChangeAction { PRESET, UNBIND, RESTORE, DEFAULTS }
 
 data class SettingsChangePlan(
     val before: SettingsState,
@@ -129,6 +130,9 @@ data class SettingsChangePlan(
             action: SettingsChangeAction,
             layers: Set<BindingLayer> = setOf(BindingLayer.BACK),
         ): SettingsChangePlan {
+            if (action == SettingsChangeAction.DEFAULTS) {
+                return SettingsChangePlan(before, startSetup(before, StartSetup.DEFAULTS), null, action, layers)
+            }
             val factory = SettingsState()
             var after = before
             val preset = action == SettingsChangeAction.PRESET

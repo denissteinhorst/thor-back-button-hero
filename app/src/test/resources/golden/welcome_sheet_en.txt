@@ -1,0 +1,54 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false
+  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      AlertDialogLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=GONE minHeight=0 padding=[72,54,72,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+            DialogTitle visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=60.0 textColor=#FF191C1E maxLines=1 bold=false
+          Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=GONE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              Space visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=GONE minHeight=0 padding=[72,0,72,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=48.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[72,60,72,12] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[48,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back Button Hero 2.0" textSizePx=66.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Welcome" textSizePx=48.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0] text="Top features." textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="More ways to play." textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,12,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Swap both screens" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Back and forth" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Switch apps" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="with one key" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Screenshots" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Top, bottom or both" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Gameplay recording" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Push-to-talk" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Apps on both screens" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Full gamepad support" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Volume & brightness" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="on keybinds" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Launch any app" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="with any key" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Pause BBH" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="when you need to" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,30,0,0] text="Gyro support" textSizePx=51.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mouse mode" textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,36,0,0] text="… and many more features" textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          ButtonBarLayout visibility=VISIBLE minHeight=168 padding=[36,12,36,12] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Space visibility=INVISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Let's go" textSizePx=42.0 textColor=#FF00668B maxLines=2147483647 bold=false
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]

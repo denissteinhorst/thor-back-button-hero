@@ -159,6 +159,14 @@ class Prefs(context: Context) : GestureSettings {
         get() = sp.getBoolean("switcher_controller_enabled", DEFAULT_SWITCHER_CONTROLLER_ENABLED)
         set(v) = sp.edit().putBoolean("switcher_controller_enabled", v).apply()
 
+    /**
+     * Whether the 2.0 welcome sheet has ended with a choice of start setup. Not a setting: backups and
+     * resets leave it alone, and backing out of the sheet keeps it false so it returns next time.
+     */
+    var welcomeSeen: Boolean
+        get() = sp.getBoolean("welcome_v2_seen", false)
+        set(v) = sp.edit().putBoolean("welcome_v2_seen", v).apply()
+
     /** Whether the pad's Home key acts exactly like Back: every gesture, combo and exception. Excludes [dualMode]. */
     var homeAsBack: Boolean
         get() = sp.getBoolean("home_as_back", DEFAULT_HOME_AS_BACK)

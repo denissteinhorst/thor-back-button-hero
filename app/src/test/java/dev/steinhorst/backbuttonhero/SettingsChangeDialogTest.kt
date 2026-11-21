@@ -145,4 +145,46 @@ class SettingsChangeDialogTest {
         assertEquals("", prefs.shoulderAction(BackGestureButton.SINGLE))
         assertEquals("", prefs.shoulderAction(BackGestureButton.DOUBLE))
     }
+
+    @Test
+    fun `load defaults previews the defaults and applies them in one step`() {
+        val activity = open()
+        val prefs = Prefs(activity)
+        prefs.setShoulderAction(FaceButton.A, Prefs.SHOULDER_SCREENSHOT)
+        selectSettingsPage(activity, SettingsSection.SETTINGS)
+        val expected = startSetup(prefs.snapshot(), StartSetup.DEFAULTS)
+
+        click(activity, R.string.settings_load_defaults)
+        assertEquals(activity.getString(R.string.settings_load_defaults), find(dialog().window!!.decorView) {
+            it is TextView && it.text.toString() == activity.getString(R.string.settings_load_defaults)
+        }?.let { (it as TextView).text.toString() })
+        text(dialog().window!!.decorView).let { preview ->
+            assertTrue(preview, preview.contains("Hold button(s): L2 + R2 → Start + Select"))
+            // Face buttons and Home/Start/Select belong to the preview like every other binding.
+            assertTrue(preview, preview.contains("Back + Start: Not set → Close Apps"))
+            assertTrue(preview, preview.contains("Back + A: Take screenshot"))
+        }
+        accept()
+
+        assertEquals(expected, prefs.snapshot())
+        assertEquals(Prefs.TOGGLE_START_SELECT, prefs.toggleButtons)
+        assertEquals("", prefs.shoulderAction(FaceButton.A))
+
+        click(activity, R.string.settings_load_defaults)
+        assertTrue(text(dialog().window!!.decorView).contains(activity.getString(R.string.settings_already_defaults)))
+    }
+
+    @Test
+    fun `a stale defaults preview is made again from the current settings`() {
+        val activity = open()
+        val prefs = Prefs(activity)
+        selectSettingsPage(activity, SettingsSection.SETTINGS)
+        click(activity, R.string.settings_load_defaults)
+        prefs.setShoulderAction(FaceButton.B, Prefs.SHOULDER_SCREENSHOT)
+        accept()
+        assertEquals(Prefs.SHOULDER_SCREENSHOT, prefs.shoulderAction(FaceButton.B))
+        assertTrue(dialog().isShowing)
+        accept()
+        assertEquals(startSetup(prefs.snapshot(), StartSetup.DEFAULTS), prefs.snapshot())
+    }
 }

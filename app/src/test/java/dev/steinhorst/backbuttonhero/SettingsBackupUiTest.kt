@@ -64,7 +64,7 @@ class SettingsBackupUiTest {
     )
 
     @Test
-    fun `the Settings page offers the backup instead of the old reset rows`() {
+    fun `the Settings page offers the backup and the defaults instead of the old reset rows`() {
         selectSettingsPage(activity, SettingsSection.SETTINGS)
         val root = activity.findViewById<View>(android.R.id.content)
         listOf(R.string.backup_save, R.string.backup_load).forEach { label ->
@@ -72,10 +72,19 @@ class SettingsBackupUiTest {
         }
         assertNull(find(root) { it is TextView && it.text.toString() == "Reset settings" })
         assertNull(find(root) { it is TextView && it.text.toString() == "Unbind optionals" })
-        // Pages with bindings keep a single, full-width "Clear bindings" and no "Load defaults".
+        // The whole app's defaults load here, beside the whole-app "Clear bindings".
         val actions = find(root) { it.tag == "settings_page_actions" } as ViewGroup
+        assertEquals(2, actions.childCount)
+        assertNotNull(find(actions) { it is TextView && it.text.toString() == "Load defaults" })
+    }
+
+    @Test
+    fun `pages with bindings keep a single Clear bindings and no Load defaults`() {
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        val root = activity.findViewById<View>(android.R.id.content)
+        val actions = find(root) { it.isShown && it.tag == "settings_page_actions" } as ViewGroup
         assertEquals(1, actions.childCount)
-        assertNull(find(root) { it is TextView && it.text.toString() == "Load defaults" })
+        assertNull(find(root) { it.isShown && it is TextView && it.text.toString() == "Load defaults" })
     }
 
     @Test

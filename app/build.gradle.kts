@@ -280,6 +280,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "GyroFusion" to "1.00", "GyroRest" to "1.00", "GyroRest\$Companion" to "1.00",
             "GyroCalibration" to "1.00", "GyroCalibration\$Companion" to "1.00",
             "GyroControl" to "1.00", "GyroTilt" to "1.00", "GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
+            "WelcomeSheet" to "1.00", "WelcomeSheetKt" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

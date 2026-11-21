@@ -56,6 +56,7 @@ class SettingsActivity : Activity() {
     private var updateHandle: SettingsPage.ActionHandle? = null
     private var updateDialog: AlertDialog? = null
     private var macroEditor: MacroEditor? = null
+    private var welcomeSheet: WelcomeSheet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +99,7 @@ class SettingsActivity : Activity() {
         openIndicatorFromIntent()
         ensureNotificationPermission()
         UpdateChecker.checkInBackground(this)
+        if (!prefs.welcomeSeen) welcomeSheet = WelcomeSheet(this, prefs, ::invalidatePages).also { it.show() }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -177,6 +179,7 @@ class SettingsActivity : Activity() {
     override fun onDestroy() {
         navigation.dismiss()
         updateDialog?.dismiss()
+        welcomeSheet?.dismiss()
         exceptionsPage?.dispose()
         super.onDestroy()
     }
@@ -196,7 +199,13 @@ class SettingsActivity : Activity() {
                 R.string.exceptions_remove_all to change(SettingsChangeAction.PRESET),
             )
             // The settings page is where the whole app is managed, so its Unbind reaches every page's buttons.
-            SettingsSection.SETTINGS -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND, scope = null))
+            SettingsSection.SETTINGS -> listOf(
+                // The defaults are one whole-app setup, so dual mode has no layer to ask about.
+                R.string.settings_load_defaults to {
+                    showChanges(SettingsChangePlan.create(prefs.snapshot(), null, SettingsChangeAction.DEFAULTS))
+                },
+                R.string.settings_unbind to change(SettingsChangeAction.UNBIND, scope = null),
+            )
             else -> listOf(R.string.settings_unbind to change(SettingsChangeAction.UNBIND))
         }
         // The overview needs the room for its drawing; it explains itself in one line underneath.
@@ -1990,6 +1999,7 @@ class SettingsActivity : Activity() {
         val scope = getString(plan.section?.titleRes ?: R.string.settings_entire_app)
         val restore = plan.action == SettingsChangeAction.RESTORE
         val preset = plan.action == SettingsChangeAction.PRESET
+        val defaults = plan.action == SettingsChangeAction.DEFAULTS
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(24), dp(8), dp(24), dp(8))
@@ -2003,6 +2013,7 @@ class SettingsActivity : Activity() {
         }
         if (plan.isEmpty) line(getString(when {
             restore -> R.string.backup_matches
+            defaults -> R.string.settings_already_defaults
             preset -> R.string.settings_already_preset
             else -> R.string.settings_already_unbound
         }))
@@ -2014,6 +2025,7 @@ class SettingsActivity : Activity() {
         val builder = AlertDialog.Builder(this)
             .setTitle(when {
                 restore -> getString(R.string.backup_restore_title)
+                defaults -> getString(R.string.settings_load_defaults)
                 preset -> getString(R.string.settings_preset_title, scope)
                 else -> getString(R.string.settings_unbind_title, scope)
             })
@@ -2025,6 +2037,7 @@ class SettingsActivity : Activity() {
                     invalidatePages()
                     Toast.makeText(this, when {
                         restore -> R.string.backup_restored
+                        defaults -> R.string.settings_defaults_loaded
                         preset -> R.string.reset_settings_done
                         else -> R.string.unbind_optionals_done
                     }, Toast.LENGTH_SHORT).show()
@@ -2098,6 +2111,10 @@ class SettingsActivity : Activity() {
         val buttons = listOf(
             BackGestureButton.SINGLE to R.string.back_single_row, BackGestureButton.DOUBLE to R.string.back_double_row,
             BackGestureButton.TAP_HOLD to R.string.back_tap_hold_row, BackGestureButton.HOLD to R.string.back_hold_row,
+            AndroidButton.HOME to R.string.button_home, AndroidButton.START to R.string.button_start,
+            AndroidButton.SELECT to R.string.button_select,
+            FaceButton.A to R.string.button_a, FaceButton.B to R.string.button_b,
+            FaceButton.X to R.string.button_x, FaceButton.Y to R.string.button_y,
             ShoulderButton.L1 to R.string.shoulder_l1, ShoulderButton.R1 to R.string.shoulder_r1,
             ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
             DpadDirection.UP to R.string.dpad_up, DpadDirection.DOWN to R.string.dpad_down,
@@ -2124,7 +2141,8 @@ class SettingsActivity : Activity() {
         }
         // The Home layer follows the Back layer, binding by binding.
         val layers = buttons.map { (button, labelRes) -> Triple(button, labelRes, R.string.settings_binding_label) } +
-            buttons.map { (button, labelRes) -> Triple(HomeLayerButton.of(button), labelRes, R.string.settings_home_binding_label) }
+            buttons.filter { (button, _) -> button in Prefs.HOME_LAYER_BASES }
+                .map { (button, labelRes) -> Triple(HomeLayerButton.of(button), labelRes, R.string.settings_home_binding_label) }
         layers.forEach { (button, labelRes, layerRes) ->
             val old = a.bindings.getValue(button.prefKey)
             val new = b.bindings.getValue(button.prefKey)
