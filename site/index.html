@@ -11,7 +11,7 @@
 <meta property="og:description" content="Open an app switcher, swap screens or change performance modes with a shortcut you choose. Every Back gesture and hotkey is optional.">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="style.css?v=hero-intro-2">
+<link rel="stylesheet" href="style.css?v=shortcut-explorer-2-0">
 <script>
   // Apply a stored light/dark choice before the first paint, so the page does not flash.
   try { var bbhTheme = localStorage.getItem('bbh-theme'); if (bbhTheme === 'light' || bbhTheme === 'dark') document.documentElement.setAttribute('data-theme', bbhTheme); } catch (e) {}
@@ -29,6 +29,7 @@
         <svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
       <nav aria-label="Main" id="site-nav">
+        <a href="#whats-new">New in 2.0</a>
         <a href="#features">Controls</a>
         <a href="#actions">Actions</a>
         <a href="#changelog">Changelog</a>
@@ -53,11 +54,11 @@
   <section class="hero wrap">
     <div class="hero-text">
       <h1><span class="h1-line">The Back Button</span> <span class="h1-line">Just Got Superpowers.</span></h1>
-      <p class="lead"><span class="lead-hotkey">When you hold the Back button</span>, you can use a shoulder button, the D-pad, or either stick to run a shortcut you choose. For example, you can swap apps between screens, adjust volume or brightness, turn either screen on or off, or switch which screen your controller controls.</p>
-      <p class="lead-note">A tap, double tap, or hold of Back can run a shortcut too. Every binding is optional. <a href="#controls">Explore gestures and hotkeys</a>.</p>
+      <p class="lead"><span class="lead-hotkey">Your buttons. Your shortcuts.</span> Hold Back and press any gamepad button, use the D-pad or move either stick to run an action you choose. Swap apps between screens, adjust the volume, record your gameplay and more. Want more shortcuts? Turn on Dual mode: hold Home instead of Back to give the same controls a second set of actions.</p>
+      <p class="lead-note">A tap, double tap, or hold of Back can run a shortcut too. Every binding is optional. <a href="#controls">Explore gestures and hotkeys</a>. <a href="#whats-new">See what’s new in 2.0</a>.</p>
       <p class="cta">
         <a class="btn primary" id="download" href="https://github.com/denissteinhorst/thor-back-button-hero/releases/latest" target="_blank" rel="noopener noreferrer nofollow">Download <span id="dl-version"></span></a>
-        <a class="btn" data-explainer href="gesture-explainer.html">Try App-Simulation</a>
+        <a class="btn" data-explainer href="gesture-explainer.html">Try App-Simulation · v2.0</a>
         <a class="btn" data-gallery href="#screenshots">Screenshots</a>
         <a class="btn btn-icon" href="https://github.com/denissteinhorst/thor-back-button-hero" target="_blank" rel="noopener noreferrer nofollow" aria-label="View on GitHub" title="View on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg></a>
       </p>
@@ -77,92 +78,156 @@
   </section>
 </div>
 
+<section class="sec release-highlights" id="whats-new" aria-labelledby="whats-new-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="whats-new-title">What’s new in 2.0?</h2>
+      <p>Use more buttons for shortcuts, record your gameplay, replay button sequences and aim by moving your Thor.</p>
+    </div>
+    <div class="release-showcase">
+      <figure class="release-film">
+        <iframe src="thor-ad-v2/embed.html" title="Back Button Hero 2.0 — 30-second video" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+        <figcaption>Back Button Hero 2.0 in 30 seconds</figcaption>
+      </figure>
+      <details class="highlight-card" open>
+        <summary><h3>Use Home for shortcuts too.</h3></summary>
+        <p>Give Home its own actions for taps, holds and button combinations. Or set it to do the same things as Back, so you can use whichever button is easier to reach.</p>
+      </details>
+      <details class="highlight-card" open>
+        <summary><h3>Add shortcuts with A, B, X and Y.</h3></summary>
+        <p>Hold Back and press A, B, X or Y to run an action you choose. Home, Start and Select now work with Back too, giving you more shortcuts alongside the shoulder buttons, D-pad and sticks.</p>
+      </details>
+      <details class="highlight-card" open>
+        <summary><h3>Record gameplay with your commentary.</h3></summary>
+        <p>Record either screen or both, with game sound. Add your voice through the microphone, or hold a button to speak only when you want to. You can also have the game sound turn down while you talk.</p>
+      </details>
+      <details class="highlight-card" open>
+        <summary><h3>Replay a button sequence with one shortcut.</h3></summary>
+        <p>Save a series of button presses as a macro, then play it back with a shortcut. Record the presses or add them yourself, adjust the pauses and reuse the sequence for different shortcuts.</p>
+      </details>
+      <details class="highlight-card" open>
+        <summary><h3>Aim by moving your Thor. <span class="ver">Beta</span></h3></summary>
+        <p>Tilt or turn your Thor to control the left or right stick. Adjust how strongly it responds to your movement. If you prefer, make motion control active only while you hold a button.</p>
+      </details>
+      <details class="highlight-card" open>
+        <summary><h3>Set up your shortcuts more easily.</h3></summary>
+        <p>See your assigned shortcuts in one place and search for the action you want. Start with suggested shortcuts, set up your own from scratch or keep the settings you already use.</p>
+      </details>
+    </div>
+    <p class="preview-links"><a href="#actions">See all available actions</a></p>
+  </div>
+</section>
+
 <section class="sec" id="features">
   <div class="wrap">
     <div class="gesture-explorer">
-      <header class="feature-head">
-        <p class="explorer-eyebrow">Your Thor. Your shortcuts.</p>
-        <h2>Every gesture is yours to assign</h2>
-        <p>Choose an input. Give it a purpose.</p>
+      <header class="feature-head" id="controls">
+        <h2>Choose what your buttons do.</h2>
+        <p>Hold <span data-shortcut-modifier>Back</span>, press a button. You choose what happens.</p>
       </header>
 
-      <div class="input-explorer" id="controls">
+      <div class="shortcut-mode" hidden>
+        <div class="modifier-picker" role="group" aria-label="Try shortcuts with">
+          <button type="button" data-modifier="Back" aria-pressed="true">Back</button>
+          <button type="button" data-modifier="Home" aria-pressed="false">Home</button>
+        </div>
+        <p>Dual mode gives Home its own shortcuts.</p>
+      </div>
+
+      <div class="input-explorer">
         <div class="input-picker" role="group" aria-label="Choose an input family" hidden>
           <button type="button" aria-pressed="true" aria-controls="input-back">
-            <span class="input-glyph" aria-hidden="true">↶</span><span>Back<span class="input-count">4 gestures</span></span>
+            <span class="input-glyph" aria-hidden="true">↶</span><span>Gestures<span class="input-count">4 ways to press</span></span>
           </button>
           <button type="button" aria-pressed="false" aria-controls="input-shoulders">
-            <span class="input-glyph" aria-hidden="true">R1</span><span>Shoulders<span class="input-count">4 buttons</span></span>
+            <span class="input-glyph" aria-hidden="true">R1</span><span>Shoulders<span class="input-count">L1 · L2 · R1 · R2</span></span>
           </button>
           <button type="button" aria-pressed="false" aria-controls="input-dpad">
             <span class="input-glyph" aria-hidden="true">✛</span><span>D-pad<span class="input-count">4 directions</span></span>
           </button>
           <button type="button" aria-pressed="false" aria-controls="input-sticks">
-            <span class="input-glyph" aria-hidden="true">L3</span><span>Sticks<span class="input-count">Directions + clicks</span></span>
+            <span class="input-glyph" aria-hidden="true">L3</span><span>Sticks<span class="input-count">Move or click</span></span>
+          </button>
+          <button type="button" aria-pressed="false" aria-controls="input-buttons">
+            <span class="input-glyph" aria-hidden="true">AB</span><span>A/B/X/Y &amp; more<span class="input-count" data-shortcut-home="Start · Select">Start · Select · Home</span></span>
           </button>
         </div>
 
         <div class="input-panels" aria-live="polite" aria-atomic="true">
           <section class="input-panel" id="input-back" aria-labelledby="input-back-title">
-            <h3 id="input-back-title">Back on its own</h3>
-            <p class="input-instruction">No combo needed</p>
+            <h3 id="input-back-title"><span data-shortcut-modifier>Back</span> on its own</h3>
+            <p class="input-instruction">Tap or hold — no second button needed</p>
             <ul class="explorer-patterns">
               <li><span class="pattern" aria-hidden="true"><i class="press"></i></span>Single tap</li>
               <li><span class="pattern" aria-hidden="true"><i class="press"></i><i class="press"></i></span>Double tap</li>
               <li><span class="pattern" aria-hidden="true"><i class="press"></i><i class="hold"></i></span>Tap, then hold</li>
               <li><span class="pattern" aria-hidden="true"><i class="hold"></i></span>Hold</li>
             </ul>
-            <p class="input-note">For familiar Back behavior, assign <strong>Regular Back press</strong> to a single tap.</p>
+            <p class="input-note" data-shortcut-home="Home’s taps and holds can do different things from Back’s.">Keep single tap as regular Back, or choose another action.</p>
             <div class="binding-example" id="binding-examples">
-              <p class="example-label">One possible shortcut</p>
-              <p class="example-input">Double-tap Back</p>
-              <strong>Open the bottom app switcher <span aria-hidden="true">↗</span></strong>
+              <p class="example-label">Example — you choose the action</p>
+              <p class="example-input">Double-tap <span data-shortcut-modifier>Back</span></p>
+              <strong data-shortcut-home="Capture both screens">Open the bottom app switcher</strong>
             </div>
           </section>
 
           <section class="input-panel" id="input-shoulders" aria-labelledby="input-shoulders-title">
-            <h3 id="input-shoulders-title">Back + a shoulder button</h3>
-            <p class="input-instruction">Hold Back, then press</p>
+            <h3 id="input-shoulders-title"><span data-shortcut-modifier>Back</span> + a shoulder button</h3>
+            <p class="input-instruction">Hold <span data-shortcut-modifier>Back</span>, then press</p>
             <ul class="explorer-patterns">
               <li><kbd>L1</kbd>Left shoulder</li><li><kbd>R1</kbd>Right shoulder</li>
               <li><kbd>L2</kbd>Left trigger</li><li><kbd>R2</kbd>Right trigger</li>
             </ul>
-            <p class="input-note">Choose an action for each button. Unassigned combinations reach your game as usual.</p>
+            <p class="input-note">Give each shoulder button its own action.</p>
             <div class="binding-example">
-              <p class="example-label">One possible shortcut</p>
-              <p class="example-input">Back + R1</p>
-              <strong>Capture both screens <span aria-hidden="true">↗</span></strong>
+              <p class="example-label">Example — you choose the action</p>
+              <p class="example-input"><span data-shortcut-modifier>Back</span> + R1</p>
+              <strong data-shortcut-home="Start or stop gameplay recording">Capture both screens</strong>
             </div>
           </section>
 
           <section class="input-panel" id="input-dpad" aria-labelledby="input-dpad-title">
-            <h3 id="input-dpad-title">Back + D-pad</h3>
-            <p class="input-instruction">Hold Back, then press</p>
+            <h3 id="input-dpad-title"><span data-shortcut-modifier>Back</span> + D-pad</h3>
+            <p class="input-instruction">Hold <span data-shortcut-modifier>Back</span>, then press</p>
             <ul class="explorer-patterns">
               <li><span class="direction-glyph" aria-hidden="true">↑</span>Up</li><li><span class="direction-glyph" aria-hidden="true">↓</span>Down</li>
               <li><span class="direction-glyph" aria-hidden="true">←</span>Left</li><li><span class="direction-glyph" aria-hidden="true">→</span>Right</li>
             </ul>
-            <p class="input-note">Hold a direction to adjust volume or brightness faster.</p>
+            <p class="input-note">Give each direction its own action.</p>
             <div class="binding-example">
-              <p class="example-label">One possible shortcut</p>
-              <p class="example-input">Back + D-pad up</p>
-              <strong>Turn up volume <span aria-hidden="true">↗</span></strong>
+              <p class="example-label">Example — you choose the action</p>
+              <p class="example-input"><span data-shortcut-modifier>Back</span> + D-pad up</p>
+              <strong data-shortcut-home="Turn up brightness">Turn up volume</strong>
             </div>
           </section>
 
           <section class="input-panel" id="input-sticks" aria-labelledby="input-sticks-title">
-            <h3 id="input-sticks-title">Back + either stick</h3>
-            <p class="input-instruction">Hold Back, then move or click</p>
+            <h3 id="input-sticks-title"><span data-shortcut-modifier>Back</span> + either stick</h3>
+            <p class="input-instruction">Hold <span data-shortcut-modifier>Back</span>, then move or click</p>
             <ul class="explorer-patterns">
               <li><span class="direction-glyph" aria-hidden="true">↕</span>Up / down</li><li><span class="direction-glyph" aria-hidden="true">↔</span>Left / right</li>
               <li><kbd>L3</kbd>Left stick click</li><li><kbd>R3</kbd>Right stick click</li>
             </ul>
-            <p class="input-note">Assign each direction on either stick. L3 and R3 each support single click, double click and tap, then hold.</p>
-            <p class="input-note">Return sticks to center between shortcuts. Hold a direction for faster volume or brightness adjustment.</p>
+            <p class="input-note">Choose actions for each direction and for clicks on either stick.</p>
             <div class="binding-example">
-              <p class="example-label">One possible shortcut</p>
-              <p class="example-input">Back + right stick up</p>
-              <strong>Turn up brightness <span aria-hidden="true">↗</span></strong>
+              <p class="example-label">Example — you choose the action</p>
+              <p class="example-input"><span data-shortcut-modifier>Back</span> + right stick up</p>
+              <strong data-shortcut-home="Turn up volume">Turn up brightness</strong>
+            </div>
+          </section>
+          <section class="input-panel" id="input-buttons" aria-labelledby="input-buttons-title">
+            <h3 id="input-buttons-title"><span data-shortcut-modifier>Back</span> + A/B/X/Y &amp; more</h3>
+            <p class="input-instruction">Hold <span data-shortcut-modifier>Back</span>, then press</p>
+            <ul class="explorer-patterns">
+              <li><kbd>A B</kbd>Face buttons</li><li><kbd>X Y</kbd>Face buttons</li>
+              <li data-back-only><kbd>Home</kbd>Home button</li><li><kbd>Start</kbd>Start button</li>
+              <li><kbd>Select</kbd>Select button</li>
+            </ul>
+            <p class="input-note" data-shortcut-home="A, B, X and Y follow the letters printed on your Thor.">Back + Home is unavailable when Home acts as Back or uses Dual mode.</p>
+            <div class="binding-example">
+              <p class="example-label">Example — you choose the action</p>
+              <p class="example-input"><span data-shortcut-modifier>Back</span> + X</p>
+              <strong data-shortcut-home="Switch to the last app">Launch a favorite app on the bottom screen</strong>
             </div>
           </section>
         </div>
@@ -171,7 +236,7 @@
       <div class="explorer-actions" id="actions">
       <details id="action-catalog">
         <summary>Explore all available actions</summary>
-        <p class="intro">Assign any of these actions to a Back gesture or a hotkey.</p>
+        <p class="intro">Pick an action for your shortcut. Macros need a button combination.</p>
         <div class="action-grid">
           <div class="action-card">
             <h4>Apps and navigation</h4>
@@ -180,7 +245,9 @@
               <li><strong>Launch an app.</strong> Launch a favorite on either screen.</li>
               <li><strong>App switcher.</strong> Open top Recents or the bottom switcher, with apps from one or both screens.</li>
               <li><strong>Previous or next app.</strong> Jump between recent apps.</li>
-              <li><strong>Active App Control.</strong> Minimize or force-close on one or both screens, with an optional screen prompt. Force-closing can lose unsaved progress.</li>
+              <li><strong>Active App Control.</strong> Minimize or force-close on one or both screens, with an optional screen prompt. <strong>Restart</strong> is new in 2.0. Force-closing or restarting can lose unsaved progress.</li>
+              <li><strong>Switch to last app.</strong> <span class="ver new">New in 2.0</span> Flip between the last two apps on the controller’s screen. Each screen keeps its own pair.</li>
+              <li><strong>Close Apps.</strong> <span class="ver new">New in 2.0</span> Close all apps on the selected screens, or keep the apps in front and close only background apps. Confirmation is optional.</li>
             </ul>
           </div>
           <div class="action-card">
@@ -196,24 +263,45 @@
           <div class="action-card">
             <h4>Thor controls</h4>
             <ul>
-              <li><strong>Volume and brightness.</strong> Adjust either or both screens.</li>
+              <li><strong>Volume and brightness.</strong> Adjust either or both screens. <strong>Toggle mute</strong> is new in 2.0.</li>
               <li><strong>Performance mode and fan control.</strong> Change profiles from a shortcut.</li>
               <li><strong>Controller style, direct power supply, vibration and forced landscape.</strong> Access these AYN controls directly.</li>
+              <li><strong>Refresh rate and stick lighting.</strong> <span class="ver new">New in 2.0</span> Toggle 60/120 Hz or choose a rate. Turn either or both sticks’ LEDs on or off.</li>
+              <li><strong>Virtual mouse.</strong> <span class="ver new">New in 2.0</span> Toggle AYN’s stick-controlled mouse cursor.</li>
+              <li><strong>Status Overlay.</strong> <span class="ver new">New in 2.0</span> Show battery level, time remaining or until full, and temperature.</li>
             </ul>
           </div>
           <div class="action-card">
             <h4>Android shortcuts</h4>
             <ul>
               <li><strong>Quick Settings and notifications.</strong> Open either panel from a shortcut.</li>
+              <li><strong>Power Menu and Standby.</strong> <span class="ver new">New in 2.0</span> Open Android’s power dialog or put the Thor into standby, optionally after confirmation.</li>
+              <li><strong>Do Not Disturb and Mute Microphone.</strong> <span class="ver new">New in 2.0</span> Toggle priority mode or block the microphone for all apps.</li>
               <li><strong>System settings.</strong> Jump to Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb or Battery Saver.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Recording and media <span class="ver new">New in 2.0</span></h4>
+            <ul>
+              <li><strong>Record video.</strong> Capture the top screen, bottom screen or both with game audio. Press again to stop; recordings stay in Videos/BBH-Records.</li>
+              <li><strong>Optional microphone and push-to-talk.</strong> Add commentary, choose a hold button and lower game audio while speaking. Apps that block audio capture remain silent.</li>
+              <li><strong>Media controls.</strong> Play/pause, skip forward or return to the previous track without leaving your game.</li>
+            </ul>
+          </div>
+          <div class="action-card">
+            <h4>Macros and gyro <span class="ver new">New in 2.0</span></h4>
+            <ul>
+              <li><strong>Macro library and editor.</strong> Record or add controller inputs, edit steps and pauses, reorder, undo and preview timing. Reuse named macros across hotkeys. Release the modifier to play; use the hotkey again to stop.</li>
+              <li><strong>Gyro on/off and calibration · Beta.</strong> Steer either stick with the handheld’s tilt or turning speed. Adjust sensitivity, deadzone and axes, with a live preview and an optional hold button.</li>
+              <li>Macros and gyro need AYN’s built-in root service; they do not require rooting your Thor.</li>
             </ul>
           </div>
         </div>
       </details>
       </div>
+      <p class="simulation-link"><a data-explainer href="gesture-explainer.html">Try the actions and search in the app simulation</a></p>
       <div class="binding-note">
-        <strong>Start with one. Leave the rest empty.</strong>
-        <p>Every binding is optional. New installs start blank. Updates keep your bindings.</p>
+        <p>Start with suggested shortcuts or create your own. Unassigned buttons keep working in your game.</p>
       </div>
     </div>
 
@@ -224,7 +312,7 @@
           <h3 id="tour-title">A familiar device.<br>A few new tricks.</h3>
           <p>Keep your hands on the controls.<br>Make both screens work for you.</p>
           <p class="tour-links">
-            <a class="tour-simulation" id="explainer-open" data-explainer href="gesture-explainer.html">Try the App-Simulation <span aria-hidden="true">→</span></a>
+            <a class="tour-simulation" id="explainer-open" data-explainer href="gesture-explainer.html">Try the v2.0 App-Simulation <span aria-hidden="true">→</span></a>
             <a class="tour-simulation" data-gallery href="#screenshots">Browse the screenshots <span aria-hidden="true">→</span></a>
           </p>
         </div>
@@ -235,7 +323,7 @@
       </section>
 
       <details class="showcase" id="screenshots">
-        <summary>See the app’s settings <span class="gallery-label">Screenshots</span></summary>
+        <summary>See the app’s settings <span class="gallery-label">v1.5.0 screenshots</span></summary>
         <div class="shots">
         <p>See how bindings and settings look on the Thor.</p>
         <div class="shot-chapters" aria-label="Jump to a settings page">
@@ -480,7 +568,7 @@
         <details class="tour-details">
           <summary>More about app switching</summary>
           <p>The bottom switcher matches the Recents you know from the top screen, including Screenshot, memory usage and Close all. In top Recents, the selected app opens on the screen showing Recents.</p>
-          <p>You can also assign Active App Control to a shortcut to minimize or force-close the app in front, on one or both screens. Force-closing can lose unsaved progress.</p>
+          <p>You can also assign Active App Control to minimize or force-close the app in front, on one or both screens. <span class="ver new">New in 2.0</span> Restart an app on its screen, close background apps, or switch to the last app without pulling it from the other display. Force-closing and restarting can lose unsaved progress. A short notice now reports memory released after closing apps.</p>
         </details>
       </section>
 
@@ -499,7 +587,7 @@
               <div class="tour-pause-keys" aria-label="Example pause shortcut: hold L2 and R2"><kbd>L2</kbd><span aria-hidden="true">+</span><kbd>R2</kbd><span>Hold</span></div>
               <details class="tour-details">
                 <summary>Pause options</summary>
-                <p>Choose L2 + R2, L3 + R3, L1 + R1, Start + Select or Back + Home. Set the hold time from 0.1 to 3 seconds in the app.</p>
+                <p>Choose L2 + R2, L3 + R3 or L1 + R1. <span class="ver new">New in 2.0</span> Start + Select and Back + Home are additional choices. Back + Home is unavailable while Home acts as Back or uses Dual mode. Set the hold time from 0.1 to 3 seconds in the app.</p>
               </details>
             </div>
           </section>
@@ -630,6 +718,11 @@
       <h2>Changelog</h2>
     </div>
     <div class="changelog">
+      <article class="release" id="upcoming-release">
+        <h3>2.0</h3>
+        <p>Since v1.5.0: Home as Back or an independent Dual-mode layer; face-button, Home, Start and Select hotkeys; video recording with optional push-to-talk; editable, reusable macros; and beta gyro control.</p>
+        <p>A bindings overview, action search, guided options and welcome setup make configuration easier. New media, last-app, close-apps, power, display and AYN shortcuts round out the update. <a href="#whats-new">See what’s new in 2.0</a>.</p>
+      </article>
       <div id="releases">
         <article class="release">
           <h3>v1.5.0 <time datetime="2026-11-14">Nov 14, 2026</time></h3>
@@ -665,6 +758,7 @@
       <li><strong>Enable the accessibility service.</strong> Follow the prompt to Android’s settings, then come back and pick your first binding.</li>
     </ol>
     <p class="install-cta"><a class="btn primary" href="https://github.com/denissteinhorst/thor-back-button-hero/releases/latest" target="_blank" rel="noopener noreferrer nofollow">Download the latest APK</a></p>
+    <p>The first-run setup lets you load useful defaults, start with only Back configured, or keep your existing customized settings.</p>
     <p><strong>In-app updates are available from version 1.5.0.</strong> Tap <em>Check for new version</em> to find and download an update right from Back Button Hero, then confirm the install in Android. On your first in-app update, Android asks you to allow installs from Back Button Hero.</p>
     <p class="install-note">Android shows a generic warning for every accessibility app; <a href="#faq">here's what this one does</a>.</p>
     <details class="verify">
@@ -754,18 +848,43 @@
     </div>
     <div>
       <div class="faq-list">
+        <h3>Screenshots &amp; gameplay recording</h3>
+        <details><summary>Can I take screenshots with a button shortcut?</summary>
+          <p>Yes. Assign <strong>Screenshot</strong> to a shortcut and choose the top screen, bottom screen or both. Choosing both saves one image with the two screens together.</p></details>
+        <details><summary>Can I record my gameplay on both screens?</summary>
+          <p>Yes. Assign <strong>Record video</strong> to a shortcut and choose either screen or both, with game sound. Use the shortcut again to stop. Videos stay on your Thor in <strong>Videos/BBH-Records</strong>; recording also stops when the screens go off.</p></details>
+        <details><summary>Can I add my voice to a gameplay video?</summary>
+          <p>Yes. Turn on the microphone in the recording options. You can record your voice throughout, or choose a push-to-talk button so you’re heard only while holding it. You can also lower the game sound while you speak. The push-to-talk button is reserved for talking during recording and won’t reach your game.</p></details>
+        <details><summary>Why is the game sound missing from my recording?</summary>
+          <p>Some games and apps block audio capture. Their sound stays out of the recording even when you can hear it on your Thor. Adding microphone commentary is a separate option.</p></details>
+
+        <h3>Shortcuts &amp; playing</h3>
+        <details><summary>Can the same button do different things with Back and Home?</summary>
+          <p>Yes. Turn on <strong>Dual mode</strong> to give Home its own shortcuts. For example, Back + R1 could take a screenshot, while Home + R1 starts a video. Home’s taps and holds can have their own actions too. These are examples; you choose the actions.</p></details>
+        <details><summary>Can one shortcut play a whole button sequence?</summary>
+          <p>Yes. Save the sequence as a <strong>macro</strong>, then assign it to a button combination. Record the presses or add them yourself, and adjust the pauses. Release Back or Home to start playback; use the same shortcut again to stop. Macros support up to 60 seconds and 200 steps and need AYN’s built-in root service.</p></details>
+        <details><summary>Can I aim by moving my Thor?</summary>
+          <p>Yes, with <strong>gyro control (Beta)</strong>. Tilt or turn your Thor to control either stick, and adjust how strongly it responds. You can make it active only while holding a button. Calibrate the sensors before first use. This feature needs AYN’s built-in root service.</p></details>
+        <details><summary>Can I move just one app to the other screen?</summary>
+          <p>Yes. Use <strong>Switch active app</strong> to move the app on the controller’s screen to the other display. The controller follows by default; you can turn that option off. To exchange the apps on both screens, choose <strong>Switch both apps</strong> instead.</p></details>
+        <details><summary>Can I turn off one screen and keep using the other?</summary>
+          <p>Yes. Assign <strong>Toggle Display Power</strong> to a shortcut and choose the top or bottom screen. The other screen stays on. Use the shortcut again to turn the chosen screen back on.</p></details>
+        <details><summary>Can I change volume, brightness or fan speed without leaving my game?</summary>
+          <p>Yes. Assign those controls to shortcuts. Volume and brightness can target the top screen, bottom screen or both; keep holding the shortcut to adjust them faster. Fan control lets you choose a fixed mode or pick one each time.</p></details>
+
+        <h3>Setup, compatibility &amp; privacy</h3>
         <details><summary>Will it work on my Thor (Base, Pro, Max512)?</summary>
           <p>It should. Nothing in the app depends on the Max variant. Only the Max (16GB/1TB, Android 13) has actually been tested, so a short report from other models is welcome.</p></details>
         <details><summary>Does it work on other devices?</summary>
-          <p>Partly, at best. Screen swap and the bottom-screen switcher need a second display, and every gesture starts from a hardware Back button. Other devices are untested.</p></details>
+          <p>Partly, at best. Screen swap and the bottom-screen switcher need a second display, and the shortcuts are designed for the Thor’s hardware buttons. Other devices are untested.</p></details>
         <details><summary>An accessibility service can see everything. Why trust this one?</summary>
-          <p>Verify rather than trust: the source is public, releases are built and signed by GitHub Actions, and the app has no third-party runtime dependencies. It acts on Back and the relevant shoulder, D-pad and stick inputs. Other keys go through as usual. It doesn't read the text inside apps.</p></details>
+          <p>Verify rather than trust: the source is public, releases are built and signed by GitHub Actions, and the app includes no advertising or analytics SDK. It acts on the configured Back/Home gestures and controller shortcuts. Other keys go through as usual. It doesn't read the text inside apps.</p></details>
         <details><summary>Does it need root?</summary>
           <p>No, your Thor stays unrooted. A few features use the root service that AYN's firmware already ships: Back + D-pad and stick shortcuts without pausing the game, brightness and bottom-screen volume, AYN hardware controls, controller focus, moving apps between screens, force-close and frontend compatibility. Where it isn't available, the app falls back to a simpler method or reports the action as unavailable.</p></details>
         <details><summary>What leaves my device?</summary>
-          <p>Back Button Hero checks GitHub for releases and downloads the APK from GitHub if you choose to install an update. Your settings, app list and switcher previews stay on your device.</p></details>
+          <p>Back Button Hero checks GitHub for releases and downloads the APK from GitHub if you choose to install an update. Your settings, app list and switcher previews stay on your device. Recordings and macros also stay on your device; nothing is uploaded.</p></details>
         <details><summary>Does it interfere with my games or emulator bindings?</summary>
-          <p>Shoulder, D-pad and stick hotkeys run only while Back is held. Unassigned combo inputs reach your game as usual. For an emulator that needs Back for its own menu, set a per-app exception or use the optional pause shortcut.</p></details>
+          <p>Hotkeys run while their modifier is held: Back, or optionally Home. Unassigned combo inputs reach your game as usual. For an emulator that needs Back for its own menu, set a per-app exception or use the optional pause shortcut. During recording, a chosen push-to-talk button is reserved for the microphone and does not reach the game.</p></details>
         <details><summary>Does it work with ES-DE, NeoStation, Cocoon, RetroArch or iiSU?</summary>
           <p>ES-DE with Companion, NeoStation, Cocoon and RetroArch work and are in public testing. iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
         <details><summary>An app is missing from the switcher.</summary>
@@ -804,6 +923,6 @@
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
 
-<script src="script.js?v=simulator-notes"></script>
+<script src="script.js?v=shortcut-explorer-2-0"></script>
 </body>
 </html>

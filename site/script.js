@@ -6,6 +6,20 @@
 
   document.documentElement.classList.add('js');
 
+  // Keep desktop/tablet descriptions visible; phones use the native disclosures.
+  var highlightCards = Array.prototype.slice.call(document.querySelectorAll('.highlight-card'));
+  var compactHighlights = window.matchMedia('(max-width: 640px)');
+  function layoutHighlights() {
+    highlightCards.forEach(function (card) { card.open = !compactHighlights.matches; });
+  }
+  highlightCards.forEach(function (card) {
+    card.querySelector('summary').addEventListener('click', function (event) {
+      if (!compactHighlights.matches) event.preventDefault();
+    });
+  });
+  layoutHighlights();
+  compactHighlights.addEventListener('change', layoutHighlights);
+
   // Keep every family readable without JavaScript; only enhance once the controls work.
   var inputPicker = document.querySelector('.input-picker');
   var inputButtons = Array.prototype.slice.call(inputPicker.querySelectorAll('button'));
@@ -21,6 +35,27 @@
   });
   selectInput(inputButtons[0]);
   inputPicker.hidden = false;
+
+  var modifierPicker = document.querySelector('.modifier-picker');
+  var modifierButtons = Array.prototype.slice.call(modifierPicker.querySelectorAll('button'));
+  var modifierNames = Array.prototype.slice.call(document.querySelectorAll('[data-shortcut-modifier]'));
+  var modifierCopy = Array.prototype.slice.call(document.querySelectorAll('[data-shortcut-home]')).map(function (node) {
+    return { node: node, back: node.textContent, home: node.getAttribute('data-shortcut-home') };
+  });
+  var backOnlyInputs = Array.prototype.slice.call(document.querySelectorAll('[data-back-only]'));
+  function selectModifier(modifier) {
+    modifierButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-modifier') === modifier));
+    });
+    modifierNames.forEach(function (node) { node.textContent = modifier; });
+    modifierCopy.forEach(function (copy) { copy.node.textContent = modifier === 'Home' ? copy.home : copy.back; });
+    // Home is the held modifier in Dual mode, with no Home + Home shortcut.
+    backOnlyInputs.forEach(function (node) { node.hidden = modifier === 'Home'; });
+  }
+  modifierButtons.forEach(function (button) {
+    button.addEventListener('click', function () { selectModifier(button.getAttribute('data-modifier')); });
+  });
+  document.querySelector('.shortcut-mode').hidden = false;
 
   var actionCatalog = document.getElementById('action-catalog');
   function revealFeatureAnchor() {
