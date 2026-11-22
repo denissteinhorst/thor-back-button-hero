@@ -275,7 +275,7 @@ def ratchet_rules():
         rules[sel] = minimum
     block = text[text.index("mapOf(", text.index("jacocoCoverageVerification")):]
     block = block[:block.index(").forEach")]
-    for sel, minimum in re.findall(r'"([A-Za-z\\$*]+)" to "([0-9.]+)"', block):
+    for sel, minimum in re.findall(r'"([A-Za-z.\\$*]+)" to "([0-9.]+)"', block):
         rules[sel.replace("\\$", "$")] = minimum
     if len(rules) != len(re.findall(r'"[^"]+" to "[0-9.]+"', block)) + len(re.findall(r"includes = listOf", text)) - 1:
         raise BuildRequired("app/build.gradle.kts: a coverage rule could not be parsed")
@@ -415,7 +415,7 @@ def a8():
             problems.append(f"ratchet {new} lowered {minimum} -> {rules[new]}")
     classes = [c.get("name") for c in ElementTree.parse(JACOCO_XML).getroot().iter("class")]
     for sel in rules:
-        pattern = re.compile(re.escape(f"{PKG_PATH}/{sel}").replace(r"\*", "[^/]*") + "$")
+        pattern = re.compile(re.escape(f"{PKG_PATH}/{sel.replace('.', '/')}").replace(r"\*", "[^/]*") + "$")
         if not any(pattern.match(c) for c in classes):
             problems.append(f"ratchet {sel} matches no compiled class")
     return problems
