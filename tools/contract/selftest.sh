@@ -77,6 +77,8 @@ check 1 "A4 a component without main() listed as root" A4 CONTRACT_LISTS="$work/
 
 fixtures; printf 'release\tdev.steinhorst.backbuttonhero.RENAMED_ACTION\n' >> "$work/lists/wire-strings.txt"
 check 1 "A5 a missing wire string" A5 CONTRACT_LISTS="$work/lists"
+fixtures; printf 'release\tdev.steinhorst.backbuttonhero.IScreenRecorde\n' >> "$work/lists/wire-strings.txt"
+check 1 "A5 a string present only inside a longer one" A5 CONTRACT_LISTS="$work/lists"
 
 cp -R app/src/test/resources/golden "$work/golden"; echo " " >> "$work/golden/settings_main_en_light.txt"
 check 1 "A6 an edited golden" A6 CONTRACT_GOLDENS="$work/golden"

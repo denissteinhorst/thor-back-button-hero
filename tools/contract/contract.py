@@ -361,6 +361,15 @@ def a4():
     return problems
 
 
+def dex_string_item(value):
+    length, prefix = len(value.encode("utf-16-le")) // 2, bytearray()
+    while True:
+        byte, length = length & 0x7F, length >> 7
+        prefix.append(byte | (0x80 if length else 0))
+        if not length:
+            return bytes(prefix) + value.encode() + b"\0"
+
+
 def a5():
     """Wire strings are present in the DEX string data (supporting evidence; encode/read tests in S3)."""
     require_fresh(RELEASE_APK)
@@ -369,7 +378,9 @@ def a5():
     problems = []
     for line in lines(open(os.path.join(LISTS, "wire-strings.txt")).read()):
         kind, _, value = line.partition("\t")
-        if value.encode() not in blobs[kind]:
+        # A DEX string_data_item is its UTF-16 length (ULEB128), the MUTF-8 bytes and a NUL: matching
+        # the whole item keeps a renamed superstring ("X_MOVED") from passing for the frozen "X".
+        if dex_string_item(value) not in blobs[kind]:
             problems.append(f"{kind} DEX lacks {value!r}")
     return problems
 

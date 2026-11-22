@@ -344,3 +344,35 @@ before R1 must have evidence by then):
 
 Every row also has a visual (S5) or trace (S6) allocation where marked; those columns are planned,
 not implemented.
+
+## Sensitivity drills and due-date review (S8)
+
+`tools/contract/drills.sh` applies compiling source mutants to disposable worktrees of HEAD and
+runs the check that must catch each. A mutant that does not build counts as INVALID, never KILLED.
+
+| Drill | Fault (R1 move-only risk) | Caught by | Result |
+|---|---|---|---|
+| m_component_renamed | Manifest component `SwitcherService` renamed, all references consistent | A4 | KILLED |
+| m_root_moved_string_kept | Root entry point `TaskRemover` moved to a subpackage; the `app_process` name still says the old one | A4 | KILLED (the JVM command fixtures stay green: they freeze the string, not the class) |
+| m_root_main_lost | Root entry point keeps its name, `main` loses `@JvmStatic` | A4 | KILLED |
+| m_ratchet_selector_empty | Ratcheted class renamed; its coverage rule selects nothing | A8 | KILLED |
+| m_test_class_moved_unmapped | Test class renamed without a reviewed `renames.txt` line | A7 | KILLED |
+| m_wire_string_changed | Binder descriptor gets a suffix (`…IScreenRecorder_MOVED`) | A5 | KILLED after a fix: A5 matched substrings, so the longer string passed; it now matches whole DEX string items (selftest case added) |
+
+Harness failures are covered by the existing negative tests: selection (unknown or empty `--only`,
+unmapped files select every area: `test_selection.py`), recovery (missing readback, foreign or
+earlier snapshots, interrupted host: `test_recovery.py`), trace normalizer (`test_trace.py`), frame
+comparator (`test_frames.py`), stale or missing artifacts and fixtures (BUILD REQUIRED in
+`selftest.sh`). A moved file keeps its basename, so device selection survives R1. A newly extracted
+file is unmapped, and an unmapped file selects every area.
+
+Due-date review: the rows due before R1 (F-SVC-5, F-SVC-6, F-SVC-9) are STATIC and drilled above.
+No row is overdue. Every later row in the gap summary stays pending and blocks its own first semantic
+change. Device-only manual items (bottom switcher look, focus pictogram, notices, top Recents, AYN
+panel close) follow the approved manual strategy (S5) and the manual tiers of MANUAL-TESTING.
+
+Reference identity: the production tree is identical to the S0 baseline `a032d080` (prod-diff). The
+release APK differs from S0 only in `META-INF/version-control-info.textproto`, which carries the commit
+id; DEX, manifest, resources and the native helper match (A0–A3). The release build contains no
+`DeviceTestReceiver`, `DeviceTestKeyActivity` or LeakCanary. The trace APK reference is
+`6c6c7f70…` (cache key `0907af32400f6334`).
