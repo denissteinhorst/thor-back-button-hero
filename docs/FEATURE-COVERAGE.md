@@ -249,7 +249,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SVC-7 | Release runtime classpath stays kotlin-stdlib + annotations; no new dependency | — | — | — | — | —/— | all | H | S0 evidence; GC A9 in S2 |
 | F-SVC-8 | The accessibility service is enabled by component name and survives updates | — | — | preflight | D4 | —/— | R1 | H | DEV + MAN |
 | F-SVC-9 | Notification permission and channels unchanged | — | — | — | — | —/— | R8 | M | GAP → S2 manifest/resource contract |
-| F-SVC-10 | Performance and memory stay within baseline budgets | — | RecentsMemory | — | — | —/— | R6, R7, R10 | M | GAP → S7 (F1–F4) |
+| F-SVC-10 | Performance and memory stay within baseline budgets | — | RecentsMemory | — | — | —/— | R6, R7, R10 | M | device `tools/devicetest/resources.py` (F1–F4, budgets in PERFORMANCE.md) |
 | F-SVC-11 | Update check uses the public releases API without credentials | — | UpdateCheckerParse | — | D7 | —/— | R8 | M | JVM (parse) |
 
 ## Cross-feature scenarios (X)

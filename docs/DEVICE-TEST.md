@@ -262,6 +262,16 @@ the same signature instead; `--only` picks stores. The full store is written wit
 because one commit of every entry runs all of the service's preference listeners on the main thread and
 outlasts the broadcast timeout. Results go to `app/build/devicetest/upgrade-result.json`.
 
+## Resources, latency and lifecycle (F1–F4)
+
+`python3 tools/devicetest/resources.py` measures a fresh debug build inside the recovery transaction:
+`measure` (memory, own threads, descriptors and the pad helper after a fixed switcher workload, five
+runs), `latency` (trigger to first frame, cold and warm) and `lifecycle` (five real disable/enable
+cycles and a process kill, with LeakCanary's watches and completed heap analysis). `--only` picks one,
+`--compare BASE.json CANDIDATE.json` judges two saved runs against the budgets in
+`docs/PERFORMANCE.md` without touching the device. The device must not be in use: the workload starts
+Settings, Clock and Gallery and wakes the screen.
+
 ## Adding a test
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in

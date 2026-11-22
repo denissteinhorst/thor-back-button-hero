@@ -66,6 +66,60 @@ opening. LeakCanary reported this as `SwitcherService.overlay → … → FrameL
 leak did not grow, but the tree stayed in memory for no reason. Since `e49617e` the
 overlay releases those views on every close.
 
+## Refactoring baseline (S7, 2026-11-22)
+
+Measured on the Thor (Android 13) with a debug build of `refactor/main` whose production inputs are
+identical to the baseline `a032d080` (LeakCanary included, so memory is higher than in a release),
+using `tools/devicetest/resources.py`; raw files stay in `app/build/devicetest/`. The 1.4.0 numbers
+above were taken with a different method and five Recents apps; they are history, not a comparison.
+
+**Workload (F1):** a freshly restarted service in a warm process, Settings and Clock on top, Gallery on
+the bottom, then ten openings and closings of the bottom switcher with a real Back combo on the pad.
+Every run completed all ten. Three independent sets of five runs:
+
+| Metric | Set A | Set B | Set C |
+|---|---|---|---|
+| PSS (KB), median / MAD | 61309 / 1066 | 62622 / 2036 | 60578 / 753 |
+| Java heap (KB) | 4176 / 88 | 4200 / 36 | 4088 / 16 |
+| Native heap (KB) | 12056 / 872 | 13628 / 492 | 11552 / 528 |
+| Graphics (KB) | 16920 / 188 | 16724 / 132 | 16944 / 184 |
+| Own threads (framework pools excluded) | 17 / 0 | 17 / 0 | 17 / 0 |
+| Descriptors | 96 / 3 | 95 / 2 | 96 / 0 |
+
+Single runs reach 69 MB PSS (one Graphics spike of 22 MB); the median and MAD absorb that. The binder
+pool grows on demand from 5 towards 15 threads across runs, which is why framework pools are not
+counted as the app's own threads; executor threads are recreated with each service start and the old
+ones end.
+
+**Latency (F2):** from the switcher button's DOWN (kernel monotonic stamp read in the press script,
+±5 ms) to the completion of the app's first frame begun after it (gfxinfo framestats, same clock):
+
+| | Median | MAD | p90 | Range | Missing |
+|---|---|---|---|---|---|
+| Cold (first opening after a service start), n = 5 ×2 | 255 / 244 ms | 7 ms | 259 / 254 ms | 237–288 ms | 0 |
+| Warm, n = 15 ×2 | 244 / 244 ms | 5 ms | 254 / 256 ms | 228–303 ms | 0 |
+
+This spans the whole path: the helper reading the pad, the clone, `onKeyEvent`, building and adding
+the overlay, and its first frame. It is not a photon measurement; composition adds up to one vsync.
+
+**Budgets**, fixed before any candidate was measured: a candidate's median may exceed the baseline's by
+at most max(3 × MAD, floor), floors PSS 3 MB, Java 1 MB, native 3 MB, Graphics 1 MB, own threads 2,
+descriptors 6; latency median max(3 × MAD, 20 ms), p90 max(3 × MAD, 30 ms); every workload cycle must
+complete, no opening may lack a frame, no thread role may be new. All pairwise comparisons of the sets
+above pass (`resources.py --compare`).
+
+**Lifecycle and leaks (F3/F4):** five real disable/enable cycles through Android and one process kill.
+The pad helper ends with the disabled service and exactly one comes back; no thread role or descriptor
+kind is left over or grows. LeakCanary watched all five destroyed services and completed its heap
+analysis every time with one application leak of a single signature (`bd017897…`):
+`AccessibilityService$IAccessibilityServiceClientWrapper.mContext` holding the destroyed
+`SwitcherService`, the binder-stub effect described in `MAINTENANCE.md`. It is recorded as the
+accepted baseline path; a candidate may add no other path.
+
+**Limitations:** debug build only (release differs by LeakCanary); one device, room temperature, on
+USB power; Recents holds the three workload apps, not five; the first frame is the app's own, which
+may be the focus pictogram rather than the switcher when both draw.
+
 ## Measuring again
 
 - **Do not use `uiautomator dump`** or any other `UiAutomation` client. Android 13 then

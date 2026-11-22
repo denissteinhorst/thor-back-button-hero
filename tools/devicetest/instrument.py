@@ -36,7 +36,8 @@ def expected_tests():
         for name in files:
             if not name.endswith(".kt"):
                 continue
-            text = open(os.path.join(root, name)).read()
+            with open(os.path.join(root, name)) as f:
+                text = f.read()
             cls = re.search(r"^package ([\w.]+)", text, re.M).group(1) + "." + name[:-3]
             for m in re.finditer(r"@Test\s+fun\s+(`[^`]+`|\w+)", text):
                 tests.add(f"{cls}#{m.group(1).strip('`')}")
