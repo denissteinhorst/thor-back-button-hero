@@ -180,11 +180,17 @@ python3 tools/devicetest/visual.py compare RUN_A RUN_B
 - The run sits inside the recovery transaction, so owner settings and system values are restored and
   verified.
 - States: the welcome sheet, the overview with nothing assigned and with assigned bindings, and every
-  rail page with the panel open and closed (21 in total). Rail entries are found by their accessibility
+  rail page with the panel open and closed (21 per variant). Variants: light, dark (`cmd uimode`),
+  German (the app's own language only, `cmd locale set-app-locales`) and font scale 1.3, so each run
+  covers 84 states. Night mode, app language and font scale are saved first, then restored and
+  verified; a setting that was absent stays absent. Rail entries are found by their accessibility
   descriptions.
+- A capture waits until no toast window is shown. Toasts are transient, and in the debug build
+  LeakCanary posts one while it dumps the heap.
 - The bottom display is covered by AYN's assistant, so the bottom Recents overlay cannot be captured
   there. It is covered by its JVM tree golden and manual check C1.
-- Evidence (2026-11-22, Thor): base vs base 21/21 identical, also across a reinstall. A card corner
+- Evidence (2026-11-22, Thor): base vs base 21/21 identical, also across a reinstall; with all
+  variants, 84/84 identical over three runs. A card corner
   radius of 16 → 12 dp changed 16 states. Leader-label gravity changed only the assigned overview, which
   is exactly what each change touches.
 - A debug build is not byte-reproducible. To return to a candidate, keep and reinstall its APK file.

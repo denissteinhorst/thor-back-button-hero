@@ -65,9 +65,20 @@ def tap(device, node):
     device.sh(f"input -d 0 tap {(l + r) // 2} {(t + b) // 2}")
 
 
+def no_toast(device, timeout=30.0):
+    """Toasts are transient and never part of a captured state (in the debug build LeakCanary posts
+    one while it dumps the heap), so a capture waits until no toast window is shown."""
+    end = time.time() + timeout
+    while "Toast" in device.sh("dumpsys window windows | grep -E 'Window\\{.*Toast'"):
+        if time.time() > end:
+            raise FrameError("a toast stayed visible")
+        time.sleep(0.5)
+
+
 def stable_frame(device, serial, physical, masks, tries=8, interval=0.5):
     """Two consecutive identical frames (outside the masks), or an error naming the instability."""
     previous = None
+    no_toast(device)
     for _ in range(tries):
         data = capture(serial, physical)
         frame = parse(data)
@@ -92,6 +103,63 @@ def rail(device):
     return sorted(column, key=lambda n: int(re.findall(r"\d+", attr(n, "bounds"))[1]))
 
 
+# Variants change only the app's own language and two display settings; each is saved before the run
+# and put back and verified afterwards (absent settings stay absent).
+VARIANTS = [
+    ("light", {"night": "no", "locales": "", "font_scale": None}),
+    ("dark", {"night": "yes", "locales": "", "font_scale": None}),
+    ("de", {"night": "no", "locales": "de-DE", "font_scale": None}),
+    ("font130", {"night": "no", "locales": "", "font_scale": "1.3"}),
+]
+
+
+def system_view(device):
+    night = device.sh("cmd uimode night").replace("Night mode:", "").strip()
+    locales = re.search(r"are \[(.*)\]", device.sh(f"cmd locale get-app-locales {PKG}"))
+    font = device.sh("settings get system font_scale")
+    return {"night": night, "locales": locales.group(1) if locales else "",
+            "font_scale": None if font in ("null", "") else font}
+
+
+def apply_view(device, view):
+    device.sh(f"cmd uimode night {view['night']}")
+    device.sh(f"cmd locale set-app-locales {PKG} --locales {view['locales']}" if view["locales"]
+              else f"cmd locale set-app-locales {PKG} --locales ''")
+    if view["font_scale"] is None:
+        device.sh("settings delete system font_scale")
+    else:
+        device.sh(f"settings put system font_scale {view['font_scale']}")
+    time.sleep(2.0)
+    if system_view(device) != view:
+        raise FrameError(f"display settings not applied: {system_view(device)} != {view}")
+
+
+def states(device, save, variant, manifest):
+    p = f"{variant}_"
+    launch(device)
+    save(p + "welcome")
+    device.app("put", key="welcome_v2_seen", type="bool", value="true")
+    launch(device)
+    save(p + "page_00_overview")
+    labels = [attr(n, "content-desc") for n in rail(device)]
+    manifest["rail"][variant] = labels
+    for i, label in enumerate(labels):
+        launch(device)
+        target = next(n for n in rail(device) if attr(n, "content-desc") == label)
+        tap(device, target)
+        time.sleep(1.0)
+        # The rail opens the full panel over the page; one tap on the page closes it.
+        save(p + f"page_{i + 1:02d}_open")
+        device.sh("input -d 0 tap 1700 1000")
+        time.sleep(1.0)
+        save(p + f"page_{i + 1:02d}")
+    # Leader-line labels exist only for assigned bindings, so the overview needs a populated fixture.
+    for key, action in ASSIGNED:
+        device.app("put", key=key, type="string", value=action)
+    launch(device)
+    save(p + "page_00_overview_assigned")
+
+
 def do_capture(run):
     device = Device()
     device.prepare()
@@ -102,45 +170,33 @@ def do_capture(run):
     os.makedirs(out)
     physical = physical_top(device)
     manifest = {"run": run, "physical_top": physical, "states": []}
+    saved = system_view(device)
+    manifest["system_before"] = saved
+    manifest["rail"] = {}
     device.begin()
     try:
-        bar = status_bar_height(device)
+        width = parse(capture(serial, physical)).width
+        for variant, settings in VARIANTS:
+            apply_view(device, settings)
+            bar = status_bar_height(device)
+            manifest.setdefault("mask_status_bar_rows", {})[variant] = bar
 
-        def save(name):
-            data, frame = stable_frame(device, serial, physical, [(0, 0, frame_width[0], bar)])
-            with open(os.path.join(out, f"{name}.raw"), "wb") as f:
-                f.write(data)
-            manifest["states"].append({"name": name, **frame.meta()})
-            device.log(f"captured {name}")
+            def save(name):
+                data, frame = stable_frame(device, serial, physical, [(0, 0, width, bar)])
+                with open(os.path.join(out, f"{name}.raw"), "wb") as f:
+                    f.write(data)
+                manifest["states"].append({"name": name, "variant": variant, **frame.meta()})
+                device.log(f"captured {name}")
 
-        frame_width = [parse(capture(serial, physical)).width]
-        launch(device)
-        save("welcome")
-        device.app("put", key="welcome_v2_seen", type="bool", value="true")
-        launch(device)
-        save("page_00_overview")
-        entries = rail(device)
-        manifest["rail"] = [attr(n, "content-desc") for n in entries]
-        for i, label in enumerate(manifest["rail"]):
-            launch(device)
-            target = next(n for n in rail(device) if attr(n, "content-desc") == label)
-            tap(device, target)
-            time.sleep(1.0)
-            # The rail opens the full panel over the page; one tap on the page closes it.
-            save(f"page_{i + 1:02d}_open")
-            device.sh("input -d 0 tap 1700 1000")
-            time.sleep(1.0)
-            save(f"page_{i + 1:02d}")
-        # Leader-line labels exist only for assigned bindings, so the overview needs a populated fixture.
-        for key, action in ASSIGNED:
-            device.app("put", key=key, type="string", value=action)
-        launch(device)
-        save("page_00_overview_assigned")
-        manifest["mask_status_bar_rows"] = bar
+            device.app("reset")
+            states(device, save, variant, manifest)
     finally:
         device.sh("am start -W --display 0 -a android.intent.action.MAIN -c android.intent.category.HOME")
+        apply_view(device, saved)
+        after = system_view(device)
+        manifest["system_after"] = after
         restored = device.end()
-        manifest["restored"] = restored
+        manifest["restored"] = restored and after == saved
         with open(os.path.join(out, "manifest.json"), "w") as f:
             json.dump(manifest, f, indent=1)
     print(f"{len(manifest['states'])} states in {out}; restored={manifest['restored']}")
@@ -149,7 +205,10 @@ def do_capture(run):
 def do_compare(a, b):
     ma = json.load(open(os.path.join(STORE, a, "manifest.json")))
     mb = json.load(open(os.path.join(STORE, b, "manifest.json")))
-    bar = max(ma["mask_status_bar_rows"], mb["mask_status_bar_rows"])
+    bars = {**ma["mask_status_bar_rows"]}
+    for k, v in mb["mask_status_bar_rows"].items():
+        bars[k] = max(v, bars.get(k, 0))
+    variant_of = {st["name"]: st["variant"] for st in ma["states"]}
     names_a = [s["name"] for s in ma["states"]]
     names_b = [s["name"] for s in mb["states"]]
     failed = names_a != names_b or ma.get("rail") != mb.get("rail")
@@ -158,7 +217,7 @@ def do_compare(a, b):
     for name in sorted(set(names_a) & set(names_b)):
         fa = parse(open(os.path.join(STORE, a, f"{name}.raw"), "rb").read())
         fb = parse(open(os.path.join(STORE, b, f"{name}.raw"), "rb").read())
-        count, box = differences(fa, fb, [(0, 0, fa.width, bar)])
+        count, box = differences(fa, fb, [(0, 0, fa.width, bars[variant_of[name]])])
         print(f"{'SAME' if count == 0 else 'DIFF'} {name} {count} {box or ''}")
         failed |= count != 0
     return 1 if failed else 0
