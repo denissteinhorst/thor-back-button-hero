@@ -5,30 +5,31 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.content.res.ColorStateList
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
-import android.graphics.Color
-import android.graphics.Rect
-import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.ScrollView
 import android.widget.Toast
+import dev.steinhorst.backbuttonhero.core.PService
 
 /** Configuration pages share the same rows and keep their state while navigating. */
 class SettingsActivity : Activity() {

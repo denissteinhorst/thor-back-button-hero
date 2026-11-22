@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.core.Shell
+
 /** A background task move must leave the source foreground alone. Recents' temporary Home
  * placement must not hide the previous app when the actual foreground task leaves. */
 object TaskMovePolicy {

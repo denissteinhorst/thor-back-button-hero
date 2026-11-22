@@ -3,6 +3,10 @@ package dev.steinhorst.backbuttonhero
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File

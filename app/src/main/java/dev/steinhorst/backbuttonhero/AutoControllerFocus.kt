@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.core.PService
 import java.util.UUID
 
 /** A consumed touch selects Auto-lock's display without changing AYN's routing setting. */

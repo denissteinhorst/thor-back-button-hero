@@ -1,6 +1,9 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.core
 
 import android.graphics.Bitmap
+import dev.steinhorst.backbuttonhero.RecentsTaskState
+import dev.steinhorst.backbuttonhero.SwitcherOverlay
+import dev.steinhorst.backbuttonhero.SwitcherService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

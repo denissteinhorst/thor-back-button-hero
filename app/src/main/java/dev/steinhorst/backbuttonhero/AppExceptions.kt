@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.core.Shell
+
 /** One column of the per-app exception matrix; the ordinal is the bit stored in [AppException.allowed]. */
 enum class ExceptionControl {
     SINGLE, DOUBLE, TAP_HOLD, HOLD, L1, R1, L2, R2, UP, DOWN, LEFT, RIGHT,

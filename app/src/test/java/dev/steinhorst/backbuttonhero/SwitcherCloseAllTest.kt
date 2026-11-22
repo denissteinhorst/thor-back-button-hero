@@ -6,6 +6,9 @@ import android.os.Looper
 import android.view.Display
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,7 +18,6 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAppTask
-import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class SwitcherCloseAllTest {

@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

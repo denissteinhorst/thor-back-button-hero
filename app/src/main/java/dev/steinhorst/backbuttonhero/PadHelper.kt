@@ -7,6 +7,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.core.Shell
 import java.io.File
 
 /**

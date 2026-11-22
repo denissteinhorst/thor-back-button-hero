@@ -1,6 +1,5 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.startOnBasic
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -10,8 +9,11 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
+import java.time.Instant
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -28,7 +30,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowDialog
-import java.time.Instant
 
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "en-xxhdpi")

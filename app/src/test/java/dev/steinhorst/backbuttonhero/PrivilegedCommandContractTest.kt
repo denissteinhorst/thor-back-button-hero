@@ -4,7 +4,9 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.support.FakePService
+import java.io.File
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -13,7 +15,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowDisplayManager
-import java.io.File
 
 /**
  * Freezes the exact root commands that reachable call sites send to AYN's daemon, including the

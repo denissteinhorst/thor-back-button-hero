@@ -6,9 +6,9 @@ import android.net.LocalSocket
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import dev.steinhorst.backbuttonhero.PService
 import dev.steinhorst.backbuttonhero.PanelWindowHost
-import dev.steinhorst.backbuttonhero.Shell
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.core.Shell
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File

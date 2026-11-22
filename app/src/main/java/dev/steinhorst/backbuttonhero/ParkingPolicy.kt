@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.core.Shell
+
 /** Decides when a dual-screen frontend's bottom activity is parked instead of being covered. */
 object ParkingPolicy {
     /** A frontend that takes the bottom screen back sooner than this after a park would loop. */

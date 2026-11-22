@@ -3,6 +3,8 @@ package dev.steinhorst.backbuttonhero
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

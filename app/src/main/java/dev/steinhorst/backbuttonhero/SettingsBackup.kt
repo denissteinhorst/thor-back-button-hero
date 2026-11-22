@@ -1,10 +1,11 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.core.Shell
+import java.time.Instant
+import java.time.LocalDate
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.time.Instant
-import java.time.LocalDate
 
 /**
  * The backup file: every binding, the timings, the switches, the activation shortcut and the app

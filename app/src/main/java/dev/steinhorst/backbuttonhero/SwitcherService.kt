@@ -32,6 +32,9 @@ import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.panels.BottomPanels

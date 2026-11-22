@@ -3,9 +3,10 @@ package dev.steinhorst.backbuttonhero
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
+import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric

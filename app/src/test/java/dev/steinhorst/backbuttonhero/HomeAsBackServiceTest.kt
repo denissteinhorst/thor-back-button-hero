@@ -3,6 +3,8 @@ package dev.steinhorst.backbuttonhero
 import android.os.Looper
 import android.view.InputDevice
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import java.time.Duration
 import org.junit.Assert.assertEquals

@@ -1,6 +1,6 @@
 package dev.steinhorst.backbuttonhero.panels
 
-import dev.steinhorst.backbuttonhero.Shell
+import dev.steinhorst.backbuttonhero.core.Shell
 import org.json.JSONObject
 
 /**

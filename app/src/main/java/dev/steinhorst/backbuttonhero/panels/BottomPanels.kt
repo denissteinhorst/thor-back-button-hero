@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.view.Display
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.RunningApp
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import java.util.ArrayDeque
 import org.json.JSONObject
 

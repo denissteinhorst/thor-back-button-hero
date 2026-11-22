@@ -5,3 +5,4 @@
 # Adding a line is a reviewed act: the old assertions must survive under the new name.
 PanelWindows -> panels.PanelWindows
 BottomPanels -> panels.BottomPanels
+AccessibilityAppSource -> core.AccessibilityAppSource

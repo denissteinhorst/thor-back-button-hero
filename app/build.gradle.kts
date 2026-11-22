@@ -226,7 +226,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.AccessibilityAppSource")
+            includes = listOf("dev.steinhorst.backbuttonhero.core.AccessibilityAppSource")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"

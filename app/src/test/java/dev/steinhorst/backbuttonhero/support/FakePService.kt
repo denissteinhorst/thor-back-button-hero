@@ -2,7 +2,7 @@ package dev.steinhorst.backbuttonhero.support
 
 import android.os.Binder
 import android.os.Parcel
-import dev.steinhorst.backbuttonhero.PService
+import dev.steinhorst.backbuttonhero.core.PService
 import java.io.File
 
 /**

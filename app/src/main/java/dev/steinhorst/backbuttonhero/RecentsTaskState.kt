@@ -1,7 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
-import org.json.JSONArray
 import android.util.Xml
+import dev.steinhorst.backbuttonhero.core.Shell
+import org.json.JSONArray
 import org.xmlpull.v1.XmlPullParser
 
 /** Most-recent task first, matching the system Recents query. No status is inferred from history. */

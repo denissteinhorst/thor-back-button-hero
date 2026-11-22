@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.core
 
 import android.annotation.SuppressLint
 import android.content.Context

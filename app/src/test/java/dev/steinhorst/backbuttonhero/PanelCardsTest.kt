@@ -7,6 +7,8 @@ import android.os.Looper
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import java.time.Duration
 import org.junit.Assert.assertEquals

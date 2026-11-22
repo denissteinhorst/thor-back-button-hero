@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.core
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable

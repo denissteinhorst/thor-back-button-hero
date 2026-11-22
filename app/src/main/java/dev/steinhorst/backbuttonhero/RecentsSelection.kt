@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.core.Shell
+
 /** The system's task-to-front event must identify one of the tasks present when Recents opened. */
 object RecentsSelection {
     /** AYN can retain an older card order after a display move. Never use column positions as

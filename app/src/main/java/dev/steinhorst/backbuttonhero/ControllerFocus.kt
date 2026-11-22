@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import dev.steinhorst.backbuttonhero.core.PService
 import java.util.concurrent.Executors
 
 /** Routes the Thor's controller buttons to one display through AYN's own pservice sequence. */

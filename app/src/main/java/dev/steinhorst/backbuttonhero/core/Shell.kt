@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.core
 
 /**
  * Safety for everything that ends up in a root shell ([PService]). Package names are read from

@@ -9,10 +9,10 @@ import android.graphics.drawable.GradientDrawable
 import android.text.Editable
 import android.text.SpannableString
 import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.text.TextUtils
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -26,6 +26,7 @@ import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.core.Shell
 
 /**
  * Per-app exceptions; every change is written to [Prefs] at once, so the service follows immediately.

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.Looper
 import android.view.Display
+import dev.steinhorst.backbuttonhero.core.Shell
 
 /** Root entry point: resume an existing task on the requested screen without relaunching its root. */
 @SuppressLint("PrivateApi") // Task reparenting and moveTaskToFront have no public equivalents.
