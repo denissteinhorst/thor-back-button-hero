@@ -625,9 +625,11 @@ StoredDataContractTest#a fresh install stores exactly the frozen entries and a s
 StoredDataContractTest#a fully populated configuration stores exactly the frozen entries and reads back
 StoredDataContractTest#a stale preview writes nothing and a no-op plan succeeds without writing
 StoredDataContractTest#a store with some migrations done keeps them and runs only the rest
+StoredDataContractTest#a stored value of the wrong type fails exactly as before
 StoredDataContractTest#a synthesized pre-1-1 store migrates to the frozen entries, once
 StoredDataContractTest#backups are byte-identical at a fixed time and read back to the exported settings
 StoredDataContractTest#device calibration and the welcome state never enter a backup and survive every reset
+StoredDataContractTest#direct writes, unknown raw data, both Home modes and macro deletion store exactly the frozen entries
 StoredDataContractTest#every page and whole-app plan stores exactly the frozen entries
 StoredDataContractTest#one accepted plan is one write that every listener sees complete, from another instance too
 StoredDataContractTest#the first dual-mode activation seeds the Home layer into the frozen entries

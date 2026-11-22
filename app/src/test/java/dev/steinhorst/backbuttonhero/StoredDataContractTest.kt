@@ -255,4 +255,63 @@ class StoredDataContractTest {
         org.robolectric.shadows.ShadowLooper.idleMainLooper()
         assertEquals("an unregistered listener must not fire", count, seen.size)
     }
+
+    @Test
+    fun `direct writes, unknown raw data, both Home modes and macro deletion store exactly the frozen entries`() {
+        val out = StringBuilder()
+        raw.edit()
+            .putString("unknown_future_key", "kept")
+            .putInt("unknown_future_int", 7)
+            .putStringSet("unknown_future_set", setOf("b", "a"))
+            .putString("${ShoulderButton.L2.prefKey}_package", "@not_an_action")
+            .putString("${ShoulderButton.R2.prefKey}_package", "")
+            .commit()
+        val prefs = Prefs(context)
+        out.append("## constructed over unknown data\n").append(dump())
+        val state = prefs.snapshot()
+        out.append("## read without write\n").append(dump())
+        out.append("## effective state\n").append(state.toString()).append("\n")
+        assertTrue(prefs.applySettings(state, state.copy(holdMs = 1500L)))
+        out.append("## unrelated write\n").append(dump())
+        for (homeAsBack in listOf(true, false)) {
+            val before = prefs.snapshot()
+            assertTrue(prefs.applySettings(before, before.copy(homeAsBack = homeAsBack)))
+            out.append("## homeAsBack $homeAsBack\n").append(dump())
+        }
+        val first = prefs.saveMacro(null, "  First  ", macro)
+        val second = prefs.saveMacro(null, "", macro)
+        prefs.saveMacro(first.id, "First renamed", macro)
+        prefs.renameMacro(second.id, "Second")
+        prefs.setMacroRef(ShoulderButton.L1, first.id)
+        prefs.setMacroRef(ShoulderButton.R1, first.id)
+        prefs.setMacroRef(ShoulderButton.L2, second.id)
+        out.append("## macros saved and referenced\n").append(dump())
+        prefs.deleteMacro(first.id)
+        out.append("## referenced macro deleted\n").append(dump())
+        prefs.setMacroRef(ShoulderButton.L2, null)
+        out.append("## reference cleared\n").append(dump())
+        verify("edge-cases.txt", out.toString())
+    }
+
+    @Test
+    fun `a stored value of the wrong type fails exactly as before`() {
+        val out = StringBuilder()
+        for ((key, put) in listOf<Pair<String, (SharedPreferences.Editor) -> Unit>>(
+            "hold_ms" to { it.putInt("hold_ms", 5) },
+            "${ShoulderButton.L1.prefKey}_package" to { it.putBoolean("${ShoulderButton.L1.prefKey}_package", true) },
+            "back_gestures_v1" to { it.putString("back_gestures_v1", "true") },
+        )) {
+            clear()
+            Prefs(context)
+            raw.edit().also(put).commit()
+            val outcome = try {
+                Prefs(context).snapshot()
+                "snapshot ok"
+            } catch (e: RuntimeException) {
+                e.javaClass.name
+            }
+            out.append("$key\t$outcome\n")
+        }
+        verify("wrong-types.txt", out.toString())
+    }
 }
