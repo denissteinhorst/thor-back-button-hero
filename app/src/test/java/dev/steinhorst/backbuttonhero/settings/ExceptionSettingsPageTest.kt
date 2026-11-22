@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -11,6 +11,9 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SettingsActivity
+import dev.steinhorst.backbuttonhero.UpdateChecker
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup

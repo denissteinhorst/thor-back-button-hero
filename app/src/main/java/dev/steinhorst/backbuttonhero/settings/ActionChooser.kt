@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -30,6 +30,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
 import java.text.Collator
 
 /**

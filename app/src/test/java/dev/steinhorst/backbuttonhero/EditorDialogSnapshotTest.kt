@@ -13,6 +13,7 @@ import dev.steinhorst.backbuttonhero.macro.MacroStep
 import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.GyroSettingsDialog
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import org.junit.Test

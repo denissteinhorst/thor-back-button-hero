@@ -1,7 +1,5 @@
 package dev.steinhorst.backbuttonhero.prefs
 
-import dev.steinhorst.backbuttonhero.SettingsSection
-import dev.steinhorst.backbuttonhero.StartSetup
 import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
@@ -16,7 +14,9 @@ import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
-import dev.steinhorst.backbuttonhero.startSetup
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.StartSetup
+import dev.steinhorst.backbuttonhero.settings.startSetup
 
 /** A value snapshot lets the confirmation preview and the eventual write share one plan. */
 data class SettingsState(

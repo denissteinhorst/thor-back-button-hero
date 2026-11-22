@@ -7,8 +7,9 @@ import android.graphics.Region
 import android.graphics.RegionIterator
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
-import kotlin.math.sqrt
+import dev.steinhorst.backbuttonhero.settings.dp
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /** Read installed Quickstep's dimensions without copying or executing OEM code. */
 data class RecentsCardStyle(

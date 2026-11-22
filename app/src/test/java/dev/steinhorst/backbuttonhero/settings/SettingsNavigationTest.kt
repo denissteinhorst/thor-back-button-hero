@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.content.Intent
 import android.os.Looper
@@ -9,6 +9,9 @@ import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SettingsActivity
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.ShoulderButton

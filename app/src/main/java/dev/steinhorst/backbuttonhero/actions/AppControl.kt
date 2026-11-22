@@ -17,9 +17,9 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.dp
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.dp
 
 /** One foreground app an active-app-control press acts on. */
 data class AppControlTarget(val displayId: Int, val packageName: String)

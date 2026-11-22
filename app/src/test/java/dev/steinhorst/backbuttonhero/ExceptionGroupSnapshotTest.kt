@@ -6,6 +6,7 @@ import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

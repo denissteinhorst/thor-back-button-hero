@@ -62,3 +62,12 @@ Stick -> input.Stick
 AndroidButton -> input.AndroidButton
 FaceButton -> input.FaceButton
 HomeAsBack -> input.HomeAsBack
+ExceptionSettingsPage -> settings.ExceptionSettingsPage
+SettingsNavigation -> settings.SettingsNavigation
+SettingsPage -> settings.SettingsPage
+SettingsUiKitKt -> settings.SettingsUiKitKt
+SettingsSection -> settings.SettingsSection
+GyroPreview -> settings.GyroPreview
+GyroSettingsDialog -> settings.GyroSettingsDialog
+WelcomeSheet -> settings.WelcomeSheet
+WelcomeSheetKt -> settings.WelcomeSheetKt

@@ -39,10 +39,10 @@ import android.widget.Toast
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.PService
-import dev.steinhorst.backbuttonhero.dp
 import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.prefs.Prefs
-import dev.steinhorst.backbuttonhero.themedColor
+import dev.steinhorst.backbuttonhero.settings.dp
+import dev.steinhorst.backbuttonhero.settings.themedColor
 import java.util.Locale
 
 /**

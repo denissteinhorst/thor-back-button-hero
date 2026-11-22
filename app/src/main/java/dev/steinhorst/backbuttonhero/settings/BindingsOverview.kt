@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.Activity
 import android.content.Context
@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.input.base
 import kotlin.math.max

@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.DpadDirection

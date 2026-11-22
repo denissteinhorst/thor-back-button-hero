@@ -3,7 +3,7 @@ package dev.steinhorst.backbuttonhero.support
 import android.os.Bundle
 import android.view.View
 import dev.steinhorst.backbuttonhero.SettingsActivity
-import dev.steinhorst.backbuttonhero.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import org.robolectric.shadows.ShadowDialog
 
 fun selectSettingsPage(activity: SettingsActivity, section: SettingsSection) {

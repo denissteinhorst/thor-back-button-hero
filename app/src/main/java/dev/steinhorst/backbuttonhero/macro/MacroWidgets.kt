@@ -24,8 +24,8 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.dp
-import dev.steinhorst.backbuttonhero.themedColor
+import dev.steinhorst.backbuttonhero.settings.dp
+import dev.steinhorst.backbuttonhero.settings.themedColor
 
 /** Colours and the small building blocks the macro editor, its sheets and its palette share. */
 internal class MacroUi(val activity: Activity) {

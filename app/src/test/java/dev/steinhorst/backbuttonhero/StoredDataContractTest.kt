@@ -20,6 +20,7 @@ import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import dev.steinhorst.backbuttonhero.prefs.SettingsState
 import dev.steinhorst.backbuttonhero.prefs.StickTimings
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate

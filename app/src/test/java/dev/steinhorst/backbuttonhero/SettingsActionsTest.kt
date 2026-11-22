@@ -13,6 +13,8 @@ import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.dp
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Assert.assertEquals

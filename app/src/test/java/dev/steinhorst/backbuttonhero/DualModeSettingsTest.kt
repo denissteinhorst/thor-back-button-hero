@@ -16,6 +16,8 @@ import dev.steinhorst.backbuttonhero.input.FaceButton
 import dev.steinhorst.backbuttonhero.input.HomeLayerButton
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.OverviewControl
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

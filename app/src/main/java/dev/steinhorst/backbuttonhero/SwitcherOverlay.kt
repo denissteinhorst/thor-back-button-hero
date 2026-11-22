@@ -22,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.settings.dp
 import kotlin.math.roundToInt
 
 /** Android 13 style recents on one display: preview cards, sideways scroll, tap to open, swipe up to close. */

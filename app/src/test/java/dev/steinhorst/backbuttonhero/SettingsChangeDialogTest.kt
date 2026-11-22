@@ -14,6 +14,9 @@ import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.input.StickButton
 import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.StartSetup
+import dev.steinhorst.backbuttonhero.settings.startSetup
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults

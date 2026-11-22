@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.SettingsActivity
-import dev.steinhorst.backbuttonhero.SettingsSection
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import java.time.Instant
 import org.junit.Assert.assertEquals

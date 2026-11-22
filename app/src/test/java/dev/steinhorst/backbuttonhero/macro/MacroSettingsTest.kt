@@ -12,7 +12,6 @@ import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.MacroRecorderBridge
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.SettingsActivity
-import dev.steinhorst.backbuttonhero.SettingsSection
 import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
@@ -26,6 +25,7 @@ import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import dev.steinhorst.backbuttonhero.prefs.SettingsState
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults

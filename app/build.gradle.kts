@@ -256,17 +256,17 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // classes are not folded in. Same rule: raise, never lower.
         mapOf(
             "RecentsSelection" to "1.00", "input.ServiceToggleGesture" to "1.00",
-            "ExceptionSettingsPage" to "0.98", "input.PhysicalKeyTracker" to "1.00",
+            "settings.ExceptionSettingsPage" to "0.98", "input.PhysicalKeyTracker" to "1.00",
             "prefs.AppException" to "1.00", "prefs.ExceptionControl" to "1.00",
             "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
             "RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
             "RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
             "pad.PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
             "TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
-            "SettingsNavigation" to "1.00", "input.ShoulderButton" to "1.00",
-            "SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
-            "input.KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
-            "SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
+            "settings.SettingsNavigation" to "1.00", "input.ShoulderButton" to "1.00",
+            "settings.SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
+            "input.KeyInterceptionGate" to "1.00", "settings.SettingsUiKitKt" to "1.00",
+            "settings.SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
             "input.GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
             "input.StickDetector" to "1.00", "pad.LevelRepeater" to "1.00", "pad.RepeatCurve" to "1.00",
             "input.StickClickMachine" to "1.00", "input.StickClickButton" to "1.00", "input.StickClick" to "1.00",
@@ -279,8 +279,8 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "pad.GyroSettings" to "1.00", "pad.GyroSettings\$Companion" to "1.00", "pad.GyroAxis" to "1.00", "pad.GyroMapper" to "1.00",
             "pad.GyroFusion" to "1.00", "pad.GyroRest" to "1.00", "pad.GyroRest\$Companion" to "1.00",
             "pad.GyroCalibration" to "1.00", "pad.GyroCalibration\$Companion" to "1.00",
-            "pad.GyroControl" to "1.00", "pad.GyroTilt" to "1.00", "pad.GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
-            "WelcomeSheet" to "1.00", "WelcomeSheetKt" to "1.00",
+            "pad.GyroControl" to "1.00", "pad.GyroTilt" to "1.00", "pad.GyroPosture" to "1.00", "settings.GyroPreview" to "1.00", "settings.GyroSettingsDialog" to "1.00",
+            "settings.WelcomeSheet" to "1.00", "settings.WelcomeSheetKt" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

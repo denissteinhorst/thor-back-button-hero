@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.Activity
 import android.content.Context
@@ -26,6 +26,8 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.macro.space
 
 fun Activity.dp(v: Int): Int =

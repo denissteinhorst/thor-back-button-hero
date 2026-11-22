@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.app.Dialog
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

@@ -13,6 +13,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.dp
 import org.hamcrest.Matchers.equalTo
 import org.junit.Assert.assertTrue
 import org.junit.Test

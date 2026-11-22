@@ -24,6 +24,7 @@ import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import dev.steinhorst.backbuttonhero.prefs.SettingsState
 import dev.steinhorst.backbuttonhero.prefs.StickTimings
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame

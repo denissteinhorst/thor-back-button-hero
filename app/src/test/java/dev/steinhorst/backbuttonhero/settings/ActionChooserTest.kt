@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.settings
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,6 +8,8 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SettingsActivity
 import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs

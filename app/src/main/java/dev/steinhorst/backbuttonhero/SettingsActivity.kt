@@ -59,6 +59,32 @@ import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.settings.ActionChooser
+import dev.steinhorst.backbuttonhero.settings.BindingsOverview
+import dev.steinhorst.backbuttonhero.settings.ExceptionSettingsPage
+import dev.steinhorst.backbuttonhero.settings.GyroSettingsDialog
+import dev.steinhorst.backbuttonhero.settings.OverviewControl
+import dev.steinhorst.backbuttonhero.settings.OverviewGroup
+import dev.steinhorst.backbuttonhero.settings.POSITION_GRID_HEIGHT_DP
+import dev.steinhorst.backbuttonhero.settings.POSITION_GRID_WIDTH_DP
+import dev.steinhorst.backbuttonhero.settings.PositionGrid
+import dev.steinhorst.backbuttonhero.settings.ServiceStatus
+import dev.steinhorst.backbuttonhero.settings.SettingsNavigation
+import dev.steinhorst.backbuttonhero.settings.SettingsPage
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.SettingsSurface
+import dev.steinhorst.backbuttonhero.settings.WelcomeSheet
+import dev.steinhorst.backbuttonhero.settings.alignSettingsRange
+import dev.steinhorst.backbuttonhero.settings.currentServiceStatus
+import dev.steinhorst.backbuttonhero.settings.dp
+import dev.steinhorst.backbuttonhero.settings.isAccessibilityServiceEnabled
+import dev.steinhorst.backbuttonhero.settings.positionGrid
+import dev.steinhorst.backbuttonhero.settings.selectTab
+import dev.steinhorst.backbuttonhero.settings.serviceChipText
+import dev.steinhorst.backbuttonhero.settings.serviceStatusText
+import dev.steinhorst.backbuttonhero.settings.settingsSurfaceColor
+import dev.steinhorst.backbuttonhero.settings.tabBar
+import dev.steinhorst.backbuttonhero.settings.themedColor
 
 /** Configuration pages share the same rows and keep their state while navigating. */
 class SettingsActivity : Activity() {

@@ -1,11 +1,13 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.startOnBasic
 import android.content.Intent
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import dev.steinhorst.backbuttonhero.settings.ServiceStatus
+import dev.steinhorst.backbuttonhero.settings.serviceChipText
+import dev.steinhorst.backbuttonhero.support.startOnBasic
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
