@@ -31,6 +31,9 @@ import android.view.KeyEvent
  * - `drop`: deletes the copy once the suite has verified the restore.
  * - `reset`: clears everything and lets [Prefs] apply a fresh install's defaults.
  * - `put` with `key`, `type` (string, int, long, bool, float) and `value`; `remove` with `key`.
+ * - `putall` with `entries`: lines of `key<TAB>type<TAB>value` in the storage fixtures' format (types
+ *   string, int, long, boolean, float; `\\`, `\n`, `\t` escaped), written in one commit and answered
+ *   `OK <count>`. One broadcast instead of one per entry: a full store would otherwise take minutes.
  * - `probe` with `value` start (and `display`) or stop: [DeviceTestKeyActivity], a stand-in game.
  * - `media` with `value` start or stop: a playing media session that logs each media key it gets.
  *   It plays silence, because Android hands media keys to the session whose app plays audio; without
@@ -92,6 +95,23 @@ class DeviceTestReceiver : BroadcastReceiver() {
                     "OK"
                 }
                 "put" -> put(prefs.edit(), intent).let { if (it.commit()) "OK" else "FAIL" }
+                "putall" -> {
+                    val lines = requireNotNull(intent.getStringExtra("entries")) { "entries missing" }.lines().filter { it.isNotEmpty() }
+                    val editor = prefs.edit()
+                    lines.forEach { line ->
+                        val (key, type, value) = line.split('\t', limit = 3).also { require(it.size == 3) { "bad line $line" } }
+                        val text = unescape(value)
+                        when (type) {
+                            "int" -> editor.putInt(key, text.toInt())
+                            "long" -> editor.putLong(key, text.toLong())
+                            "boolean" -> editor.putBoolean(key, text.toBooleanStrict())
+                            "float" -> editor.putFloat(key, text.toFloat())
+                            "string" -> editor.putString(key, text)
+                            else -> throw IllegalArgumentException("type $type")
+                        }
+                    }
+                    if (editor.commit()) "OK ${lines.size}" else "FAIL"
+                }
                 "remove" -> if (prefs.edit().remove(intent.getStringExtra("key")).commit()) "OK" else "FAIL"
                 "media" -> media(app, intent.getStringExtra("value") == "start")
                 "gyro" -> {
@@ -125,6 +145,25 @@ class DeviceTestReceiver : BroadcastReceiver() {
             "bool" -> editor.putBoolean(key, value.toBooleanStrict())
             "float" -> editor.putFloat(key, value.toFloat())
             else -> editor.putString(key, value)
+        }
+    }
+
+    private fun unescape(text: String): String = buildString {
+        var i = 0
+        while (i < text.length) {
+            val c = text[i]
+            if (c == '\\' && i + 1 < text.length) {
+                when (val next = text[i + 1]) {
+                    'n' -> append('\n')
+                    't' -> append('\t')
+                    '\\' -> append('\\')
+                    else -> append(c).append(next)
+                }
+                i += 2
+            } else {
+                append(c)
+                i++
+            }
         }
     }
 

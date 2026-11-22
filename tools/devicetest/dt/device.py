@@ -394,9 +394,11 @@ class Device:
             raise RecoveryError(f"the transaction is not ready for installs (stage {state.get('stage')!r})")
         return state
 
-    def install(self, apk):
+    def install(self, apk, observe=None):
         """Installs [apk] in place as one arm of a session. Signing must match the original build; the
-        owner's settings copy in the app and the host's settings file must both survive the install."""
+        owner's settings copy in the app and the host's settings file must both survive the install.
+        [observe] runs right after the install, before the prerequisites are restored, so an upgrade
+        test sees the service exactly as the update left it."""
         state = self._saved_state()
         if self.apk_certificate(apk) != self.apk_certificate(state["installed"]["apk"]):
             raise RecoveryError(f"{apk} is signed differently from the installed build; never uninstall to work around it")
@@ -406,8 +408,10 @@ class Device:
         self.install_apk(apk)
         if self.installed_sha() != sha:
             raise RecoveryError(f"after installing {apk} a different build is installed")
+        observed = observe() if observe else None
         self.restore_prerequisites()
         self.verify_recovery_copies(state)
+        return observed
 
     def verify_recovery_copies(self, state):
         # Read-only on purpose: "snapshot" would replace a lost copy with the test settings now on disk.

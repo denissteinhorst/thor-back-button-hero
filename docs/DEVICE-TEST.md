@@ -250,6 +250,18 @@ removes the test APK and ends on the original build with the owner's settings re
 a test fails or when a test found in `app/src/androidTest` was not reported at all. The raw output is
 kept in `app/build/devicetest/instrument-output.txt`. Like the suite it is not part of the gate.
 
+## In-place update (F5)
+
+`python3 tools/devicetest/upgrade.py` checks that an update keeps the service and the stored data. Inside
+the recovery transaction it installs a fresh debug build, then for each of three frozen stores
+(`populated.txt` written through the app's own SharedPreferences, the synthesized pre-1.1 file that
+migrates to `legacy-v1.txt`, and the reset defaults of `fresh.txt`) it updates the build over itself
+and reads the service state before anything repairs it: still enabled, bound again by itself, process
+replaced. The typed raw entries must then equal the fixture exactly. `--apk` updates to another build of
+the same signature instead; `--only` picks stores. The full store is written with the service off,
+because one commit of every entry runs all of the service's preference listeners on the main thread and
+outlasts the broadcast timeout. Results go to `app/build/devicetest/upgrade-result.json`.
+
 ## Adding a test
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in
