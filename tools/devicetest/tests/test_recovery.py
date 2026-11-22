@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: 0BSD
 """The owner's settings are restored verifiably, or the run fails and keeps every saved copy."""
 
+import hashlib
+import json
 import os
 import tempfile
 import unittest
@@ -38,6 +40,36 @@ class FakeDevice(Device):
         self.replies = {}         # op -> forced reply, simulating failures and lost answers
         self.fallbacks = 0
         self.log = lambda *_: None
+        # The installed build, simulated by file contents; certificates by a name per file.
+        self.current = b"original build"
+        self.certs = {}
+        self.installs = []
+        self.install_fails = False
+        self.install_noop = False
+        self.prerequisites = 0
+
+    def installed_sha(self):
+        return hashlib.sha256(self.current).hexdigest()
+
+    def save_installed(self, run):
+        path = os.path.join(dev.WORK, f"installed-{run}.apk")
+        with open(path, "wb") as f:
+            f.write(self.current)
+        return {"sha256": self.installed_sha(), "apk": path}
+
+    def apk_certificate(self, path):
+        return self.certs.get(os.path.basename(path), "debug")
+
+    def install_apk(self, path):
+        self.installs.append(os.path.basename(path))
+        if self.install_fails:
+            raise AdbError("install interrupted")
+        if not self.install_noop:
+            with open(path, "rb") as f:
+                self.current = f.read()
+
+    def restore_prerequisites(self):
+        self.prerequisites += 1
 
     def prefs_xml(self):
         return self.disk
@@ -72,6 +104,8 @@ class FakeDevice(Device):
                 return f"OTHER {self.copy[0]}"
             self.disk = self.copy[1]
             return f"OK {len(parse_prefs(self.disk))}"
+        if op == "status":
+            return f"KEPT {self.copy[0]} {len(parse_prefs(self.copy[1]))}" if self.copy else "NONE"
         if op == "drop":
             self.copy = None
             return "OK"
@@ -239,6 +273,115 @@ class TransactionTest(Isolated):
         self.assertTrue(d.end())
         self.assertEqual(parse_prefs(d.disk), parse_prefs(OWNER_XML))
         self.assertFalse(os.path.exists(self.state))
+
+
+class MultiInstallTest(Isolated):
+    """Sessions that install other builds end on the original build with the owner's settings."""
+
+    def apk(self, name, content):
+        path = os.path.join(self.tmp.name, name)
+        with open(path, "wb") as f:
+            f.write(content)
+        return path
+
+    def test_two_arms_end_on_the_original_build_with_settings_restored(self):
+        d = FakeDevice()
+        d.begin()
+        d.install(self.apk("trace.apk", b"trace build"))
+        d.install(self.apk("candidate.apk", b"candidate build"))
+        self.assertEqual(b"candidate build", d.current)
+        self.assertTrue(d.end())
+        self.assertEqual(b"original build", d.current)
+        self.assertEqual(["trace.apk", "candidate.apk"], d.installs[:2])
+        self.assertTrue(d.installs[2].startswith("installed-"))
+        self.assertEqual(parse_prefs(d.disk), parse_prefs(OWNER_XML))
+        self.assertFalse(os.path.exists(self.state))
+        self.assertFalse([n for n in os.listdir(self.tmp.name) if n.startswith("installed-")])
+
+    def test_an_unchanged_build_is_not_reinstalled(self):
+        d = FakeDevice()
+        d.begin()
+        self.assertTrue(d.end())
+        self.assertEqual([], d.installs)
+
+    def test_install_needs_a_saved_transaction(self):
+        d = FakeDevice()
+        with self.assertRaises(RecoveryError):
+            d.install(self.apk("trace.apk", b"trace build"))
+        self.assertEqual([], d.installs)
+
+    def test_a_different_signature_is_refused_before_installing(self):
+        d = FakeDevice()
+        d.begin()
+        d.certs["release.apk"] = "release"
+        with self.assertRaises(RecoveryError):
+            d.install(self.apk("release.apk", b"release build"))
+        self.assertEqual([], d.installs)
+        self.assertTrue(os.path.exists(self.state))
+        self.assertTrue(d.end())
+
+    def test_a_lost_app_copy_after_install_stops_and_recovers_from_the_host_file(self):
+        d = FakeDevice()
+        d.begin()
+        trace = self.apk("trace.apk", b"trace build")
+        original_install = d.install_apk
+
+        def install_and_lose_copy(path):
+            original_install(path)
+            d.copy = None
+        d.install_apk = install_and_lose_copy
+        with self.assertRaises(RecoveryError):
+            d.install(trace)
+        d.install_apk = original_install
+        self.assertIsNone(d.copy, "the survival check must not take a new copy of the test settings")
+        self.assertTrue(d.end())
+        self.assertEqual(1, d.fallbacks)
+        self.assertEqual(b"original build", d.current)
+        self.assertEqual(parse_prefs(d.disk), parse_prefs(OWNER_XML))
+
+    def test_an_install_that_did_not_take_effect_stops(self):
+        d = FakeDevice()
+        d.begin()
+        d.install_noop = True
+        with self.assertRaises(RecoveryError):
+            d.install(self.apk("trace.apk", b"trace build"))
+        d.install_noop = False
+        self.assertTrue(d.end())
+
+    def test_an_interrupted_install_is_recovered_by_end(self):
+        d = FakeDevice()
+        d.begin()
+        d.install_fails = True
+        with self.assertRaises(AdbError):
+            d.install(self.apk("trace.apk", b"trace build"))
+        with open(self.state) as f:
+            self.assertIn("arm", json.load(f))
+        d.install_fails = False
+        d.current = b"half-installed"
+        self.assertTrue(d.end())
+        self.assertEqual(b"original build", d.current)
+
+    def test_a_missing_original_copy_keeps_everything(self):
+        d = FakeDevice()
+        d.begin()
+        d.install(self.apk("trace.apk", b"trace build"))
+        with open(self.state) as f:
+            os.unlink(json.load(f)["installed"]["apk"])
+        with self.assertRaises(RecoveryError):
+            d.end()
+        self.assertTrue(os.path.exists(self.state))
+        self.assertIsNotNone(d.copy)
+
+    def test_a_state_from_before_installs_existed_still_restores(self):
+        d = FakeDevice()
+        d.begin()
+        with open(self.state) as f:
+            state = json.load(f)
+        del state["installed"]
+        with open(self.state, "w") as f:
+            json.dump(state, f)
+        self.assertTrue(d.end())
+        self.assertEqual([], d.installs)
 
 
 if __name__ == "__main__":

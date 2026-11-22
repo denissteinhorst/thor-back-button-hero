@@ -25,6 +25,9 @@ import android.view.KeyEvent
  * - `restore` with `run`: writes the copy back to disk and answers `OK <count>`, `NONE` without a
  *   complete copy, or `OTHER <run>` when the copy belongs to a different run (never adopted). The copy stays until `drop`, so an interrupted or failed restore can simply be repeated;
  *   the suite reads the settings file back before it drops anything.
+ * - `status`: only reads: `KEPT <run> <count>` for a complete copy, `KEPT unmarked` for one without
+ *   the marker, `NONE` without a copy. Unlike `snapshot` it never takes a copy, so checking that the
+ *   copy survived an install cannot replace a lost one with test values.
  * - `drop`: deletes the copy once the suite has verified the restore.
  * - `reset`: clears everything and lets [Prefs] apply a fresh install's defaults.
  * - `put` with `key`, `type` (string, int, long, bool, float) and `value`; `remove` with `key`.
@@ -67,6 +70,14 @@ class DeviceTestReceiver : BroadcastReceiver() {
                         run != null && run != meta.getString(RUN, null) -> "OTHER ${meta.getString(RUN, "")}"
                         !copyAll(copy, prefs) -> "FAIL restore write"
                         else -> "OK ${prefs.all.size}"
+                    }
+                }
+                "status" -> {
+                    val meta = app.getSharedPreferences(SNAPSHOT_META, Context.MODE_PRIVATE)
+                    when {
+                        meta.getBoolean(COMPLETE, false) -> "KEPT ${meta.getString(RUN, "")} ${copy.all.size}"
+                        copy.all.isNotEmpty() -> "KEPT unmarked"
+                        else -> "NONE"
                     }
                 }
                 "drop" -> {

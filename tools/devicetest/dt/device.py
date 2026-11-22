@@ -1,13 +1,15 @@
 """The Thor as the tests see it: the app's settings, the system state they touch, and observers."""
 
+import hashlib
 import json
 import os
 import re
 import shlex
+import subprocess
 import time
 import xml.etree.ElementTree as ElementTree
 
-from .adb import WORK, Adb, AdbError
+from .adb import JAVA_HOME, WORK, Adb, AdbError, _sdk_dir
 from .pad import Seq
 from .strings import Strings
 
@@ -97,6 +99,11 @@ def restore_count(reply):
 # ("home") has no Home layer counterpart.
 LAYERED_TIMINGS = {"double_ms", "tap_hold_ms", "hold_ms", "lstick_double_ms", "lstick_tap_hold_ms",
                    "rstick_double_ms", "rstick_tap_hold_ms"}
+
+
+def file_sha256(path):
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 class Device:
@@ -294,7 +301,9 @@ class Device:
         xml_path = os.path.join(WORK, f"owner-prefs-{run}.xml")
         with open(xml_path, "w") as f:
             f.write(xml)
-        state = {"run": run, "prefs_xml": xml_path, "system": self.snapshot_system(), "stage": "saving"}
+        # The installed artifact is kept too, so a session that installs other builds ends on this one.
+        state = {"run": run, "prefs_xml": xml_path, "count": len(saved), "system": self.snapshot_system(),
+                 "installed": self.save_installed(run), "stage": "saving"}
         self._write_state(state)
         count = snapshot_count(self.app_reply("snapshot", run=run))
         if count != len(saved):
@@ -313,6 +322,9 @@ class Device:
         with open(state["prefs_xml"]) as f:
             xml = f.read()
         saved = parse_prefs(xml)
+        installed = state.get("installed")
+        if installed and self.installed_sha() != installed["sha256"]:
+            self.reinstall_original(installed)
         try:
             self.app("media", value="stop")
         except AdbError as e:
@@ -331,8 +343,89 @@ class Device:
             raise RecoveryError("restored system values differ: " + "; ".join(differences))
         if self.app_reply("drop") != "OK":
             raise RecoveryError("restored and verified, but the app's copy could not be dropped; run --restore again")
+        if installed and self.installed_sha() != installed["sha256"]:
+            raise RecoveryError("settings restored, but the original build is no longer installed; run --restore again")
         os.unlink(STATE_FILE)
+        if installed and os.path.exists(installed["apk"]):
+            os.unlink(installed["apk"])
         return True
+
+    # --- installed artifact: sessions that install other builds -----------------------------
+
+    def _pull_installed(self, name):
+        paths = [l.removeprefix("package:") for l in self.sh(f"pm path {PKG}").splitlines() if l.startswith("package:")]
+        if len(paths) != 1:
+            raise RecoveryError(f"expected one installed APK of {PKG}, found {paths or 'none'}")
+        local = os.path.join(WORK, name)
+        self.adb.run("pull", paths[0], local, timeout=120)
+        return local
+
+    def installed_sha(self):
+        return file_sha256(self._pull_installed("installed-check.apk"))
+
+    def save_installed(self, run):
+        """A host copy of the installed APK and its hash, taken before anything changes."""
+        local = self._pull_installed(f"installed-{run}.apk")
+        return {"sha256": file_sha256(local), "apk": local}
+
+    def apk_certificate(self, path):
+        out = subprocess.run([os.path.join(_sdk_dir(), "build-tools", "34.0.0", "apksigner"), "verify", "--print-certs", path],
+                             capture_output=True, text=True, env=dict(os.environ, JAVA_HOME=JAVA_HOME,
+                             PATH=os.path.join(JAVA_HOME, "bin") + os.pathsep + os.environ.get("PATH", "")))
+        m = re.search(r"Signer #1 certificate SHA-256 digest: ([0-9a-f]{64})", out.stdout)
+        if not m:
+            raise RecoveryError(f"no signing certificate readable from {path}")
+        return m.group(1)
+
+    def install_apk(self, path):
+        """An in-place update that keeps the app's data; never an uninstall."""
+        self.adb.run("install", "-r", path, timeout=180)
+
+    def restore_prerequisites(self):
+        self.sh(f"pm grant {PKG} android.permission.POST_NOTIFICATIONS")
+        self.reconnect()
+
+    def _saved_state(self):
+        if not os.path.exists(STATE_FILE):
+            raise RecoveryError("installing another build needs a saved transaction: begin first")
+        with open(STATE_FILE) as f:
+            state = json.load(f)
+        if state.get("stage") != "saved" or not state.get("installed"):
+            raise RecoveryError(f"the transaction is not ready for installs (stage {state.get('stage')!r})")
+        return state
+
+    def install(self, apk):
+        """Installs [apk] in place as one arm of a session. Signing must match the original build; the
+        owner's settings copy in the app and the host's settings file must both survive the install."""
+        state = self._saved_state()
+        if self.apk_certificate(apk) != self.apk_certificate(state["installed"]["apk"]):
+            raise RecoveryError(f"{apk} is signed differently from the installed build; never uninstall to work around it")
+        sha = file_sha256(apk)
+        state["arm"] = {"apk": os.path.abspath(apk), "sha256": sha}
+        self._write_state(state)
+        self.install_apk(apk)
+        if self.installed_sha() != sha:
+            raise RecoveryError(f"after installing {apk} a different build is installed")
+        self.restore_prerequisites()
+        self.verify_recovery_copies(state)
+
+    def verify_recovery_copies(self, state):
+        # Read-only on purpose: "snapshot" would replace a lost copy with the test settings now on disk.
+        reply = self.app_reply("status")
+        if reply != f"KEPT {state['run']} {state['count']}":
+            raise RecoveryError(f"the app's settings copy did not survive the install ({reply!r})")
+        with open(state["prefs_xml"]) as f:
+            if len(parse_prefs(f.read())) != state["count"]:
+                raise RecoveryError("the host's settings file no longer matches the saved count")
+
+    def reinstall_original(self, installed):
+        if not os.path.exists(installed["apk"]) or file_sha256(installed["apk"]) != installed["sha256"]:
+            raise RecoveryError(f"the original build's copy {installed['apk']} is missing or changed; reinstall it manually")
+        self.log("reinstalling the original build")
+        self.install_apk(installed["apk"])
+        if self.installed_sha() != installed["sha256"]:
+            raise RecoveryError("reinstalling the original build did not take effect")
+        self.restore_prerequisites()
 
     def _write_state(self, state):
         tmp = STATE_FILE + ".tmp"

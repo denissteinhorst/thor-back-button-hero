@@ -76,6 +76,7 @@ Before the first test, the suite:
   parses as a settings file (a failed read never counts as empty settings);
 - records every system value a test may change: AYN's settings, the controller route and style
   properties, Do Not Disturb, microphone privacy, media volume and both screens' brightness;
+- pulls the installed APK to `app/build/devicetest/installed-<run>.apk` and records its hash;
 - writes `app/build/devicetest/state.json` with the run id. A second run refuses to start while this
   file exists;
 - asks the app for a complete copy of its settings, tagged with the run id, and requires `OK <count>`
@@ -95,6 +96,16 @@ including after failures and Ctrl-C, the restore:
 Any other reply, a write failure or a difference stops with an error and keeps `state.json`, the saved
 XML file and the app's copy. `--restore` repeats the same steps and can be run again safely after an
 interruption, a lost reply or a failed attempt.
+
+**Sessions that install other builds** (trace builds, A/B arms) call `Device.install(apk)` inside the
+transaction. It refuses an APK signed differently from the installed build (never uninstalls to work
+around it), installs in place, checks the installed hash, restores the prerequisites (notification
+permission, service enabled and bound) and then checks that both recovery copies survived: the app
+must answer the read-only `status` with `KEPT <run> <count>`, and the host's settings file must still
+hold that count. `status` is used rather than `snapshot`, which would take a fresh copy of the test
+settings if the owner's copy had been lost. The restore first reinstalls the original build from the
+host copy when another one is installed, then restores the settings as above, checks the original
+build is installed again and only then deletes the host copy.
 
 **Manual recovery.** If `--restore` keeps failing, the newest `owner-prefs-<run>.xml` holds the
 settings as they were before the run. With the debug build installed: turn the service off in
