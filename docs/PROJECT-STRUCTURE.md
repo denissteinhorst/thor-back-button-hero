@@ -220,6 +220,8 @@ first build, so they work right after a clone without a manual step.
 | `TESTING.md` | The test concept and every quality gate, plus what is deliberately not automated. |
 | `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
 | `PROJECT-STRUCTURE.md` | This file. |
+| `README.md` | Index of every document with one line each, the decision list and the KDoc conventions. |
+| `decisions/` | Architecture decision records (`0000-template.md` plus numbered records). |
 | `MAINTENANCE.md` | Setup, building, releasing, dependency policy, and recipes for common changes. |
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |

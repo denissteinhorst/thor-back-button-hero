@@ -96,6 +96,8 @@ when release preparation starts; do not infer, tag, publish, or push a release e
 Before editing, inspect the relevant implementation and its tests. Then use these docs
 as needed:
 
+- `docs/README.md`: index of every document, architecture decisions (`docs/decisions/`)
+  and the KDoc conventions
 - `CLAUDE.md`: detailed operational knowledge, toolchain traps, coverage baselines,
   release signing/recovery, and component notes
 - `docs/ARCHITECTURE.md`: runtime flows and component collaboration

@@ -375,7 +375,8 @@ Requires JDK 17. `minSdk` is 30 (Android 11).
 ## Project documentation
 
 The app can be used without reading these, but the repository includes more
-detail for people who want to understand or work on it:
+detail for people who want to understand or work on it. The
+[documentation index](docs/README.md) lists every document.
 
 - [FAQ](docs/FAQ.md) — device compatibility, how updating works, and the
   privacy and trust questions an accessibility service ought to answer.
