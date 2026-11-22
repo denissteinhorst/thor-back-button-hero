@@ -49,8 +49,9 @@ def package_of(text):
 def declarations(text):
     """Top-level, non-private names a file declares (column-0 declarations only)."""
     names = set()
-    for m in DECL.finditer(split(text)[1]):
-        line = text[text.rfind("\n", 0, m.start()) + 1:text.find("\n", m.start())]
+    body = split(text)[1]
+    for m in DECL.finditer(body):
+        line = body[body.rfind("\n", 0, m.start()) + 1:body.find("\n", m.start())]
         if line.lstrip().startswith("private "):
             continue
         names.add(m.group(2).strip("`"))
