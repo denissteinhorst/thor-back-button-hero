@@ -1,8 +1,8 @@
 package dev.steinhorst.backbuttonhero.support
 
-import dev.steinhorst.backbuttonhero.BackGestureButton
-import dev.steinhorst.backbuttonhero.DpadDirection
-import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**

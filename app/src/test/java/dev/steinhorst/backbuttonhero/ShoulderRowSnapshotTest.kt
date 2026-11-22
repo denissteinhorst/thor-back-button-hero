@@ -1,6 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree

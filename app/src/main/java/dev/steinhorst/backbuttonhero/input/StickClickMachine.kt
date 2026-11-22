@@ -1,4 +1,6 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
+
+import dev.steinhorst.backbuttonhero.SwitcherService
 
 /**
  * One stick's click (L3/R3) gestures while Back is held, timed exactly like the Back button's own

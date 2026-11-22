@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import org.junit.Assert.assertEquals
 import org.junit.Test

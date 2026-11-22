@@ -1,9 +1,9 @@
 package dev.steinhorst.backbuttonhero.pad
 
 import android.view.Surface
-import dev.steinhorst.backbuttonhero.Stick
-import dev.steinhorst.backbuttonhero.base
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.base
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot

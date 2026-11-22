@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+
 /** Retains presses during Overview initialization; the opening Back release never starts input. */
 class TopRecentsNavigation(
     private val navigate: (DpadDirection) -> Unit,

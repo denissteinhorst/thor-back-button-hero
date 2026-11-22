@@ -1,6 +1,7 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs

@@ -24,6 +24,7 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
+import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.pad.GyroAxis
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
 import dev.steinhorst.backbuttonhero.pad.GyroStatus

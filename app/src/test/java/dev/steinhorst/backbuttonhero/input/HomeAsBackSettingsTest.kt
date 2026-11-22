@@ -1,8 +1,11 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SettingsActivity
+import dev.steinhorst.backbuttonhero.SettingsSection
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.startOnBasic

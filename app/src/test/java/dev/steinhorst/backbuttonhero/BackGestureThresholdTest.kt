@@ -2,6 +2,10 @@ package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.BackGestureMachine
+import dev.steinhorst.backbuttonhero.input.GestureActions
+import dev.steinhorst.backbuttonhero.input.GestureClock
+import dev.steinhorst.backbuttonhero.input.GestureScheduler
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs

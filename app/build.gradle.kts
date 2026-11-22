@@ -181,7 +181,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // never lower them.
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.BackGestureMachine")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.BackGestureMachine")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -208,7 +208,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.DpadDirection*")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.DpadDirection*")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -217,7 +217,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.DoubleTapDetector")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.DoubleTapDetector")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -255,24 +255,24 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // grouped settings, Recents routing and panel work. Exact class names, so nested
         // classes are not folded in. Same rule: raise, never lower.
         mapOf(
-            "RecentsSelection" to "1.00", "ServiceToggleGesture" to "1.00",
-            "ExceptionSettingsPage" to "0.98", "PhysicalKeyTracker" to "1.00",
+            "RecentsSelection" to "1.00", "input.ServiceToggleGesture" to "1.00",
+            "ExceptionSettingsPage" to "0.98", "input.PhysicalKeyTracker" to "1.00",
             "prefs.AppException" to "1.00", "prefs.ExceptionControl" to "1.00",
             "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
             "RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
             "RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
             "pad.PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
             "TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
-            "SettingsNavigation" to "1.00", "ShoulderButton" to "1.00",
+            "SettingsNavigation" to "1.00", "input.ShoulderButton" to "1.00",
             "SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
-            "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
+            "input.KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
             "SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
-            "GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
-            "StickDetector" to "1.00", "pad.LevelRepeater" to "1.00", "pad.RepeatCurve" to "1.00",
-            "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
-            "StickButton" to "1.00", "Stick" to "1.00",
+            "input.GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
+            "input.StickDetector" to "1.00", "pad.LevelRepeater" to "1.00", "pad.RepeatCurve" to "1.00",
+            "input.StickClickMachine" to "1.00", "input.StickClickButton" to "1.00", "input.StickClick" to "1.00",
+            "input.StickButton" to "1.00", "input.Stick" to "1.00",
             "prefs.SettingsBackup" to "1.00",
-            "AndroidButton" to "1.00", "FaceButton" to "1.00", "prefs.ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
+            "input.AndroidButton" to "1.00", "input.FaceButton" to "1.00", "prefs.ExceptionGroup" to "1.00", "input.HomeAsBack" to "1.00",
             "macro.Macro" to "1.00", "macro.MacroRecorder" to "1.00", "macro.MacroButton" to "1.00", "macro.MacroDirection" to "1.00",
             "macro.Evdev" to "1.00", "macro.MacroEditor" to "0.97", "macro.SavedMacro" to "1.00", "macro.MacroLibraryDialog" to "1.00",
             "macro.MacroEdits" to "1.00", "macro.MacroUi" to "1.00", "macro.MacroUi\$Sheet" to "1.00", "macro.MacroWidgetsKt" to "1.00", "macro.StepStrip" to "0.80", "macro.ScrollIndicator" to "1.00",

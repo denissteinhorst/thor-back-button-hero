@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.annotation.SuppressLint
 import android.os.IBinder
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.pad.LevelSteps
 
 /**

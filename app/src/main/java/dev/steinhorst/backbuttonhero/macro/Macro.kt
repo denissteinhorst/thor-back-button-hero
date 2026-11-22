@@ -1,10 +1,10 @@
 package dev.steinhorst.backbuttonhero.macro
 
 import android.view.KeyEvent
-import dev.steinhorst.backbuttonhero.FaceButton
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.Stick
-import dev.steinhorst.backbuttonhero.base
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.pad.PadHelper
 import kotlin.math.PI
 import kotlin.math.atan2

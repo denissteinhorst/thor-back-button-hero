@@ -2,9 +2,9 @@ package dev.steinhorst.backbuttonhero.pad
 
 import android.net.LocalSocket
 import android.os.Looper
-import dev.steinhorst.backbuttonhero.DpadDirection
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.Stick
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

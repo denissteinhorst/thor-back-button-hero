@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.input.DpadDirection
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

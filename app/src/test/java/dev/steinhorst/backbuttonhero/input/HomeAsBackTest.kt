@@ -1,10 +1,10 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.view.KeyEvent.ACTION_DOWN
 import android.view.KeyEvent.ACTION_UP
 import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_HOME
-import dev.steinhorst.backbuttonhero.HomeAsBack.Route
+import dev.steinhorst.backbuttonhero.input.HomeAsBack.Route
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

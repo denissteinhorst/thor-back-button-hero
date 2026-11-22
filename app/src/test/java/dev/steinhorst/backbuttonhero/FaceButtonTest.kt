@@ -1,6 +1,9 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.ComboButton
+import dev.steinhorst.backbuttonhero.input.FaceButton
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

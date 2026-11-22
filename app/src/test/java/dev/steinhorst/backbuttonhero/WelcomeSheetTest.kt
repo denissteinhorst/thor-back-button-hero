@@ -4,6 +4,11 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.macro.Macro
 import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.prefs.AppException

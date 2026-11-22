@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 /**
  * Collapses duplicate Android input devices that report the same physical key press.

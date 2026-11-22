@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.app.Dialog
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.macro.Macro
 import dev.steinhorst.backbuttonhero.macro.MacroButton
 import dev.steinhorst.backbuttonhero.macro.MacroEditor

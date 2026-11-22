@@ -6,6 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.startOnBasic

@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

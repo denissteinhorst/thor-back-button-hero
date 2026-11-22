@@ -19,10 +19,10 @@ import dev.steinhorst.backbuttonhero.GyroSettingsDialog
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.SettingsActivity
 import dev.steinhorst.backbuttonhero.SettingsSection
-import dev.steinhorst.backbuttonhero.ShoulderButton
-import dev.steinhorst.backbuttonhero.Stick
 import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults

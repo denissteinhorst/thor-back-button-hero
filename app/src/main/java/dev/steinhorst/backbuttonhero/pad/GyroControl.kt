@@ -9,8 +9,8 @@ import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
 import android.view.Display
-import dev.steinhorst.backbuttonhero.ComboButton
-import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.input.ComboButton
+import dev.steinhorst.backbuttonhero.input.Stick
 
 /** The sole live sensor path. The preview receives the same mapped samples sent to the helper. */
 class GyroControl(

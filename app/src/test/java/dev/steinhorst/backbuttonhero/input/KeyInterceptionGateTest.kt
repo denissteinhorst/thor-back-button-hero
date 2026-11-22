@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.view.KeyEvent
 import org.junit.Assert.assertEquals

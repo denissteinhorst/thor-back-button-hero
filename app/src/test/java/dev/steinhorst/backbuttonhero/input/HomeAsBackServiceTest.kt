@@ -1,8 +1,11 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.os.Looper
 import android.view.InputDevice
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.AppControlPrompt
+import dev.steinhorst.backbuttonhero.SwitcherOverlay
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay

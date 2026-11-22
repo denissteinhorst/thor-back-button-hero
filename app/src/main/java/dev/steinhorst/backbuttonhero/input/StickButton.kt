@@ -1,6 +1,7 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.input
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.pad.PadHelper
 import kotlin.math.abs

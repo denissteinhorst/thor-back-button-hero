@@ -1,6 +1,16 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.GestureClock
+import dev.steinhorst.backbuttonhero.input.GestureScheduler
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickClick
+import dev.steinhorst.backbuttonhero.input.StickClickButton
+import dev.steinhorst.backbuttonhero.input.StickClickMachine
+import dev.steinhorst.backbuttonhero.input.StickDetector
 import dev.steinhorst.backbuttonhero.pad.LevelRepeater
 import dev.steinhorst.backbuttonhero.pad.RepeatCurve
 import dev.steinhorst.backbuttonhero.prefs.Prefs

@@ -3,6 +3,10 @@ package dev.steinhorst.backbuttonhero
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.macro.Macro
 import dev.steinhorst.backbuttonhero.macro.MacroButton
 import dev.steinhorst.backbuttonhero.macro.MacroInput

@@ -15,6 +15,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.base
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt

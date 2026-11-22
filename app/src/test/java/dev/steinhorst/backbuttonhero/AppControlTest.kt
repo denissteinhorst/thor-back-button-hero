@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import org.junit.Assert.assertEquals

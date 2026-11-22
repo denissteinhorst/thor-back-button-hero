@@ -7,12 +7,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
-import dev.steinhorst.backbuttonhero.DpadDirection
-import dev.steinhorst.backbuttonhero.Stick
-import dev.steinhorst.backbuttonhero.StickButton
-import dev.steinhorst.backbuttonhero.StickDetector
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickDetector
 import dev.steinhorst.backbuttonhero.macro.MacroEvent
 import dev.steinhorst.backbuttonhero.macro.MacroRecorder
 import dev.steinhorst.backbuttonhero.prefs.AppException
