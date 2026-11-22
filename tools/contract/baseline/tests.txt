@@ -359,6 +359,7 @@ PadHelperLifecycleTest#queued stick report cannot act after service disposal
 PadHelperLifecycleTest#setSticks keeps the mask and only resends a change
 PadHelperLifecycleTest#stick reports become presses and releases, and malformed ones are ignored
 PadHelperLifecycleTest#stop shuts down both socket directions before closing to release blocked reader
+PadHelperProtocolTest#pad helper line protocol is unchanged
 PadNavigationModeTest#wire values match the native helper protocol
 PanelCardsTest#a panel scan keeps the empty switcher open until the user closes it
 PanelCardsTest#bottom only close all closes a panel owner even without a separate top activity card

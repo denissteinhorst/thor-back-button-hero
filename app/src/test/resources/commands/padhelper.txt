@@ -1,0 +1,93 @@
+## commands without a helper are dropped
+  playMacro=false
+## switcher navigation and suspension
+  <- SWITCHER 0
+  <- SWITCHER 1
+  <- SWITCHER 2
+  <- SWITCHER 3
+  <- SWITCHER 3
+  <- SWITCHER 3
+  <- SWITCHER 1
+## masks, changes only
+  <- PASS 9
+  <- STICKS 3
+  <- SPASS 66
+  <- HOMEBACK 2
+  <- RECORD 1
+## helper takes a pad over: state replay
+  > PAD 1
+  -> active true
+  <- SWITCHER 1
+  <- PASS 9
+  <- STICKS 3
+  <- SPASS 66
+  <- HOMEBACK 2
+  <- RECORD 1
+## navigation, gyro and macros
+  playMacro=true
+  <- NAV 103
+  <- NAV 108
+  <- NAV 105
+  <- NAV 106
+  <- GYRO 1 120 -340
+  <- GYRO 2 0 5
+  <- GYRO 0 0 0
+  <- MCLEAR
+  <- MEV 0 K 304 1
+  <- MEV 120 A 0 -32767
+  <- MEV 250 K 304 0
+  <- MPLAY 7
+  <- MSTOP
+## events from the helper
+  > HAT X -1
+  -> press LEFT
+  > HAT X 1
+  -> press RIGHT
+  > HAT X 0
+  -> release horizontal=true
+  > HAT Y -1
+  -> press UP
+  > HAT Y 0.4
+  -> release horizontal=false
+  > HAT Y 1
+  -> press DOWN
+  > HAT Y
+  > HAT Y x
+  -> release horizontal=false
+  > STICK L U
+  -> stick LEFT UP
+  > STICK R N
+  -> stick RIGHT null
+  > STICK Q U
+  > STICK L
+  > REC K 304 1
+  -> record [K, 304, 1]
+  > MACRO_DONE 7
+  -> macro 7 stopped=false
+  > MACRO_STOPPED 8
+  -> macro 8 stopped=true
+  > MACRO_DONE x
+  > MACRO_DONE
+  > MODE 2
+  > UNKNOWN 1
+  > 
+  >  
+## recording off drops REC
+  > REC K 304 1
+  <- RECORD 0
+## pad gone, then back
+  > PAD_GONE
+  -> active false
+  > PAD 2
+  -> active true
+  <- SWITCHER 1
+  <- PASS 9
+  <- STICKS 3
+  <- SPASS 66
+  <- HOMEBACK 2
+  <- RECORD 0
+## emergency release
+  > RELEASED
+  -> active false
+  > HAT X 1
+  > PAD 3
