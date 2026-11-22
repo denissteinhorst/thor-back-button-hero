@@ -18,9 +18,14 @@ import android.view.KeyEvent
  * listeners, exactly as if the settings screen had made it. The result data answers every call.
  *
  * `adb shell am broadcast -a dev.steinhorst.backbuttonhero.DEVICE_TEST --es op <op> ...`
- * - `snapshot`: copies every setting aside, but never over an existing copy, so a run that died
- *   halfway cannot overwrite the owner's real settings with test values.
- * - `restore`: puts the copy back exactly and drops it.
+ * - `snapshot` with `run`: copies every setting aside and answers `OK <count>`. An existing copy is
+ *   never overwritten (`KEPT <run>` names the run that made it), so a run that died halfway cannot
+ *   replace the owner's real settings with test values. A separate marker records that the copy is
+ *   complete, which tells a valid empty copy apart from none at all.
+ * - `restore` with `run`: writes the copy back to disk and answers `OK <count>`, `NONE` without a
+ *   complete copy, or `OTHER <run>` when the copy belongs to a different run (never adopted). The copy stays until `drop`, so an interrupted or failed restore can simply be repeated;
+ *   the suite reads the settings file back before it drops anything.
+ * - `drop`: deletes the copy once the suite has verified the restore.
  * - `reset`: clears everything and lets [Prefs] apply a fresh install's defaults.
  * - `put` with `key`, `type` (string, int, long, bool, float) and `value`; `remove` with `key`.
  * - `probe` with `value` start (and `display`) or stop: [DeviceTestKeyActivity], a stand-in game.
@@ -37,11 +42,38 @@ class DeviceTestReceiver : BroadcastReceiver() {
         val copy = app.getSharedPreferences(SNAPSHOT, Context.MODE_PRIVATE)
         resultData = runCatching {
             when (val op = intent.getStringExtra("op")) {
-                "snapshot" -> if (copy.all.isNotEmpty()) "KEPT" else { copyAll(prefs, copy); "OK ${copy.all.size}" }
-                "restore" -> if (copy.all.isEmpty()) "NONE" else {
-                    copyAll(copy, prefs)
-                    copy.edit().clear().apply()
-                    "OK ${prefs.all.size}"
+                "snapshot" -> {
+                    val meta = app.getSharedPreferences(SNAPSHOT_META, Context.MODE_PRIVATE)
+                    if (meta.getBoolean(COMPLETE, false)) {
+                        "KEPT ${meta.getString(RUN, "")}"
+                    } else if (copy.all.isNotEmpty()) {
+                        // A copy without the marker: an older build's or a half-finished one. Keep it
+                        // for manual recovery instead of overwriting it.
+                        "KEPT unmarked"
+                    } else {
+                        val run = requireNotNull(intent.getStringExtra("run")) { "run missing" }
+                        when {
+                            !copyAll(prefs, copy) -> "FAIL snapshot write"
+                            !meta.edit().putString(RUN, run).putBoolean(COMPLETE, true).commit() -> "FAIL marker write"
+                            else -> "OK ${copy.all.size}"
+                        }
+                    }
+                }
+                "restore" -> {
+                    val meta = app.getSharedPreferences(SNAPSHOT_META, Context.MODE_PRIVATE)
+                    val run = intent.getStringExtra("run")
+                    when {
+                        !meta.getBoolean(COMPLETE, false) -> "NONE"
+                        run != null && run != meta.getString(RUN, null) -> "OTHER ${meta.getString(RUN, "")}"
+                        !copyAll(copy, prefs) -> "FAIL restore write"
+                        else -> "OK ${prefs.all.size}"
+                    }
+                }
+                "drop" -> {
+                    val meta = app.getSharedPreferences(SNAPSHOT_META, Context.MODE_PRIVATE)
+                    // The marker goes first: a half-finished drop then reads as no copy, never as a
+                    // complete copy with missing settings.
+                    if (meta.edit().clear().commit() && copy.edit().clear().commit()) "OK" else "FAIL drop write"
                 }
                 "reset" -> {
                     prefs.edit().clear().apply()
@@ -85,9 +117,9 @@ class DeviceTestReceiver : BroadcastReceiver() {
         }
     }
 
-    /** One edit replaces [to] with [from], so a listener never sees a half-copied state. The in-memory
-     *  values change at once; the file follows in the background, well before the next step reads it. */
-    private fun copyAll(from: SharedPreferences, to: SharedPreferences) {
+    /** One edit replaces [to] with [from], so a listener never sees a half-copied state. Committed
+     *  synchronously: the result says whether the file on disk holds the copy. */
+    private fun copyAll(from: SharedPreferences, to: SharedPreferences): Boolean {
         val editor = to.edit().clear()
         from.all.forEach { (key, value) ->
             when (value) {
@@ -99,7 +131,7 @@ class DeviceTestReceiver : BroadcastReceiver() {
                 is Set<*> -> editor.putStringSet(key, value.filterIsInstance<String>().toSet())
             }
         }
-        editor.apply()
+        return editor.commit()
     }
 
     private fun media(context: Context, start: Boolean): String {
@@ -149,6 +181,9 @@ class DeviceTestReceiver : BroadcastReceiver() {
         const val TAG = "DeviceTest"
         const val PREFS = "back_button_hero"
         const val SNAPSHOT = "device_test_snapshot"
+        const val SNAPSHOT_META = "device_test_snapshot_meta"
+        const val COMPLETE = "complete"
+        const val RUN = "run"
 
         /** Lives with the process; the service keeps it alive while the accessibility service runs. */
         var session: MediaSession? = null

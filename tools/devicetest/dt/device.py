@@ -5,6 +5,7 @@ import os
 import re
 import shlex
 import time
+import xml.etree.ElementTree as ElementTree
 
 from .adb import WORK, Adb, AdbError
 from .pad import Seq
@@ -30,6 +31,66 @@ ZEN_TO_DND = {"0": "off", "1": "priority", "2": "none", "3": "alarms"}
 
 class Fail(AssertionError):
     pass
+
+
+class RecoveryError(AdbError):
+    """The owner's settings could not be saved or verifiably restored. The saved state is kept."""
+
+
+PREF_TYPES = {"string", "int", "long", "boolean", "float", "set"}
+
+
+def parse_prefs(text):
+    """The typed content of a SharedPreferences XML file: name -> (type, value). Raises ValueError for
+    anything that is not such a file, so a failed read can never pass for an empty settings map."""
+    try:
+        root = ElementTree.fromstring(text)
+    except ElementTree.ParseError as e:
+        raise ValueError(f"not a settings file: {e}") from None
+    if root.tag != "map":
+        raise ValueError(f"not a settings file: root <{root.tag}>")
+    prefs = {}
+    for el in root:
+        name = el.get("name")
+        if el.tag not in PREF_TYPES or name is None or name in prefs:
+            raise ValueError(f"unexpected settings entry <{el.tag} name={name!r}>")
+        if el.tag == "string":
+            value = el.text or ""
+        elif el.tag == "set":
+            value = frozenset(child.text or "" for child in el)
+        else:
+            value = el.get("value")
+            if value is None:
+                raise ValueError(f"settings entry {name!r} has no value")
+        prefs[name] = (el.tag, value)
+    return prefs
+
+
+def prefs_differences(saved, current):
+    """Every key whose presence, type or value differs, for the recovery error message."""
+    return [f"{key}: saved {saved.get(key)} now {current.get(key)}"
+            for key in sorted(set(saved) | set(current)) if saved.get(key) != current.get(key)]
+
+
+def snapshot_count(reply):
+    """The number of settings the app copied aside; anything but a fresh complete copy is refused."""
+    m = re.fullmatch(r"OK (\d+)", reply)
+    if not m:
+        raise RecoveryError(f"the app did not take a fresh copy of the settings: {reply!r}"
+                            + (" (an earlier copy exists; run with --restore or see docs/DEVICE-TEST.md)"
+                               if reply.startswith("KEPT") else ""))
+    return int(m.group(1))
+
+
+def restore_count(reply):
+    """The restored settings count; None when the app holds no copy of this run (none, or another
+    run's, which is never adopted); an error for anything else."""
+    if reply == "NONE" or reply.startswith("OTHER "):
+        return None
+    m = re.fullmatch(r"OK (\d+)", reply)
+    if not m:
+        raise RecoveryError(f"the app could not restore the settings: {reply!r}")
+    return int(m.group(1))
 
 
 # Keys the Home layer of dual mode stores under its own "dual_" prefix (docs/DUAL-MODE.md). Back + Home
@@ -115,9 +176,17 @@ class Device:
         out = self.sh(" ".join(args))
         m = re.search(r'data="(.*)"', out)
         result = m.group(1) if m else out
-        if result.startswith("ERR") or result == "FAIL":
+        if result.startswith(("ERR", "FAIL")):
             raise AdbError(f"app {op} {extras}: {result}")
         return result
+
+    def app_reply(self, op, **extras):
+        """Like [app], but hands every reply to the caller, which checks it against its own contract."""
+        args = [f"am broadcast -a {ACTION} -p {PKG} --es op {op}"]
+        for key, value in extras.items():
+            args.append(f"--es {key} {shlex.quote(str(value))}")
+        m = re.search(r'data="(.*)"', self.sh(" ".join(args)))
+        return m.group(1) if m else ""
 
     def layered(self, key):
         """[key] in the layer under test: the Home layer's own key while it runs."""
@@ -213,28 +282,88 @@ class Device:
             self.adb.probe("set", str(display), str(value))
 
     def begin(self):
-        """Saves the owner's settings once; a saved state from a crashed run is never overwritten."""
+        """Saves the owner's settings before anything changes them; a saved state from an unfinished
+        run is never overwritten. The host keeps the settings file and the system values, the app a
+        complete copy; both stay until [end] has verified the restore."""
         os.makedirs(WORK, exist_ok=True)
         if os.path.exists(STATE_FILE):
             raise AdbError(f"a previous run did not finish; run with --restore first ({STATE_FILE})")
-        prefs = self.prefs_xml()
-        with open(os.path.join(WORK, f"owner-prefs-{time.strftime('%Y%m%d-%H%M%S')}.xml"), "w") as f:
-            f.write(prefs)
-        kept = self.app("snapshot")
-        state = {"system": self.snapshot_system(), "app_snapshot": kept}
-        with open(STATE_FILE, "w") as f:
-            json.dump(state, f, indent=2)
+        run = time.strftime("%Y%m%d-%H%M%S")
+        xml = self.prefs_xml()
+        saved = parse_prefs(xml)
+        xml_path = os.path.join(WORK, f"owner-prefs-{run}.xml")
+        with open(xml_path, "w") as f:
+            f.write(xml)
+        state = {"run": run, "prefs_xml": xml_path, "system": self.snapshot_system(), "stage": "saving"}
+        self._write_state(state)
+        count = snapshot_count(self.app_reply("snapshot", run=run))
+        if count != len(saved):
+            raise RecoveryError(f"the app copied {count} settings, the settings file holds {len(saved)}")
+        state["stage"] = "saved"
+        self._write_state(state)
         self.app("reset")
 
     def end(self):
+        """Restores and verifies the owner's settings and system values. Anything uncertain raises
+        [RecoveryError] and keeps every saved copy, so the restore can simply be repeated."""
         if not os.path.exists(STATE_FILE):
             return False
-        state = json.load(open(STATE_FILE))
-        self.app("media", value="stop")
-        self.app("restore")
+        with open(STATE_FILE) as f:
+            state = json.load(f)
+        with open(state["prefs_xml"]) as f:
+            xml = f.read()
+        saved = parse_prefs(xml)
+        try:
+            self.app("media", value="stop")
+        except AdbError as e:
+            self.log(f"media session not stopped: {e}")
+        if restore_count(self.app_reply("restore", run=state["run"])) is None:
+            # The app has no complete copy (the run stopped before it took one, or after it dropped it):
+            # the host's own settings file is the source.
+            self.restore_prefs_file(xml)
+        current = parse_prefs(self.prefs_xml())
+        differences = prefs_differences(saved, current)
+        if differences:
+            raise RecoveryError("restored settings differ from the saved ones: " + "; ".join(differences[:5]))
         self.restore_system(state["system"])
+        differences = self.system_differences(state["system"])
+        if differences:
+            raise RecoveryError("restored system values differ: " + "; ".join(differences))
+        if self.app_reply("drop") != "OK":
+            raise RecoveryError("restored and verified, but the app's copy could not be dropped; run --restore again")
         os.unlink(STATE_FILE)
         return True
+
+    def _write_state(self, state):
+        tmp = STATE_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(state, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, STATE_FILE)
+
+    def system_differences(self, saved):
+        now = self.snapshot_system()
+        out = [f"{k}: saved {saved[k]!r} now {now[k]!r}" for k in ("system", "props", "zen", "mic", "volume")
+               if saved[k] != now[k]]
+        if any(abs(a - b) > 0.005 for a, b in zip(saved["brightness"], now["brightness"])):
+            out.append(f"brightness: saved {saved['brightness']} now {now['brightness']}")
+        return out
+
+    def restore_prefs_file(self, xml):
+        """Writes the saved settings file back while the app is stopped, so no live preference cache
+        overwrites it, then starts the service again. Other accessibility services stay enabled."""
+        enabled = [s for s in self.sh("settings get secure enabled_accessibility_services").split(":") if s not in ("", "null")]
+        others = [s for s in enabled if s != SERVICE]
+        self.sh(f"settings put secure enabled_accessibility_services {shlex.quote(':'.join(others) or 'null')}")
+        self.sh(f"am force-stop {PKG}")
+        self.eventually(lambda: not self.sh(f"pidof {PKG}"), 10, "the app did not stop for the settings restore")
+        remote = "/data/local/tmp/bbh-owner-prefs.xml"
+        self.adb.push_text(xml, remote)
+        self.sh(f"chmod 644 {remote}")
+        self.sh(f"run-as {PKG} cp {remote} shared_prefs/back_button_hero.xml")
+        self.sh(f"rm {remote}")
+        self.reconnect()
 
     # --- input ------------------------------------------------------------------------------
 

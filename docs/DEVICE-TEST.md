@@ -72,14 +72,38 @@ when it selects every area or the `dual` area; otherwise only Back's layer runs.
 
 Before the first test, the suite:
 
-- copies the app's preferences to a snapshot inside the app and to `app/build/devicetest/`;
+- saves the app's settings file to `app/build/devicetest/owner-prefs-<run>.xml` and checks that it
+  parses as a settings file (a failed read never counts as empty settings);
 - records every system value a test may change: AYN's settings, the controller route and style
   properties, Do Not Disturb, microphone privacy, media volume and both screens' brightness;
-- writes `app/build/devicetest/state.json`. A second run refuses to start while this file exists.
+- writes `app/build/devicetest/state.json` with the run id. A second run refuses to start while this
+  file exists;
+- asks the app for a complete copy of its settings, tagged with the run id, and requires `OK <count>`
+  matching the saved file. An existing copy is never overwritten: the run stops before changing anything.
 
 It then resets the app to fresh-install defaults. Each test configures only what it needs. Afterwards,
-including after failures and Ctrl-C, everything is put back and `state.json` is deleted. If the host
-dies mid-run, `--restore` repeats exactly that. The snapshot is never overwritten while one exists.
+including after failures and Ctrl-C, the restore:
+
+1. asks the app to write its copy of this run back to disk (a synchronous commit) and requires
+   `OK <count>`. Without a copy of this run (`NONE`, or `OTHER` for another run's copy, which is never
+   adopted) it writes the saved XML file back instead, with the service off and the app stopped so no
+   live preference cache overwrites it, and starts the service again;
+2. reads the settings file back and compares every key, type and value with the saved file;
+3. restores the system values and reads them back;
+4. only then has the app drop its copy, and deletes `state.json`. The saved XML file is kept.
+
+Any other reply, a write failure or a difference stops with an error and keeps `state.json`, the saved
+XML file and the app's copy. `--restore` repeats the same steps and can be run again safely after an
+interruption, a lost reply or a failed attempt.
+
+**Manual recovery.** If `--restore` keeps failing, the newest `owner-prefs-<run>.xml` holds the
+settings as they were before the run. With the debug build installed: turn the service off in
+Android's accessibility settings, run `adb shell am force-stop dev.steinhorst.backbuttonhero`, push the
+file to `/data/local/tmp/`, copy it with `adb shell run-as dev.steinhorst.backbuttonhero cp
+/data/local/tmp/<file> shared_prefs/back_button_hero.xml`, and turn the service on again. A run
+refused because the app still holds a copy from an older run (`KEPT …`) and no `state.json` exists
+can be cleared, after checking the settings, with `adb shell am broadcast -a
+dev.steinhorst.backbuttonhero.DEVICE_TEST -p dev.steinhorst.backbuttonhero --es op drop`.
 
 Side effects to know about:
 
