@@ -47,6 +47,27 @@ class PrivilegedCommandContractTest {
         return out
     }
 
+    /** Waits until no further command arrives for a while: for call sites whose count depends on state. */
+    private fun awaitQuiet() {
+        var last = -1
+        var stableSince = System.currentTimeMillis()
+        val end = stableSince + 5000
+        while (System.currentTimeMillis() - stableSince < 300) {
+            shadowOf(Looper.getMainLooper()).idle()
+            val now = fake.commands.size
+            if (now != last) { last = now; stableSince = System.currentTimeMillis() }
+            if (System.currentTimeMillis() > end) fail("commands kept arriving: ${fake.commands}")
+            Thread.sleep(10)
+        }
+    }
+
+    private fun quiet(label: String, block: () -> Unit): String {
+        val before = fake.commands.size
+        block()
+        awaitQuiet()
+        return "## $label\n" + fake.commands.drop(before).joinToString("") { normalize(it) + "\n" }
+    }
+
     private fun section(label: String, block: () -> Int): String {
         val before = fake.commands.size
         val expected = block()
@@ -71,8 +92,28 @@ class PrivilegedCommandContractTest {
         verify(out.toString())
     }
 
-    private fun verify(actual: String) {
-        val file = File("src/test/resources/commands/privileged.txt")
+    @Test
+    fun `volume, mute and AYN controls send unchanged root commands`() {
+        val out = StringBuilder()
+        android.provider.Settings.System.putInt(context.contentResolver, "secondary_screen_volume_level", 5)
+        val levels = LevelControl(context, {}, { 4 })
+        out.append(quiet("bottom volume up") { levels.run(Prefs.SHOULDER_VOLUME_UP, Prefs.DISPLAY_BOTTOM) })
+        out.append(quiet("bottom volume down") { levels.run(Prefs.SHOULDER_VOLUME_DOWN, Prefs.DISPLAY_BOTTOM) })
+        out.append(quiet("bottom mute") { levels.toggleMute(Prefs.DISPLAY_BOTTOM) })
+        val ayn = AynControls(context) {}
+        for (group in Ayn.Group.values()) {
+            for (option in group.options) {
+                out.append(quiet("${group.name} ${option.key}") { ayn.apply(group, option) })
+            }
+        }
+        for (toggle in Ayn.Toggle.values()) {
+            out.append(quiet("toggle ${toggle.name}") { ayn.toggle(toggle) })
+        }
+        verify(out.toString(), "ayn.txt")
+    }
+
+    private fun verify(actual: String, name: String = "privileged.txt") {
+        val file = File("src/test/resources/commands/$name")
         if (System.getenv("UPDATE_COMMAND_FIXTURES") == "1") {
             file.parentFile?.mkdirs()
             file.writeText(actual)

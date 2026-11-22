@@ -329,7 +329,7 @@ before R1 must have evidence by then):
 |---|---|
 | R1 (static contracts, S2) | F-SVC-5, F-SVC-6, F-SVC-9 |
 | R2.1 (stored data, S3) | closed by S3: F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
-| R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3 |
+| R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3; root commands not yet frozen by PrivilegedCommandContractTest: SwitcherService call sites, the socket launch scripts (PanelConnection, PadHelper, ScreenRecording), FrontendParking, AutoControllerFocus, and the PadHelper socket protocol |
 | R4.1 (input pipeline) | F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
 | R5.1 (actions) | F-ACT-2 |
 | R6.1 (Recents, panels) | F-SWI-3, F-SWP-2, F-SWP-3, F-PNL-1, F-PNL-2, F-PNL-4 |
