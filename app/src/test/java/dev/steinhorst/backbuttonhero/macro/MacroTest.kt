@@ -1,5 +1,7 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.macro
 
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.Stick
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

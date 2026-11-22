@@ -15,3 +15,17 @@ SettingsChangesKt -> prefs.SettingsChangesKt
 SettingsChangePlan -> prefs.SettingsChangePlan
 SettingsBackup -> prefs.SettingsBackup
 ExceptionGroup -> prefs.ExceptionGroup
+Macro -> macro.Macro
+MacroRecorder -> macro.MacroRecorder
+MacroButton -> macro.MacroButton
+MacroDirection -> macro.MacroDirection
+Evdev -> macro.Evdev
+MacroEditor -> macro.MacroEditor
+SavedMacro -> macro.SavedMacro
+MacroLibraryDialog -> macro.MacroLibraryDialog
+MacroEdits -> macro.MacroEdits
+MacroUi -> macro.MacroUi
+MacroUi$Sheet -> macro.MacroUi$Sheet
+MacroWidgetsKt -> macro.MacroWidgetsKt
+StepStrip -> macro.StepStrip
+ScrollIndicator -> macro.ScrollIndicator

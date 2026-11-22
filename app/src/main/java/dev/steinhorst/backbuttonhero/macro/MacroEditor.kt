@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.macro
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -36,8 +36,13 @@ import android.widget.PopupMenu
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.dp
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.themedColor
 import java.util.Locale
 
 /**

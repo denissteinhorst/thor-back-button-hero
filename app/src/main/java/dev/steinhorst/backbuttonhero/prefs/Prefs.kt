@@ -14,12 +14,12 @@ import dev.steinhorst.backbuttonhero.GyroBias
 import dev.steinhorst.backbuttonhero.GyroCalibration
 import dev.steinhorst.backbuttonhero.GyroSettings
 import dev.steinhorst.backbuttonhero.HomeLayerButton
-import dev.steinhorst.backbuttonhero.Macro
-import dev.steinhorst.backbuttonhero.SavedMacro
 import dev.steinhorst.backbuttonhero.ShoulderButton
 import dev.steinhorst.backbuttonhero.Stick
 import dev.steinhorst.backbuttonhero.StickButton
 import dev.steinhorst.backbuttonhero.StickClickButton
+import dev.steinhorst.backbuttonhero.macro.Macro
+import dev.steinhorst.backbuttonhero.macro.SavedMacro
 
 class Prefs(context: Context) : GestureSettings {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)

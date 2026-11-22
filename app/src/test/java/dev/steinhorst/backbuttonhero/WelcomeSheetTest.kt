@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.macro.Macro
+import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings
 import dev.steinhorst.backbuttonhero.prefs.Prefs

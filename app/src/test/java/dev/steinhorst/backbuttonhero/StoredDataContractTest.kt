@@ -3,6 +3,11 @@ package dev.steinhorst.backbuttonhero
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.macro.Macro
+import dev.steinhorst.backbuttonhero.macro.MacroButton
+import dev.steinhorst.backbuttonhero.macro.MacroInput
+import dev.steinhorst.backbuttonhero.macro.MacroStep
+import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.BindingLayer
 import dev.steinhorst.backbuttonhero.prefs.Prefs

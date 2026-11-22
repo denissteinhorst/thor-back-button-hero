@@ -2,6 +2,10 @@ package dev.steinhorst.backbuttonhero
 
 import android.net.LocalSocket
 import android.os.Looper
+import dev.steinhorst.backbuttonhero.macro.MacroEvent
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.OutputStream
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -11,9 +15,6 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.util.ReflectionHelpers.ClassParameter
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.OutputStream
 
 /**
  * Freezes the line protocol between the service and the root pad helper (docs/HELPER.md) at the

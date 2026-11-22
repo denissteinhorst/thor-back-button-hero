@@ -25,6 +25,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.macro.space
 
 enum class SettingsSection(val titleRes: Int, val hintRes: Int, val iconRes: Int) {
     OVERVIEW(R.string.nav_overview, R.string.nav_overview_hint, R.drawable.ic_settings_overview),

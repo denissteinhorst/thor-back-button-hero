@@ -30,6 +30,9 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.macro.MacroEditor
+import dev.steinhorst.backbuttonhero.macro.MacroLibraryDialog
+import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.BindingLayer
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings
