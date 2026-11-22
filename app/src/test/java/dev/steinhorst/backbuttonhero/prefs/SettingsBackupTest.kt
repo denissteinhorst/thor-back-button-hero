@@ -1,7 +1,7 @@
 package dev.steinhorst.backbuttonhero.prefs
 
 import android.view.KeyEvent
-import dev.steinhorst.backbuttonhero.Ayn
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import java.time.Instant
 import java.time.LocalDate
 import org.json.JSONObject

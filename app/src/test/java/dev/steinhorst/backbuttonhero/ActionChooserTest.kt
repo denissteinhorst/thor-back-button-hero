@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

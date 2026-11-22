@@ -1,9 +1,10 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
 
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.util.concurrent.Executors

@@ -1,5 +1,6 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
 
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**

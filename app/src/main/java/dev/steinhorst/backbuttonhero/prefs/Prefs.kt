@@ -3,7 +3,7 @@ package dev.steinhorst.backbuttonhero.prefs
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
-import dev.steinhorst.backbuttonhero.Ayn
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.ComboButton

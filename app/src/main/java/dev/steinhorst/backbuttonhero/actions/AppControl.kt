@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
 
 import android.content.Context
 import android.content.res.Configuration
@@ -16,6 +16,8 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.dp
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 

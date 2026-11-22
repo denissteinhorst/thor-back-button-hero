@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.os.Looper
 import android.view.InputDevice
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.input.BackGestureButton

@@ -32,6 +32,17 @@ import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import dev.steinhorst.backbuttonhero.actions.AppControl
+import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
+import dev.steinhorst.backbuttonhero.actions.AppControlTarget
+import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
+import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.actions.AynControls
+import dev.steinhorst.backbuttonhero.actions.CloseApps
+import dev.steinhorst.backbuttonhero.actions.ControllerFocus
+import dev.steinhorst.backbuttonhero.actions.LastApp
+import dev.steinhorst.backbuttonhero.actions.PowerMenu
+import dev.steinhorst.backbuttonhero.actions.StatusSummary
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
 import dev.steinhorst.backbuttonhero.capture.RecordingIndicatorOverlay
 import dev.steinhorst.backbuttonhero.capture.ScreenRecording

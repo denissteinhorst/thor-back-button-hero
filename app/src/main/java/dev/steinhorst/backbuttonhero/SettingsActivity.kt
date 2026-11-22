@@ -29,6 +29,8 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import dev.steinhorst.backbuttonhero.actions.ActionGroups
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.input.AndroidButton

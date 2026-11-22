@@ -2,8 +2,8 @@ package dev.steinhorst.backbuttonhero.capture
 
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
-import dev.steinhorst.backbuttonhero.ActionGroups
 import dev.steinhorst.backbuttonhero.ScreenRecorder
+import dev.steinhorst.backbuttonhero.actions.ActionGroups
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings

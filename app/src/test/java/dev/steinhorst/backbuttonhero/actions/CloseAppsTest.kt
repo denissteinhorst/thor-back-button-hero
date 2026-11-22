@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
 
 import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.input.ShoulderButton

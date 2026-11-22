@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.ControllerFocusTouch
 import dev.steinhorst.backbuttonhero.core.PService
 import java.util.UUID
 

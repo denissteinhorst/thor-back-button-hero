@@ -1,4 +1,6 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.actions
+
+import dev.steinhorst.backbuttonhero.RecentsTaskLauncher
 
 /**
  * The "switch to last app" hotkey: the app used before the one in front, on the screen the

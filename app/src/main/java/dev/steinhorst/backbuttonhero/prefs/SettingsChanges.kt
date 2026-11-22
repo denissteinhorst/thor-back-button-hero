@@ -1,8 +1,8 @@
 package dev.steinhorst.backbuttonhero.prefs
 
-import dev.steinhorst.backbuttonhero.Ayn
 import dev.steinhorst.backbuttonhero.SettingsSection
 import dev.steinhorst.backbuttonhero.StartSetup
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.ComboButton

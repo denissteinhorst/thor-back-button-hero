@@ -4,6 +4,10 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
+import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.actions.AynControls
+import dev.steinhorst.backbuttonhero.actions.ControllerFocus
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.pad.LevelControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs

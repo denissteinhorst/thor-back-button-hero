@@ -1,7 +1,7 @@
 package dev.steinhorst.backbuttonhero.prefs
 
-import dev.steinhorst.backbuttonhero.Ayn
 import dev.steinhorst.backbuttonhero.UpdateChecker
+import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
 import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.macro.Macro
