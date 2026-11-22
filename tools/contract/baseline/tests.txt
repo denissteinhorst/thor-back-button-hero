@@ -485,6 +485,7 @@ ServiceBlockerTest#in the wide layout the full-height menu gets its own scrim wh
 ServiceBlockerTest#the button opens the accessibility settings
 ServiceBlockerTest#the scrim is gone once the service is on and the old inline button no longer exists
 ServiceBlockerTest#with the service off the scrim covers everything but the header and swallows touches
+ServiceInternalCommandTest#service call sites outside actions send unchanged root commands
 ServiceToggleGestureTest#AYN's own Home and injected Back never count or get swallowed
 ServiceToggleGestureTest#an undeferred first press stays its own and the paired key is consumed whole
 ServiceToggleGestureTest#back then home toggles and swallows only that home press

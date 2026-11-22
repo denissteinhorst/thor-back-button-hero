@@ -329,7 +329,7 @@ before R1 must have evidence by then):
 |---|---|
 | R1 (static contracts, S2) | F-SVC-5, F-SVC-6, F-SVC-9 |
 | R2.1 (stored data, S3) | closed by S3: F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
-| R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3; root commands not yet frozen (PrivilegedCommandContractTest, ServiceActionCommandTest covers every stored action via single tap and the helper launch script): SwitcherService call sites outside actions (swipe-kill, Recents routing, swap) and the socket launch scripts of PanelConnection and ScreenRecording (FrontendParking and AutoControllerFocus frozen in commands/parking.txt), and the PadHelper socket protocol |
+| R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3; root commands frozen by PrivilegedCommandContractTest (call sites, AYN controls, FrontendParking, AutoControllerFocus), ServiceActionCommandTest (every stored action, helper launch script) and ServiceInternalCommandTest (native Back, swipe-kill, Recents routing, swap, last app, screenshot, top/bottom Recents). Not yet frozen: the socket launch scripts of PanelConnection and ScreenRecording, the PadHelper socket protocol; the AYN panel close needs a covering panel window and stays device/manual |
 | R4.1 (input pipeline) | F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
 | R5.1 (actions) | F-ACT-2 |
 | R6.1 (Recents, panels) | F-SWI-3, F-SWP-2, F-SWP-3, F-PNL-1, F-PNL-2, F-PNL-4 |
