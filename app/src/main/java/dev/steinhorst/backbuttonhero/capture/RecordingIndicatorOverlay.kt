@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.capture
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -15,6 +15,8 @@ import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.dp
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**

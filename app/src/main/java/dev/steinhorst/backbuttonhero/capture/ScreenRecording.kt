@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.capture
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,6 +9,7 @@ import android.os.Looper
 import android.os.Parcel
 import android.os.SystemClock
 import android.util.Log
+import dev.steinhorst.backbuttonhero.ScreenRecorder
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.prefs.Prefs

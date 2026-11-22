@@ -31,6 +31,12 @@ import android.os.Parcel
 import android.os.StatFs
 import android.os.SystemClock
 import android.view.Surface
+import dev.steinhorst.backbuttonhero.capture.EchoTrim
+import dev.steinhorst.backbuttonhero.capture.GameBed
+import dev.steinhorst.backbuttonhero.capture.TalkGate
+import dev.steinhorst.backbuttonhero.capture.VoiceBand
+import dev.steinhorst.backbuttonhero.capture.VoiceLeveler
+import dev.steinhorst.backbuttonhero.capture.VoicePolish
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
 import java.nio.ByteBuffer

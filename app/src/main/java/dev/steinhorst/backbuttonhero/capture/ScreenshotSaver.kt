@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.capture
 
 import android.content.ContentValues
 import android.content.Context

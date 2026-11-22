@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.capture
 
 import kotlin.math.PI
 import kotlin.math.cos

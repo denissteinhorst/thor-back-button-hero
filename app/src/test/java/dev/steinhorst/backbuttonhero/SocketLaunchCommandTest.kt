@@ -3,7 +3,9 @@ package dev.steinhorst.backbuttonhero
 import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.capture.ScreenRecording
 import dev.steinhorst.backbuttonhero.support.FakePService
+import java.io.File
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -11,7 +13,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import java.io.File
 
 /**
  * Freezes the launch script of the screen recorder, a root process reached over a binder rather than a
