@@ -103,12 +103,32 @@ def disassemble(paths):
     return out
 
 
+def exceptions():
+    out = {}
+    for line in open(os.path.join(REPO, "tools", "contract", "move-exceptions.txt")):
+        if line.strip() and not line.startswith("#"):
+            name, kind, _ = line.split(None, 2)
+            out[name + ".class"] = kind
+    return out
+
+
+def mask(text, kind):
+    """Masks the reviewed difference only: the int constant loaded first in hashCode()."""
+    if kind != "data-object-hash":
+        raise Setup(f"unknown exception kind {kind}")
+    return re.sub(r"(public int hashCode\(\);\n\s+Code:\n\s+0: ldc\s+#\d+\s+// int )-?\d+", r"\1<hash>", text)
+
+
 def check_bytecode(base_dir, now_dir):
     base, now = classes(base_dir), classes(now_dir)
+    allowed = exceptions()
     problems = [f"class {n} vanished" for n in sorted(set(base) - set(now))]
     problems += [f"class {n} is new" for n in sorted(set(now) - set(base))]
     common = {n: base[n] for n in set(base) & set(now)}
     a, b = disassemble(common), disassemble({n: now[n] for n in common})
+    for n in allowed:
+        if n in common:
+            a[n], b[n] = mask(a[n], allowed[n]), mask(b[n], allowed[n])
     problems += [f"class {n} bytecode differs" for n in sorted(common) if a[n] != b[n]]
     return problems, now
 
