@@ -63,9 +63,13 @@ def add_imports(path, needed, moved_fqns):
     text = open(path, encoding="utf-8").read()
     head, body = split(text)
     present = {l.split()[1] for l in head if l.startswith("import ")}
-    stale = {i for i in present if i.rsplit(".", 1)[-1] in moved_fqns and i != moved_fqns[i.rsplit(".", 1)[-1]]
-             and i.startswith(ROOT_PKG + ".")}
-    rewritten = {moved_fqns[i.rsplit(".", 1)[-1]] for i in stale}
+    rewrite = {}
+    for i in present:
+        for old_prefix, new_prefix in moved_fqns.items():
+            if i == old_prefix or i.startswith(old_prefix + "."):
+                rewrite[i] = new_prefix + i[len(old_prefix):]
+    stale = set(rewrite)
+    rewritten = set(rewrite.values())
     new = sorted(n for n in needed | rewritten if n not in present)
     if not new and not stale:
         return False
@@ -90,7 +94,7 @@ def main(argv):
         if len(by_name.get(t, [])) != 1:
             print(f"ERROR {t}: {len(by_name.get(t, []))} matches")
             return 2
-    moved = set()
+    moved, old_pkg = set(), {}
     for t in targets:
         src = by_name[t][0]
         set_root = next(s for s in SETS if src.startswith(os.path.join(REPO, s)))
@@ -99,6 +103,7 @@ def main(argv):
         dst = os.path.join(dst_dir, t)
         subprocess.run(["git", "-C", REPO, "mv", src, dst], check=True)
         text = open(dst, encoding="utf-8").read()
+        old_pkg[dst] = package_of(text)
         text = re.sub(r"^package\s+[\w.]+", f"package {new_pkg}", text, count=1, flags=re.M)
         open(dst, "w", encoding="utf-8").write(text)
         moved.add(dst)
@@ -116,7 +121,9 @@ def main(argv):
     for g in GENERATED:
         owner[g] = ROOT_PKG
     moved_names = {n for p in moved for n in declarations(open(p, encoding="utf-8").read())}
-    moved_fqns = {n: f"{new_pkg}.{n}" for n in moved_names}
+    # old "pkg.Name" -> new "pkg.sub.Name", also matching imports of nested members (Name.Nested)
+    moved_fqns = {f"{old_pkg[p]}.{n}": f"{new_pkg}.{n}" for p in moved
+                  for n in declarations(open(p, encoding="utf-8").read())}
     changed = 0
     for p in all_files:
         text = open(p, encoding="utf-8").read()
