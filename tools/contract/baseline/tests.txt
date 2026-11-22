@@ -479,6 +479,7 @@ ScreenRecordingTest#quality maps to the bit rate, medium for anything unknown
 ScreenRecordingTest#record video is a known ungrouped action with a screen choice, both screens until chosen
 ScreenRecordingTest#recording options default to no microphone, medium quality and a dot top right
 ScreenRecordingTest#recording options round trip per button and through snapshots
+ServiceActionCommandTest#every stored action sends unchanged root commands
 ServiceBlockerTest#in the wide layout the full-height menu gets its own scrim while the header stays free
 ServiceBlockerTest#the button opens the accessibility settings
 ServiceBlockerTest#the scrim is gone once the service is on and the old inline button no longer exists
