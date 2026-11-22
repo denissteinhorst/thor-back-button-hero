@@ -158,6 +158,21 @@ def states(device, save, variant, manifest):
         device.app("put", key=key, type="string", value=action)
     launch(device)
     save(p + "page_00_overview_assigned")
+    # The indicator dialog opens straight from its intent extra. Its preview pictogram lasts at most
+    # 1 s, too short for two identical frames, so each selection is captured after the preview ended;
+    # the pictogram itself is covered by the JVM golden overlay_focus and manual checks.
+    device.app("put", key="r2_package", type="string", value="@controller_focus")
+    device.sh(f"am start -W --display 0 --activity-clear-task -n {ACTIVITY} --es indicator_button r2")
+    time.sleep(1.5)
+    save(p + "focus_dialog")
+    cells = [n for n in nodes(device) if attr(n, "clickable") == "true" and not attr(n, "text") and attr(n, "content-desc")
+             and attr(n, "content-desc") not in labels]
+    if len(cells) != 9:
+        raise FrameError(f"expected 9 position cells, found {[attr(n, 'content-desc') for n in cells]}")
+    for i, cell in enumerate(sorted(cells, key=lambda n: [int(v) for v in re.findall(r"\d+", attr(n, "bounds"))][1::-1])):
+        tap(device, cell)
+        time.sleep(1.6)
+        save(p + f"focus_select_{i}")
 
 
 def do_capture(run):

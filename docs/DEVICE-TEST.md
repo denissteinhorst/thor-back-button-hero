@@ -180,17 +180,23 @@ python3 tools/devicetest/visual.py compare RUN_A RUN_B
 - The run sits inside the recovery transaction, so owner settings and system values are restored and
   verified.
 - States: the welcome sheet, the overview with nothing assigned and with assigned bindings, and every
-  rail page with the panel open and closed (21 per variant). Variants: light, dark (`cmd uimode`),
+  rail page with the panel open and closed, and the controller-focus indicator dialog with each of
+  its nine positions selected (31 per variant). Variants: light, dark (`cmd uimode`),
   German (the app's own language only, `cmd locale set-app-locales`) and font scale 1.3, so each run
-  covers 84 states. Night mode, app language and font scale are saved first, then restored and
+  covers 124 states. Night mode, app language and font scale are saved first, then restored and
   verified; a setting that was absent stays absent. Rail entries are found by their accessibility
   descriptions.
 - A capture waits until no toast window is shown. Toasts are transient, and in the debug build
   LeakCanary posts one while it dumps the heap.
-- The bottom display is covered by AYN's assistant, so the bottom Recents overlay cannot be captured
-  there. It is covered by its JVM tree golden and manual check C1.
+- Not capturable as stable frames, so covered elsewhere:
+  - the bottom Recents overlay (AYN's assistant covers the bottom display): JVM golden `switcher_*`,
+    manual C1;
+  - the focus pictogram (its preview lasts at most 1 s): JVM golden `overlay_focus`, manual check;
+  - notices and the recording dot (transient or tied to a live recording): JVM goldens
+    `overlay_notice` and `overlay_recording`, manual video procedure;
+  - top Recents (it needs live third-party tasks): device checks and manual procedures.
 - Evidence (2026-11-22, Thor): base vs base 21/21 identical, also across a reinstall; with all
-  variants, 84/84 identical over three runs. A card corner
+  variants and the indicator dialog, 124/124 identical (84-state runs identical over three runs). A card corner
   radius of 16 → 12 dp changed 16 states. Leader-label gravity changed only the assigned overview, which
   is exactly what each change touches.
 - A debug build is not byte-reproducible. To return to a candidate, keep and reinstall its APK file.
