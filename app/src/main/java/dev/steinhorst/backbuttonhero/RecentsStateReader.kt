@@ -12,6 +12,9 @@ import android.os.Looper
 import android.os.UserHandle
 import android.util.EventLog
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.recents.RecentTaskQuery
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.TaskMovePolicy
 import java.io.File
 import java.io.FileOutputStream
 import org.json.JSONArray

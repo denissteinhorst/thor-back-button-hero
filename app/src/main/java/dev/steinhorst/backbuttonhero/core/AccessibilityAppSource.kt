@@ -4,7 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.view.accessibility.AccessibilityWindowInfo
-import dev.steinhorst.backbuttonhero.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
 
 /**
  * A normal app cannot read other apps' task list, so this builds a most-recently-used list from the

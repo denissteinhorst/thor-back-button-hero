@@ -244,7 +244,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.CardTouch")
+            includes = listOf("dev.steinhorst.backbuttonhero.recents.CardTouch")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -255,14 +255,14 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // grouped settings, Recents routing and panel work. Exact class names, so nested
         // classes are not folded in. Same rule: raise, never lower.
         mapOf(
-            "RecentsSelection" to "1.00", "input.ServiceToggleGesture" to "1.00",
+            "recents.RecentsSelection" to "1.00", "input.ServiceToggleGesture" to "1.00",
             "settings.ExceptionSettingsPage" to "0.98", "input.PhysicalKeyTracker" to "1.00",
             "prefs.AppException" to "1.00", "prefs.ExceptionControl" to "1.00",
-            "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
-            "RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
-            "RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
-            "pad.PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
-            "TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
+            "recents.TopRecentsNavigation" to "1.00", "recents.TopRecentsState" to "1.00",
+            "recents.RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
+            "recents.RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
+            "pad.PadNavigationMode" to "1.00", "recents.RecentsCardStyle" to "0.95",
+            "recents.TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
             "settings.SettingsNavigation" to "1.00", "input.ShoulderButton" to "1.00",
             "settings.SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
             "input.KeyInterceptionGate" to "1.00", "settings.SettingsUiKitKt" to "1.00",

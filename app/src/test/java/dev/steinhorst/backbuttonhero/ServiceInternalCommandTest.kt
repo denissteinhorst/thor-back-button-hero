@@ -8,6 +8,7 @@ import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File
 import java.time.Duration

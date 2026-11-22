@@ -10,6 +10,8 @@ import android.widget.LinearLayout
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

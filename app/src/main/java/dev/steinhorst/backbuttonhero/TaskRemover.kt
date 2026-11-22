@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.os.IBinder
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.recents.RecentTaskQuery
 
 /**
  * Entry point run as root in a bare VM via `app_process` (see [PService.runEntryPoint]), not inside

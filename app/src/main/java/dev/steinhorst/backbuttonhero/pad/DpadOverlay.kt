@@ -8,10 +8,10 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import dev.steinhorst.backbuttonhero.FrontendParking
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.input.StickDetector
+import dev.steinhorst.backbuttonhero.recents.FrontendParking
 
 /**
  * Fallback for Back + D-pad and an open switcher when [PadHelper] is not running (no pservice). The

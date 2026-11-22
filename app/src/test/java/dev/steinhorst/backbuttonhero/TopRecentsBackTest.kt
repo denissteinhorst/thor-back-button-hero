@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.view.KeyEvent
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

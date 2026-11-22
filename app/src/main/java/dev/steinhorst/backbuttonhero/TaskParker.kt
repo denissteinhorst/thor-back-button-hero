@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.os.Looper
 import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.input.base
+import dev.steinhorst.backbuttonhero.recents.TaskMovePolicy
 
 /**
  * Root entry point: moves a frontend's standalone bottom task onto the private parking display and

@@ -3,7 +3,6 @@ package dev.steinhorst.backbuttonhero.input
 import android.os.Looper
 import android.view.InputDevice
 import android.view.KeyEvent
-import dev.steinhorst.backbuttonhero.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
 import dev.steinhorst.backbuttonhero.core.AppSource
@@ -12,6 +11,7 @@ import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.pad.PadHelper
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

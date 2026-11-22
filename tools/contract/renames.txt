@@ -71,3 +71,11 @@ GyroPreview -> settings.GyroPreview
 GyroSettingsDialog -> settings.GyroSettingsDialog
 WelcomeSheet -> settings.WelcomeSheet
 WelcomeSheetKt -> settings.WelcomeSheetKt
+CardTouch -> recents.CardTouch
+RecentsSelection -> recents.RecentsSelection
+TopRecentsNavigation -> recents.TopRecentsNavigation
+TopRecentsState -> recents.TopRecentsState
+RecentTaskQuery -> recents.RecentTaskQuery
+RecentsBadges -> recents.RecentsBadges
+RecentsCardStyle -> recents.RecentsCardStyle
+TaskMovePolicy -> recents.TaskMovePolicy

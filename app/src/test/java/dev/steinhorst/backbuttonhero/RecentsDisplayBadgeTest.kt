@@ -5,6 +5,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.LevelListDrawable
 import android.widget.FrameLayout
+import dev.steinhorst.backbuttonhero.recents.RecentsBadges
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -85,6 +85,15 @@ import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.recents.FrontendParking
+import dev.steinhorst.backbuttonhero.recents.RecentsMemory
+import dev.steinhorst.backbuttonhero.recents.RecentsSelection
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.RecentsThumbnailCache
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
+import dev.steinhorst.backbuttonhero.recents.TaskMovePolicy
+import dev.steinhorst.backbuttonhero.recents.TopRecentsNavigation
+import dev.steinhorst.backbuttonhero.recents.TopRecentsState
 import java.io.File
 
 /**
