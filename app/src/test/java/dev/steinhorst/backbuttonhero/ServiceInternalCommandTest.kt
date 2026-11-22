@@ -3,7 +3,10 @@ package dev.steinhorst.backbuttonhero
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
+import java.io.File
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -14,8 +17,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowDisplayManager
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.util.ReflectionHelpers.ClassParameter
-import java.io.File
-import java.time.Duration
 
 /**
  * Freezes the root commands of the service's call sites outside stored actions: native Back, swipe-kill,

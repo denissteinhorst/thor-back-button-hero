@@ -5,6 +5,8 @@ import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
+import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.OverlayTree
 import org.junit.Assert.assertEquals

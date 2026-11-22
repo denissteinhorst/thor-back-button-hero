@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.overlay
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -11,6 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
+import dev.steinhorst.backbuttonhero.Prefs
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.dp
 
 /** A brief, display-specific confirmation that never takes touch, key or controller focus. */
 class FocusIndicatorOverlay(private val context: Context) {

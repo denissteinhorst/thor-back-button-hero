@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.overlay
 
 import android.content.Context
 import android.graphics.Color
@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.dp
 
 /**
  * The service's short messages, drawn like a toast. Android rate-limits toasts from apps in the

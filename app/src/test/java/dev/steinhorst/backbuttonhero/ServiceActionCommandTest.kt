@@ -1,7 +1,10 @@
 package dev.steinhorst.backbuttonhero
 
 import android.os.Looper
+import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
+import java.io.File
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -10,8 +13,6 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers
-import java.io.File
-import java.time.Duration
 
 /**
  * Runs every stored action through the connected service's Back single tap and freezes the root
