@@ -41,6 +41,7 @@ TEST_RESULTS = _path("TEST_RESULTS", os.path.join(APP, "build/test-results/testD
 JACOCO_XML = _path("JACOCO_XML", os.path.join(APP, "build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
 LINT_XML = _path("LINT_XML", os.path.join(APP, "build/reports/lint-results-debug.xml"))
 GOLDENS = _path("GOLDENS", os.path.join(APP, "src/test/resources/golden"))
+STORAGE = _path("STORAGE", os.path.join(APP, "src/test/resources/storage"))
 BUILD_FILE = _path("BUILD_FILE", os.path.join(APP, "build.gradle.kts"))
 LINT_BASELINE = _path("LINT_BASELINE", os.path.join(APP, "lint-baseline.xml"))
 SWITCHER_SERVICE = _path("SWITCHER_SERVICE", os.path.join(APP, f"src/main/java/{PKG_PATH}/SwitcherService.kt"))
@@ -238,6 +239,11 @@ def now_goldens():
                    for p in sorted(glob.glob(os.path.join(GOLDENS, "*.txt"))))
 
 
+def now_storage():
+    return "".join(f"{sha256(open(p, 'rb').read())}  {os.path.basename(p)}\n"
+                   for p in sorted(glob.glob(os.path.join(STORAGE, "*"))))
+
+
 def test_cases():
     require_fresh(TEST_RESULTS)
     cases, failed = [], []
@@ -298,6 +304,7 @@ SNAPSHOTS = {
     "entries-release.txt": now_entries_release,
     "dex-release.sha256": now_dex_release,
     "goldens.sha256": now_goldens,
+    "storage.sha256": now_storage,
     "tests.txt": now_tests,
     "ratchets.txt": now_ratchets,
     "lint-issues.txt": now_lint,
@@ -361,7 +368,7 @@ def a5():
 
 
 def a6():
-    return compare("goldens.sha256", now_goldens())
+    return compare("goldens.sha256", now_goldens()) + compare("storage.sha256", now_storage())
 
 
 def a7():
@@ -411,7 +418,7 @@ def a11():
 
 CHECKS = [("A0", "release DEX unchanged (S-phases)", a0), ("A1", "manifests", a1), ("A2", "resource table", a2),
           ("A3", "non-DEX APK entries", a3), ("A4", "frozen classes and root entry points", a4),
-          ("A5", "wire strings", a5), ("A6", "goldens", a6), ("A7", "test contract", a7),
+          ("A5", "wire strings", a5), ("A6", "goldens and stored-data fixtures", a6), ("A7", "test contract", a7),
           ("A8", "coverage ratchets", a8), ("A9", "release classpath", a9), ("A10", "DEBUG_GESTURES off", a10),
           ("A11", "lint identities", a11)]
 

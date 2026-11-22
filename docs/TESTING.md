@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 726 JVM tests pass |
+| `testDebugUnitTest` | All 736 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -74,7 +74,7 @@ REQUIRED (exit 2), never as a pass. Each check prints one PASS/FAIL line:
 | A3 | Every non-DEX APK entry by CRC, including `libpadhelper.so`; AGP's Git revision entry is normalized |
 | A4 | Frozen component and root entry point classes (`classes.txt`), root ones with `public static main(String[])` |
 | A5 | Wire and storage identifiers in the DEX (`wire-strings.txt`); supporting evidence only |
-| A6 | Every golden snapshot by hash |
+| A6 | Every golden snapshot and stored-data fixture by hash |
 | A7 | Every JVM test case still exists (or is mapped in `renames.txt`) and passed |
 | A8 | No coverage ratchet removed or lowered; every selector matches compiled classes |
 | A9 | Release runtime dependency graph |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 98 classes, 726 tests
+### Base — JVM tests (Robolectric + JUnit), 99 classes, 736 tests
 
 Everything the gate can verify without hardware.
 
@@ -152,6 +152,20 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
   UPDATE_GOLDENS=1 ./gradlew :app:testDebugUnitTest --rerun-tasks
 git diff app/src/test/resources/golden/   # must contain only the intended change
 ```
+
+### Stored-data protection — frozen preference and backup fixtures
+
+`StoredDataContractTest` dumps the raw preference map (key, type, value, sorted) and compares
+it with files in `app/src/test/resources/storage/`. It covers a fresh install, synthesized
+older stores going through every migration, a fully populated configuration, every page and
+whole-app preset/unbind/defaults plan, the first dual-mode seeding, and the backup bytes at a
+fixed time. It also checks that one accepted plan is one write that listeners see complete, that
+a stale preview writes nothing, and that device calibration never enters a backup or a reset.
+
+The older stores are synthesized from the migration code, not exported from real installs.
+The fixtures were recorded once on the refactoring baseline. Contract A6 freezes them by hash.
+Like goldens, never re-record one to make a test pass: `UPDATE_STORAGE_FIXTURES=1` is only for
+an explicitly approved stored-data change.
 
 ### Tip — instrumented tests
 

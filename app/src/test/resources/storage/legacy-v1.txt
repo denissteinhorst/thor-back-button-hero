@@ -1,0 +1,28 @@
+app_exceptions	string	com.example.game\t8589930511\tGame\ttrue\nnot a valid line
+back_double_package	string	
+back_gestures_v1	boolean	true
+back_hold_package	string	@swap_apps
+back_single_package	string	@back
+back_tap_hold_package	string	@recents
+double_enabled	boolean	false
+dpad_down_package	string	@brightness_down
+dpad_left_package	string	@volume_down
+dpad_right_package	string	@volume_up
+dpad_up_package	string	@brightness_up
+exception_buttons_v1	boolean	true
+exception_sticks_v2	boolean	true
+hold_ms	long	1300
+l1_package	string	@navigation_flick_left
+l2_package	string	
+navigation_flick_defaults_v1	boolean	true
+navigation_flick_directions_v2	boolean	true
+r1_package	string	@navigation_flick_right
+r2_package	string	
+shoulder_defaults_v3	boolean	true
+single_action	string	back
+tap_hold_enabled	boolean	true
+toggle_buttons	string	l2_r2
+toggle_default_v2	boolean	true
+toggle_hold_ms	long	1700
+toggle_pairs_v1	boolean	true
+unassigned_defaults_v1	boolean	true

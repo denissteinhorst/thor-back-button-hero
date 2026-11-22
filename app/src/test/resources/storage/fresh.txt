@@ -1,0 +1,9 @@
+back_gestures_v1	boolean	true
+exception_buttons_v1	boolean	true
+exception_sticks_v2	boolean	true
+navigation_flick_defaults_v1	boolean	true
+navigation_flick_directions_v2	boolean	true
+shoulder_defaults_v3	boolean	true
+toggle_default_v2	boolean	true
+toggle_pairs_v1	boolean	true
+unassigned_defaults_v1	boolean	true

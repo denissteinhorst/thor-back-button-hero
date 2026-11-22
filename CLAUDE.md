@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **726 JVM tests, 0 failures, 0 skipped** across 98 test classes (as of 2026-11-22). Count from
+- **736 JVM tests, 0 failures, 0 skipped** across 99 test classes (as of 2026-11-22). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,

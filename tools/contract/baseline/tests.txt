@@ -621,6 +621,16 @@ StickPrefsTest#click actions are per stick
 StickPrefsTest#hasStickAction is per stick
 StickPrefsTest#stick bindings take part in snapshots, previews and the stick page plans
 StickPrefsTest#stick plans and writes cover click bindings and timings
+StoredDataContractTest#a fresh install stores exactly the frozen entries and a second construction changes nothing
+StoredDataContractTest#a fully populated configuration stores exactly the frozen entries and reads back
+StoredDataContractTest#a stale preview writes nothing and a no-op plan succeeds without writing
+StoredDataContractTest#a store with some migrations done keeps them and runs only the rest
+StoredDataContractTest#a synthesized pre-1-1 store migrates to the frozen entries, once
+StoredDataContractTest#backups are byte-identical at a fixed time and read back to the exported settings
+StoredDataContractTest#device calibration and the welcome state never enter a backup and survive every reset
+StoredDataContractTest#every page and whole-app plan stores exactly the frozen entries
+StoredDataContractTest#one accepted plan is one write that every listener sees complete, from another instance too
+StoredDataContractTest#the first dual-mode activation seeds the Home layer into the frozen entries
 SwitcherCloseAllTest#both screens close all also includes observed top apps
 SwitcherCloseAllTest#bottom close all includes locked and unknown-status apps without widening scope
 SwitcherCloseAllTest#close all removes our own task but never kills the process hosting the service

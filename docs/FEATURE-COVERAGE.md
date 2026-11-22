@@ -225,14 +225,14 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-DAT-1 | Preferences live in `back_button_hero` with unchanged keys and encodings, both layers | — | PrefsDefaults, Prefs* | — | A5 | —/— | R2 | H | JVM (keys partly) → GAP raw typed fixture family (C1) before R2.1 |
+| F-DAT-1 | Preferences live in `back_button_hero` with unchanged keys and encodings, both layers | — | PrefsDefaults, Prefs* | — | A5 | —/— | R2 | H | JVM + StoredDataContractTest raw typed fixtures (S3, A6) |
 | F-DAT-2 | Fresh install: nothing assigned, no toggle; documented defaults (timings, focus centre right 500 ms) | — | PrefsDefaults | — | C17q | —/— | R2 | H | JVM |
-| F-DAT-3 | Migrations run once in order: navigation_flick_defaults_v1, navigation_flick_directions_v2, removed `@swap_screens`, shoulder_defaults_v3, back_gestures_v1, exception_sticks_v2, exception_buttons_v1, toggle_pairs_v1, toggle_default_v2, unassigned_defaults_v1, gyro_calibration_v1 | — | PrefsMigration | — | C17q, D4a | —/— | R2 | H | JVM (each) → GAP order + second-construction idempotence (C2) before R2.1 |
+| F-DAT-3 | Migrations run once in order: navigation_flick_defaults_v1, navigation_flick_directions_v2, removed `@swap_screens`, shoulder_defaults_v3, back_gestures_v1, exception_sticks_v2, exception_buttons_v1, toggle_pairs_v1, toggle_default_v2, unassigned_defaults_v1, gyro_calibration_v1 | — | PrefsMigration | — | C17q, D4a | —/— | R2 | H | JVM (each) + StoredDataContractTest order, partial-flag and second-construction idempotence (S3) |
 | F-DAT-4 | An update keeps settings; new defaults reach only never-touched settings | — | PrefsMigration | — | D2–D4a | —/— | R2 | H | JVM + MAN (S7 in-place upgrade F5) |
-| F-DAT-5 | Backup: one JSON named `back-button-hero-backup_v<version>_<date>.json` through the file picker | — | SettingsBackup, SettingsBackupUi | — | C17p | —/— | R2, R8 | H | JVM → GAP fixed-bytes fixture (C3) before R2.1 |
+| F-DAT-5 | Backup: one JSON named `back-button-hero-backup_v<version>_<date>.json` through the file picker | — | SettingsBackup, SettingsBackupUi | — | C17p | —/— | R2, R8 | H | JVM + StoredDataContractTest fixed-bytes backup fixtures (S3, A6) |
 | F-DAT-6 | Load backup previews changes, warns on another version, ignores unknown parts, validates each value, refuses non-backups unchanged | — | SettingsBackup, SettingsBackupUi | — | C17p, C21 | S5/— | R2, R8 | H | JVM |
 | F-DAT-7 | Gyro calibration is excluded from backups and survives defaults/restore | — | GyroSettings, SettingsBackup | — | Gyro 6 | —/— | R2 | M | JVM |
-| F-DAT-8 | `applySettings` writes a plan atomically; listeners see a complete state; stale previews are rejected | — | SettingsChanges | — | — | —/— | R2 | H | JVM (partial) → GAP listener-visible state (C4) before R2.1 |
+| F-DAT-8 | `applySettings` writes a plan atomically; listeners see a complete state; stale previews are rejected | — | SettingsChanges | — | — | —/— | R2 | H | JVM + StoredDataContractTest listener-visible state (S3) |
 | F-DAT-9 | Macros, favorites and exceptions are stored and round-trip | — | Macro, AppException, SettingsBackup | — | C17z6 | —/— | R2 | H | JVM |
 
 ## Service, platform and non-functional promises (SVC)
@@ -309,7 +309,7 @@ before R1 must have evidence by then):
 | Due before | Rows |
 |---|---|
 | R1 (static contracts, S2) | F-SVC-5, F-SVC-6, F-SVC-9 |
-| R2.1 (stored data, S3) | F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
+| R2.1 (stored data, S3) | closed by S3: F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
 | R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3 |
 | R4.1 (input pipeline) | F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
 | R5.1 (actions) | F-ACT-2 |
