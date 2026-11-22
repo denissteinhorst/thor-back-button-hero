@@ -14,7 +14,7 @@ an app switcher, screen swapping, and configurable Back + shoulder/D-pad shortcu
 - UI: framework Views built in Kotlin; no Compose and no layout XML
 - Android entry points: `SettingsActivity` and `SwitcherService`
 - Build variants: `debug` and `release`
-- Toolchain: JDK 17, AGP 9.4.1, Kotlin 2.4.21, Gradle 9.8.2
+- Toolchain: JDK 17, AGP 9.5.1, Kotlin 2.4.21, Gradle 9.9.2
 - Android: min SDK 30, compile/target SDK 34, NDK 29.0.14206865
 - Tests: JUnit 4 + Robolectric; one physical-device instrumentation smoke test
 
@@ -236,8 +236,8 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 
 Current expected baseline:
 
-- 345 JVM tests in 55 test classes; 0 failed, 0 skipped
-- lint: 0 new findings; the checked-in baseline contains 18 intentional warnings
+- 726 JVM tests in 98 test classes; 0 failed, 0 skipped
+- lint: 0 new findings; the checked-in baseline contains 20 intentional warnings
 - all per-class JaCoCo ratchets in `app/build.gradle.kts` pass
 - debug and unsigned local release APKs build
 - debug androidTest APK compiles

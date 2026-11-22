@@ -29,8 +29,8 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 
 | Step | What it proves |
 |---|---|
-| `lintDebug` | No new lint findings (18 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 345 JVM tests pass |
+| `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
+| `testDebugUnitTest` | All 726 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -55,7 +55,7 @@ them with `--no-verify`.
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 55 classes, 345 tests
+### Base — JVM tests (Robolectric + JUnit), 98 classes, 726 tests
 
 Everything the gate can verify without hardware.
 
@@ -101,7 +101,7 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **62** goldens cover eight-page navigation across locale/theme/window sizes,
+The **89** goldens cover navigation across all pages across locale/theme/window sizes,
 button states, change previews and accessibility. The main groups are:
 
 | Golden | Scope |
@@ -149,10 +149,10 @@ Two mechanisms that may tighten but never loosen.
 ### Lint
 
 `warningsAsErrors = true` and `abortOnError = true`, with `app/lint-baseline.xml`
-freezing the **18** findings that predate the suite (`DataExtractionRules`,
+freezing the **20** findings that predate the suite (`DataExtractionRules`,
 `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`, `MonochromeLauncherIcon`,
-5× `GradleDependency`). Those are deliberately **not** fixed — each fix would alter a
-visible asset, which the freeze forbids. Any *new* warning fails the build.
+5× `GradleDependency`, 1× `NewerVersionAvailable`). Those are deliberately **not** fixed —
+each fix would alter a visible asset or bump a dependency nobody asked for. Any *new* warning fails the build.
 
 Lint also analyzes test sources, so a warning in new test code fails the gate too. Fix
 the test code; do not disable the flag and do not add the finding to the baseline.
@@ -176,12 +176,12 @@ measures instructions instead, which is not what these numbers mean.
 | `DpadDirection` (and its companion) | 1.00 | 1.0000 |
 | `CardTouch` | 1.00 | 1.0000 |
 | `StickDetector`, `LevelRepeater`, `RepeatCurve`, `StickClickMachine`, `StickButton`, `StickClickButton`, `Stick`, `StickClick` | 1.00 | 1.0000 |
-| `BackGestureMachine` | 0.98 | 0.9890 |
+| `BackGestureMachine` | 0.98 | 0.9903 |
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
-| `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
+| `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 26 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
-activation toggle) are ratcheted at 0.95–1.00 through a name→minimum map at the end of
+A further 69 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
 Raise a minimum when tests grow; never lower one. Several sit exactly at the measured
@@ -201,13 +201,13 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **36 %** (127/357 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **15 %** (165/1127) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherOverlay` — **36 %** (132/363 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **24 %** (413/1717) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
-| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (0/93) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
+| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (9/93) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.

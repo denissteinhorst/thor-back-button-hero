@@ -142,8 +142,8 @@ Git hooks (`.githooks/`, wired via `core.hooksPath` and self-installing through 
 CI (`.github/workflows/ci.yml`) runs the same `verify` task on every push/PR to `main`.
 Never bypass hooks with `--no-verify`.
 
-JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 2.4.21, AGP 9.4.1,
-Gradle 9.8.2. Android SDK has `platforms/android-34` + `build-tools/34.0.0` (plus `36.0.0`, which AGP 9 installs on its own),
+JDK 17 required. `minSdk` 30, `compileSdk`/`targetSdk` 34, Kotlin 2.4.21, AGP 9.5.1,
+Gradle 9.9.2. Android SDK has `platforms/android-34` + `build-tools/34.0.0` (plus `36.0.0`, which AGP 9 installs on its own),
 **NDK `29.0.14206865`** (only to compile the root input helper `app/src/main/cpp/padhelper.c`; the gate fails without it) and
 **no emulator image** — every `androidTest`/`connectedDebugAndroidTest` needs the
 physical AYN Thor attached via `adb` (device id changes; re-check with `adb devices`).
@@ -153,14 +153,15 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **345 JVM tests, 0 failures, 0 skipped** across 55 test classes (as of 2026-11-06). Count from
+- **726 JVM tests, 0 failures, 0 skipped** across 98 test classes (as of 2026-11-22). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
-- **Lint: 0 errors.** `lint-baseline.xml` freezes **18** pre-existing warnings
+- **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
   `MonochromeLauncherIcon`, 5× `GradleDependency` — four androidTest/test libraries plus
-  the pinned `compileSdk = 34`). `warningsAsErrors = true` and
-  `abortOnError = true`, so any *new* warning fails the gate. Those 18 are deliberately
-  **not fixed** — each fix would be a visible change (new icon, etc.).
+  the pinned `compileSdk = 34` — and 1× `NewerVersionAvailable` for Robolectric).
+  `warningsAsErrors = true` and `abortOnError = true`, so any *new* warning fails the gate.
+  Those 20 are deliberately **not fixed** — each fix would be a visible change (new icon,
+  etc.) or an unrequested dependency bump.
 - **JaCoCo per-class line-coverage ratchets** (in `app/build.gradle.kts`, enforced by
   `jacocoCoverageVerification`) and their measured headroom:
 
@@ -171,26 +172,27 @@ to record:
   | `LevelSteps` | 1.00 | 1.0000 |
   | `DpadDirection*` | 1.00 | 1.0000 |
   | `CardTouch` | 1.00 | 1.0000 |
-  | `BackGestureMachine` | 0.98 | 0.9890 |
+  | `BackGestureMachine` | 0.98 | 0.9903 |
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
-  | `UpdateChecker` | 0.46 | 0.46–0.64 (network-dependent) |
+  | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 26 classes (settings, navigation, app exceptions, Recents routing/state, panels,
-  key gate, activation toggle) carry floors of 0.95–1.00 in a name→minimum map at the end of the
-  rules; see `app/build.gradle.kts`.
+  A further 69 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
+  0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
+  Total line coverage across all classes is about 67 % (8886/13286).
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
 
   `UpdateChecker`'s measured value is not stable: the activity tests start its real
-  network thread, so coverage swings between ~0.46 and ~0.60 depending on how far the
+  network thread, so coverage swings between ~0.46 and ~0.71 depending on how far the
   thread gets. The 0.46 floor is the deterministic part — never raise it on one lucky run.
 
   Read these numbers per JaCoCo **class**, which counts nested classes separately:
   `UpdateChecker$Version` is its own entry. Aggregating a class with its nested types
   overstates the figure the rule actually enforces. Measured values come from
   `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
-- **Release APK ~3.34 MB** (`app-release-unsigned.apk`), including the ~12 KB native helper
+- **Release APK ~4.19 MB** (`app-release-unsigned.apk`), including the ~18 KB native helper
   `lib/arm64-v8a/libpadhelper.so`. Debug is much larger because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -206,14 +208,15 @@ before trusting the suite:
 
 **Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
 `DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
-settings UI via **deterministic View-tree text snapshots** (44 golden files in
-`app/src/test/resources/golden/`) covering all six pages across theme, locale and
+settings UI via **deterministic View-tree text snapshots** (89 golden files in
+`app/src/test/resources/golden/`) covering all pages across theme, locale and
 compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, and an
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at about **36 %** line coverage (127/357), `SwitcherService` about **15 %**
-(165/1127) and `FocusIndicatorOverlay` **0 %** (0/93). The panel host, Recents task
+`SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **24 %**
+(413/1717) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
+`ScreenRecorder` are at 0 %. The panel host, Recents task
 routing, and top-Recents controller focus are likewise device-only. The entire switcher overlay UI, multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
@@ -414,7 +417,8 @@ a previous version.
   check `https://api.github.com/rate_limit` before concluding anything.
 
 Dependabot is configured (weekly, Gradle + GitHub Actions). The toolchain was moved to
-AGP 9.4.1 / Kotlin 2.4.21 / Gradle 9.8.2 / Robolectric 4.17 in one verified step (golden
+AGP 9.4.1 / Kotlin 2.4.21 / Gradle 9.8.2 / Robolectric 4.17 in one verified step (since raised
+to AGP 9.5.1 / Gradle 9.9.2) (golden
 files untouched). Take future major jumps one at a time behind a green gate, never
 alongside a release. Dependabot compares against the default branch, so it can propose
 versions already in use after a local bump — check the workflow files before merging.

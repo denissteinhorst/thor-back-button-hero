@@ -530,7 +530,7 @@ Three extractions exist purely so that logic became reachable from the JVM:
 
 Everything that needs a real accessibility connection, a second display, or a real
 window remains outside automated reach: `SwitcherOverlay` is only partly covered (about
-36 % of its lines) and `SwitcherService` barely (about 15 %). Robolectric cannot provide
+36 % of its lines) and `SwitcherService` barely (about 24 %). Robolectric cannot provide
 `windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and
