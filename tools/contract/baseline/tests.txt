@@ -612,6 +612,7 @@ ShoulderRowSnapshotTest#all D-pad directions unassigned hides the screen rows an
 ShoulderRowSnapshotTest#all four shoulder buttons unassigned
 ShoulderRowSnapshotTest#defaults - L1 and R1 are the navigation-flick sentinels, no toggle shown
 SmokeTest#Prefs can be constructed against a Robolectric application context
+SocketLaunchCommandTest#screen recorder launch script is unchanged
 StatusSummaryTest#remaining minutes follow charge over current, whatever its sign
 StatusSummaryTest#unknown or implausible values give no estimate
 StickClickMachineTest#a double press without a press assigned fires nothing alone

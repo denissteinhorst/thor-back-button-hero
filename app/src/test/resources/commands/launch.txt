@@ -1,0 +1,5 @@
+## screen recording, bottom target without a bottom screen
+## screen recording, top screen
+code=0 args=[0] sh '<cache>/recorder_start.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.ScreenRecorder >/dev/null 2>&1 &
+  script: sleep 1
