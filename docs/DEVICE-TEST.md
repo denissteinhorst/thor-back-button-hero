@@ -242,6 +242,14 @@ durations, not the delay a timer was actually posted with, so only those bands s
 device. Exact delays and one-millisecond boundaries are covered on the JVM by `BackGestureThresholdTest`.
 `--probe` applies a sensitivity-probe diff inside the temporary worktree only; it is never committed.
 
+## Instrumented tests (androidTest)
+
+`python3 tools/devicetest/instrument.py` builds the debug app and test APKs, installs both inside the
+same recovery transaction as the suite, runs every `androidTest` class through `am instrument`, then
+removes the test APK and ends on the original build with the owner's settings restored. It fails when
+a test fails or when a test found in `app/src/androidTest` was not reported at all. The raw output is
+kept in `app/build/devicetest/instrument-output.txt`. Like the suite it is not part of the gate.
+
 ## Adding a test
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in

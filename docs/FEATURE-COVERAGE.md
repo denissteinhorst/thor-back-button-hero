@@ -220,7 +220,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SET-15 | Settings controller navigation (focus rings, D-pad reachable) | T | — | — | C17z2c | S5/— | R8 | M | MAN → GAP before R8.1 |
 | F-SET-16 | Transient state survives recreation: scroll, focus, IME, open dialog edits | T | — | — | — | S5/— | R8 | M | GAP → before R8.1 |
 | F-SET-17 | Every string exists in EN and DE with matching placeholders | — | ResourceIntegrity | — | C22 | —/— | R8 | M | JVM |
-| F-SET-18 | Activity starts without manifest/resource failures on device | T | Smoke | instrumented (planned) | A1 | —/— | R1, R8 | H | JVM + androidTest smoke (not in gate) |
+| F-SET-18 | Activity starts without manifest/resource failures on device | T | Smoke | instrumented | A1 | —/— | R1, R8 | H | JVM + androidTest smoke via `tools/devicetest/instrument.py` (not in gate) |
 
 ## Stored data, defaults and backup (DAT)
 

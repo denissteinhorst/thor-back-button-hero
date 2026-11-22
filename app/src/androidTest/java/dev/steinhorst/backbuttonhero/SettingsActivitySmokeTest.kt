@@ -22,15 +22,14 @@ class SettingsActivitySmokeTest {
 
     @Test
     fun settingsActivityLaunchesAndShowsCoreSections() {
+        // A reset or fresh install opens the welcome sheet over the pages; the device harness
+        // restores the real settings afterwards.
+        Prefs(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext).welcomeSeen = true
         ActivityScenario.launch(SettingsActivity::class.java).use { scenario ->
+            // The app opens on the bindings overview.
             scenario.onActivity { activity ->
-                val content = activity.findViewById<android.view.ViewGroup>(android.R.id.content)
-                val allText = StringBuilder()
-                collectText(content, allText)
-                val text = allText.toString()
-                assertTrue(text.contains(activity.getString(R.string.back_single_row)))
-                assertTrue(text.contains(activity.getString(R.string.nav_basic_hint)))
-                assertTrue(text.contains(activity.getString(R.string.settings_unbind)))
+                assertTrue(activity.findViewById<android.view.View>(android.R.id.content)
+                    .findViewWithTag<android.view.View>("settings_page_OVERVIEW") != null)
             }
             SettingsSection.entries.forEach { section ->
                 var compact = false
@@ -39,7 +38,9 @@ class SettingsActivitySmokeTest {
                         .findViewWithTag<android.view.View>("settings_nav_${section.name}") == null
                 }
                 if (compact) onView(withTagValue(equalTo<Any>("settings_menu"))).perform(click())
-                onView(withTagValue(equalTo<Any>("settings_nav_${section.name}"))).perform(scrollTo(), click())
+                // The wide rail fits the screen without a scroll container; only the compact menu scrolls.
+                val nav = onView(withTagValue(equalTo<Any>("settings_nav_${section.name}")))
+                if (compact) nav.perform(scrollTo(), click()) else nav.perform(click())
                 var hasFocusOptions = false
                 scenario.onActivity { activity ->
                     val page = activity.findViewById<android.view.View>(android.R.id.content)
@@ -49,11 +50,13 @@ class SettingsActivitySmokeTest {
                     assertTrue(pageText.contains(activity.getString(section.hintRes)))
                     hasFocusOptions = page.findViewWithTag<android.view.View>("settings_focus_options") != null
                     val actions = page.findViewWithTag<android.view.ViewGroup>("settings_page_actions")
-                    if (section == SettingsSection.HELP) {
+                    if (section == SettingsSection.HELP || section == SettingsSection.OVERVIEW) {
                         assertTrue(actions == null)
                     } else {
                         val labels = if (section == SettingsSection.EXCEPTIONS) {
                             listOf(R.string.exceptions_add_app, R.string.exceptions_remove_all)
+                        } else if (section == SettingsSection.SETTINGS) {
+                            listOf(R.string.settings_load_defaults, R.string.settings_unbind)
                         } else listOf(R.string.settings_unbind)
                         assertTrue(actions.childCount == labels.size)
                         labels.forEachIndexed { index, label ->
@@ -67,6 +70,8 @@ class SettingsActivitySmokeTest {
                     assertTrue(topBar.findViewWithTag<android.view.View>("settings_page_actions") == null)
                 }
                 if (section == SettingsSection.EXCEPTIONS) {
+                    // A rail click lays the full panel over the page, and the next touch only closes it.
+                    if (!compact) onView(withText(section.hintRes)).perform(click())
                     onView(withText(R.string.exceptions_add_app)).perform(scrollTo(), click())
                     onView(withTagValue(equalTo<Any>("exceptions_search"))).inRoot(isDialog())
                         .check(matches(isDisplayed())).perform(replaceText("dev.steinhorst.backbuttonhero"))
