@@ -1,0 +1,61 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[24,12,48,36] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=192 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Close"
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[24,12,24,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="New macro, Macro: L1, tap to rename"
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="New macro" textSizePx=60.0 textColor=#FF191C1E maxLines=1 bold=false
+                ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Macro: L1" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[0,0,0,0] text="Save" textSizePx=45.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[72,24,72,24] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Record a macro" textSizePx=66.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              TextView visibility=VISIBLE minHeight=0 padding=[0,42,0,84] clickable=false focusable=false margin=[0,0,0,0] text="Tap Record, then press the buttons you want to save on your controller. Tap Stop when you are done.
+
+Afterwards you can fine-tune every step and every pause here in the editor. The macro starts once you let go of Back." textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[0,0,0,0] text="Add buttons by hand" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                TextView visibility=GONE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[36,0,0,0] text="Load a saved macro" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[72,30,72,36] clickable=false focusable=false margin=[0,0,0,0] text="Your controller only talks to the recorder now. Back and Home keep working." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              LinearLayout visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=45.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Tap to change · hold to move" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                HorizontalScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    StepStrip visibility=VISIBLE minHeight=0 padding=[84,78,84,24] clickable=false focusable=false margin=[0,0,0,0]
+                ScrollIndicator visibility=INVISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,54,0,72]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[60,18,60,18] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Undo"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Undo" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Record"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Record" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Preview"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Preview" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="More"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="More" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+            TextView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Drop here to delete" textSizePx=48.0 textColor=#FFE53935 maxLines=2147483647 bold=false
+        LinearLayout visibility=GONE minHeight=0 padding=[60,18,24,18] clickable=false focusable=false margin=[0,0,0,306]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=45.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[48,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Undo" textSizePx=45.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false

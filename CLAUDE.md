@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **751 JVM tests, 0 failures, 0 skipped** across 101 test classes (as of 2026-11-22). Count from
+- **759 JVM tests, 0 failures, 0 skipped** across 102 test classes (as of 2026-11-22). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -208,9 +208,9 @@ before trusting the suite:
 
 **Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
 `DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
-settings UI via **deterministic View-tree text snapshots** (102 golden files in
+settings UI via **deterministic View-tree text snapshots** (110 golden files in
 `app/src/test/resources/golden/`) covering all pages across theme, locale and
-compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, the service's small overlays (`OverlaySnapshotTest`: notice, recording, focus pictogram, app-control prompt, D-pad and auto-focus windows; `SwitcherSnapshotTest`: the bottom Recents overlay tree and its controller selection), and an
+compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, the service's small overlays (`OverlaySnapshotTest`: notice, recording, focus pictogram, app-control prompt, D-pad and auto-focus windows; `SwitcherSnapshotTest`: the bottom Recents overlay tree and its controller selection; `EditorDialogSnapshotTest`: macro editor and library, gyro setup), and an
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
