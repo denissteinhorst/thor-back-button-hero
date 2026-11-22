@@ -24,10 +24,11 @@ object OverlayTree {
         return views.zip(params)
     }
 
-    fun describe(windows: List<Pair<View, WindowManager.LayoutParams>>): String =
-        windows.joinToString("") { (root, params) -> describe(root, params) }
+    /** [state] adds laid-out size, scroll position and focus/selection, for overlays whose selection moves. */
+    fun describe(windows: List<Pair<View, WindowManager.LayoutParams>>, state: Boolean = false): String =
+        windows.joinToString("") { (root, params) -> describe(root, params, state) }
 
-    fun describe(root: View, params: WindowManager.LayoutParams): String {
+    fun describe(root: View, params: WindowManager.LayoutParams, state: Boolean = false): String {
         val sb = StringBuilder()
         sb.append("window type=").append(params.type)
             .append(" size=").append(params.width).append('x').append(params.height)
@@ -45,7 +46,14 @@ object OverlayTree {
                 .append(" alpha=").append(view.alpha)
                 .append(" rotation=").append(view.rotation)
                 .append(" elevation=").append(view.elevation)
-                .append(" background=").append(background(view)).append('\n')
+                .append(" background=").append(background(view))
+            if (state) {
+                sb.append(" size=").append(view.width).append('x').append(view.height)
+                    .append(" scroll=").append(view.scrollX).append(',').append(view.scrollY)
+                    .append(" focused=").append(view.isFocused)
+                    .append(" selected=").append(view.isSelected)
+            }
+            sb.append('\n')
             if (view is ViewGroup) for (i in 0 until view.childCount) walk(view.getChildAt(i))
         }
         walk(root)

@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **746 JVM tests, 0 failures, 0 skipped** across 100 test classes (as of 2026-11-22). Count from
+- **751 JVM tests, 0 failures, 0 skipped** across 101 test classes (as of 2026-11-22). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -208,16 +208,16 @@ before trusting the suite:
 
 **Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
 `DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
-settings UI via **deterministic View-tree text snapshots** (97 golden files in
+settings UI via **deterministic View-tree text snapshots** (102 golden files in
 `app/src/test/resources/golden/`) covering all pages across theme, locale and
-compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, the service's small overlays (`OverlaySnapshotTest`: notice, recording, focus pictogram, app-control prompt, D-pad and auto-focus windows), and an
+compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, the service's small overlays (`OverlaySnapshotTest`: notice, recording, focus pictogram, app-control prompt, D-pad and auto-focus windows; `SwitcherSnapshotTest`: the bottom Recents overlay tree and its controller selection), and an
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
 `SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **24 %**
 (413/1717) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
 `ScreenRecorder` are at 0 %. The panel host, Recents task
-routing, and top-Recents controller focus are likewise device-only. The entire switcher overlay UI, multi-display targeting, thumbnail capture,
+routing, and top-Recents controller focus are likewise device-only. The switcher overlay's launcher-derived styling and live behavior (its tree is snapshotted), multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
 the extraction moved the *decisions* under test but left the Android side effects out.

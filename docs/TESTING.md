@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 746 JVM tests pass |
+| `testDebugUnitTest` | All 751 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 100 classes, 746 tests
+### Base — JVM tests (Robolectric + JUnit), 101 classes, 751 tests
 
 Everything the gate can verify without hardware.
 
@@ -132,7 +132,7 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **97** goldens cover navigation across all pages across locale/theme/window sizes, the accessibility overlays,
+The **102** goldens cover navigation across all pages across locale/theme/window sizes, the accessibility overlays and the bottom Recents overlay,
 button states, change previews and accessibility. The main groups are:
 
 | Golden | Scope |

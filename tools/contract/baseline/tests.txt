@@ -647,6 +647,11 @@ SwitcherCloseAllTest#close all removes our own task but never kills the process 
 SwitcherCloseAllTest#closing other apps leaves our own task alone
 SwitcherPreviewTest#a package with a task on each screen previews the task on the switcher's screen
 SwitcherPreviewTest#controller selection and late thumbnail loading never add a preview border
+SwitcherSnapshotTest#apps, a panel and controller selection
+SwitcherSnapshotTest#apps, a panel and controller selection, German
+SwitcherSnapshotTest#apps, a panel and controller selection, dark
+SwitcherSnapshotTest#no apps
+SwitcherSnapshotTest#one app
 SwitcherTaskSyncTest#empty snapshot dismisses last card without closing apps or launching one
 SwitcherTaskSyncTest#native task removal drops stale card while preserving controller selection and both screen scope
 SwitcherTaskSyncTest#pending close all animation retains cards and thumbnails until it completes
