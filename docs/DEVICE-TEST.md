@@ -159,6 +159,36 @@ Face buttons are named by their print. In Xbox Style the Thor swaps their codes,
 accounts for. The confirm button in the app's prompts and the switcher is the bottom one, printed B.
 Android's `BUTTON_X` is always the left button (evdev 307).
 
+## Visual baseline (raw frames)
+
+`tools/devicetest/visual.py` captures the settings screen on the top display as raw frames and
+compares runs pixel for pixel. Frames are screenshots: capture and inspection need the owner's
+permission each time the scope changes (AGENTS.md). They stay private under
+`refactoring/baseline/S5/frames/` and are never committed.
+
+```sh
+python3 tools/devicetest/visual.py capture --run NAME
+python3 tools/devicetest/visual.py compare RUN_A RUN_B
+```
+
+- Capture uses `adb exec-out screencap -d <physical id>` without `-p`. `dt/frames.py` accepts only the
+  verified Android 13 layout: a 16-byte header (width, height, format, colorspace), format 1
+  (RGBA_8888) and exactly width × height pixels. Any other header, format or length is rejected.
+- A state counts only once two consecutive frames are identical.
+- The only mask is the status bar (System UI clock, signal and battery). Its height is read from the
+  device's status-bar inset.
+- The run sits inside the recovery transaction, so owner settings and system values are restored and
+  verified.
+- States: the welcome sheet, the overview with nothing assigned and with assigned bindings, and every
+  rail page with the panel open and closed (21 in total). Rail entries are found by their accessibility
+  descriptions.
+- The bottom display is covered by AYN's assistant, so the bottom Recents overlay cannot be captured
+  there. It is covered by its JVM tree golden and manual check C1.
+- Evidence (2026-11-22, Thor): base vs base 21/21 identical, also across a reinstall. A card corner
+  radius of 16 → 12 dp changed 16 states. Leader-label gravity changed only the assigned overview, which
+  is exactly what each change touches.
+- A debug build is not byte-reproducible. To return to a candidate, keep and reinstall its APK file.
+
 ## Adding a test
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in
