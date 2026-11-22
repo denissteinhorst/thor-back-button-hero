@@ -63,8 +63,27 @@ m_wire_string_changed() {  # a moved class drags a wire string along (broadcast 
   echo "A5|assembleDebug assembleRelease"
 }
 
+# Move-only drills: a mechanical move plus one fault; MOVE runs tools/contract/move-only.sh.
+mv_trial() { python3 -I tools/contract/movepkg.py input DoubleTapDetector.kt DoubleTapDetectorTest.kt >/dev/null; }
+m_move_body_changed() {  # a moved file's body changes by one comparison operator
+  mv_trial
+  perl -pi -e "s/ <= / < /" "$pkg/input/DoubleTapDetector.kt"
+  echo "MOVE|-"
+}
+m_move_import_rebinds() {  # a header-only edit binds a same-named symbol from another class
+  mv_trial
+  perl -pi -e 's/^import org\.junit\.Assert\.assertEquals$/import junit.framework.Assert.assertEquals/' \
+    app/src/test/java/dev/steinhorst/backbuttonhero/input/DoubleTapDetectorTest.kt
+  echo "MOVE|-"
+}
+m_move_frozen_entry() {  # a root entry point moved along with a feature package
+  python3 -I tools/contract/movepkg.py input TaskRemover.kt >/dev/null
+  echo "MOVE|-"
+}
+
 ALL=(m_component_renamed m_root_moved_string_kept m_root_main_lost m_ratchet_selector_empty
-     m_test_class_moved_unmapped m_wire_string_changed)
+     m_test_class_moved_unmapped m_wire_string_changed m_move_body_changed m_move_import_rebinds
+     m_move_frozen_entry)
 [ $# -gt 0 ] && ALL=("$@")
 
 bad=0
@@ -78,6 +97,18 @@ for drill in "${ALL[@]}"; do
   log="$base/$drill.log"
   if [ -z "$(git -C "$wt" status --porcelain -- app)" ]; then
     echo "INVALID  $drill: mutant changed nothing"; bad=1; continue
+  fi
+  if [ "$ids" = MOVE ]; then
+    mkdir -p "$wt/app/build" && ln -s "$repo/app/build/move-only" "$wt/app/build/move-only"
+    out="$(cd "$wt" && tools/contract/move-only.sh 2>&1)"
+    code=$?
+    case $code in
+      1) echo "KILLED   $drill by move-only: $(echo "$out" | grep -m1 '^FAIL' | sed 's/^FAIL //')" ;;
+      0) echo "SURVIVED $drill: move-only passed"; bad=1 ;;
+      *) echo "INVALID  $drill: move-only exit $code"; echo "$out" | tail -3 | sed 's/^/         /'; bad=1 ;;
+    esac
+    git -C "$repo" worktree remove --force "$wt" >/dev/null 2>&1
+    continue
   fi
   # shellcheck disable=SC2086
   if ! (cd "$wt" && ./gradlew -q --console=plain $tasks -x installGitHooks >"$log" 2>&1); then
