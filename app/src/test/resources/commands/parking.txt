@@ -1,0 +1,21 @@
+## park the frontend shown on both screens
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'park' 'com.example.frontend' '<bottom>' '<parking>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## verify drops a task on another display
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'query' 'com.example.frontend' '42' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## park again
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'park' 'com.example.frontend' '<bottom>' '<parking>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## restore to the top screen
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'restore' 'com.example.frontend' '42' '0' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## park before closing
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'park' 'com.example.frontend' '<bottom>' '<parking>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## close restores to the bottom screen
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskParker 'restore' 'com.example.frontend' '42' '<bottom>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## auto-lock focus touch on the bottom screen
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.ControllerFocusTouch '<bottom>' '24' '24' '<uid>' 'BBHAutoFocus-<uuid>' 2>&1 | grep -m1 -E '^(OK|ERR)'

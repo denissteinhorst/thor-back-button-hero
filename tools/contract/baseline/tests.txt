@@ -431,6 +431,7 @@ PrefsMigrationTest#the factory shoulder defaults are applied only once
 PrefsMigrationTest#the retired at-swap_screens sentinel is cleared on construction
 PrefsMigrationTest#v1 and v2 already applied, a custom value is left untouched
 PrefsMigrationTest#v1 install without v2 gets its flick directions swapped
+PrivilegedCommandContractTest#frontend parking and auto-lock focus send unchanged root commands
 PrivilegedCommandContractTest#root commands of the reachable call sites are unchanged
 PrivilegedCommandContractTest#volume, mute and AYN controls send unchanged root commands
 RecentTaskQueryTest#excluded companion stays in observed history while alive and is pruned when its task actually ends
