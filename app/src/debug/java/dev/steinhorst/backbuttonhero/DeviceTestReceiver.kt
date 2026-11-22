@@ -11,6 +11,7 @@ import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.util.Log
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * Debug builds only. Lets the on-device test suite (`tools/devicetest`) change the settings inside

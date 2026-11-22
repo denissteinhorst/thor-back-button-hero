@@ -1,5 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

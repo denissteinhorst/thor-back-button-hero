@@ -10,6 +10,12 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.BindingSettings
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.prefs.SettingsState
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import dev.steinhorst.backbuttonhero.support.startOnBasic
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults

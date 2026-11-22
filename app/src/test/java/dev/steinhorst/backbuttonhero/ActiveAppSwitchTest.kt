@@ -1,6 +1,9 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

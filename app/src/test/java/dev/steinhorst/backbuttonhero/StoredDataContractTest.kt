@@ -3,6 +3,17 @@ package dev.steinhorst.backbuttonhero
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.BindingLayer
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.prefs.SettingsState
+import dev.steinhorst.backbuttonhero.prefs.StickTimings
+import java.io.File
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,9 +22,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.io.File
-import java.time.Instant
-import java.time.LocalDate
 
 /**
  * Freezes what the app stores, byte for byte: the raw preference map after a fresh install, after

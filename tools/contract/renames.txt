@@ -6,3 +6,12 @@
 PanelWindows -> panels.PanelWindows
 BottomPanels -> panels.BottomPanels
 AccessibilityAppSource -> core.AccessibilityAppSource
+Prefs -> prefs.Prefs
+AppException -> prefs.AppException
+ExceptionControl -> prefs.ExceptionControl
+SettingsState -> prefs.SettingsState
+BindingSettings -> prefs.BindingSettings
+SettingsChangesKt -> prefs.SettingsChangesKt
+SettingsChangePlan -> prefs.SettingsChangePlan
+SettingsBackup -> prefs.SettingsBackup
+ExceptionGroup -> prefs.ExceptionGroup

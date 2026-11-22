@@ -4,6 +4,10 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.BindingSettings
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsState
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import dev.steinhorst.backbuttonhero.support.useEarlierDefaults

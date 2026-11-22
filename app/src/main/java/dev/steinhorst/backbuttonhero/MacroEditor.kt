@@ -37,6 +37,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.util.Locale
 
 /**

@@ -1,6 +1,9 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.Ayn
+import java.time.Instant
+import java.time.LocalDate
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,8 +12,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.time.Instant
-import java.time.LocalDate
 
 @RunWith(RobolectricTestRunner::class)
 class SettingsBackupTest {

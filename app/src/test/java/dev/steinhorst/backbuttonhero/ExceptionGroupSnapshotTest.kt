@@ -2,6 +2,10 @@ package dev.steinhorst.backbuttonhero
 
 import android.view.View
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

@@ -27,6 +27,10 @@ import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * Per-app exceptions; every change is written to [Prefs] at once, so the service follows immediately.

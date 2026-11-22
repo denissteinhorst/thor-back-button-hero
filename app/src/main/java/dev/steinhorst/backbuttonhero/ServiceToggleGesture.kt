@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.view.InputDevice
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * Observes toggle buttons; mirrored devices share one hold timer. Every pair but Back + Home only

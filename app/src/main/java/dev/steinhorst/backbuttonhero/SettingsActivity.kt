@@ -30,6 +30,13 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.BindingLayer
+import dev.steinhorst.backbuttonhero.prefs.BindingSettings
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 
 /** Configuration pages share the same rows and keep their state while navigating. */
 class SettingsActivity : Activity() {

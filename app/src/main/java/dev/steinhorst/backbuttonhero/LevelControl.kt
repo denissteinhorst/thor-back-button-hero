@@ -5,6 +5,7 @@ import android.media.AudioManager
 import android.provider.Settings
 import android.view.Display
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.util.concurrent.Executors
 
 /**

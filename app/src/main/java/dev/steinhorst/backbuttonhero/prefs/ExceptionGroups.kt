@@ -1,4 +1,6 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
+
+import dev.steinhorst.backbuttonhero.R
 
 /** The input groups an app's exception is edited by; each opens one modal of switches. */
 enum class ExceptionGroup(val titleRes: Int, val iconRes: Int, val sections: List<Section>) {

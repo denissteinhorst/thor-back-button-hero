@@ -2,6 +2,9 @@ package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

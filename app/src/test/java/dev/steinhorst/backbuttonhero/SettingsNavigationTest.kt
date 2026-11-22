@@ -1,7 +1,5 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.startOnBasic
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.content.Intent
 import android.os.Looper
 import android.view.View
@@ -11,7 +9,10 @@ import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.startOnBasic
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

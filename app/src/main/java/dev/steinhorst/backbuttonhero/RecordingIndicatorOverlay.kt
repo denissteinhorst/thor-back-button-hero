@@ -15,6 +15,7 @@ import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * A small blinking red dot while a recording runs, which turns into a steady microphone while the

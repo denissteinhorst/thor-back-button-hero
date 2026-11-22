@@ -1,12 +1,12 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.startOnBasic
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
-import dev.steinhorst.backbuttonhero.support.selectSettingsPage
-
 import android.app.Dialog
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.startOnBasic
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric

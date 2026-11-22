@@ -5,6 +5,7 @@ import android.hardware.display.DisplayManager
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File
 import org.junit.After

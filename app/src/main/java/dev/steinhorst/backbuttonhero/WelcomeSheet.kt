@@ -15,6 +15,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.prefs.SettingsState
 
 /** The pause shortcut's hold time in the defaults, a little longer than the factory 300 ms. */
 private const val DEFAULT_SETUP_TOGGLE_HOLD_MS = 500L

@@ -1,4 +1,22 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
+
+import dev.steinhorst.backbuttonhero.AndroidButton
+import dev.steinhorst.backbuttonhero.Ayn
+import dev.steinhorst.backbuttonhero.BackGestureButton
+import dev.steinhorst.backbuttonhero.ComboButton
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FaceButton
+import dev.steinhorst.backbuttonhero.GyroSettings
+import dev.steinhorst.backbuttonhero.HomeLayerButton
+import dev.steinhorst.backbuttonhero.SavedMacro
+import dev.steinhorst.backbuttonhero.SettingsSection
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.StartSetup
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.StickButton
+import dev.steinhorst.backbuttonhero.StickClickButton
+import dev.steinhorst.backbuttonhero.base
+import dev.steinhorst.backbuttonhero.startSetup
 
 /** A value snapshot lets the confirmation preview and the eventual write share one plan. */
 data class SettingsState(

@@ -1,8 +1,5 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.selectSettingsPage
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
-
 import android.app.AlertDialog
 import android.content.Context
 import android.view.View
@@ -11,6 +8,11 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
+import java.text.Collator
+import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -22,8 +24,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
-import java.text.Collator
-import java.util.Locale
 
 /** The hotkey action list: its order and the search that also reaches into groups and AYN tiles. */
 @RunWith(RobolectricTestRunner::class)

@@ -1,8 +1,25 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import dev.steinhorst.backbuttonhero.AndroidButton
+import dev.steinhorst.backbuttonhero.Ayn
+import dev.steinhorst.backbuttonhero.BackGestureButton
+import dev.steinhorst.backbuttonhero.ComboButton
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FaceButton
+import dev.steinhorst.backbuttonhero.GestureSettings
+import dev.steinhorst.backbuttonhero.GyroBias
+import dev.steinhorst.backbuttonhero.GyroCalibration
+import dev.steinhorst.backbuttonhero.GyroSettings
+import dev.steinhorst.backbuttonhero.HomeLayerButton
+import dev.steinhorst.backbuttonhero.Macro
+import dev.steinhorst.backbuttonhero.SavedMacro
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.StickButton
+import dev.steinhorst.backbuttonhero.StickClickButton
 
 class Prefs(context: Context) : GestureSettings {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)

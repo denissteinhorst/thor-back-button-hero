@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.app.Dialog
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.ViewTree
 import org.junit.Test

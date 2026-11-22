@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+
 object CloseApps {
     /** The displays a close-apps [target] ([Prefs.TARGET_BOTH], top or bottom) covers. */
     fun displays(target: String, topId: Int, bottomId: Int?): List<Int> = when (target) {

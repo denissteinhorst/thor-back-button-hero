@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * Lets the pad's Home key stand in for Back ([Prefs.homeAsBack]). Whichever of the two goes down

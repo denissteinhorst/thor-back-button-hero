@@ -9,6 +9,7 @@ import android.os.SystemClock
 import android.util.Log
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.prefs.AppException
 import java.io.File
 
 /**

@@ -2,14 +2,16 @@ package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.BindingSettings
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import java.util.Date
+import java.util.TimeZone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.util.Date
-import java.util.TimeZone
 
 @RunWith(RobolectricTestRunner::class)
 class ScreenRecordingTest {

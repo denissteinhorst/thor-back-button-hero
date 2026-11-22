@@ -1,6 +1,9 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /** Replaces SystemClock.uptimeMillis() so tests can control time. */
 interface GestureClock {

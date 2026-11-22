@@ -7,6 +7,10 @@ import android.hardware.SensorManager
 import android.view.KeyEvent
 import android.view.Surface
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
+import dev.steinhorst.backbuttonhero.prefs.SettingsState
+import java.time.Instant
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -18,7 +22,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.SensorEventBuilder
 import org.robolectric.shadows.ShadowSensor
-import java.time.Instant
 
 @RunWith(RobolectricTestRunner::class)
 class GyroTest {

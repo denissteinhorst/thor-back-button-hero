@@ -31,6 +31,7 @@ import android.os.Parcel
 import android.os.StatFs
 import android.os.SystemClock
 import android.view.Surface
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

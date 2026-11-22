@@ -2,8 +2,8 @@ package dev.steinhorst.backbuttonhero.support
 
 import dev.steinhorst.backbuttonhero.BackGestureButton
 import dev.steinhorst.backbuttonhero.DpadDirection
-import dev.steinhorst.backbuttonhero.Prefs
 import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
  * Everything starts unassigned now. Tests that exercise a row, a dialog or a gesture rather than

@@ -190,7 +190,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.Prefs")
+            includes = listOf("dev.steinhorst.backbuttonhero.prefs.Prefs")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -257,22 +257,22 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         mapOf(
             "RecentsSelection" to "1.00", "ServiceToggleGesture" to "1.00",
             "ExceptionSettingsPage" to "0.98", "PhysicalKeyTracker" to "1.00",
-            "AppException" to "1.00", "ExceptionControl" to "1.00",
+            "prefs.AppException" to "1.00", "prefs.ExceptionControl" to "1.00",
             "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
             "RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
-            "RecentsBadges" to "1.00", "SettingsState" to "1.00",
+            "RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
             "PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
-            "TaskMovePolicy" to "1.00", "BindingSettings" to "1.00",
+            "TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
             "SettingsNavigation" to "1.00", "ShoulderButton" to "1.00",
-            "SettingsPage" to "1.00", "SettingsChangesKt" to "1.00",
+            "SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
             "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
             "SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
-            "GestureScheduler" to "1.00", "SettingsChangePlan" to "1.00",
+            "GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
             "StickDetector" to "1.00", "LevelRepeater" to "1.00", "RepeatCurve" to "1.00",
             "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
             "StickButton" to "1.00", "Stick" to "1.00",
-            "SettingsBackup" to "1.00",
-            "AndroidButton" to "1.00", "FaceButton" to "1.00", "ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
+            "prefs.SettingsBackup" to "1.00",
+            "AndroidButton" to "1.00", "FaceButton" to "1.00", "prefs.ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
             "Macro" to "1.00", "MacroRecorder" to "1.00", "MacroButton" to "1.00", "MacroDirection" to "1.00",
             "Evdev" to "1.00", "MacroEditor" to "0.97", "SavedMacro" to "1.00", "MacroLibraryDialog" to "1.00",
             "MacroEdits" to "1.00", "MacroUi" to "1.00", "MacroUi\$Sheet" to "1.00", "MacroWidgetsKt" to "1.00", "StepStrip" to "0.80", "ScrollIndicator" to "1.00",

@@ -1,5 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+
 /**
  * Single actions that the settings list shows as one entry with a choice below it. The stored value
  * stays the single action ([Option.action]), so bindings, backups and the key handling never learn

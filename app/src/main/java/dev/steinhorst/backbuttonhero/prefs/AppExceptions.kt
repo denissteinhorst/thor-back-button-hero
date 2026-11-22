@@ -1,5 +1,13 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
 
+import dev.steinhorst.backbuttonhero.AndroidButton
+import dev.steinhorst.backbuttonhero.ComboButton
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FaceButton
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.StickButton
+import dev.steinhorst.backbuttonhero.StickClickButton
+import dev.steinhorst.backbuttonhero.base
 import dev.steinhorst.backbuttonhero.core.Shell
 
 /** One column of the per-app exception matrix; the ordinal is the bit stored in [AppException.allowed]. */

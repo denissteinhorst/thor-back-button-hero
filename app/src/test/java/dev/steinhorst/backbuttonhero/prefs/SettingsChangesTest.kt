@@ -1,7 +1,15 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.prefs
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.AndroidButton
+import dev.steinhorst.backbuttonhero.BackGestureButton
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FaceButton
+import dev.steinhorst.backbuttonhero.SettingsSection
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.StickButton
+import dev.steinhorst.backbuttonhero.StickClickButton
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

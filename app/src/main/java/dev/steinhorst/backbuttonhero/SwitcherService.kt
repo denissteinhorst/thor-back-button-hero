@@ -39,6 +39,9 @@ import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.panels.BottomPanels
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
 
 /**

@@ -11,6 +11,10 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import org.junit.Assert.*
 import org.junit.Test

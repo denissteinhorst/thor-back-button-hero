@@ -11,6 +11,7 @@ import android.os.SystemClock
 import android.util.Log
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date

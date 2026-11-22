@@ -1,6 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
 import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 
 /** A background task move must leave the source foreground alone. Recents' temporary Home
  * placement must not hide the previous app when the actual foreground task leaves. */
