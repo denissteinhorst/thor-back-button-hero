@@ -71,16 +71,72 @@ FILE_AREAS = {
 EVERYTHING = {"SwitcherService.kt", "Prefs.kt", "PService.kt", "AndroidManifest.xml", "accessibility_config.xml", "Shell.kt"}
 
 
+WINDOW_PREFIXES = ("Recents", "TopRecents", "Switcher", "Panel", "BottomPanels", "TaskMove", "Frontend", "Parking", "TaskParker")
+
+
+def unmapped(files):
+    """Production files no mapping above reaches. An unknown file could be on any area's path
+    (a newly extracted class, say), so [areas_for] selects everything for it instead of nothing."""
+    return [path for path in files
+            if os.path.basename(path) not in FILE_AREAS and os.path.basename(path) not in EVERYTHING
+            and not os.path.basename(path).startswith(WINDOW_PREFIXES)]
+
+
 def areas_for(files):
+    """The areas [files] can affect, or None for all of them."""
+    if unmapped(files):
+        return None
     areas = set()
     for path in files:
         name = os.path.basename(path)
         if name in EVERYTHING:
             return None
         areas.update(FILE_AREAS.get(name, []))
-        if name.startswith(("Recents", "TopRecents", "Switcher", "Panel", "BottomPanels", "TaskMove", "Frontend", "Parking", "TaskParker")):
+        if name.startswith(WINDOW_PREFIXES):
             areas.add("windows")
     return areas
+
+
+def registered_areas():
+    return {area for area, _, _ in TESTS}
+
+
+def parse_only(text):
+    """The areas an --only list names. Fails on an empty list or a name no test registers: a typo
+    or a short alias would otherwise silently run preflight alone and look green."""
+    names = [n.strip() for n in text.split(",")]
+    if not text.strip() or any(not n for n in names):
+        raise ValueError("--only needs a comma-separated list of area names")
+    unknown = sorted(set(names) - registered_areas())
+    if unknown:
+        raise ValueError(f"unknown area(s): {', '.join(unknown)}; known: {', '.join(sorted(registered_areas()))}")
+    return set(names)
+
+
+def expected(selected, layers):
+    """Every (area, title) a complete run of this selection must report."""
+    return [(area, title) for area, title, _ in expand(layers)
+            if selected is None or area in selected or area == "preflight"]
+
+
+def verdict(results, expected_ids):
+    """Exit code and summary lines. 0 only when every expected test ran and passed without a skip
+    or warning; 1 on a failure, error or a test that never ran; 3 when skips or warnings need a
+    recorded gap decision (never an automatic pass)."""
+    ran = [(r["area"], r["title"]) for r in results]
+    missing = [i for i in expected_ids if i not in ran]
+    extra = [i for i in ran if i not in expected_ids]
+    counts = {s: sum(r["status"] == s for r in results) for s in ("PASS", "FAIL", "ERROR", "SKIP")}
+    warned = sum(bool(r.get("warnings")) for r in results)
+    lines = [f"{counts['PASS']} passed, {counts['FAIL']} failed, {counts['ERROR']} errors, {counts['SKIP']} skipped, "
+             f"{warned} with warnings — {len(ran)} of {len(expected_ids)} expected tests ran"]
+    lines += [f"NOT RUN: [{a}] {t}" for a, t in missing]
+    lines += [f"UNEXPECTED: [{a}] {t}" for a, t in extra]
+    if counts["FAIL"] or counts["ERROR"] or missing or extra:
+        return 1, lines
+    if counts["SKIP"] or warned:
+        return 3, lines + ["Skips or warnings: review and record them before treating this run as a pass."]
+    return 0, lines
 
 
 def expand(layers):
@@ -90,7 +146,7 @@ def expand(layers):
             yield area, title + (" [Home layer]" if layer == "home" else ""), _in_layer(fn, layer)
 
 
-def run(device, selected, report_name, layers=("back",)):
+def run(device, selected, report_name, layers=("back",), expected_ids=None):
     results = []
     started = time.time()
     for area, title, fn in expand(layers):
@@ -130,5 +186,9 @@ def run(device, selected, report_name, layers=("back",)):
     os.makedirs(WORK, exist_ok=True)
     path = os.path.join(WORK, report_name)
     with open(path, "w") as f:
-        json.dump({"seconds": round(time.time() - started), "results": results}, f, indent=2)
+        report = {"seconds": round(time.time() - started), "layers": list(layers),
+                  "selected": None if selected is None else sorted(selected), "results": results}
+        if expected_ids is not None:
+            report["expected"] = [{"area": a, "title": t} for a, t in expected_ids]
+        json.dump(report, f, indent=2)
     return results, path

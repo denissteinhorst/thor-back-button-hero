@@ -29,7 +29,8 @@ python3 tools/devicetest/run.py --list             # areas and their tests
 python3 tools/devicetest/run.py --restore          # put back what an interrupted run left behind
 ```
 
-The close-action observers also have host-only regression checks:
+The close-action observers and the area selection also have host-only regression checks (not part of
+`./tools/verify.sh`):
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tools/devicetest python3 -m unittest discover -s tools/devicetest/tests
@@ -40,15 +41,25 @@ resource language: English in Germany uses a comma; German in Switzerland uses a
 
 `preflight` always runs first and stops the run if the service is not bound, root is unreachable or
 the input helper cannot start. Each line prints `✓`, `✗` (failed), `!` (the test itself broke) or `–`
-(skipped), with `⚠` warnings below. A JSON report is written to `app/build/devicetest/`. If the app
-crashes during a test, that test fails with the exception, and the service is re-enabled before the
-next one.
+(skipped), with `⚠` warnings below. A JSON report is written to `app/build/devicetest/`; it records the
+selected areas, the layers and every expected test. If the app crashes during a test, that test fails
+with the exception, and the service is re-enabled before the next one.
 
-`--changed` compares the branch against `main`, including uncommitted and untracked files under
-`app/src/main/`. It maps the changed files to areas through `FILE_AREAS` in
+The summary compares the executed tests with the expected ones. The exit code is `0` only when every
+expected test ran and passed without a skip or warning; `1` on a failure, an error, or an expected test
+that never ran (for example after a failed preflight); `3` when skips or warnings remain, which need a
+recorded decision before the run counts as a pass. `--only` takes full registered area names
+(`--list`); an empty list or an unknown name, such as a short alias, is rejected before the device is
+touched.
+
+`--changed` compares the branch against its merge base with `main` (or `--base <ref>`), including
+uncommitted and untracked files under `app/src/main/`. It maps the changed files to areas through `FILE_AREAS` in
 `tools/devicetest/dt/runner.py`. A change to `SwitcherService`, `Prefs`, `PService`, `Shell`, the
-manifest or the accessibility config selects every area. Changed files that map to no area (settings
-UI, texts, backup) select nothing. Add new source files to `FILE_AREAS` when you add them.
+manifest or the accessibility config selects every area. So does any changed production file that maps
+to no area (settings UI, texts, backup, a newly extracted class): the run prints it as unmapped rather
+than silently selecting nothing. Add new source files to `FILE_AREAS` when you add them so the
+selection can narrow again. Debug, test, harness and build paths are not mapped; select their areas
+with `--only` or `--full`.
 
 **Layers.** Tests registered with `layered=True` (every `sources` and `gestures` check of a shortcut)
 run once per dual-mode layer: as written with Back, and again as "… [Home layer]" with dual mode on,
