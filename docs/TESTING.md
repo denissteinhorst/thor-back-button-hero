@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 759 JVM tests pass |
+| `testDebugUnitTest` | All 760 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -74,7 +74,7 @@ REQUIRED (exit 2), never as a pass. Each check prints one PASS/FAIL line:
 | A3 | Every non-DEX APK entry by CRC, including `libpadhelper.so`; AGP's Git revision entry is normalized |
 | A4 | Frozen component and root entry point classes (`classes.txt`), root ones with `public static main(String[])` |
 | A5 | Wire and storage identifiers in the DEX (`wire-strings.txt`); supporting evidence only |
-| A6 | Every golden snapshot and stored-data fixture by hash |
+| A6 | Every golden snapshot, stored-data and root-command fixture by hash |
 | A7 | Every JVM test case still exists (or is mapped in `renames.txt`) and passed |
 | A8 | No coverage ratchet removed or lowered; every selector matches compiled classes |
 | A9 | Release runtime dependency graph |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 102 classes, 759 tests
+### Base — JVM tests (Robolectric + JUnit), 103 classes, 760 tests
 
 Everything the gate can verify without hardware.
 
@@ -166,6 +166,14 @@ The older stores are synthesized from the migration code, not exported from real
 The fixtures were recorded once on the refactoring baseline. Contract A6 freezes them by hash.
 Like goldens, never re-record one to make a test pass: `UPDATE_STORAGE_FIXTURES=1` is only for
 an explicitly approved stored-data change.
+
+### Root-command protection — frozen privileged commands
+
+`PrivilegedCommandContractTest` installs `support/FakePService`, an in-process stand-in for AYN's
+`PServerBinder`, and records every root command exactly. For a generated `sh <script>` it records the
+script's content too. Cache paths, script numbers and the APK path are replaced by named symbols. The
+expected commands in `app/src/test/resources/commands/` were recorded on the refactoring baseline and
+are frozen by contract A6. `UPDATE_COMMAND_FIXTURES=1` is only for an explicitly approved command change.
 
 ### Tip — instrumented tests
 

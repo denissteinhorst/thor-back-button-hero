@@ -84,6 +84,8 @@ rm "$work/golden/settings_main_en_light.txt"
 check 1 "A6 a deleted golden" A6 CONTRACT_GOLDENS="$work/golden"
 cp -R app/src/test/resources/storage "$work/storage"; echo "x" >> "$work/storage/fresh.txt"
 check 1 "A6 an edited stored-data fixture" A6 CONTRACT_STORAGE="$work/storage"
+cp -R app/src/test/resources/commands "$work/commands"; echo "x" >> "$work/commands/privileged.txt"
+check 1 "A6 an edited command fixture" A6 CONTRACT_COMMANDS="$work/commands"
 
 cp -R app/build/test-results/testDebugUnitTest "$work/results"
 python3 -I - "$work/results" <<'EOF'

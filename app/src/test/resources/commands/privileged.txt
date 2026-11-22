@@ -1,0 +1,13 @@
+## force-stop a valid package
+code=0 args=[0] am force-stop 'com.example.game'
+## force-stop refuses an invalid name
+## entry point with quoted arguments
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a,com.example.b' 'it'\''s' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## controller focus top
+code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+## controller focus bottom
+code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
+## brightness up, both screens
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.BrightnessControl 'up' '0' '4' 2>&1 | grep -m1 -E '^(OK|ERR)'

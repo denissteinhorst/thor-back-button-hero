@@ -431,6 +431,7 @@ PrefsMigrationTest#the factory shoulder defaults are applied only once
 PrefsMigrationTest#the retired at-swap_screens sentinel is cleared on construction
 PrefsMigrationTest#v1 and v2 already applied, a custom value is left untouched
 PrefsMigrationTest#v1 install without v2 gets its flick directions swapped
+PrivilegedCommandContractTest#root commands of the reachable call sites are unchanged
 RecentTaskQueryTest#excluded companion stays in observed history while alive and is pruned when its task actually ends
 RecentTaskQueryTest#native recents keeps its default exclusion while bottom inventory includes opted out tasks for the current user
 RecentTaskQueryTest#plain list firmware responses include excluded tasks too
