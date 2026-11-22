@@ -425,7 +425,8 @@ versions already in use after a local bump — check the workflow files before m
 
 ## Architecture
 
-Everything lives in one package: `dev.steinhorst.backbuttonhero`. Two
+One module, feature packages below `dev.steinhorst.backbuttonhero` (map in
+`docs/PROJECT-STRUCTURE.md`); the root package keeps only the frozen entry points. Two
 Android entry points declared in the manifest: `SettingsActivity` (launcher
 UI) and `SwitcherService` (the accessibility service doing the real work).
 

@@ -55,11 +55,13 @@ EOF
 release=app/build/outputs/apk/release/app-release-unsigned.apk
 
 echo "Baseline:"
-check 0 "unchanged outputs pass every check" "A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11"
+# A0 (release DEX unchanged) holds only in S-phases; R-phases change code by design.
+if [ "${CONTRACT_PHASE:-S}" = S ]; then all="A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11"; else all="A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11"; fi
+check 0 "unchanged outputs pass every check" "$all"
 
 echo "Faults:"
 rewrite_apk "$release" "$work/dex.apk" classes.dex
-check 1 "A0 a changed DEX byte" A0 CONTRACT_RELEASE_APK="$work/dex.apk"
+check 1 "A0 a changed DEX byte" A0 CONTRACT_PHASE=S CONTRACT_RELEASE_APK="$work/dex.apk"
 
 fixtures; printf 'E: uses-permission (line=1)\n  A: android:name="android.permission.CAMERA"\n' >> "$work/fx/manifest-release.txt"
 check 1 "A1 an added permission" A1 CONTRACT_FIXTURES="$work/fx"
@@ -110,10 +112,10 @@ EOF
 check 1 "A7 a failing test case" A7 CONTRACT_TEST_RESULTS="$work/results"
 
 cp app/build.gradle.kts "$work/build.gradle.kts"
-sed -i '' 's/"RecentsSelection" to "1.00"/"RecentsSelection" to "0.90"/' "$work/build.gradle.kts"
+sed -i '' 's/"\([a-z.]*\)RecentsSelection" to "1.00"/"\1RecentsSelection" to "0.90"/' "$work/build.gradle.kts"
 check 1 "A8 a lowered ratchet" A8 CONTRACT_BUILD_FILE="$work/build.gradle.kts"
 cp app/build.gradle.kts "$work/build.gradle.kts"
-sed -i '' 's/"RecentsSelection" to "1.00"/"RecentsSelectionGone" to "1.00"/' "$work/build.gradle.kts"
+sed -i '' 's/"\([a-z.]*\)RecentsSelection" to "1.00"/"\1RecentsSelectionGone" to "1.00"/' "$work/build.gradle.kts"
 check 1 "A8 a ratchet whose class vanished" A8 CONTRACT_BUILD_FILE="$work/build.gradle.kts"
 
 fixtures; sed -i '' 's/kotlin-stdlib:2.4.21/kotlin-stdlib:2.4.20/' "$work/fx/classpath-release.txt"
@@ -129,7 +131,7 @@ check 1 "A11 a new lint finding" A11 CONTRACT_LINT_XML="$work/lint.xml"
 echo "Setup:"
 check 2 "a missing artifact is BUILD REQUIRED, never PASS" A3 CONTRACT_RELEASE_APK="$work/none.apk"
 touch -t 200001010000 "$work/dex.apk"
-check 2 "contract.py alone refuses an output older than its inputs" A0 CONTRACT_GRADLE_FRESH= \
+check 2 "contract.py alone refuses an output older than its inputs" A0 CONTRACT_PHASE=S CONTRACT_GRADLE_FRESH= \
   CONTRACT_FORCE_FRESHNESS=1 CONTRACT_RELEASE_APK="$work/dex.apk"
 fixtures; rm "$work/fx/goldens.sha256"
 check 2 "a missing fixture is BUILD REQUIRED, never PASS" A6 CONTRACT_FIXTURES="$work/fx"

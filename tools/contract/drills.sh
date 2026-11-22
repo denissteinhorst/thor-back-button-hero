@@ -25,7 +25,8 @@ pkg=app/src/main/java/dev/steinhorst/backbuttonhero
 # Rename a Kotlin symbol by word boundary in every source, test and manifest file, and its file.
 rename_symbol() {  # rename_symbol <old> <new>
   grep -rlw --include='*.kt' --include='*.xml' "$1" app/src | xargs perl -pi -e "s/\\b$1\\b/$2/g"
-  git mv "$pkg/$1.kt" "$pkg/$2.kt"
+  local src; src="$(find "$pkg" -name "$1.kt")"
+  git mv "$src" "$(dirname "$src")/$2.kt"
 }
 
 # --- mutants --------------------------------------------------------------------------------------
@@ -36,10 +37,7 @@ m_component_renamed() {  # a frozen manifest component moved, all references kep
   echo "A4|assembleDebug assembleRelease"
 }
 m_root_moved_string_kept() {  # a root entry point moved to a subpackage; the app_process name still says the old one
-  mkdir -p "$pkg/recents"
-  git mv "$pkg/TaskRemover.kt" "$pkg/recents/TaskRemover.kt"
-  perl -pi -e 's/^package dev\.steinhorst\.backbuttonhero$/package dev.steinhorst.backbuttonhero.recents\n\nimport dev.steinhorst.backbuttonhero.RecentTaskQuery\nimport dev.steinhorst.backbuttonhero.Shell/' \
-    "$pkg/recents/TaskRemover.kt"
+  python3 -I tools/contract/movepkg.py recents TaskRemover.kt >/dev/null
   echo "A4|assembleDebug assembleRelease"
 }
 m_root_main_lost() {  # a root entry point keeps its name but main() stops being static
@@ -51,7 +49,7 @@ m_ratchet_selector_empty() {  # a ratcheted class renamed; its coverage rule now
   echo "A8|testDebugUnitTest jacocoTestReport"
 }
 m_test_class_moved_unmapped() {  # a test class renamed without a reviewed renames.txt entry
-  local t=app/src/test/java/dev/steinhorst/backbuttonhero
+  local t=app/src/test/java/dev/steinhorst/backbuttonhero/input
   perl -pi -e 's/\bclass DoubleTapDetectorTest\b/class DoubleTapDetectorMovedTest/' "$t/DoubleTapDetectorTest.kt"
   git mv "$t/DoubleTapDetectorTest.kt" "$t/DoubleTapDetectorMovedTest.kt"
   echo "A7|testDebugUnitTest"
@@ -64,16 +62,16 @@ m_wire_string_changed() {  # a moved class drags a wire string along (broadcast 
 }
 
 # Move-only drills: a mechanical move plus one fault; MOVE runs tools/contract/move-only.sh.
-mv_trial() { python3 -I tools/contract/movepkg.py input DoubleTapDetector.kt DoubleTapDetectorTest.kt >/dev/null; }
+mv_trial() { python3 -I tools/contract/movepkg.py input.trial DoubleTapDetector.kt DoubleTapDetectorTest.kt >/dev/null; }
 m_move_body_changed() {  # a moved file's body changes by one comparison operator
   mv_trial
-  perl -pi -e "s/ <= / < /" "$pkg/input/DoubleTapDetector.kt"
+  perl -pi -e "s/ <= / < /" "$pkg/input/trial/DoubleTapDetector.kt"
   echo "MOVE|-"
 }
 m_move_import_rebinds() {  # a header-only edit binds a same-named symbol from another class
   mv_trial
   perl -pi -e 's/^import org\.junit\.Assert\.assertEquals$/import junit.framework.Assert.assertEquals/' \
-    app/src/test/java/dev/steinhorst/backbuttonhero/input/DoubleTapDetectorTest.kt
+    app/src/test/java/dev/steinhorst/backbuttonhero/input/trial/DoubleTapDetectorTest.kt
   echo "MOVE|-"
 }
 m_move_frozen_entry() {  # a root entry point moved along with a feature package

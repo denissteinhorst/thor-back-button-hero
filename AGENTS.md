@@ -113,7 +113,9 @@ not casually rewrite unrelated documentation while implementing a focused change
 
 ## Repository map
 
-- `app/src/main/java/dev/steinhorst/backbuttonhero/`: one flat production package
+- `app/src/main/java/dev/steinhorst/backbuttonhero/`: production code in feature packages
+  (`core`, `prefs`, `input`, `actions`, `recents`, `panels`, `pad`, `macro`, `capture`, `overlay`,
+  `settings`); the root keeps only frozen entry points (see `docs/PROJECT-STRUCTURE.md`)
 - `app/src/main/cpp/padhelper.c`: native root input helper, compiled by Gradle
 - `app/src/main/res/`: English/German strings, icons, accessibility config
 - `app/src/test/`: JVM/Robolectric tests and snapshot helpers

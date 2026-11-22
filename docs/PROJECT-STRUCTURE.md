@@ -40,8 +40,28 @@ gitignored and therefore absent here.
 
 #### Kotlin sources — `app/src/main/java/dev/steinhorst/backbuttonhero/`
 
-One flat package by design; the app is small enough that package boundaries would add
-ceremony without adding clarity. See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how they
+Packages by feature below `dev.steinhorst.backbuttonhero` (one Gradle module). The file tables
+below are grouped by role, not by package; the package of each file is listed here:
+
+| Package | Contents |
+|---|---|
+| root (frozen) | `SwitcherService`, `SettingsActivity`, `UpdateInstaller`, `UpdateChecker` and the ten root `app_process` entry points. Their names are read by Android, stored settings or root scripts, so they never move ([decision 0001](decisions/0001-frozen-external-contracts.md)). |
+| `core` | `Shell`, `PService`, `RunningApp`, `AccessibilityAppSource` |
+| `prefs` | `Prefs` (schema, migrations, transactions), backups, change plans, app exceptions and groups |
+| `input` | Back gesture machine, double tap, key tracking and interception gate, activation toggle, shoulder/stick/face/Home buttons |
+| `actions` | Action groups, Active App Control, closing apps, last app, power menu, status, controller focus, AYN controls |
+| `recents` | Bottom switcher overlay, Recents styling and state, top Recents navigation, task move and parking policies |
+| `panels` | Bottom-screen panel capture, windows and the connection to the root window host |
+| `pad` | Root pad helper client, D-pad overlay, level control and repeat, gyro |
+| `macro` | Macro model, recorder, editor and widgets |
+| `capture` | Screen recording, screenshots, push-to-talk and the voice chain, recording indicator |
+| `overlay` | Notice and focus-indicator overlays |
+| `settings` | Settings navigation, UI kit, bindings overview, choosers, welcome sheet, exception and gyro dialogs |
+
+Tests live in the same package as the class they cover; cross-feature tests and the snapshot
+helpers (`support/`) stay in the root test package.
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how they
 collaborate. Files that run as root `app_process` entry points are marked *(root)*.
 
 **Service, gestures and settings**

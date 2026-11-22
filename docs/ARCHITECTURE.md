@@ -5,6 +5,11 @@ constraints shaped it. For a file-by-file inventory see
 [`PROJECT-STRUCTURE.md`](PROJECT-STRUCTURE.md); for the safety net around all of it,
 [`TESTING.md`](TESTING.md).
 
+The code is one module in feature packages (`core`, `prefs`, `input`, `actions`, `recents`,
+`panels`, `pad`, `macro`, `capture`, `overlay`, `settings`). Classes whose names are read outside
+the compiler (the service, the activity, the update receiver and the root entry points) stay in the
+root package; see [decision 0001](decisions/0001-frozen-external-contracts.md).
+
 ## What the app has to work around
 
 Three constraints explain most design decisions here.
