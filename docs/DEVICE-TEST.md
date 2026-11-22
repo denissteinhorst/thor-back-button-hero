@@ -201,6 +201,21 @@ python3 tools/devicetest/visual.py compare RUN_A RUN_B
   is exactly what each change touches.
 - A debug build is not byte-reproducible. To return to a candidate, keep and reinstall its APK file.
 
+## Gesture traces (DEBUG_GESTURES builds)
+
+`tools/devicetest/trace.py build [--rev REV]` builds a debug APK of a pinned revision with
+`DEBUG_GESTURES` switched on, in a temporary git worktree, never in the checkout. The result is cached
+under `refactoring/baseline/S6/trace-cache/` by source tree, trace patch and JDK, with the applied diff
+and the APK hash beside it; a cached APK whose hash no longer matches is refused. Accepted source keeps
+the flag off (contract A10). Both builds share the machine's debug key, so the trace build installs in
+place over the normal debug build.
+
+`dt/trace.py` reads the service's lines from logcat and normalizes only the fields that vary between
+runs: pid and timestamps, measured durations (`t=`, `held=`, time since the previous DOWN) and input
+device and task ids, which become symbols numbered by first appearance. Configured durations, keys,
+actions, displays, arguments and line order stay. Its host tests (`tests/test_trace.py`) show that a
+wrong display, a missing, duplicate or reordered line and two ids collapsed into one still differ.
+
 ## Adding a test
 
 Add a function with `@test("<area>", "<what is proved>")` to the matching module in
