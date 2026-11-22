@@ -45,7 +45,7 @@ the assertions it actually makes, and a planned check is never counted as passin
 | V/T | Visual (S5) and trace (S6) evidence: `S5`/`S6` = planned there, `—` = not applicable |
 | Groups | Refactoring groups whose code is on the path (R1 always applies by package move) |
 | Risk | `H` user-visible breakage or data loss, `M` degraded behavior, `L` cosmetic or rare |
-| Status → due | `JVM` passing at the S0 baseline; `DEV` registered device check, baseline run pending; `MAN` manual only; `GAP` no assertion yet, followed by the step before which it must exist |
+| Status → due | `JVM` passing at the S0 baseline; `DEV` registered device check, baseline run pending; `MAN` manual only; `STATIC` enforced by the `tools/contract/check.sh` contract (S2); `GAP` no assertion yet, followed by the step before which it must exist |
 
 Baseline: source commit `a032d080db33`, 726 JVM tests in 98 classes, 89 goldens, 74 device checks in
 16 areas (82 with the Home layer). Device checks have not yet been run against the baseline debug APK;
@@ -244,12 +244,12 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SVC-2 | No focus or window switch the user did not trigger (owner rule) | TB | — | — | C8e, C40 | —/S6 | R4–R7, R10 | H | MAN → GAP trace assertion before R4.1 |
 | F-SVC-3 | Without pservice, swipe-close falls back to `killBackgroundProcesses`; other privileged actions report unavailable | — | Shell | — | C17h | —/— | R3 | M | MAN → GAP before R3.1 |
 | F-SVC-4 | Every package name reaching a privileged command passes `Shell.isPkg` | — | Shell | — | — | —/S6 | R3 | H | JVM |
-| F-SVC-5 | Frozen class names: SwitcherService, SettingsActivity, UpdateInstaller$StatusReceiver, 10 root entry points | — | — | preflight (service) | — | —/— | R1 | H | GAP → S2 static contract before R1 |
-| F-SVC-6 | Wire strings: binder descriptors, broadcast actions, helper protocol, log decision texts | — | — | — | — | —/S6 | R1, R3, R11 | H | GAP → S2 before R1 |
-| F-SVC-7 | Release runtime classpath stays kotlin-stdlib + annotations; no new dependency | — | — | — | — | —/— | all | H | S0 evidence; GC A9 in S2 |
-| F-SVC-8 | The accessibility service is enabled by component name and survives updates | — | — | preflight | D4 | —/— | R1 | H | DEV + MAN |
-| F-SVC-9 | Notification permission and channels unchanged | — | — | — | — | —/— | R8 | M | GAP → S2 manifest/resource contract |
-| F-SVC-10 | Performance and memory stay within baseline budgets | — | RecentsMemory | — | — | —/— | R6, R7, R10 | M | device `tools/devicetest/resources.py` (F1–F4, budgets in PERFORMANCE.md) |
+| F-SVC-5 | Frozen class names: SwitcherService, SettingsActivity, UpdateInstaller$StatusReceiver, 10 root entry points | — | — | preflight (service) | — | —/— | R1 | H | STATIC (S2 contract A4: frozen classes and root entry points) |
+| F-SVC-6 | Wire strings: binder descriptors, broadcast actions, helper protocol, log decision texts | — | — | — | — | —/S6 | R1, R3, R11 | H | STATIC (S2 contract A5 wire strings) + JVM (S6 command and helper-protocol fixtures, A6) |
+| F-SVC-7 | Release runtime classpath stays kotlin-stdlib + annotations; no new dependency | — | — | — | — | —/— | all | H | STATIC (S0 evidence; S2 contract A9 release classpath) |
+| F-SVC-8 | The accessibility service is enabled by component name and survives updates | — | — | preflight | D4 | —/— | R1 | H | DEV (preflight; S7 F5 `upgrade.py` observes enabled + rebound before any repair) + MAN (signed release upgrade, F1) |
+| F-SVC-9 | Notification permission and channels unchanged | — | — | — | — | —/— | R8 | M | STATIC (S2 contract A1 manifests, A2 resource table) |
+| F-SVC-10 | Performance and memory stay within baseline budgets | — | RecentsMemory | — | — | —/— | R6, R7, R10 | M | DEV (S7 `tools/devicetest/resources.py`, F1–F4, budgets in PERFORMANCE.md) |
 | F-SVC-11 | Update check uses the public releases API without credentials | — | UpdateCheckerParse | — | D7 | —/— | R8 | M | JVM (parse) |
 
 ## Cross-feature scenarios (X)
@@ -270,11 +270,11 @@ which it needs one or an accepted manual procedure.
 | F-X-9 | Toggle pause while a combo is held or a switcher is open | R4 | M | MAN (toggle list) |
 | F-X-10 | Active App Control prompt open, then interception paused | R5, R7 | M | MAN C35 |
 | F-X-11 | Macro running while Back is pressed again or the style changes | R5, R11 | M | MAN C17z4, C17z5 |
-| F-X-12 | Helper or panel process death during use | R10, R11 | H | GAP → before R10.1 |
+| F-X-12 | Helper or panel process death during use | R10, R11 | H | DEV for the helper (S6 emergency exit mid-hold) and the app process (S6 process death); panel process death GAP → before R10.1 |
 
 ## Known baseline limitations (LIM)
 
-Recorded from FEEDBACK.md as current behavior. They are not refactoring targets; fixing one is
+Recorded from FEEDBACK.md and from the S6/S7 device checks as current behavior. They are not refactoring targets; fixing one is
 separate scope with its own owner decision.
 
 | ID | Limitation |
@@ -285,6 +285,9 @@ separate scope with its own owner decision.
 | F-LIM-4 | ES-DE/Companion do not return automatically after a swapped game ends (deliberately removed in 1.4.1) |
 | F-LIM-5 | Unreproduced report: app not working despite accessibility permission |
 | F-LIM-6 | Heading drift of gyro without magnetometer; sustained acceleration not separable from gravity |
+| F-LIM-7 | The 5 s Home + Back emergency release is evaluated only when a pad event arrives (no poll timeout without a running macro): a hold with no other pad event never releases. Observed in S6 (O1); the F-HLP-4 check sends stick noise during the hold |
+| F-LIM-8 | After the emergency release the native pad reports evdev 304 as B where the clone reported A, so A and B are swapped until the helper runs again. Observed in S6 (O2); the F-HLP-4 check accepts any face button |
+| F-LIM-9 | One commit of many settings while the service is bound runs every preference listener synchronously on the main thread; ~1300 entries outlast the 60 s broadcast timeout (ANR). Normal use writes few keys. Observed in S7 (O3); the F5 check writes the full store with the service off |
 
 ## JVM view snapshots outside the settings activity (S4)
 

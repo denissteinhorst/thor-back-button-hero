@@ -237,6 +237,9 @@ SELinux" off). It is the same requirement swipe-to-close has.
     and tells the app not to restart it until the service restarts. While Home stands in for Back
     (`HOMEBACK 1`) holding both is ordinary use, so the release is off then. In dual mode
     (`HOMEBACK 2`) Home and Back are separate modifiers and the release stays on.
+    Known limits (F-LIM-7/8 in `FEATURE-COVERAGE.md`): the 5 s are checked only when a pad event
+    arrives, so a hold during which nothing else on the pad moves does not release; and after a
+    release the native pad reports the bottom face button as B where the clone reported A.
   - **Style switch:** switching the controller style creates a fresh pad and node in any case.
 - **A restarted helper recreates the pad.** Whenever the helper starts again (an app update, a
   reinstall, a service restart), Android sees the pad vanish and reappear with a new device id.
