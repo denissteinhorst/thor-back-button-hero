@@ -1,6 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.PadHelper
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /** A control that runs a configurable action while Back is held (see [Prefs.shoulderAction]). */

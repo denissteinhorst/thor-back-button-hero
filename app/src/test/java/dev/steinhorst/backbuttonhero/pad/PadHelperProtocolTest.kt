@@ -1,7 +1,11 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import android.net.LocalSocket
 import android.os.Looper
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.StickButton
 import dev.steinhorst.backbuttonhero.macro.MacroEvent
 import java.io.ByteArrayOutputStream
 import java.io.File

@@ -34,6 +34,9 @@ import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.macro.MacroEditor
 import dev.steinhorst.backbuttonhero.macro.MacroLibraryDialog
 import dev.steinhorst.backbuttonhero.macro.SavedMacro
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.GyroAxis
+import dev.steinhorst.backbuttonhero.pad.GyroSettings
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.BindingLayer
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings

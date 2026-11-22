@@ -1,4 +1,7 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
+
+import dev.steinhorst.backbuttonhero.GestureClock
+import dev.steinhorst.backbuttonhero.GestureScheduler
 
 /**
  * How fast a held volume or brightness shortcut steps: slowly at first, then easing in to a fast

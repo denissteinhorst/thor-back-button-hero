@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import kotlin.math.abs
 import kotlin.math.exp

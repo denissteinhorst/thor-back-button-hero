@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import android.app.AlertDialog
 import android.content.Context
@@ -14,6 +14,14 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.GyroPreview
+import dev.steinhorst.backbuttonhero.GyroSettingsDialog
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.SettingsActivity
+import dev.steinhorst.backbuttonhero.SettingsSection
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.SwitcherService
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage

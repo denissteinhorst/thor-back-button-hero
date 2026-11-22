@@ -199,7 +199,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.LevelSteps")
+            includes = listOf("dev.steinhorst.backbuttonhero.pad.LevelSteps")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -261,14 +261,14 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
             "RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
             "RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
-            "PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
+            "pad.PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
             "TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
             "SettingsNavigation" to "1.00", "ShoulderButton" to "1.00",
             "SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
             "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
             "SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
             "GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
-            "StickDetector" to "1.00", "LevelRepeater" to "1.00", "RepeatCurve" to "1.00",
+            "StickDetector" to "1.00", "pad.LevelRepeater" to "1.00", "pad.RepeatCurve" to "1.00",
             "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
             "StickButton" to "1.00", "Stick" to "1.00",
             "prefs.SettingsBackup" to "1.00",
@@ -276,10 +276,10 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "macro.Macro" to "1.00", "macro.MacroRecorder" to "1.00", "macro.MacroButton" to "1.00", "macro.MacroDirection" to "1.00",
             "macro.Evdev" to "1.00", "macro.MacroEditor" to "0.97", "macro.SavedMacro" to "1.00", "macro.MacroLibraryDialog" to "1.00",
             "macro.MacroEdits" to "1.00", "macro.MacroUi" to "1.00", "macro.MacroUi\$Sheet" to "1.00", "macro.MacroWidgetsKt" to "1.00", "macro.StepStrip" to "0.80", "macro.ScrollIndicator" to "1.00",
-            "GyroSettings" to "1.00", "GyroSettings\$Companion" to "1.00", "GyroAxis" to "1.00", "GyroMapper" to "1.00",
-            "GyroFusion" to "1.00", "GyroRest" to "1.00", "GyroRest\$Companion" to "1.00",
-            "GyroCalibration" to "1.00", "GyroCalibration\$Companion" to "1.00",
-            "GyroControl" to "1.00", "GyroTilt" to "1.00", "GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
+            "pad.GyroSettings" to "1.00", "pad.GyroSettings\$Companion" to "1.00", "pad.GyroAxis" to "1.00", "pad.GyroMapper" to "1.00",
+            "pad.GyroFusion" to "1.00", "pad.GyroRest" to "1.00", "pad.GyroRest\$Companion" to "1.00",
+            "pad.GyroCalibration" to "1.00", "pad.GyroCalibration\$Companion" to "1.00",
+            "pad.GyroControl" to "1.00", "pad.GyroTilt" to "1.00", "pad.GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
             "WelcomeSheet" to "1.00", "WelcomeSheetKt" to "1.00",
         ).forEach { (name, minimum) ->
             rule {

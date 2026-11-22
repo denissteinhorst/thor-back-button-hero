@@ -24,6 +24,9 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
+import dev.steinhorst.backbuttonhero.pad.GyroAxis
+import dev.steinhorst.backbuttonhero.pad.GyroSettings
+import dev.steinhorst.backbuttonhero.pad.GyroStatus
 
 /**
  * The gyro hotkey's setup in one popup: a ball on a surface that moves exactly as the stick would,

@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 /** Step arithmetic for the volume and brightness actions, free of Android so it can be unit-tested. */
 object LevelSteps {

@@ -1,9 +1,11 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import android.content.Context
 import android.media.AudioManager
 import android.provider.Settings
 import android.view.Display
+import dev.steinhorst.backbuttonhero.BrightnessControl
+import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.util.concurrent.Executors

@@ -1,6 +1,8 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.PadHelper
 import kotlin.math.abs
 
 enum class Stick(val wire: String, val bit: Int, val prefix: String, val keyCode: Int) {

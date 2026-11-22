@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import android.content.Context
 import android.hardware.Sensor
@@ -7,6 +7,11 @@ import android.hardware.SensorManager
 import android.view.KeyEvent
 import android.view.Surface
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.BackGestureButton
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FaceButton
+import dev.steinhorst.backbuttonhero.ShoulderButton
+import dev.steinhorst.backbuttonhero.Stick
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
 import dev.steinhorst.backbuttonhero.prefs.SettingsState

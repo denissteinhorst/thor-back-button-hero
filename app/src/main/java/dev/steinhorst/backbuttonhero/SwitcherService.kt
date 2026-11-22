@@ -41,6 +41,13 @@ import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.GyroControl
+import dev.steinhorst.backbuttonhero.pad.GyroStatus
+import dev.steinhorst.backbuttonhero.pad.LevelControl
+import dev.steinhorst.backbuttonhero.pad.LevelRepeater
+import dev.steinhorst.backbuttonhero.pad.PadHelper
+import dev.steinhorst.backbuttonhero.pad.PadNavigationMode
 import dev.steinhorst.backbuttonhero.panels.BottomPanels
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import dev.steinhorst.backbuttonhero.prefs.AppException

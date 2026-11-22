@@ -6,7 +6,6 @@ import dev.steinhorst.backbuttonhero.BackGestureButton
 import dev.steinhorst.backbuttonhero.ComboButton
 import dev.steinhorst.backbuttonhero.DpadDirection
 import dev.steinhorst.backbuttonhero.FaceButton
-import dev.steinhorst.backbuttonhero.GyroSettings
 import dev.steinhorst.backbuttonhero.HomeLayerButton
 import dev.steinhorst.backbuttonhero.SettingsSection
 import dev.steinhorst.backbuttonhero.ShoulderButton
@@ -16,6 +15,7 @@ import dev.steinhorst.backbuttonhero.StickButton
 import dev.steinhorst.backbuttonhero.StickClickButton
 import dev.steinhorst.backbuttonhero.base
 import dev.steinhorst.backbuttonhero.macro.SavedMacro
+import dev.steinhorst.backbuttonhero.pad.GyroSettings
 import dev.steinhorst.backbuttonhero.startSetup
 
 /** A value snapshot lets the confirmation preview and the eventual write share one plan. */

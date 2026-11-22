@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.pad
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -8,6 +8,10 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.DpadDirection
+import dev.steinhorst.backbuttonhero.FrontendParking
+import dev.steinhorst.backbuttonhero.Stick
+import dev.steinhorst.backbuttonhero.StickDetector
 
 /**
  * Fallback for Back + D-pad and an open switcher when [PadHelper] is not running (no pservice). The
