@@ -58,14 +58,18 @@ def declarations(text):
     return names
 
 
-def add_imports(path, needed):
+def add_imports(path, needed, moved_fqns):
+    """Adds [needed] imports and rewrites existing imports of a moved name to its new package."""
     text = open(path, encoding="utf-8").read()
     head, body = split(text)
     present = {l.split()[1] for l in head if l.startswith("import ")}
-    new = sorted(n for n in needed if n not in present)
-    if not new:
+    stale = {i for i in present if i.rsplit(".", 1)[-1] in moved_fqns and i != moved_fqns[i.rsplit(".", 1)[-1]]
+             and i.startswith(ROOT_PKG + ".")}
+    rewritten = {moved_fqns[i.rsplit(".", 1)[-1]] for i in stale}
+    new = sorted(n for n in needed | rewritten if n not in present)
+    if not new and not stale:
         return False
-    imports = sorted(present | set(new))
+    imports = sorted((present - stale) | set(new))
     pkg_line = [l for l in head if l.startswith("package ")]
     out = "".join(pkg_line) + "\n" + "".join(f"import {i}\n" for i in imports) + "\n" + body
     open(path, "w", encoding="utf-8").write(out)
@@ -112,6 +116,7 @@ def main(argv):
     for g in GENERATED:
         owner[g] = ROOT_PKG
     moved_names = {n for p in moved for n in declarations(open(p, encoding="utf-8").read())}
+    moved_fqns = {n: f"{new_pkg}.{n}" for n in moved_names}
     changed = 0
     for p in all_files:
         text = open(p, encoding="utf-8").read()
@@ -119,7 +124,7 @@ def main(argv):
         words = set(re.findall(r"\b\w+\b", split(text)[1]))
         relevant = words if p in moved else words & moved_names
         needed = {f"{owner[n]}.{n}" for n in relevant if n in owner and owner[n] != pkg}
-        changed += add_imports(p, needed)
+        changed += add_imports(p, needed, moved_fqns)
     print(f"moved {len(targets)} file(s) to {new_pkg}; imports added in {changed} file(s)")
     return 0
 
