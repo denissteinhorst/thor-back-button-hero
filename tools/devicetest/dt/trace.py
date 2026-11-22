@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: 0BSD
 """Gesture traces from a DEBUG_GESTURES build: the service's own decision log, normalized so two runs
 compare exactly. Only identified volatile fields are replaced, and each by a symbol bound one-to-one,
-so reuse and distinctness survive: pid/time, measured durations, input device ids and task ids. Keys,
+so reuse and distinctness survive: pid/time, measured durations, input device ids, task ids and the
+live battery/temperature readings in the status notice. Keys,
 actions, displays, arguments and the order of the lines stay as they are."""
 
 import re
@@ -13,6 +14,12 @@ MEASURED = [
     (re.compile(r"\bt=-?\d+\b"), "t=<t>"),
     (re.compile(r"\(\+-?\d+ms since previous DOWN\)"), "(+<dt> since previous DOWN)"),
     (re.compile(r"\bheld=-?\d+ms\b"), "held=<dt>"),
+]
+# The status notice reports live device readings; only those numbers vary, its wording stays.
+NOTICE = re.compile(r"^Notice: ")
+READINGS = [
+    (re.compile(r"\b\d+ %"), "<n> %"),
+    (re.compile(r"-?\d+(?:[.,]\d+)? °C"), "<n> °C"),
 ]
 SYMBOLS = [("device", "D"), ("task", "T")]
 
@@ -34,6 +41,9 @@ def normalize(lines):
     for line in lines:
         for pattern, replacement in MEASURED:
             line = pattern.sub(replacement, line)
+        if NOTICE.match(line):
+            for pattern, replacement in READINGS:
+                line = pattern.sub(replacement, line)
         for kind, prefix in SYMBOLS:
             def bind(m, kind=kind, prefix=prefix):
                 ids = seen[kind]

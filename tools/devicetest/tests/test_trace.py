@@ -63,6 +63,16 @@ class TraceTest(unittest.TestCase):
     def test_collapsed_device_ids_differ(self):
         self.assertTrue(compare(trace(LOG), trace(LOG.replace("device=23", "device=17"))))
 
+    def test_status_notice_readings_vary_but_its_wording_does_not(self):
+        a = trace("D/BackButtonHero( 1): Notice: Battery 99 % · plugged in · 20,0 °C\n")
+        b = trace("D/BackButtonHero( 2): Notice: Battery 41 % · plugged in · 31.5 °C\n")
+        self.assertEqual(["Notice: Battery <n> % · plugged in · <n> °C"], a)
+        self.assertEqual([], compare(a, b))
+        self.assertTrue(compare(a, trace("D/BackButtonHero( 1): Notice: Battery 99 % · on battery · 20,0 °C\n")))
+
+    def test_readings_outside_the_notice_are_kept(self):
+        self.assertTrue(compare(trace("D/BackButtonHero( 1): LEVEL 50 %\n"), trace("D/BackButtonHero( 1): LEVEL 60 %\n")))
+
     def test_compare_names_the_line(self):
         diffs = compare(["a", "b"], ["a"])
         self.assertEqual(["line 2: expected 'b', got '<missing>'"], diffs)

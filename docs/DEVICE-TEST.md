@@ -223,9 +223,24 @@ place over the normal debug build.
 
 `dt/trace.py` reads the service's lines from logcat and normalizes only the fields that vary between
 runs: pid and timestamps, measured durations (`t=`, `held=`, time since the previous DOWN) and input
-device and task ids, which become symbols numbered by first appearance. Configured durations, keys,
+device and task ids, which become symbols numbered by first appearance, and the battery and
+temperature readings of the status notice. Configured durations, keys,
 actions, displays, arguments and line order stay. Its host tests (`tests/test_trace.py`) show that a
 wrong display, a missing, duplicate or reordered line and two ids collapsed into one still differ.
+
+```sh
+python3 tools/devicetest/trace.py capture --run NAME [--rev REV] [--probe PATCH]
+python3 tools/devicetest/trace.py compare RUN_A RUN_B
+```
+
+`capture` builds (or reuses) the trace APK, installs it as an arm of the recovery transaction, warms
+the new pad clone up until a Back press arrives, then records each scenario's normalized trace and its
+observed effect (media keys) under `refactoring/baseline/S6/traces/<run>/`. The restore reinstalls the
+original build. Scenarios use the gesture suite's timings (double 300 ms, tap-hold 600 ms, hold 800 ms),
+plus two bands released at 700 ms, 100 ms clear of both thresholds: the trace prints *configured*
+durations, not the delay a timer was actually posted with, so only those bands show a wrong delay on the
+device. Exact delays and one-millisecond boundaries are covered on the JVM by `BackGestureThresholdTest`.
+`--probe` applies a sensitivity-probe diff inside the temporary worktree only; it is never committed.
 
 ## Adding a test
 
