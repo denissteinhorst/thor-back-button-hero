@@ -28,6 +28,7 @@ the assertions it actually makes, and a planned check is never counted as passin
 - [Service, platform and non-functional promises](#service-platform-and-non-functional-promises-svc)
 - [Cross-feature scenarios](#cross-feature-scenarios-x)
 - [Known baseline limitations](#known-baseline-limitations-lim)
+- [JVM view snapshots outside the settings activity (S4)](#jvm-view-snapshots-outside-the-settings-activity-s4)
 - [Inventories](#inventories)
 - [Gap summary](#gap-summary)
 
@@ -129,13 +130,13 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-SWI-1 | Opens on the bottom screen with one card per observed app, memory and actions; Back closes it | B | RecentsCarousel, RecentsCardStyle, RecentsMemory | windows: switcher opens, Back closes | C1, B4 | S5/S6 | R6, R7 | H | JVM (styling) + DEV |
+| F-SWI-1 | Opens on the bottom screen with one card per observed app, memory and actions; Back closes it | B | RecentsCarousel, RecentsCardStyle, RecentsMemory, SwitcherSnapshot · g:switcher_* | windows: switcher opens, Back closes | C1, B4 | S5/S6 | R6, R7 | H | JVM (styling) + DEV |
 | F-SWI-2 | Tapping a card opens the app (task moved, not relaunched); swiping up closes it; horizontal scroll never closes | B | CardTouch, RecentsSelection | windows: controller opens app | C2, C3, C4 | S5/S6 | R6, R7 | H | JVM+DEV |
 | F-SWI-3 | "Screenshot" captures only the bottom screen without the switcher | B | — | — | C5 | S5/— | R6, R9 | M | MAN → GAP before R6.1 |
 | F-SWI-4 | "Close all" closes the listed apps (bottom or both scopes) | TB | SwitcherCloseAll | windows: X closes listed apps | C6, C6a | —/S6 | R6 | H | JVM+DEV |
 | F-SWI-5 | Empty state shows the Quickstep icon and "No recent items", theme updates live | B | RecentsEmptyView, RecentsTheme | — | C7 | S5/— | R7 | L | JVM |
 | F-SWI-6 | "Show apps from both screens" adds top apps with a screen badge | TB | RecentsDisplayBadge, RecentsBadges | — | C2a | S5/— | R6 | M | JVM |
-| F-SWI-7 | Controller navigation: left/right selects, confirm opens, up closes; focus returns after every close path | B | RecentsSelection, RecentsCarousel | windows: controller opens app | C8a, C8c | —/S6 | R6 | H | JVM+DEV |
+| F-SWI-7 | Controller navigation: left/right selects, confirm opens, up closes; focus returns after every close path | B | RecentsSelection, RecentsCarousel, SwitcherSnapshot · g:switcher_many_* | windows: controller opens app | C8a, C8c | —/S6 | R6 | H | JVM+DEV |
 | F-SWI-8 | Thumbnails are cached per task and shown when available; a package on both screens previews the switcher's task | B | RecentsThumbnailCache, SwitcherPreview, AccessibilityAppSource | — | C1 | S5/— | R6 | L | JVM |
 | F-SWI-9 | Stale tasks disappear; failed system queries never clear history | B | SwitcherTaskSync, RecentTaskQuery, RecentsTaskState | — | C2c | —/— | R6 | M | JVM |
 | F-SWI-10 | ES-DE Companion keeps its card although Android excludes it from native Recents | B | RecentTaskQuery | — | C2d | —/— | R6 | M | JVM + MAN |
@@ -284,6 +285,24 @@ separate scope with its own owner decision.
 | F-LIM-4 | ES-DE/Companion do not return automatically after a swapped game ends (deliberately removed in 1.4.1) |
 | F-LIM-5 | Unreproduced report: app not working despite accessibility permission |
 | F-LIM-6 | Heading drift of gyro without magnetometer; sustained acceleration not separable from gravity |
+
+## JVM view snapshots outside the settings activity (S4)
+
+Recorded on the baseline production code; each golden is frozen by contract A6. Overlays are
+captured from the window manager as added (`support/OverlayTree.kt`: window parameters, the
+`ViewTree` text, and alpha, rotation, elevation and background per view).
+
+| Producer | JVM · Golden | Not visible to a tree snapshot → where it is asserted |
+|---|---|---|
+| NoticeOverlay | OverlaySnapshot · g:overlay_notice | Fade timing → device notice log (any area using notices), manual |
+| RecordingIndicatorOverlay | OverlaySnapshot · g:overlay_recording | Pulse drawing → S5 / manual video procedure |
+| FocusIndicatorOverlay | OverlaySnapshot · g:overlay_focus | Pictogram pixels and tap-to-open on device → S5, focus device checks |
+| AppControlPrompt | OverlaySnapshot · g:overlay_app_control_* | Controller key routing → device app-control checks |
+| AutoControllerFocus, DpadOverlay | OverlaySnapshot · g:overlay_auto_focus, g:overlay_dpad | Window focus and key capture → device D-pad/focus checks |
+| SwitcherOverlay (+ RecentsCarousel, RecentsEmptyView, RecentsBadges) | SwitcherSnapshot · g:switcher_* | Launcher-derived colours (absent on the JVM: the selection colour is transparent there), thumbnail pixels, memory figures (0 B on the JVM) → S5 bottom-screen captures, C1/C7 |
+| MacroEditor, MacroLibraryDialog | EditorDialogSnapshot · g:macro_editor_*, g:macro_library_en_light | Drag/drop and step-sheet interaction stay in MacroSettings |
+| GyroSettingsDialog | EditorDialogSnapshot · g:gyro_setup_* | GyroPreview canvas → S5; live sensor → manual gyro procedure |
+| ActionChooser, WelcomeSheet, BindingsOverview, ExceptionGroupDialog | existing g:dialog_*, g:welcome_*, g:overview_*, g:exceptions_* | BindingsOverview vector drawing → S5 |
 
 ## Inventories
 
