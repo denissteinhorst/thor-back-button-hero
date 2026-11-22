@@ -1,0 +1,101 @@
+## top=true top_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800033 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true top_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x31 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true top_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800035 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true center_left
+window type=2032 size=234x234 x=60 y=0 gravity=0x800013 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true center
+window type=2032 size=468x468 x=0 y=0 gravity=0x11 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true center_right
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true bottom_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800053 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true bottom_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x51 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=true bottom_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800055 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false top_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800033 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false top_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x31 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false top_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800035 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false center_left
+window type=2032 size=234x234 x=60 y=0 gravity=0x800013 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false center
+window type=2032 size=468x468 x=0 y=0 gravity=0x11 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false center_right
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false bottom_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800053 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false bottom_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x51 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## top=false bottom_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800055 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## tappable
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000328 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=true focusable=true contentDescription="Controller focus: Top screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## persistent
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  ImageView visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Bottom screen"
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+## no position adds nothing

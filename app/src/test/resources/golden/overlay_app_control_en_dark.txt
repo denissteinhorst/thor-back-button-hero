@@ -1,0 +1,21 @@
+## three options
+window type=2032 size=960x-2 x=0 y=0 gravity=0x11 flags=0x01020020 format=-3 alpha=1.0 title=""
+   visibility=VISIBLE minHeight=0 padding=[48,48,48,36] clickable=false focusable=true
+    TextView visibility=VISIBLE minHeight=0 padding=[24,0,24,30] clickable=false focusable=false margin=[0,0,0,0] text="Close which app?" textSizePx=54.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+     visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Top screen" textSizePx=51.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Bottom screen" textSizePx=51.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+        TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Both screens" textSizePx=51.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+    View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,18,24,18]
+    TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Cancel" textSizePx=51.0 textColor=#FFFF8A80 maxLines=2147483647 bold=false
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF303034 radius=60.0 shape=0)
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #3 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #4 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#44FFFFFF radius=24.0 shape=0)
+    #5 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #6 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #7 alpha=1.0 rotation=0.0 elevation=0.0 background=color#33FFFFFF
+    #8 alpha=1.0 rotation=0.0 elevation=0.0 background=none

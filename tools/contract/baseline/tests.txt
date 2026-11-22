@@ -338,6 +338,14 @@ OptionGuideTest#a group asks its option, then its screen, and the confirm button
 OptionGuideTest#a single option dialog opened on its own confirms with OK
 OptionGuideTest#an option found by the search is not asked again, only the screen follows
 OptionGuideTest#cancelling a step ends the walk and keeps the action
+OverlaySnapshotTest#D-pad focus window
+OverlaySnapshotTest#app-control prompt
+OverlaySnapshotTest#app-control prompt, German
+OverlaySnapshotTest#app-control prompt, dark
+OverlaySnapshotTest#auto controller-focus window
+OverlaySnapshotTest#controller-focus pictogram
+OverlaySnapshotTest#notice overlay
+OverlaySnapshotTest#recording indicator
 PadHelperLifecycleTest#queued old helper direction cannot navigate after service disposal
 PadHelperLifecycleTest#queued stick report cannot act after service disposal
 PadHelperLifecycleTest#setSticks keeps the mask and only resends a change

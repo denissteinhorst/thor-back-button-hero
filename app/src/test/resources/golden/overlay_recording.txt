@@ -1,0 +1,55 @@
+## top_left
+window type=2032 size=60x60 x=51 y=51 gravity=0x800033 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## top_center
+window type=2032 size=60x60 x=0 y=51 gravity=0x31 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## top_right
+window type=2032 size=60x60 x=51 y=51 gravity=0x800035 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## center_left
+window type=2032 size=60x60 x=51 y=0 gravity=0x800013 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## center
+window type=2032 size=60x60 x=0 y=0 gravity=0x11 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## center_right
+window type=2032 size=60x60 x=51 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## bottom_left
+window type=2032 size=60x60 x=51 y=51 gravity=0x800053 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## bottom_center
+window type=2032 size=60x60 x=0 y=51 gravity=0x51 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## bottom_right
+window type=2032 size=60x60 x=51 y=51 gravity=0x800055 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## talking
+window type=2032 size=60x60 x=51 y=51 gravity=0x800035 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording, microphone on"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## preview
+window type=2032 size=60x60 x=51 y=51 gravity=0x800053 flags=0x01000338 format=-3 alpha=1.0 title=""
+  Indicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false contentDescription="Recording"
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none

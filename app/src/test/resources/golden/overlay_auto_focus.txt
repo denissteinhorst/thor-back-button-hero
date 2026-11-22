@@ -1,0 +1,5 @@
+## default display
+window type=2032 size=48x48 x=0 y=0 gravity=0x11 flags=0x01020020 format=-3 alpha=1.0 title="BBHAutoFocus-<uuid>"
+   visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none

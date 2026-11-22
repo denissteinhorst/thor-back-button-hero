@@ -1,0 +1,20 @@
+## short
+window type=2032 size=-2x-2 x=0 y=192 gravity=0x51 flags=0x01000118 format=-3 alpha=1.0 title="BackButtonHeroNotice"
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[36,30,48,30] clickable=false focusable=false
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screenshot saved" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=gradient(color=#E6323232 radius=66.0 shape=0)
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+## again while shown (reuses the window)
+## two lines, long
+window type=2032 size=-2x-2 x=0 y=192 gravity=0x51 flags=0x01000118 format=-3 alpha=1.0 title="BackButtonHeroNotice"
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[36,30,48,30] clickable=false focusable=false
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="First line
+Second line" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=gradient(color=#E6323232 radius=66.0 shape=0)
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=none
