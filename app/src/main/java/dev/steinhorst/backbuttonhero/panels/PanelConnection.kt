@@ -1,4 +1,4 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.panels
 
 import android.content.Context
 import android.net.LocalServerSocket
@@ -6,13 +6,16 @@ import android.net.LocalSocket
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import org.json.JSONObject
+import dev.steinhorst.backbuttonhero.PService
+import dev.steinhorst.backbuttonhero.PanelWindowHost
+import dev.steinhorst.backbuttonhero.Shell
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.json.JSONObject
 
 /** One authenticated, ordered channel; losing it makes the root owner restore every hidden panel. */
 interface PanelTransport {

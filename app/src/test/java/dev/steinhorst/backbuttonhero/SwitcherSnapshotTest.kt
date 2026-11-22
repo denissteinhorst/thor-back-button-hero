@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.hardware.display.DisplayManager
 import android.view.Display
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import dev.steinhorst.backbuttonhero.support.Golden
 import dev.steinhorst.backbuttonhero.support.OverlayTree
 import org.junit.Assert.assertEquals

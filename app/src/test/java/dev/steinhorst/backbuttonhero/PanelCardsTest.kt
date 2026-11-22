@@ -3,10 +3,12 @@ package dev.steinhorst.backbuttonhero
 import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.os.Looper
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.os.Looper
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -17,7 +19,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class PanelCardsTest {

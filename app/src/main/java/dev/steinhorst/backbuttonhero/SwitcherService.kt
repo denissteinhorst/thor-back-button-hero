@@ -34,6 +34,8 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
+import dev.steinhorst.backbuttonhero.panels.BottomPanels
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import java.io.File
 
 /**

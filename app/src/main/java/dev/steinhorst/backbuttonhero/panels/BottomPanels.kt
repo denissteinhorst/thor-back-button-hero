@@ -1,11 +1,13 @@
-package dev.steinhorst.backbuttonhero
+package dev.steinhorst.backbuttonhero.panels
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.view.Display
-import org.json.JSONObject
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.RunningApp
 import java.util.ArrayDeque
+import org.json.JSONObject
 
 /** Serializes capture/hide/show so a card always belongs to the panel, never the app underneath. */
 class BottomPanels(

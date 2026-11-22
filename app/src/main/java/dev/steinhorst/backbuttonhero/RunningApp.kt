@@ -2,6 +2,7 @@ package dev.steinhorst.backbuttonhero
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
 
 data class RunningApp(val packageName: String, val label: String, val icon: Drawable?, val thumbnail: Bitmap?, val panel: PanelWindow? = null) {
     val key: String get() = panel?.let { "@panel:${it.id}" } ?: packageName

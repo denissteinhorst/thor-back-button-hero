@@ -3,3 +3,5 @@
 #   OldName -> NewName            a type (test class or ratchet selector)
 #   OldTest#old name -> NewTest#new name   one test case
 # Adding a line is a reviewed act: the old assertions must survive under the new name.
+PanelWindows -> panels.PanelWindows
+BottomPanels -> panels.BottomPanels
