@@ -53,6 +53,37 @@ them with `--no-verify`.
 > `OldTargetApi` while a machine with only `android-34` installed never saw it. CI was red
 > for roughly fifteen commits while the local gate stayed green. Check the actual CI run.
 
+## The contract check
+
+```sh
+tools/contract/check.sh            # after ./tools/verify.sh
+tools/contract/selftest.sh         # proves each check rejects a deliberate fault
+tools/contract/prod-diff.sh        # production inputs identical to the refactoring baseline
+```
+
+`check.sh` first lets Gradle bring the APKs and reports up to date (incrementally, so a clean tree costs
+seconds), then compares them with frozen fixtures in `tools/contract/baseline/`. Run on its own,
+`contract.py check` builds nothing and reports an output older than one of its inputs as BUILD
+REQUIRED (exit 2), never as a pass. Each check prints one PASS/FAIL line:
+
+| Check | Frozen contract |
+|---|---|
+| A0 | Release DEX unchanged; only while production code must not change (`--phase S`, the default) |
+| A1 | Release and debug manifests (components, permissions, flags, filters, versions) |
+| A2 | Release resource table |
+| A3 | Every non-DEX APK entry by CRC, including `libpadhelper.so`; AGP's Git revision entry is normalized |
+| A4 | Frozen component and root entry point classes (`classes.txt`), root ones with `public static main(String[])` |
+| A5 | Wire and storage identifiers in the DEX (`wire-strings.txt`); supporting evidence only |
+| A6 | Every golden snapshot by hash |
+| A7 | Every JVM test case still exists (or is mapped in `renames.txt`) and passed |
+| A8 | No coverage ratchet removed or lowered; every selector matches compiled classes |
+| A9 | Release runtime dependency graph |
+| A10 | `DEBUG_GESTURES` is off |
+| A11 | Lint result identities and the lint baseline file |
+
+Fixtures are refreshed only as a reviewed act (`contract.py snapshot`, see `baseline/ORIGIN`), never
+to turn a failing check green. These tools do not run in `./tools/verify.sh` or CI.
+
 ## The pyramid
 
 ### Base — JVM tests (Robolectric + JUnit), 98 classes, 726 tests

@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: 0BSD
+# Reviewed renames for the test contract (A7) and the coverage ratchets (A8), one per line:
+#   OldName -> NewName            a type (test class or ratchet selector)
+#   OldTest#old name -> NewTest#new name   one test case
+# Adding a line is a reviewed act: the old assertions must survive under the new name.
