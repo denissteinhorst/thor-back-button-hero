@@ -38,10 +38,11 @@ if [ -n "$p" ]; then
   for d in /proc/$p/fd/*; do case "$(readlink $d)" in /dev/input/event*deleted*) f=$d;; esac; done
 fi
 if [ -z "$f" ]; then
-  n=$(awk '/^N: Name="Xbox Wireless Controller"/{x=1} x&&/^H: Handlers=/{for(i=2;i<=NF;i++) if($i ~ /^event/){print $i; exit}}' /proc/bus/input/devices)
-  f=/dev/input/$n
+  # The first handler field reads "Handlers=eventN", so match the event name anywhere in a field.
+  n=$(awk '/^N: Name="Xbox Wireless Controller"/{x=1} x&&/^H: Handlers=/{for(i=2;i<=NF;i++) if(match($i, /event[0-9]+/)){print substr($i, RSTART, RLENGTH); exit}}' /proc/bus/input/devices)
+  [ -n "$n" ] && f=/dev/input/$n
 fi
-[ -e "$f" ] || { echo "ERR no pad"; exit 1; }
+[ -c "$f" ] || { echo "ERR no pad"; exit 1; }
 e() { sendevent "$f" $1 $2 $3; }
 s() { sendevent "$f" 0 0 0; }
 """

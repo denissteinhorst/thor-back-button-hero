@@ -84,7 +84,7 @@ pending".
 | F-HLP-1 | Back + D-pad direction runs its binding; the press is withheld and the game keeps focus | L2 | DpadPrefs (defaults/targets), PadHelperLifecycle (reports) | sources: D-pad and stick directions | C17b, C17c, C17d | —/S6 | R11 | H | JVM+DEV |
 | F-HLP-2 | The helper hides AYN's pad behind an identical clone on controller number 1; without Back, input is unchanged | — | PadHelperLifecycle | preflight; sources: unbound reaches game | C17a | —/S6 | R11 | H | DEV+MAN |
 | F-HLP-3 | The original pad is restored on every exit path: service off, process death, clearing all D-pad bindings | — | PadHelperLifecycle | service: restart | C17g, C18, C20 | —/S6 | R10, R11 | H | GAP (process-death restore) → before R10.1/R11.1 |
-| F-HLP-4 | Holding Home + Back for 5 s hands the pad back; shortcuts fall back to the overlay until restart | — | — | — | C17f | —/S6 | R11 | H | MAN → GAP device scenario before R11.1 |
+| F-HLP-4 | Holding Home + Back for 5 s hands the pad back; shortcuts fall back to the overlay until restart | — | — | service: Home + Back held 5 s hands the pad back | C17f | —/S6 | R11 | H | DEV (S6: release, clone gone, native face input reaches the game, Back + D-pad via overlay, helper back after restart) |
 | F-HLP-5 | Controller-style switches (Standard, Xbox, Ban) keep the clone working | — | — | ayn: controller style | C17e | —/— | R11 | H | DEV+MAN |
 | F-HLP-6 | Without pservice, Back + D-pad works through a focus overlay (games may pause) and settings warn | — | — | — | C17h | S5/— | R3, R11 | M | MAN → GAP before R3.1 |
 | F-HLP-7 | Stick directions fire once per deflection and need the centre before the next | L2 | Stick | sources: D-pad and stick directions | C17i, C17j | —/S6 | R4, R11 | M | JVM+DEV |
@@ -317,7 +317,7 @@ values from `ActionGroups`. Total `"@…"` literals in production source: 57 = 5
 directions; four directions per stick; three click gestures per stick; mirrored in dual mode's Home
 layer for every binding except Back + Home (`Prefs.HOME_LAYER_BASES`).
 
-**Device checks.** 74 registered checks in 16 areas, 82 runs with the Home layer
+**Device checks.** 75 registered checks in 16 areas, 83 runs with the Home layer
 (`python3 tools/devicetest/run.py --list`).
 
 ## Gap summary
@@ -336,7 +336,7 @@ before R1 must have evidence by then):
 | R8.1 (settings UI) | F-SET-9, F-SET-15, F-SET-16 |
 | R9.1 (media) | F-X-7 |
 | R10.1 (lifecycle) | F-HLP-3, F-X-6, F-X-8, F-X-12 |
-| R11.1 (helper) | F-HLP-4, F-HLP-10 |
+| R11.1 (helper) | F-HLP-10 (F-HLP-4 closed by the S6 device check) |
 | S7 (resources) | F-SVC-10 |
 
 Every row also has a visual (S5) or trace (S6) allocation where marked; those columns are planned,

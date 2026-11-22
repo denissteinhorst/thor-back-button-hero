@@ -110,3 +110,58 @@ def restart(d):
         raise Fail("the helper was never restarted")
     time.sleep(1.5)
     expect_media(d, lambda: d.press(Seq().combo(d.face("x"))), ["MEDIA_NEXT"])
+
+
+def _pad_nodes(d):
+    """Input devices named like AYN's pad: the real one, plus the helper's clone while it holds the pad."""
+    return d.sh("grep -c '^N: Name=\"Xbox Wireless Controller\"' /proc/bus/input/devices") or "0"
+
+
+@test("service", "Home + Back held 5 s hands the pad back; Back + D-pad then works through the overlay")
+def emergency_release(d):
+    """The inactive-helper fallback (docs/HELPER.md), reached the way a user reaches it. It is not the
+    no-pservice path: root stays available, only the helper has stepped aside until the restart."""
+    d.put("home_as_back", False)
+    d.bind("dpad_down", "@media_next")
+    ensure_helper(d)
+    media_session(d)
+    expect_media(d, lambda: d.press(Seq().with_back(lambda s: s.hat("down"))), ["MEDIA_NEXT"])
+    held = _pad_nodes(d)
+    try:
+        # The helper judges the 5 s only when a pad event arrives; a real pad's sticks deliver them
+        # constantly, injected keys do not. Stick noise of one unit, far below any deadzone, stands in.
+        hold = Seq().key(pad.BACK, True).wait(100).key(pad.HOME, True)
+        for i in range(28):
+            hold.wait(200).abs(pad.ABS_X, 0 if i % 2 else 1)
+        d.press(hold.key(pad.HOME, False).key(pad.BACK, False).wait(500))
+        d.eventually(lambda: not d.helper_pid(), 6, "the helper kept running after Home + Back for 5 s")
+        _release_keys(d)
+        d.eventually(lambda: int(_pad_nodes(d)) == int(held) - 1, 6,
+                     f"the clone did not go away: {held} pads before, {_pad_nodes(d)} now")
+        time.sleep(1.0)
+        if d.helper_pid():
+            raise Fail("the helper was started again before the service restarted")
+        # The native pad reaches the game directly again. Its own key layout names the face buttons,
+        # which need not match the clone's, so any face button press counts as arrived.
+        d.probe_start()
+        try:
+            d.clear_log()
+            d.press(Seq().tap(d.face("a"), after=400))
+            face = {("KEY", "DOWN", f"KEYCODE_BUTTON_{x}") for x in "ABXY"}
+            d.eventually(lambda: face & set(d.probe_events()), 3,
+                         f"no face button reached the game from the native pad: {d.probe_events()}")
+        finally:
+            d.probe_stop()
+        time.sleep(0.5)
+        expect_media(d, lambda: d.press(Seq().with_back(lambda s: s.hat("down"), lead=400)), ["MEDIA_NEXT"])
+    finally:
+        _release_keys(d)
+        d.restart_service()
+    d.eventually(d.helper_pid, 12, "the helper did not come back after the service restarted")
+
+
+def _release_keys(d):
+    """The helper exits mid-hold, so the hold's own key-ups went to its closed fd. Without them the
+    kernel keeps Back and Home down on the native pad and drops the next press of either."""
+    if not d.helper_pid():
+        d.press(Seq().key(pad.HOME, False).key(pad.BACK, False).wait(200))
