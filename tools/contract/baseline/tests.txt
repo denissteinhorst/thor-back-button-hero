@@ -77,6 +77,11 @@ BackGestureMachineTest#tap hold remains armed after single tap has already fired
 BackGestureMachineTest#tap then hold again opens top recents instead of swapping screens
 BackGestureMachineTest#with double-tap disabled, UP fires onSingleTap immediately and schedules nothing
 BackGestureMachineTest#with hold disabled, nothing is scheduled at DOWN and UP still schedules a single tap
+BackGestureThresholdTest#follows recent tap without tap hold uses only the double tap window
+BackGestureThresholdTest#second tap within, at and just past the double tap window
+BackGestureThresholdTest#tap hold recognition within, at and just past its grace window
+BackGestureThresholdTest#the tap hold grace and the default native long press are unchanged
+BackGestureThresholdTest#timers are posted with exactly the configured delays
 BindingsOverviewTest#a binding changed elsewhere shows up when the overview comes back
 BindingsOverviewTest#a narrow screen lists the labels below the drawing
 BindingsOverviewTest#home shows its shortcut or, in its Back mode, that mode

@@ -56,10 +56,10 @@ pending".
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-GES-1 | A single tap of Back runs the single-tap binding after the double-tap window, at once when no double tap is bound | L2 | BackGestureMachine, DoubleTapDetector | gestures: single/double/tap-hold; single fires at once | B1, B2, B7 | —/S6 | R4 | H | JVM+DEV |
-| F-GES-2 | Two taps within the double-tap time run the double-tap binding and no single tap | L2 | BackGestureMachine, DoubleTapDetector | gestures: single/double/tap-hold | B3, B4 | —/S6 | R4 | H | JVM+DEV |
-| F-GES-3 | Tap, then hold within the tap-hold window runs the tap-and-hold binding, never a swap | L2 | BackGestureMachine | gestures: single/double/tap-hold | B6 | —/S6 | R4 | H | JVM+DEV |
-| F-GES-4 | Holding Back past the hold time runs the hold binding; releasing adds no tap | L2 | BackGestureMachine | gestures: hold adds no tap | B5, B8 | —/S6 | R4 | H | JVM+DEV |
+| F-GES-1 | A single tap of Back runs the single-tap binding after the double-tap window, at once when no double tap is bound | L2 | BackGestureMachine, BackGestureThreshold, DoubleTapDetector | gestures: single/double/tap-hold; single fires at once | B1, B2, B7 | —/S6 | R4 | H | JVM+DEV |
+| F-GES-2 | Two taps within the double-tap time run the double-tap binding and no single tap | L2 | BackGestureMachine, BackGestureThreshold, DoubleTapDetector | gestures: single/double/tap-hold | B3, B4 | —/S6 | R4 | H | JVM+DEV |
+| F-GES-3 | Tap, then hold within the tap-hold window runs the tap-and-hold binding, never a swap | L2 | BackGestureMachine, BackGestureThreshold | gestures: single/double/tap-hold | B6 | —/S6 | R4 | H | JVM+DEV |
+| F-GES-4 | Holding Back past the hold time runs the hold binding; releasing adds no tap | L2 | BackGestureMachine, BackGestureThreshold | gestures: hold adds no tap | B5, B8 | —/S6 | R4 | H | JVM+DEV |
 | F-GES-5 | An unassigned gesture does nothing (Back is swallowed) while Back + button hotkeys keep working | L2 | BackGestureMachine, UnassignedRow, g:settings_main_*_basic | gestures: unassigned gestures | C17o | —/S6 | R4, R8 | H | JVM+DEV |
 | F-GES-6 | A gesture switched off (double tap, tap-hold, hold) is skipped without delaying the others | L2 | BackGestureMachine, PrefsDefaults | gestures: single fires at once | B7, B8 | —/S6 | R4 | M | JVM+DEV (hold/tap-hold disable not device-asserted) |
 | F-GES-7 | Timings are adjustable per gesture and the slider shows only for an assigned gesture | — | SettingsActivitySnapshot, g:settings_main_*_basic | — | C17o | S5/— | R8 | L | JVM |
