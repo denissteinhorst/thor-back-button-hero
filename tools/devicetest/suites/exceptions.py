@@ -112,6 +112,26 @@ def restart(d):
     expect_media(d, lambda: d.press(Seq().combo(d.face("x"))), ["MEDIA_NEXT"])
 
 
+@test("service", "When the app process dies, the pad is handed back and everything comes back with the service")
+def process_death(d):
+    """A crash or a low-memory kill: the helper sees its socket close and returns the pad to Android;
+    Android restarts the service, which starts a new helper and a new clone."""
+    d.bind("face_x", "@media_next")
+    ensure_helper(d)
+    media_session(d)
+    app_pid, helper_pid, held = d.pid(PKG), d.helper_pid(), _pad_nodes(d)
+    d.root(f"kill -9 {app_pid}")
+    d.eventually(lambda: d.helper_pid() != helper_pid, 10, "the helper outlived the app process")
+    d.eventually(lambda: d.pid(PKG) and d.pid(PKG) != app_pid, 20, "the app process did not come back")
+    d.reconnect()
+    ensure_helper(d)
+    if _pad_nodes(d) != held:
+        raise Fail(f"{held} pads before the kill, {_pad_nodes(d)} after the restart")
+    media_session(d)
+    time.sleep(1.0)
+    expect_media(d, lambda: d.press(Seq().combo(d.face("x"))), ["MEDIA_NEXT"])
+
+
 def _pad_nodes(d):
     """Input devices named like AYN's pad: the real one, plus the helper's clone while it holds the pad."""
     return d.sh("grep -c '^N: Name=\"Xbox Wireless Controller\"' /proc/bus/input/devices") or "0"

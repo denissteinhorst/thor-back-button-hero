@@ -151,7 +151,7 @@ The order keeps related checks together and the most disruptive ones last.
 | `gyro` | Gyro on/off and its notices; a gyro deflection reaches the game's right stick only while on, and with a hold button only while it is held ; tilting holds the stick until calibration starts, then a real stable sensor window must succeed (aiming rates are replaced, since a test cannot turn the device; calibration always uses physical readings) |
 | `panels` | Quick settings, notifications, all ten settings shortcuts, power menu, standby with and without prompt, the first hotkey after waking |
 | `exceptions` | An app exception blocks only its combos; with all Back gestures excluded, Back reaches the app natively |
-| `service` | After the service is switched off and on, the helper restarts and hotkeys work; Home + Back held 5 s releases the pad (clone gone, native input reaches the game, Back + D-pad via the overlay) until the next restart |
+| `service` | After the service is switched off and on, or the app process is killed, the helper restarts and hotkeys work; Home + Back held 5 s releases the pad (clone gone, native input reaches the game, Back + D-pad via the overlay) until the next restart |
 
 ## How things are observed
 
