@@ -102,7 +102,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
 | F-ACT-1 | Launch app (fixed package) opens it on the chosen screen | TB | LaunchAppChooser, g:shoulder_l2_app_with_toggle | windows: launches app top/bottom | C11, C12 | S5/S6 | R5 | H | JVM+DEV |
-| F-ACT-2 | `@app_ask` / `@app_favorites` open an app list (all / starred) on press and launch the choice | TB | LaunchAppChooser | — | — | S5/— | R5, R7 | M | JVM (settings side) → GAP device before R5.1 |
+| F-ACT-2 | `@app_ask` / `@app_favorites` open an app list (all / starred) on press and launch the choice | TB | LaunchAppChooser | windows: launch app (ask) list/cancel, favorites notice | — | S5/— | R5, R7 | M | JVM (settings side) + DEV (list opens on the route screen, Cancel no-op, empty favorites notice); launching the chosen entry shares onLaunchScreen/launchOn with windows: launches app |
 | F-ACT-3 | `@home` opens the launcher on the configured screen | TB | — | windows: Home top and bottom | C13 | —/S6 | R5 | H | DEV |
 | F-ACT-4 | `@back` sends a normal Back to the app with controller focus | TB | — | windows: Back reaches focused app | — | —/S6 | R5 | H | DEV |
 | F-ACT-5 | `@recents` opens system Recents on top; `@switcher` opens the bottom switcher | TB | ActionGroups | windows: switcher/Top Recents opens | C14, B3 | S5/S6 | R5, R6 | H | DEV |
@@ -334,7 +334,7 @@ before R1 must have evidence by then):
 | R2.1 (stored data, S3) | closed by S3: F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
 | R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3; root commands frozen by PrivilegedCommandContractTest (call sites, AYN controls, FrontendParking, AutoControllerFocus), ServiceActionCommandTest (every stored action, helper launch script) and ServiceInternalCommandTest (native Back, swipe-kill, Recents routing, swap, last app, screenshot, top/bottom Recents). SocketLaunchCommandTest freezes the screen recorder launch script; PadHelperProtocolTest freezes the pad helper line protocol (commands, takeover replay, event reactions incl. malformed lines). Still open, due before the first semantic change of the helper connection (needs a production seam, LocalServerSocket is unavailable on the JVM): uid-0 peer acceptance/rejection, line framing from the socket reader, relaunch after a lost helper; until then device suite. Device/manual only: the PanelConnection launch script (needs a LocalServerSocket, unavailable on the JVM) and the AYN panel close (needs a covering panel window) |
 | R4.1 (input pipeline) | CLOSED 2026-11-23 (InputPipelineCharacterization): F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
-| R5.1 (actions) | F-ACT-2 |
+| R5.1 (actions) | CLOSED 2026-11-23 (windows: launch app ask): F-ACT-2 |
 | R6.1 (Recents, panels) | F-SWI-3, F-SWP-2, F-SWP-3, F-PNL-1, F-PNL-2, F-PNL-4 |
 | R8.1 (settings UI) | F-SET-9, F-SET-15, F-SET-16 |
 | R9.1 (media) | F-X-7 |

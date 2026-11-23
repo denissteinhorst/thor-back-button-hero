@@ -416,3 +416,30 @@ def last_app_fast(d):
     finally:
         d.unbind("face_x")
         clean()
+
+
+@test("windows", "Launch app (ask) opens the app list and Cancel leaves everything; favorites without stars only explain")
+def choose_app(d):
+    _clean(d)
+    try:
+        d.start_app(SETTINGS, d.top)
+        d.focus(d.top)
+        time.sleep(1.0)
+        before = d.resumed()
+        d.bind(KEY, "@app_favorites", display="top")
+        _press(d)
+        d.eventually(lambda: d.text("app_favorites_none") in d.notices(), 4,
+                     f"no 'no favorites' notice, saw {d.notices()}")
+        if d.own_windows(d.route() or d.top):
+            raise Fail("favorites without stars opened a list")
+        d.bind(KEY, "@app_ask", display="top")
+        _press(d)
+        d.eventually(lambda: d.own_windows(d.route() or d.top), 4, "no app list appeared")
+        # The prompt's cancel is the face button that is not confirm: printed A on the Thor.
+        d.press(Seq().tap(d.face("a")))
+        d.eventually(lambda: not d.own_windows(d.route() or d.top), 3, "Cancel left the app list open")
+        time.sleep(0.8)
+        if d.resumed() != before:
+            raise Fail(f"cancelling the app list changed the screens: {before} -> {d.resumed()}")
+    finally:
+        _clean(d)
