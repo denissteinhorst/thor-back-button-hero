@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.recents.FrontendParking
+import dev.steinhorst.backbuttonhero.recents.WindowTracker
 import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,13 +53,23 @@ class ServiceWindowEventTest {
 
     private fun handler(service: SwitcherService) = ReflectionHelpers.getField<Handler>(service, "handler")
 
+    /** The service's runnable of that name; the window-change ones live in its WindowTracker. */
+    private fun runnable(service: SwitcherService, name: String): Runnable {
+        val tracker = ReflectionHelpers.callInstanceMethod<WindowTracker>(service, "getWindowTracker")
+        return when (name) {
+            "panelStateRunnable" -> ReflectionHelpers.getField(tracker, "panelRefresh")
+            "reclaimRunnable" -> ReflectionHelpers.getField(tracker, "reclaim")
+            "captureRunnable" -> ReflectionHelpers.getField(tracker, "capture")
+            else -> ReflectionHelpers.getField(service, name)
+        }
+    }
+
     /** Whether the named runnable of the service is waiting on its handler. */
-    private fun pending(service: SwitcherService, name: String) =
-        handler(service).hasCallbacks(ReflectionHelpers.getField<Runnable>(service, name))
+    private fun pending(service: SwitcherService, name: String) = handler(service).hasCallbacks(runnable(service, name))
 
     /** How often the named runnable waits in the main queue: a debounce keeps it at one. */
     private fun queued(service: SwitcherService, name: String): Int {
-        val runnable = ReflectionHelpers.getField<Runnable>(service, name)
+        val runnable = runnable(service, name)
         var message = ReflectionHelpers.getField<android.os.Message?>(Looper.getMainLooper().queue, "mMessages")
         var count = 0
         while (message != null) {

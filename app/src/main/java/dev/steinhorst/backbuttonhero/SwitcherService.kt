@@ -95,6 +95,7 @@ import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.recents.TaskMovePolicy
 import dev.steinhorst.backbuttonhero.recents.TopRecentsNavigation
 import dev.steinhorst.backbuttonhero.recents.TopRecentsState
+import dev.steinhorst.backbuttonhero.recents.WindowTracker
 import java.io.File
 
 /**
@@ -217,12 +218,23 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private var aynButtonPassing: Int? = null
     private val aynButtonPressExpiry = Runnable { aynButtonPresses = 0 }
     private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
-    private val panelStateRunnable = Runnable {
-        if (::panels.isInitialized) panels.refresh(bottomDisplay())
-    }
-    private val reclaimRunnable = Runnable {
-        bottomDisplay()?.let { parking.reclaimed(it, source.topApp(it.displayId)) }
-    }
+    private val windowTracker by lazy { WindowTracker(handler, object : WindowTracker.Host {
+        override fun recordWindows() {
+            source.record(Display.DEFAULT_DISPLAY)
+            bottomDisplay()?.let { source.record(it.displayId) }
+            updateDpadPassthrough(currentException())
+        }
+        override fun refreshPanels() {
+            if (::panels.isInitialized) panels.refresh(bottomDisplay())
+        }
+        override fun parked() = parking.parkedPackage != null
+        override fun reclaimParked() {
+            bottomDisplay()?.let { parking.reclaimed(it, source.topApp(it.displayId)) }
+        }
+        override fun topRecentsActive() = topRecentsControllerActive
+        override fun checkTopRecents() = scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
+        override fun capture() = captureFrontApp()
+    }) }
     private var recentsFocusRestore: String? = null
     private var topRecentsControllerActive = false
     private var topRecentsConfirmed = false
@@ -418,7 +430,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         runCatching { unregisterReceiver(standbyReceiver) }
         registerReceiver(standbyReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF).apply { addAction(Intent.ACTION_SCREEN_ON) })
         updatePadHelper()
-        handler.post(panelStateRunnable)
+        windowTracker.connected()
     }
 
     // The helper hides the pad from Android while it runs, so keep it only when shortcuts or native
@@ -1465,20 +1477,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             return
         }
-        source.record(Display.DEFAULT_DISPLAY)
-        bottomDisplay()?.let { source.record(it.displayId) }
-        updateDpadPassthrough(currentException())
-        handler.removeCallbacks(panelStateRunnable)
-        handler.postDelayed(panelStateRunnable, 400L)
-        if (parking.parkedPackage != null) {
-            handler.removeCallbacks(reclaimRunnable)
-            handler.postDelayed(reclaimRunnable, PARKING_RECLAIM_SETTLE_MS)
-        }
-        if (topRecentsControllerActive) {
-            scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
-        }
-        handler.removeCallbacks(captureRunnable)
-        handler.postDelayed(captureRunnable, CAPTURE_DELAY_MS)
+        windowTracker.windowsChanged()
     }
 
     private fun topRecentsLostFocus(): Boolean {
@@ -1513,7 +1512,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }.apply { isDaemon = true }.start()
     }
 
-    private val captureRunnable = Runnable { captureFrontApp() }
     private var lastCapture = 0L
 
     /** Take the displayed panel before hiding it; task snapshots belong to its owner's Activity. */
@@ -2343,10 +2341,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             private set
 
         const val TAG = "BackButtonHero"
-        const val CAPTURE_DELAY_MS = 800L
         const val MIN_CAPTURE_GAP_MS = 1100L
         const val SWITCHER_SCREENSHOT_DELAY_MS = 100L
-        const val PARKING_RECLAIM_SETTLE_MS = 300L
         const val SYSTEM_SCREENSHOT_CONNECT_MS = 2_000L
         const val AYN_BUTTON_PRESS_EXPIRY_MS = 2_000L
         // AYN's button is KEY_F24 (194) on the gpio-keys device, found by name since event numbers can
