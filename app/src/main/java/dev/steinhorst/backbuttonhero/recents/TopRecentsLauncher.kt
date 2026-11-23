@@ -10,6 +10,9 @@ import dev.steinhorst.backbuttonhero.core.PService
  * Quickstep poll until Overview closes again, and the selection read that identifies the task a
  * card moved. A session number retires late worker results of a launch that was cancelled or
  * replaced. The controller session that may run alongside stays with the service.
+ *
+ * idle --open--> baseline read --> polling (250 ms) --Overview seen, then gone--> selection read --> idle;
+ * polling --25 attempts without Overview / cancel / card selected--> idle.
  */
 class TopRecentsLauncher(private val context: Context, private val handler: Handler, private val host: Host) {
     interface Host {

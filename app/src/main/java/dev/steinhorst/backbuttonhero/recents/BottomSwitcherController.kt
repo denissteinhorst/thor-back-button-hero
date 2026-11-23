@@ -13,6 +13,9 @@ import java.io.File
  * one-second task-state poll while it shows, and task thumbnails (at most three requests per task,
  * a delivered one is final). A session number retires every late worker result of an open that
  * was cancelled, closed or replaced. Controller routing stays with the service.
+ *
+ * closed --toggle--> opening --task list read--> open --toggle/dismiss--> closed;
+ * opening --toggle/cancelOpen--> closed (the late result is dropped by the session).
  */
 class BottomSwitcherController(private val context: Context, private val handler: Handler, private val host: Host) {
     interface Host {

@@ -116,6 +116,11 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `TopRecentsNavigation.kt` | 45 | Buffers D-pad presses while top Recents initializes, then releases them. |
 | `TopRecentsState.kt` | 48 | The small subset of AYN Launcher3's dump needed to know the Overview state and card geometry. |
 | `TaskRemover.kt` | 57 | *(root)* Removes recent tasks like Recents' "Clear all". |
+| `WindowTracker.kt` | 49 | The service's window-change handling: records both screens and debounces panel refresh, front-app capture and the parked reclaim. |
+| `TaskOps.kt` | 99 | Closing apps with root or the unprivileged fallback, the memory report, and launching existing tasks. |
+| `SwapCoordinator.kt` | 166 | Hold-to-swap and moving the app with controller focus to the other screen. |
+| `BottomSwitcherController.kt` | 150 | The bottom switcher's open state, its task-state poll and task snapshots. |
+| `TopRecentsLauncher.kt` | 150 | The launch phase of native top Recents: baseline, Quickstep poll and selection. |
 
 **Frontends and bottom-screen panels**
 

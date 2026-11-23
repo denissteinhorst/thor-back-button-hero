@@ -90,7 +90,26 @@ passed in through a host:
 - `pad/GyroActions` — gyro on/off with a button's setup, calibration, and the hold key.
 
 Thin actions bound to the service's own state (power menu, Home, screenshots, launches, AYN
-switches, Recents, the screen swap) stay in the service.
+switches, Recents) stay in the service.
+
+Recents, windows and task moves sit in `recents/`, each behind a host for the service's effects:
+
+- `WindowTracker` — the window-change part of `onAccessibilityEvent`: records both screens and
+  debounces the panel refresh (400 ms), the front-app capture (800 ms) and the parked reclaim.
+- `TaskOps` — closing apps (root removal and force-stop, else `killBackgroundProcesses`), the
+  memory report, and launching an existing task with the relaunch fallback where allowed.
+- `SwapCoordinator` — hold-to-swap and moving the app with controller focus to the other screen;
+  Hold exceptions and captured panels refuse the move before anything leaves its screen.
+- `BottomSwitcherController` — the bottom switcher's open state: task list first, then the
+  overlay; while it shows, a task-state poll every second and at most three snapshot requests
+  per task. Closed → opening → open → closed; a second press while opening cancels.
+- `TopRecentsLauncher` — the launch phase of native top Recents: the task list before Overview
+  opens, the 250 ms Quickstep poll (25 attempts), and the selection read or card click that
+  identifies the moved task.
+
+The top Recents controller session (routing, state checks, focus priming, dismissal queue,
+restore) stays in the service: the key path writes its flags and it drives the pad helper,
+accessibility nodes and gestures. Panel capture/hide/restore is `panels.BottomPanels`.
 
 ### `BackGestureMachine` — the timing decisions, without Android
 
