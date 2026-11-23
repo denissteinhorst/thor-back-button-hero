@@ -328,4 +328,147 @@ class InputPipelineCharacterizationTest {
             fake.uninstall()
         }
     }
+
+    private fun dpad(service: SwitcherService, direction: DpadDirection) = ReflectionHelpers.callInstanceMethod<Unit>(
+        service, "handleDpad", ReflectionHelpers.ClassParameter.from(DpadDirection::class.java, direction))
+
+    private fun dpadRelease(service: SwitcherService, horizontal: Boolean) = ReflectionHelpers.callInstanceMethod<Unit>(
+        service, "handleDpadRelease", ReflectionHelpers.ClassParameter.from(Boolean::class.javaPrimitiveType, horizontal))
+
+    private fun stick(service: SwitcherService, stick: Stick, direction: DpadDirection?) = ReflectionHelpers.callInstanceMethod<Unit>(
+        service, "handleStick", ReflectionHelpers.ClassParameter.from(Stick::class.java, stick),
+        ReflectionHelpers.ClassParameter.from(DpadDirection::class.java, direction))
+
+    private fun focusCommands(fake: FakePService): Int {
+        // ControllerFocus runs its command on a worker thread.
+        repeat(40) { idle(50); Thread.sleep(25) }
+        return fake.commands.count { ControllerFocus.FOCUS_SETTING in it }
+    }
+
+    // R4.2b characterization: Back + D-pad
+    @Test
+    fun `Back plus a bound direction runs once and turns Back's release into no tap`() = withService { service, prefs ->
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_NOTIFICATIONS)
+        prefs.setShoulderAction(DpadDirection.LEFT, Prefs.SHOULDER_QUICK_SETTINGS)
+        dpad(service, DpadDirection.LEFT)
+        idle(2000)
+        assertTrue("no modifier, nothing", globalActions(service).isEmpty())
+        down(service, KeyEvent.KEYCODE_BACK)
+        dpad(service, DpadDirection.LEFT)
+        dpadRelease(service, horizontal = true)
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS), globalActions(service).toList())
+        globalActions(service).clear()
+        // Unbound direction: nothing, and Back stays a tap.
+        down(service, KeyEvent.KEYCODE_BACK)
+        dpad(service, DpadDirection.UP)
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS), globalActions(service).toList())
+    }
+
+    @Test
+    fun `an excepted direction runs nothing yet is still a combo, and paused interception ignores directions`() = withService { service, prefs ->
+        shadowOf(service).setWindowsOnDisplay(0, listOf(appWindow(game)))
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_NOTIFICATIONS)
+        prefs.setShoulderAction(DpadDirection.LEFT, Prefs.SHOULDER_QUICK_SETTINGS)
+        prefs.setShoulderAction(Stick.LEFT.let { StickButton.of(it, DpadDirection.UP) }, Prefs.SHOULDER_QUICK_SETTINGS)
+        prefs.appExceptions = listOf(allowing(game, ExceptionControl.SINGLE))
+        down(service, KeyEvent.KEYCODE_BACK)
+        dpad(service, DpadDirection.LEFT)
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertTrue(globalActions(service).isEmpty())
+        // An excepted stick direction is not even a combo: Back stays a tap.
+        down(service, KeyEvent.KEYCODE_BACK)
+        stick(service, Stick.LEFT, DpadDirection.UP)
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS), globalActions(service).toList())
+    }
+
+    @Test
+    fun `Back plus a stick deflection runs once per deflection`() = withService { service, prefs ->
+        prefs.setShoulderAction(StickButton.of(Stick.RIGHT, DpadDirection.DOWN), Prefs.SHOULDER_QUICK_SETTINGS)
+        down(service, KeyEvent.KEYCODE_BACK)
+        stick(service, Stick.RIGHT, DpadDirection.DOWN)
+        stick(service, Stick.RIGHT, null)
+        stick(service, Stick.RIGHT, DpadDirection.DOWN)
+        stick(service, Stick.RIGHT, null)
+        stick(service, Stick.RIGHT, DpadDirection.UP)
+        up(service, KeyEvent.KEYCODE_BACK)
+        stick(service, Stick.RIGHT, DpadDirection.DOWN)
+        idle(2000)
+        assertEquals(List(2) { AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS }, globalActions(service).toList())
+    }
+
+    @Test
+    fun `without the helper a focus direction arms on press and commits once Back's overlay is gone`() {
+        val fake = FakePService().install()
+        try {
+            withService { service, prefs ->
+                // onServiceConnected, which creates it, never runs here.
+                ReflectionHelpers.setField(service, "controllerFocus", ControllerFocus(service, {}, {}))
+                prefs.setShoulderAction(DpadDirection.LEFT, Prefs.SHOULDER_CONTROLLER_FOCUS)
+                prefs.setShoulderAction(StickButton.of(Stick.LEFT, DpadDirection.UP), Prefs.SHOULDER_CONTROLLER_FOCUS)
+                down(service, KeyEvent.KEYCODE_BACK)
+                val overlay = ReflectionHelpers.getField<DpadOverlay>(service, "dpadOverlay")
+                assertTrue("a bound direction takes window focus while Back is held", overlay.attached)
+                dpad(service, DpadDirection.LEFT)
+                dpadRelease(service, horizontal = false)
+                dpadRelease(service, horizontal = true)
+                assertEquals("the overlay still holds focus", 0, focusCommands(fake))
+                up(service, KeyEvent.KEYCODE_BACK)
+                assertFalse(overlay.attached)
+                assertEquals(1, focusCommands(fake))
+                // An armed stick deflection: another stick's neutral keeps it armed, Back's release commits it
+                // (the overlay path treats the still held stick as released), and its own neutral adds nothing.
+                down(service, KeyEvent.KEYCODE_BACK)
+                stick(service, Stick.LEFT, DpadDirection.UP)
+                stick(service, Stick.RIGHT, null)
+                assertEquals(1, focusCommands(fake))
+                up(service, KeyEvent.KEYCODE_BACK)
+                assertEquals(2, focusCommands(fake))
+                stick(service, Stick.LEFT, null)
+                assertEquals(2, focusCommands(fake))
+                idle(2000)
+                assertTrue(globalActions(service).isEmpty())
+            }
+        } finally {
+            fake.uninstall()
+        }
+    }
+
+    @Test
+    fun `with the helper a focus direction commits on its own axis or stick release while Back is held`() {
+        val fake = FakePService().install()
+        try {
+            withService { service, prefs ->
+                ReflectionHelpers.setField(service, "controllerFocus", ControllerFocus(service, {}, {}))
+                // No socket exists, so the helper's writes go nowhere; only its reported state matters.
+                ReflectionHelpers.setField(ReflectionHelpers.getField<PadHelper>(service, "padHelper"), "active", true)
+                prefs.setShoulderAction(DpadDirection.LEFT, Prefs.SHOULDER_CONTROLLER_FOCUS)
+                prefs.setShoulderAction(StickButton.of(Stick.LEFT, DpadDirection.UP), Prefs.SHOULDER_CONTROLLER_FOCUS)
+                down(service, KeyEvent.KEYCODE_BACK)
+                assertFalse(ReflectionHelpers.getField<DpadOverlay>(service, "dpadOverlay").attached)
+                dpad(service, DpadDirection.LEFT)
+                dpadRelease(service, horizontal = false)
+                assertEquals("the other axis keeps it armed", 0, focusCommands(fake))
+                dpadRelease(service, horizontal = true)
+                assertEquals(1, focusCommands(fake))
+                stick(service, Stick.LEFT, DpadDirection.UP)
+                stick(service, Stick.RIGHT, null)
+                assertEquals("another stick keeps it armed", 1, focusCommands(fake))
+                stick(service, Stick.LEFT, null)
+                assertEquals(2, focusCommands(fake))
+                up(service, KeyEvent.KEYCODE_BACK)
+                assertEquals(2, focusCommands(fake))
+                idle(2000)
+                assertTrue(globalActions(service).isEmpty())
+            }
+        } finally {
+            fake.uninstall()
+        }
+    }
 }
