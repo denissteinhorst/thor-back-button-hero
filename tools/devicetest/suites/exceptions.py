@@ -1,5 +1,6 @@
 """Per-app exceptions, Home as Back, and the service surviving a restart."""
 
+import re
 import time
 
 from dt import pad
@@ -185,3 +186,50 @@ def _release_keys(d):
     kernel keeps Back and Home down on the native pad and drops the next press of either."""
     if not d.helper_pid():
         d.press(Seq().key(pad.HOME, False).key(pad.BACK, False).wait(200))
+
+
+HOLD_BIT = 1 << 3
+GALLERY_PKG = "com.android.gallery3d"
+
+
+def _task_displays(d, pkg):
+    """The displays holding a task of [pkg]."""
+    displays, current = set(), None
+    for line in d.sh("dumpsys activity activities").splitlines():
+        m = re.match(r"Display #(\d+)", line)
+        if m:
+            current = int(m.group(1))
+        elif current is not None and re.search(rf"\* Task\{{.*A=\d+:{re.escape(pkg)}\b", line):
+            displays.add(current)
+    return displays
+
+
+@test("exceptions", "Hold-to-swap leaves an app whose Hold is unchecked in place and moves only the other one")
+def swap_exception(d):
+    from .windows import GALLERY
+    d.bind("back_hold", "@swap_apps")
+    d.put("hold_ms", 600)
+    hold = Seq().key(pad.BACK, True).wait(900).key(pad.BACK, False)
+    try:
+        for pkg in (SETTINGS_PKG, GALLERY_PKG):
+            d.stop_app(pkg)
+        d.start_app(SETTINGS, d.top)
+        d.start_app(GALLERY, d.bottom)
+        # The focused app's exception would hand Hold to it natively; the bottom app has none.
+        d.focus(d.bottom)
+        d.put("app_exceptions", f"{SETTINGS_PKG}\t{ALL & ~HOLD_BIT}\t1\tSettings")
+        time.sleep(0.5)
+        d.press(hold)
+        d.eventually(lambda: d.resumed().get(d.top, "").startswith(GALLERY_PKG + "/"), 8,
+                     f"the other app did not move up: {d.resumed()}")
+        if _task_displays(d, SETTINGS_PKG) != {d.top}:
+            raise Fail(f"the excepted app moved: its tasks are on {_task_displays(d, SETTINGS_PKG)}")
+        if _task_displays(d, GALLERY_PKG) != {d.top}:
+            raise Fail(f"the moved app left a task behind: {_task_displays(d, GALLERY_PKG)}")
+    finally:
+        d.put("app_exceptions", "")
+        for pkg in (SETTINGS_PKG, GALLERY_PKG):
+            d.stop_app(pkg)
+        # Whatever the move revealed below goes back behind the launchers.
+        d.keyevent("KEYCODE_HOME", d.top)
+        d.sh(f"am start --display {d.bottom} -a android.intent.action.MAIN -c android.intent.category.SECONDARY_HOME")

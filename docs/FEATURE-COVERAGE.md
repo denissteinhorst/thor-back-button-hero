@@ -154,7 +154,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
 | F-SWP-1 | Hold-to-swap moves the existing tasks between displays (task IDs survive) | TB | TaskMovePolicy | windows: hold Back swaps | B5, C8j | —/S6 | R6 | H | JVM+DEV |
-| F-SWP-2 | An app whose Hold is unchecked stays; only the other app moves | TB | AppException, TaskMovePolicy | exceptions | C18l | —/S6 | R6 | H | JVM; GAP device before R6.1 |
+| F-SWP-2 | An app whose Hold is unchecked stays; only the other app moves | TB | AppException, TaskMovePolicy | exceptions: hold-to-swap with Hold unchecked | C18l | —/S6 | R6 | H | JVM+DEV |
 | F-SWP-3 | A foreground bottom panel blocks the swap with a localized message | TB | BottomPanels | frontends: hold-to-swap refused, panel shown or hidden | C8i | S5/— | R6 | M | DEV |
 | F-SWP-4 | A protected task (Home, shared root) cancels the pair with a message; no relaunch fallback | TB | TaskMovePolicy | — | C8j | —/— | R6 | H | JVM |
 | F-SWP-5 | Moving the foreground app reveals the previous app or the screen's own home | TB | TaskMovePolicy | windows: swap | C2a, C8e | —/S6 | R6 | M | JVM+DEV |
