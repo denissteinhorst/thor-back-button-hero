@@ -14,6 +14,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Display
 import dev.steinhorst.backbuttonhero.TaskParker
+import dev.steinhorst.backbuttonhero.core.Displays
 import dev.steinhorst.backbuttonhero.core.PService
 import java.util.concurrent.Executors
 
@@ -167,9 +168,7 @@ class FrontendParking(
         }.getOrNull()
     }
 
-    private fun bottomScreen(): Int? = context.getSystemService(DisplayManager::class.java).displays
-        .filter { it.displayId != Display.DEFAULT_DISPLAY && !isParkingDisplay(it) }
-        .maxByOrNull { it.displayId }?.displayId
+    private fun bottomScreen(): Int? = Displays.bottom(context)?.displayId
 
     private fun release() {
         display?.release()
@@ -185,6 +184,6 @@ class FrontendParking(
         const val PARKING_DISPLAY_NAME = "Back Button Hero parking"
 
         /** Private displays are only ever this app's own; none is a screen the user can see. */
-        fun isParkingDisplay(display: Display): Boolean = display.flags and Display.FLAG_PRIVATE != 0
+        fun isParkingDisplay(display: Display): Boolean = Displays.isPrivate(display)
     }
 }

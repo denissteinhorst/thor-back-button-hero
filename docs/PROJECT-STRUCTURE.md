@@ -151,6 +151,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `SystemScreenshot.kt` | 148 | *(root)* Short-lived entry point and Binder handshake for Android's native, display-targeted screenshot flow. |
 | `ScreenshotSaver.kt` | 40 | Fallback: saves a screenshot of one display to `Pictures/Screenshots` through MediaStore when the native flow is unavailable. |
 | `PService.kt` | 120 | Bridge to AYN's root daemon `pservice` (`PServerBinder`), and `runEntryPoint` for root `app_process` entry points. |
+| `Displays.kt` | 20 | The one rule for which display is which screen: top is `DEFAULT_DISPLAY`, bottom is the highest non-default, non-private id. |
 | `Shell.kt` | 15 | Validation and quoting for everything that reaches a root shell. |
 
 #### Native helper — `app/src/main/cpp/`
@@ -178,7 +179,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 111 test classes, **787 tests**. Run by the gate. By area:
+The automated safety net. 112 test classes, **789 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|

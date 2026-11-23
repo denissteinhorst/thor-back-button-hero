@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 787 JVM tests pass |
+| `testDebugUnitTest` | All 789 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 111 classes, 787 tests
+### Base — JVM tests (Robolectric + JUnit), 112 classes, 789 tests
 
 Everything the gate can verify without hardware.
 
@@ -240,7 +240,7 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 73 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+A further 74 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 

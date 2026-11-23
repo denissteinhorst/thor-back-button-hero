@@ -445,8 +445,8 @@ deliberately and should not be "simplified".
 ## Display targeting
 
 All display logic distinguishes `Display.DEFAULT_DISPLAY` (the top screen) from the
-dynamically detected bottom display — `bottomDisplay()` returns the non-default display
-with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
+dynamically detected bottom display — `core.Displays.bottom` (the service's `bottomDisplay()`
+and `FrontendParking` both use it) returns the non-default, non-private display with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
 target a screen, the overlay's window binding, and the swap all route through this.
 
 `AccessibilityAppSource` additionally tracks whether a display is *covered*, so panel

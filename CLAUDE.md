@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **787 JVM tests, 0 failures, 0 skipped** across 111 test classes (as of 2026-11-23). Count from
+- **789 JVM tests, 0 failures, 0 skipped** across 112 test classes (as of 2026-11-23). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -176,7 +176,7 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 73 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  A further 74 classes (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
   Total line coverage across all classes is about 67 % (8886/13286).
@@ -556,7 +556,7 @@ surface for a side-loaded single-user app).
   narrative comments describing obvious code.
 - Display-targeting logic always distinguishes `Display.DEFAULT_DISPLAY`
   (top screen) from the dynamically-detected bottom display (see
-  `bottomDisplay()`: the non-default display with the highest ID). Don't
+  `core.Displays.bottom`: the non-default, non-private display with the highest ID). Don't
   hardcode display IDs elsewhere.
 - Every package name passed to a privileged shell command goes through `Shell.isPkg`.
 

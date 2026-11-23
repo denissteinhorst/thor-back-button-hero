@@ -48,6 +48,7 @@ import dev.steinhorst.backbuttonhero.capture.RecordingIndicatorOverlay
 import dev.steinhorst.backbuttonhero.capture.ScreenRecording
 import dev.steinhorst.backbuttonhero.capture.ScreenshotSaver
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
+import dev.steinhorst.backbuttonhero.core.Displays
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.Shell
 import dev.steinhorst.backbuttonhero.input.AndroidButton
@@ -2690,10 +2691,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** The AYN Thor's second screen is the non-default internal display (id 4, "Screen-2" here).
      *  The parking display has a higher id but is never a screen. */
-    private fun bottomDisplay(): Display? =
-        getSystemService(DisplayManager::class.java).displays
-            .filter { it.displayId != Display.DEFAULT_DISPLAY && !FrontendParking.isParkingDisplay(it) }
-            .maxByOrNull { it.displayId }
+    private fun bottomDisplay(): Display? = Displays.bottom(this)
 
     companion object {
         @Volatile
