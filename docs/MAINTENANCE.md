@@ -70,7 +70,7 @@ way, so most maintenance is either additive or mechanical. A few recipes:
 ### Changing a stored preference default or key
 
 Do **not** just change the default — existing installs would silently shift behavior.
-Add a guarded one-time migration in `Prefs`'s `init` block, following the existing
+Add a guarded one-time migration to `Migrations.kt` (run from `Prefs`'s `init`, in order), following the existing
 pattern: a versioned boolean flag that gates a single rewrite.
 
 ```kotlin

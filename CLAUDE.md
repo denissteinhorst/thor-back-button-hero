@@ -176,7 +176,7 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 71 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  A further 72 classes (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
   Total line coverage across all classes is about 67 % (8886/13286).
@@ -490,10 +490,10 @@ overlay pinned to the bottom screen only. Built entirely with manual
 tap-vs-swipe-up gesture discrimination is hand-rolled in `CardTouch`.
 
 **`Prefs`** wraps `SharedPreferences` and is also where one-time preference
-*migrations* live (see the `init` block: `navigation_flick_defaults_v1`,
+*migrations* run (its `init` calls `Migrations.run`, `prefs/Migrations.kt`: `navigation_flick_defaults_v1`,
 `navigation_flick_directions_v2`, and the removed `@swap_screens` shoulder
 action). When changing a default or renaming a stored key, add a guarded
-migration here rather than silently breaking existing installs — follow the
+migration there rather than silently breaking existing installs — follow the
 existing pattern of a versioned boolean flag guarding a one-time rewrite.
 `shoulder_defaults_v3` is the model for defaults that change for never-touched
 settings: an update pins the old value (L2/R2 stay unassigned), only a fresh install

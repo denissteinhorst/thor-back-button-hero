@@ -179,7 +179,7 @@ A/B flip setting) accepts it and the other face button cancels. It is dismissed 
 ### `Prefs` — storage and migrations
 
 Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time
-**migrations** in its `init` block. Factory shortcuts (L2 screenshot, R2 controller focus) are
+**migrations**, which its `init` runs from `Migrations.kt` in their fixed order. Factory shortcuts (L2 screenshot, R2 controller focus) are
 written once on a fresh install; an update pins L2 and R2 to their existing values, unassigned
 included, so changed defaults never reach an existing install (`shoulder_defaults_v3`). Shoulder actions are stored either as a bare package
 name (launch that app) or as an `@`-prefixed sentinel (`SHOULDER_HOME`,
