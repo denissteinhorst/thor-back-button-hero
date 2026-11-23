@@ -57,6 +57,18 @@ global 3
 [closed] active=false confirmed=false exit=false primed=false launch=false restore=null
 [later] active=false confirmed=false exit=false primed=false launch=false restore=null
 [end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, a clicked card selects its task
+root x2 code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[unknown label] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '1011' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[selected] active=false confirmed=false exit=false primed=false launch=false restore=null
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
 ## controller, confirmed then closed
 root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
 root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK

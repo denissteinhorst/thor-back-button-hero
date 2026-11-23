@@ -85,6 +85,7 @@ import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.recents.FrontendParking
 import dev.steinhorst.backbuttonhero.recents.TaskOps
+import dev.steinhorst.backbuttonhero.recents.TopRecentsLauncher
 import dev.steinhorst.backbuttonhero.recents.RecentsSelection
 import dev.steinhorst.backbuttonhero.recents.BottomSwitcherController
 import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
@@ -199,7 +200,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
         }
     }
-    private val bottomSwitcher by lazy {
+    private val bottomSwitcher: BottomSwitcherController by lazy {
         BottomSwitcherController(this, handler, object : BottomSwitcherController.Host {
             override val connected get() = isConnected
             override val overlay get() = this@SwitcherService.overlay
@@ -254,14 +255,22 @@ class SwitcherService : AccessibilityService(), GestureActions {
     )
     private var topRecentsPendingDismissals = 0
     private var topRecentsClosing = false
-    private var topLaunchSession = 0
-    private var topLaunchBaseline: List<RecentsTaskState>? = null
-    private var topLaunchOverviewSeen = false
-    private var topLaunchAttempts = 0
-    private var topLaunchQueryRunning = false
-    private var topLaunchSelectionPending = false
-    private var topLaunchStartedAt = 0L
-    private val topLaunchRunnable = Runnable { checkTopRecentsLaunch() }
+    private val topLaunch: TopRecentsLauncher by lazy {
+        TopRecentsLauncher(this, handler, object : TopRecentsLauncher.Host {
+            override val connected get() = isConnected
+            override val controllerEnabled get() = prefs.switcherControllerEnabled
+            override fun leaveSwitcher() {
+                cancelBottomSwitcherOpen()
+                overlay.dismiss()
+            }
+            override fun openNative() = openNativeTopRecents()
+            override fun launchFromRecents(pkg: String, displayId: Int, taskId: Int) =
+                this@SwitcherService.launchFromRecents(pkg, displayId, taskId)
+            override fun selected() = restoreRecentsFocus()
+            override fun scheduleStateCheck(delayMs: Long) = scheduleTopRecentsStateCheck(delayMs)
+            override fun trace(message: String) = dlog(message)
+        })
+    }
     // A switcher-close Back press must consume its matching UP too. Otherwise that UP reaches the
     // gesture machine and can turn the same physical press into a tap, double-tap, or hold gesture.
     private var switcherBackDown = false
@@ -838,7 +847,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     .mapNotNull { it.root }.firstOrNull { it.packageName == "com.android.launcher3" }
                     ?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
                 val description = card?.contentDescription?.toString()
-                val baseline = topLaunchBaseline
+                val baseline = topLaunch.baseline
                 val task = if (baseline != null && description != null && card.collectionItemInfo != null &&
                     card.parent?.viewIdResourceName == "com.android.launcher3:id/overview_panel") {
                     RecentsSelection.fromCard(baseline, baseline, description)
@@ -864,7 +873,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun handleDpad(direction: DpadDirection) {
         if (!interceptionEnabled) return
         if (topRecentsControllerActive && prefs.switcherControllerEnabled) {
-            if (topLaunchSelectionPending || topRecentsBackClosePending) return
+            if (topLaunch.selectionPending || topRecentsBackClosePending) return
             if (topRecentsInputReady && topRecentsLostFocus()) {
                 topRecentsInputReady = false
                 topNavigation.pause()
@@ -1419,7 +1428,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (event?.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) {
             // Other applications' clicks are irrelevant; only native top Recents identifies
             // card activations here, including an app already visible on the bottom screen.
-            if (event.packageName == "com.android.launcher3" && topLaunchBaseline != null) {
+            if (event.packageName == "com.android.launcher3" && topLaunch.baseline != null) {
                 val node = event.source
                 val parent = node?.parent
                 val description = node?.contentDescription?.toString()
@@ -1442,28 +1451,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         return !card && node.viewIdResourceName !in setOf("com.android.launcher3:id/action_screenshot", "com.android.launcher3:id/clear_all_button")
     }
 
-    private fun selectTopRecentsCard(description: String) {
-        val baseline = topLaunchBaseline ?: return
-        if (topLaunchSelectionPending) return
-        topLaunchSelectionPending = true
-        val session = topLaunchSession
-        Thread {
-            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
-            handler.post {
-                if (session != topLaunchSession || !isConnected) return@post
-                topLaunchSelectionPending = false
-                val task = states?.let { RecentsSelection.fromCard(baseline, it, description) }
-                if (task != null) {
-                    cancelTopRecentsLaunch()
-                    // End controller initialization before moving the app. A late window-change
-                    // check must not bring Overview back over the task we just selected.
-                    restoreRecentsFocus()
-                    if (task.displayId != Display.DEFAULT_DISPLAY) launchFromRecents(task.packageName, Display.DEFAULT_DISPLAY, task.taskId)
-                    scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
-                }
-            }
-        }.apply { isDaemon = true }.start()
-    }
+    private fun selectTopRecentsCard(description: String) = topLaunch.selectCard(description)
 
     private var lastCapture = 0L
 
@@ -1674,81 +1662,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
      * a dedicated Overview button or the recents gesture would show. GLOBAL_ACTION_RECENTS
      * always targets the default display, which is exactly the top screen in this setup.
      */
-    private fun openTopRecentsNow() {
-        cancelBottomSwitcherOpen()
-        overlay.dismiss()
-        val session = ++topLaunchSession
-        handler.removeCallbacks(topLaunchRunnable)
-        topLaunchBaseline = null
-        topLaunchOverviewSeen = false
-        topLaunchSelectionPending = false
-        topLaunchAttempts = 0
-        Thread {
-            val baseline = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader"))
-            handler.post {
-                if (session != topLaunchSession || !isConnected) return@post
-                dlog("TOP_RECENTS launch baseline=${baseline?.size}")
-                topLaunchBaseline = baseline
-                topLaunchStartedAt = System.currentTimeMillis() * 1_000_000L
-                openNativeTopRecents()
-                if (baseline != null) handler.postDelayed(topLaunchRunnable, 250L)
-            }
-        }.apply { isDaemon = true }.start()
-    }
+    private fun openTopRecentsNow() = topLaunch.open()
 
-    private fun checkTopRecentsLaunch() {
-        val baseline = topLaunchBaseline ?: return
-        if (topLaunchQueryRunning || topLaunchSelectionPending) {
-            handler.postDelayed(topLaunchRunnable, 250L)
-            return
-        }
-        topLaunchQueryRunning = true
-        val session = topLaunchSession
-        val overviewSeen = topLaunchOverviewSeen
-        val startedAt = topLaunchStartedAt
-        Thread {
-            val dump = PService.exec(QUICKSTEP_STATE_COMMAND)
-            val overview = dump?.let { TopRecentsState.parse(it).overview }
-            val states = if (overview == false && overviewSeen) {
-                RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "selection", startedAt.toString()))
-            } else null
-            handler.post {
-                topLaunchQueryRunning = false
-                if (session != topLaunchSession || !isConnected) return@post
-                if (topLaunchSelectionPending) {
-                    handler.postDelayed(topLaunchRunnable, 250L)
-                    return@post
-                }
-                when {
-                    overview == true -> {
-                        if (!topLaunchOverviewSeen && !prefs.switcherControllerEnabled) {
-                            Thread { PService.runEntryPoint(this, "TopRecentsFocus") }.apply { isDaemon = true }.start()
-                        }
-                        topLaunchOverviewSeen = true
-                    }
-                    overview == false && topLaunchOverviewSeen -> {
-                        topLaunchBaseline = null
-                        val task = states?.let { RecentsSelection.movedTask(baseline, it, Display.DEFAULT_DISPLAY) }
-                        dlog("TOP_RECENTS selected task=${task?.taskId} states=${states?.size}")
-                        if (task != null) launchFromRecents(task.packageName, Display.DEFAULT_DISPLAY, task.taskId)
-                        return@post
-                    }
-                    ++topLaunchAttempts >= TOP_RECENTS_READY_ATTEMPTS -> {
-                        topLaunchBaseline = null
-                        return@post
-                    }
-                }
-                handler.postDelayed(topLaunchRunnable, 250L)
-            }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun cancelTopRecentsLaunch() {
-        topLaunchSession++
-        topLaunchBaseline = null
-        topLaunchSelectionPending = false
-        handler.removeCallbacks(topLaunchRunnable)
-    }
+    private fun cancelTopRecentsLaunch(): Unit = topLaunch.cancel()
 
     private fun openNativeTopRecents() {
         if (prefs.switcherControllerEnabled && PService.cachedAvailable()) {
@@ -1897,7 +1813,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun requestTopRecentsStateCheck() {
         if (!topRecentsControllerActive) return
         if (topRecentsBackClosePending) return
-        if (topLaunchSelectionPending) {
+        if (topLaunch.selectionPending) {
             scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
             return
         }
@@ -1918,7 +1834,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                     scheduleTopRecentsStateCheck(0L)
                     return@post
                 }
-                if (topLaunchSelectionPending) {
+                if (topLaunch.selectionPending) {
                     scheduleTopRecentsStateCheck(TOP_RECENTS_EVENT_SETTLE_MS)
                     return@post
                 }
@@ -2072,7 +1988,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun showSwitcherNow() = bottomSwitcher.toggle()
 
-    private fun cancelBottomSwitcherOpen() = bottomSwitcher.cancelOpen()
+    private fun cancelBottomSwitcherOpen(): Unit = bottomSwitcher.cancelOpen()
 
     private fun refreshBottomTaskStates() = bottomSwitcher.refreshTaskStates()
 
@@ -2123,14 +2039,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val TAP_HOLD_GRACE_MS = 600L
         const val NATIVE_BACK_SETTLE_MS = 1_000L
         const val NAV_FLICK_DURATION_MS = 120L
-        const val QUICKSTEP_STATE_COMMAND =
-            "dumpsys activity com.android.launcher3 | " +
-                "awk '/ACTIVITY /{a=/QuickstepLauncher/} " +
-                "a&&(/mState:|mResumed=|mHasWindowFocus=/||(/TaskView\\{/&&(!t++||/ \\.F/))||" +
-                "(/ \\.F/&&/app:id\\/(action_screenshot|clear_all_button)/)){printf \"%s|\",\$0}'"
+        const val QUICKSTEP_STATE_COMMAND = TopRecentsLauncher.QUICKSTEP_STATE_COMMAND
         const val TOP_RECENTS_READY_RETRY_MS = 40L
-        const val TOP_RECENTS_READY_ATTEMPTS = 25
-        const val TOP_RECENTS_EVENT_SETTLE_MS = 140L
+        const val TOP_RECENTS_READY_ATTEMPTS = TopRecentsLauncher.READY_ATTEMPTS
+        const val TOP_RECENTS_EVENT_SETTLE_MS = TopRecentsLauncher.EVENT_SETTLE_MS
         const val TOP_RECENTS_DELETE_SETTLE_MS = 260L
         const val TOP_RECENTS_DISMISS_MS = 110L
         const val POWER_MENU_FOCUS_RETRY_MS = 80L

@@ -126,7 +126,7 @@ class ServiceTopRecentsTest {
             .append(" confirmed=").append(flag("topRecentsConfirmed"))
             .append(" exit=").append(flag("topRecentsExitRequested"))
             .append(" primed=").append(flag("topRecentsFocusPrimed"))
-            .append(" launch=").append((flag("topLaunchBaseline") != null))
+            .append(" launch=").append((ReflectionHelpers.getField<Any?>(ReflectionHelpers.callInstanceMethod<Any>(service, "getTopLaunch"), "baseline") != null))
             .append(" restore=").append(flag("recentsFocusRestore"))
             .append('\n')
     }
@@ -164,6 +164,17 @@ class ServiceTopRecentsTest {
         scenario("launch, selection unreadable", dumps = listOf(overview, closed)) { s ->
             open(s); drain()
             advance(250, 2); log(s, "closed")
+            advance(250, 2); log(s, "later")
+        }
+        val labelled: (Int) -> String = { bottom ->
+            "OK [{\"package\":\"com.example.a\",\"display\":$bottom,\"locked\":false,\"task\":1011,\"label\":\"App A\"}]"
+        }
+        scenario("launch, a clicked card selects its task", baseline = labelled, dumps = listOf(overview)) { s ->
+            open(s); drain()
+            ReflectionHelpers.callInstanceMethod<Unit>(s, "selectTopRecentsCard", ReflectionHelpers.ClassParameter.from(String::class.java, "App B"))
+            drain(); log(s, "unknown label")
+            ReflectionHelpers.callInstanceMethod<Unit>(s, "selectTopRecentsCard", ReflectionHelpers.ClassParameter.from(String::class.java, "App A"))
+            drain(); log(s, "selected")
             advance(250, 2); log(s, "later")
         }
         scenario("controller, confirmed then closed", controller = true, dumps = listOf(overview, overview, closed), selection = moved) { s ->
