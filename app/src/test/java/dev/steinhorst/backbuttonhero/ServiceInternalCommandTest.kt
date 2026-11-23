@@ -3,6 +3,7 @@ package dev.steinhorst.backbuttonhero
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import dev.steinhorst.backbuttonhero.actions.LastAppAction
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.PService
@@ -136,7 +137,7 @@ class ServiceInternalCommandTest {
                 shadowOf(service).setWindowsOnDisplay(0, listOf(appWindow(pkg)))
                 source.record(0)
             }
-            call(service, "switchToLastApp")
+            ReflectionHelpers.callInstanceMethod<LastAppAction>(service, "getLastApp").run()
         }
         run("system screenshot top", out) {
             call(it, "nativeSystemScreenshot", ClassParameter.from(Int::class.javaPrimitiveType, 0), ClassParameter.from(Function0::class.java, {}))

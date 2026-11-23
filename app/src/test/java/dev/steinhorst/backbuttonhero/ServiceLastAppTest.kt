@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
+import dev.steinhorst.backbuttonhero.actions.LastAppAction
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
@@ -71,7 +72,7 @@ class ServiceLastAppTest {
             while (shadow.nextStartedActivityForResult != null) Unit
             ShadowLog.clear()
             out.append("## ").append(label).append('\n')
-            ReflectionHelpers.callInstanceMethod<Unit>(service, "switchToLastApp")
+            ReflectionHelpers.callInstanceMethod<LastAppAction>(service, "getLastApp").run()
             settle()
             fake.commands.drop(startup).filterNot { it.contains("padhelper_start.sh") }.map { normalize(service, it) }
                 .forEach { out.append("root ").append(it).append('\n') }

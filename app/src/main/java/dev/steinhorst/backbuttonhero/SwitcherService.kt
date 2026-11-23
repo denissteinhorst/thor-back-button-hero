@@ -35,7 +35,7 @@ import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
 import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.actions.AynControls
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
-import dev.steinhorst.backbuttonhero.actions.LastApp
+import dev.steinhorst.backbuttonhero.actions.LastAppAction
 import dev.steinhorst.backbuttonhero.actions.PowerMenu
 import dev.steinhorst.backbuttonhero.actions.SystemActions
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
@@ -278,6 +278,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** True while a Home press standing in for Back runs through the Back path. */
     private var translatingHome = false
     private val prefs by lazy { Prefs(this) }
+    private val lastApp by lazy {
+        LastAppAction(this, handler, notice, object : LastAppAction.Host {
+            override fun controllerDisplayId() = this@SwitcherService.controllerDisplayId()
+            override fun appsOnDisplay(displayId: Int) = source.appsOnDisplay(displayId).map { it.packageName }
+            override fun topApp(displayId: Int) = source.topApp(displayId)
+            override fun forget(packageName: String) = source.forget(packageName)
+            override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
+            override fun unavailable() = toastUnavailable()
+        })
+    }
     private val appControl by lazy {
         AppControlActions(this, prefs, notice, object : AppControlActions.Host {
             override fun bottomDisplayId() = bottomDisplay()?.displayId
@@ -1020,7 +1030,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.RECENTS -> openTopRecentsNow()
             Action.Builtin.SWITCHER -> showSwitcherNow()
             Action.Builtin.SWAP_APPS -> swapScreensNow()
-            Action.Builtin.LAST_APP -> switchToLastApp()
+            Action.Builtin.LAST_APP -> lastApp.run()
             Action.Builtin.BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
             Action.Builtin.SCREENSHOT -> screenshot(prefs.levelTarget(button))
             Action.Builtin.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
@@ -1060,41 +1070,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
             onLaunchScreen(button) { displayId -> runCatching { launchOn(pkg, displayId) }.onFailure { toastUnavailable() } }
         }
     }
-
-    /** Brings back the app used before the current one on the controller's screen; see [LastApp]. */
-    private fun switchToLastApp() {
-        val display = controllerDisplayId()
-        val candidates = LastApp.candidates(source.appsOnDisplay(display).map { it.packageName }, source.topApp(display), packageName)
-        if (candidates.isEmpty()) return notice.show(R.string.last_app_none)
-        if (!PService.cachedAvailable()) {
-            // Without root the task cannot be checked; the launch still brings an existing one back.
-            runCatching { launchOn(candidates.first(), display) }.onFailure { toastUnavailable() }
-            return
-        }
-        Thread {
-            // History is per screen but never drops an app that moved to the other one; the launcher
-            // refuses those, so the next app of this screen becomes the last app instead.
-            val attempt = candidates.firstNotNullOfOrNull { pkg ->
-                val result = PService.runEntryPoint(this, "RecentsTaskLauncher", pkg, display.toString(), LastApp.SAME_DISPLAY)
-                Log.d(TAG, "Last app $pkg on $display: $result")
-                if (result == LastApp.OTHER_DISPLAY) null else pkg to result
-            }
-            handler.post {
-                val (previous, result) = attempt ?: return@post notice.show(R.string.last_app_none)
-                when {
-                    result?.startsWith("OK ") == true -> Unit
-                    result == LastApp.TASK_GONE -> {
-                        source.forget(previous)
-                        notice.show(getString(R.string.last_app_gone, appLabel(previous)))
-                    }
-                    else -> notice.show(R.string.swap_unavailable, long = true)
-                }
-            }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun appLabel(pkg: String): String =
-        runCatching { packageManager.getApplicationInfo(pkg, 0).loadLabel(packageManager).toString() }.getOrDefault(pkg)
 
     private fun cancelActiveAppSwitch() {
         activeAppSwitchSession++
