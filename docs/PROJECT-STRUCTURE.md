@@ -175,11 +175,11 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 108 test classes, **771 tests**. Run by the gate. By area:
+The automated safety net. 109 test classes, **776 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
-| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest` |
+| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values) |
 | Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest` |
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |

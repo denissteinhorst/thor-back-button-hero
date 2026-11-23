@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 771 JVM tests pass |
+| `testDebugUnitTest` | All 776 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 108 classes, 771 tests
+### Base — JVM tests (Robolectric + JUnit), 109 classes, 776 tests
 
 Everything the gate can verify without hardware.
 
@@ -94,6 +94,7 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| Stored action sentinels: frozen literal list, Prefs and backup round trip, unknown values | `ActionSentinelContractTest` |
 | Backup file: round trip, robustness against invalid/unknown/hostile content, file name, version comparison, picker intents and the restore flow | `SettingsBackupTest`, `SettingsBackupUiTest` |
 | Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
