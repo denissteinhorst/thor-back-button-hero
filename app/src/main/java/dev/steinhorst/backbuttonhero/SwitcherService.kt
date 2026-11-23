@@ -56,6 +56,7 @@ import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.BackGestureMachine
 import dev.steinhorst.backbuttonhero.input.ComboButton
 import dev.steinhorst.backbuttonhero.input.ComboRouter
+import dev.steinhorst.backbuttonhero.input.DirectionalRouter
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.FaceButton
 import dev.steinhorst.backbuttonhero.input.GestureActions
@@ -163,7 +164,22 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun showFocusIndicator(button: ComboButton) = this@SwitcherService.showFocusIndicator(button)
         override fun runReleased(button: ComboButton) = runReleasedCombo(button)
     })
-    private var pendingDpadFocus: ComboButton? = null
+    private val directionalRouter = DirectionalRouter(object : DirectionalRouter.Host {
+        override val modifierDown get() = this@SwitcherService.modifierDown
+        override val stickInputBlocked get() = !interceptionEnabled || overlay.isShowing || topRecentsControllerActive
+        override val overlayAttached get() = dpadOverlay.attached
+        override val repeatingButton get() = this@SwitcherService.repeatingButton
+        override fun layered(button: ComboButton) = this@SwitcherService.layered(button)
+        override fun action(button: ComboButton) = prefs.shoulderAction(button)
+        override fun allows(button: ComboButton) = allowsCombo(button)
+        override fun markComboFired() = heldGesture.markComboFired()
+        override fun log(message: String) = dlog(message)
+        override fun showFocusIndicator(button: ComboButton) = this@SwitcherService.showFocusIndicator(button)
+        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action)
+        override fun startLevelRepeat(button: ComboButton, action: String) = this@SwitcherService.startLevelRepeat(button, action)
+        override fun stopLevelRepeat() = this@SwitcherService.stopLevelRepeat()
+        override fun runReleased(button: ComboButton) = runReleasedCombo(button)
+    })
     private val stickKeys = PhysicalKeyTracker()
     private val stickClicks by lazy {
         Stick.entries.associateWith { stick ->
@@ -191,7 +207,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
         }
     }
-    private var pendingDpadReleased = false
     private val recentsThumbnails = RecentsThumbnailCache()
     private val requestedThumbnails = mutableMapOf<RecentsThumbnailCache.Key, Int>()
     private var thumbnailQueryRunning = false
@@ -505,7 +520,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         homeGesture.reset()
         stickClickHome.clear()
         comboRouter.clear()
-        pendingDpadFocus = null
+        directionalRouter.forgetArmed()
         stopLevelRepeat()
         stickClicks.values.forEach(StickClickMachine::reset)
         stickKeys.clear()
@@ -730,12 +745,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 stopLevelRepeat()
                 val overlayWasAttached = dpadOverlay.attached
                 dpadOverlay.detach()
-                // Once the overlay is gone a still held D-pad is released to the app, unseen; Back's
-                // release is the last moment left to commit an armed controller focus.
-                if (overlayWasAttached) {
-                    pendingDpadReleased = true
-                    commitDpadFocus()
-                }
+                if (overlayWasAttached) directionalRouter.overlayDetached()
             }
             return pressGesture.handleBack(event)
         }
@@ -821,59 +831,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
             return
         }
-        if (!modifierDown) return
-        val button = layered(direction)
-        val action = prefs.shoulderAction(button)
-        if (action.isEmpty()) return
-        if (!allowsCombo(button)) {
-            // The helper already forwarded this press to the game; see handleShoulder.
-            heldGesture.markComboFired()
-            dlog("DPAD   $button passthrough action=$action")
-            return
-        }
-        heldGesture.markComboFired()
-        pendingDpadFocus = null
-        // Same firmware race as for the shoulder buttons (see handleShoulder): arm on press,
-        // commit on release.
-        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
-            pendingDpadFocus = button
-            pendingDpadReleased = false
-            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
-        } else {
-            stopLevelRepeat()
-            runComboAction(button, action)
-            startLevelRepeat(button, action)
-        }
+        directionalRouter.press(direction)
     }
 
     /** Back + analog stick, from [PadHelper] or [DpadOverlay]; a null [direction] is the stick returning to neutral. */
-    private fun handleStick(stick: Stick, direction: DpadDirection?) {
-        if (direction == null) {
-            if ((repeatingButton?.base as? StickButton)?.stick == stick) stopLevelRepeat()
-            if ((pendingDpadFocus?.base as? StickButton)?.stick == stick) {
-                pendingDpadReleased = true
-                commitDpadFocus()
-            }
-            return
-        }
-        if (!interceptionEnabled || overlay.isShowing || topRecentsControllerActive || !modifierDown) return
-        val button = layered(StickButton.of(stick, direction))
-        val action = prefs.shoulderAction(button)
-        if (action.isEmpty() || !allowsCombo(button)) return
-        heldGesture.markComboFired()
-        pendingDpadFocus = null
-        stopLevelRepeat()
-        // One deflection is one action, except the stepping ones, which repeat while it is held.
-        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
-            pendingDpadFocus = button
-            pendingDpadReleased = false
-            if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
-        } else {
-            dlog("STICK  $button action=$action")
-            runComboAction(button, action)
-            startLevelRepeat(button, action)
-        }
-    }
+    private fun handleStick(stick: Stick, direction: DpadDirection?) = directionalRouter.stick(stick, direction)
 
     /** A held stepping control (volume, brightness) keeps stepping, faster the longer it is held. */
     private fun startLevelRepeat(button: ComboButton, action: String) {
@@ -931,15 +893,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (::padHelper.isInitialized) levelRepeater.stop()
     }
 
-    private fun handleDpadRelease(horizontal: Boolean) {
-        (repeatingButton?.base as? DpadDirection)?.let {
-            if ((it == DpadDirection.LEFT || it == DpadDirection.RIGHT) == horizontal) stopLevelRepeat()
-        }
-        val pending = pendingDpadFocus?.base as? DpadDirection ?: return
-        if ((pending == DpadDirection.LEFT || pending == DpadDirection.RIGHT) != horizontal) return
-        pendingDpadReleased = true
-        commitDpadFocus()
-    }
+    private fun handleDpadRelease(horizontal: Boolean) = directionalRouter.release(horizontal)
 
     private fun queueTopRecentsDismissal() {
         topNavigation.pause()
@@ -985,15 +939,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         topRecentsFocusPrimed = false
         topRecentsClosing = false
         scheduleTopRecentsStateCheck(TOP_RECENTS_DELETE_SETTLE_MS)
-    }
-
-    /** Without the root helper, the overlay holds window focus while Back is held and would swallow
-     *  the key event that commits the route, so the commit also waits until it is gone. */
-    private fun commitDpadFocus() {
-        val pending = pendingDpadFocus ?: return
-        if (!pendingDpadReleased || dpadOverlay.attached) return
-        pendingDpadFocus = null
-        runReleasedCombo(pending)
     }
 
     private fun handleShoulder(event: KeyEvent, button: ComboButton): Boolean =
@@ -1726,7 +1671,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
         comboRouter.clear()
-        pendingDpadFocus = null
+        directionalRouter.forgetArmed()
         stopDpad()
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
@@ -1749,7 +1694,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
         comboRouter.clear()
-        pendingDpadFocus = null
+        directionalRouter.forgetArmed()
         stopDpad()
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
