@@ -1,0 +1,83 @@
+## minimize top
+no prompt
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+## minimize both
+no prompt
+activity action=android.intent.action.MAIN categories=[android.intent.category.SECONDARY_HOME] package=null display=<bottom>
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+## force close bottom
+no prompt
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.bottom' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.bottom'
+activity action=android.intent.action.MAIN categories=[android.intent.category.SECONDARY_HOME] package=null display=<bottom>
+Notice: Nothing to clear in cache
+## force close top, confirm, cancel
+prompt [Force-Close com.example.top?, Force-Close, Cancel] -> Cancel
+## force close top, confirm, yes
+prompt [Force-Close com.example.top?, Force-Close, Cancel] -> Force-Close
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+Notice: Nothing to clear in cache
+## restart both, confirm, yes
+prompt [Restart com.example.top, com.example.bottom?, Restart, Cancel] -> Restart
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top,com.example.bottom' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+root code=0 args=[0] am force-stop 'com.example.bottom'
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.bottom display=<bottom>
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.top display=0
+activity action=android.intent.action.MAIN categories=[android.intent.category.SECONDARY_HOME] package=null display=<bottom>
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+## restart top
+no prompt
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.top display=0
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+## ask, front changes while open, top
+prompt [Which screen's app?, Top screen, Bottom screen, Both screens, Cancel] -> Top screen
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+Notice: Nothing to clear in cache
+## ask, cancel
+prompt [Which screen's app?, Top screen, Bottom screen, Both screens, Cancel] -> Cancel
+## ask, bottom
+prompt [Which screen's app?, Top screen, Bottom screen, Both screens, Cancel] -> Bottom screen
+activity action=android.intent.action.MAIN categories=[android.intent.category.SECONDARY_HOME] package=null display=<bottom>
+## force close top without app
+no prompt
+Notice: No app to control on that screen.
+## close apps, confirm, yes
+prompt [Close com.example.top, com.example.bottom?, Close, Cancel] -> Close
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top,com.example.bottom' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+root code=0 args=[0] am force-stop 'com.example.bottom'
+activity action=android.intent.action.MAIN categories=[android.intent.category.SECONDARY_HOME] package=null display=<bottom>
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+Notice: Nothing to clear in cache
+## close apps, confirm, cancel
+prompt [Close com.example.top, com.example.bottom?, Close, Cancel] -> Cancel
+## close background apps, no confirm
+no prompt
+Notice: No apps to close on that screen.
+## close apps top, no confirm
+no prompt
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.top' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.top'
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+Notice: Nothing to clear in cache
+## standby, confirm, yes
+prompt [Go to standby?, Standby, Cancel] -> Standby
+global 8
+## standby, confirm, cancel
+prompt [Go to standby?, Standby, Cancel] -> Cancel
+## standby, no confirm
+no prompt
+global 8
