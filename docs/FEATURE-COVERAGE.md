@@ -107,20 +107,20 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-ACT-4 | `@back` sends a normal Back to the app with controller focus | TB | — | windows: Back reaches focused app | — | —/S6 | R5 | H | DEV |
 | F-ACT-5 | `@recents` opens system Recents on top; `@switcher` opens the bottom switcher | TB | ActionGroups | windows: switcher/Top Recents opens | C14, B3 | S5/S6 | R5, R6 | H | DEV |
 | F-ACT-6 | `@swap_apps` trades the apps of both screens | TB | TaskMovePolicy | windows: swap apps | B5 | —/S6 | R5, R6 | H | JVM+DEV |
-| F-ACT-7 | `@last_app` flips between the last two apps of the controller screen; a closed app shows a message | TB | LastApp | windows: last app ×3 | — | S5/S6 | R5 | M | JVM+DEV |
+| F-ACT-7 | `@last_app` flips between the last two apps of the controller screen; a closed app shows a message | TB | LastApp, ServiceLastAppTest | windows: last app ×3 | — | S5/S6 | R5 | M | JVM+DEV |
 | F-ACT-8 | `@screenshot` top/bottom/both uses native screenshots; both = top full width with bottom centred below | TB | — | capture: screenshot top/bottom/both | C15a–c, C5 | S5/S6 | R9 | H | DEV |
 | F-ACT-9 | `@record_video` starts/stops on the same hotkey, saves under Videos/BBH-Records, ends when screens go off; optional mic and push-to-talk | TB | ScreenRecording, EchoTrim, GameBed, VoiceBand, VoiceLeveler, VoicePolish | capture: recording | — | S5/S6 | R9 | H | JVM+DEV; audio by ear (MAN) |
-| F-ACT-10 | `@macro` plays the recorded sequence after Back is released; same hotkey or Back stops it; needs pservice | — | Macro, MacroSettings | macro: plays in order | C17z–C17z8 | S5/S6 | R5, R8, R11 | H | JVM+DEV+MAN |
-| F-ACT-11 | `@gyro` toggles gyro aiming (optionally hold-to-aim); `@gyro_calibrate` measures offset/noise | — | Gyro, GyroFusion, GyroSettings | gyro: ×3 | Gyro 1–6 | S5/— | R5, R11 | M | JVM+DEV+MAN |
+| F-ACT-10 | `@macro` plays the recorded sequence after Back is released; same hotkey or Back stops it; needs pservice | — | Macro, MacroSettings, ServiceMacroTest, MacroPlaybackTest | macro: plays in order | C17z–C17z8 | S5/S6 | R5, R8, R11 | H | JVM+DEV+MAN |
+| F-ACT-11 | `@gyro` toggles gyro aiming (optionally hold-to-aim); `@gyro_calibrate` measures offset/noise | — | Gyro, GyroFusion, GyroSettings, ServiceGyroTest | gyro: ×3 | Gyro 1–6 | S5/— | R5, R11 | M | JVM+DEV+MAN |
 | F-ACT-12 | Navigation flick left/right moves to the previous/next app | T | — | windows: navigation flicks | C9, C10 | —/S6 | R5 | M | DEV |
 | F-ACT-13 | Volume up/down/mute on both, top or bottom; mute restores | TB | LevelSteps | levels: volume, mute | C17c | S5/— | R5, R11 | M | JVM+DEV |
 | F-ACT-14 | Brightness up/down on both, top or bottom | TB | LevelSteps | levels: brightness | C17b | —/— | R5, R11 | M | JVM+DEV |
-| F-ACT-15 | Media play/pause, next, previous reach the playing session | — | — | media: media control | — | —/— | R5 | M | DEV |
+| F-ACT-15 | Media play/pause, next, previous reach the playing session | — | SystemActionsTest | media: media control | — | —/— | R5 | M | JVM+DEV |
 | F-ACT-16 | `@controller_focus` toggles or fixes the route; the pictogram appears on DOWN on the top screen at the configured position/time | T | ControllerFocus, g:dpad_focus_options | windows: focus switches; pictogram while down | C23–C28 | S5/S6 | R5, R7 | H | JVM+DEV |
 | F-ACT-17 | `@switch_active_app` moves the input screen's foreground app to the other screen; focus follows by default | TB | ActiveAppSwitch | windows: switch active app | C37–C40 | —/S6 | R5, R6 | H | JVM+DEV |
-| F-ACT-18 | `@app_control` minimizes, force-closes or restarts on a screen or asks; optional confirmation | TB | AppControl | appcontrol: ×5 | C30–C36 | S5/S6 | R5, R7 | H | JVM+DEV |
-| F-ACT-19 | `@close_apps` / `@close_background_apps` end apps on chosen screens, asking first by default | TB | CloseApps | appcontrol: close all/background/asks | — | S5/— | R5 | H | JVM+DEV |
-| F-ACT-20 | `@power_menu` opens the power dialog on top; `@standby` turns screens off, optionally asking | T | PowerMenu | panels: power menu, standby | — | S5/— | R5 | M | JVM+DEV |
+| F-ACT-18 | `@app_control` minimizes, force-closes or restarts on a screen or asks; optional confirmation | TB | AppControl, ServiceAppControlTest | appcontrol: ×5 | C30–C36 | S5/S6 | R5, R7 | H | JVM+DEV |
+| F-ACT-19 | `@close_apps` / `@close_background_apps` end apps on chosen screens, asking first by default | TB | CloseApps, ServiceAppControlTest | appcontrol: close all/background/asks | — | S5/— | R5 | H | JVM+DEV |
+| F-ACT-20 | `@power_menu` opens the power dialog on top; `@standby` turns screens off, optionally asking | T | PowerMenu, ServiceAppControlTest (standby) | panels: power menu, standby | — | S5/— | R5 | M | JVM+DEV |
 | F-ACT-21 | `@status_overlay` shows battery, time left/until full, temperature | T | StatusSummary | media: status overlay | — | S5/— | R5, R7 | L | JVM+DEV |
 | F-ACT-22 | The 12 AYN controls apply their setting with a notice; prompt variants offer a choice | T | Ayn, AynPrefs | ayn: ×13 | — | S5/— | R5 | M | JVM+DEV |
 | F-ACT-23 | Quick settings / notifications open the shade; 10 settings shortcuts open their page or fall back | T | ActionGroups | panels: shade; settings shortcuts | C16 | —/— | R5 | L | DEV |

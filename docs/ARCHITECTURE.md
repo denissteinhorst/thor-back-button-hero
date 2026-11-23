@@ -74,6 +74,24 @@ interception gate, Recents controller keys, exception latch, native Back passthr
 `SwitcherService.handleActiveKeyEvent`; it is interleaved with Recents, macro and overlay state
 and is characterized through `onKeyEvent` by `InputPipelineCharacterizationTest`.
 
+The stored actions are dispatched by `SwitcherService.runComboAction` in one `when`; families
+with their own logic or state run in small handlers, the effects they need from the service
+passed in through a host:
+
+- `actions/SystemActions` — media keys for whatever app plays, Android's settings pages (with a
+  fallback page and a message), and the battery status notice.
+- `actions/AppControlActions` — minimize, force-close or restart the app in front, close the apps
+  known on the chosen screens, and standby; each may ask first on the controller's screen, and
+  "ask" resolves the apps before its prompt opens.
+- `actions/LastAppAction` — the previous app on the controller's screen, via the root task
+  launcher (skipping apps that moved to the other screen) or a plain launch without root.
+- `macro/MacroPlayback` — which hotkey's macro the helper plays, and the one-press cancel: Back
+  stops it, and its own hotkey in that press does not restart it.
+- `pad/GyroActions` — gyro on/off with a button's setup, calibration, and the hold key.
+
+Thin actions bound to the service's own state (power menu, Home, screenshots, launches, AYN
+switches, Recents, the screen swap) stay in the service.
+
 ### `BackGestureMachine` — the timing decisions, without Android
 
 The state machine over a single Back press's DOWN/UP sequence. It contains the gesture

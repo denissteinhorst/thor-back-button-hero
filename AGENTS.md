@@ -240,7 +240,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 
 Current expected baseline:
 
-- 826 JVM tests in 116 test classes; 0 failed, 0 skipped
+- 853 JVM tests in 123 test classes; 0 failed, 0 skipped
 - lint: 0 new findings; the checked-in baseline contains 20 intentional warnings
 - all per-class JaCoCo ratchets in `app/build.gradle.kts` pass
 - debug and unsigned local release APKs build
