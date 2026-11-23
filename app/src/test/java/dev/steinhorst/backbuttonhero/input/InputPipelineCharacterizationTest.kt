@@ -471,4 +471,72 @@ class InputPipelineCharacterizationTest {
             fake.uninstall()
         }
     }
+
+    private fun stickKey(service: SwitcherService, action: Int, device: Int) = ReflectionHelpers.callInstanceMethod<Boolean>(
+        service, "onKeyEvent", ReflectionHelpers.ClassParameter.from(KeyEvent::class.java, key(action, KeyEvent.KEYCODE_BUTTON_THUMBL, device)))
+
+    // R4.2c characterization: Back + L3/R3
+    @Test
+    fun `Back plus a bound stick click consumes both mirrored devices and runs once`() = withService { service, prefs ->
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_NOTIFICATIONS)
+        prefs.setShoulderAction(StickClickButton.of(Stick.LEFT, StickClick.PRESS), Prefs.SHOULDER_QUICK_SETTINGS)
+        down(service, KeyEvent.KEYCODE_BACK)
+        assertEquals(listOf(true, true, true, true), listOf(
+            stickKey(service, KeyEvent.ACTION_DOWN, 7), stickKey(service, KeyEvent.ACTION_DOWN, 8),
+            stickKey(service, KeyEvent.ACTION_UP, 7), stickKey(service, KeyEvent.ACTION_UP, 8)))
+        assertFalse("an untracked release is the game's", stickKey(service, KeyEvent.ACTION_UP, 8))
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS), globalActions(service).toList())
+    }
+
+    @Test
+    fun `a stick click without Back, unbound, excepted or paused stays the game's`() = withService { service, prefs ->
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_NOTIFICATIONS)
+        fun click(): List<Boolean> = listOf(stickKey(service, KeyEvent.ACTION_DOWN, 7), stickKey(service, KeyEvent.ACTION_UP, 7))
+        // Unbound with Back held: the game's, and Back stays a tap.
+        down(service, KeyEvent.KEYCODE_BACK)
+        assertEquals(listOf(false, false), click())
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS), globalActions(service).toList())
+        globalActions(service).clear()
+        prefs.setShoulderAction(StickClickButton.of(Stick.LEFT, StickClick.PRESS), Prefs.SHOULDER_QUICK_SETTINGS)
+        assertEquals("no Back", listOf(false, false), click())
+        shadowOf(service).setWindowsOnDisplay(0, listOf(appWindow(game)))
+        prefs.appExceptions = listOf(allowing(game, ExceptionControl.SINGLE))
+        down(service, KeyEvent.KEYCODE_BACK)
+        assertEquals("excepted", listOf(false, false), click())
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        prefs.appExceptions = emptyList()
+        ReflectionHelpers.setField(service, "interceptionEnabled", false)
+        down(service, KeyEvent.KEYCODE_BACK)
+        assertEquals("paused", listOf(false, false), click())
+        up(service, KeyEvent.KEYCODE_BACK)
+        idle(2000)
+        // The excepted press was still no combo, so Back ran its tap; paused Back is native.
+        assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS), globalActions(service).toList())
+    }
+
+    @Test
+    fun `a stick click begun under Home in dual mode runs the Home layer`() = withService { service, prefs ->
+        prefs.applySettings(prefs.snapshot(), prefs.snapshot().copy(dualSeeded = true))
+        prefs.dualMode = true
+        val press = StickClickButton.of(Stick.LEFT, StickClick.PRESS)
+        prefs.setShoulderAction(press, Prefs.SHOULDER_QUICK_SETTINGS)
+        prefs.setShoulderAction(HomeLayerButton.of(press), Prefs.SHOULDER_NOTIFICATIONS)
+        for ((modifier, expected) in listOf(
+            KeyEvent.KEYCODE_HOME to AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS,
+            KeyEvent.KEYCODE_BACK to AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS,
+        )) {
+            globalActions(service).clear()
+            down(service, modifier)
+            assertTrue(stickKey(service, KeyEvent.ACTION_DOWN, 7))
+            assertTrue(stickKey(service, KeyEvent.ACTION_UP, 7))
+            up(service, modifier)
+            idle(2000)
+            assertEquals(listOf(expected), globalActions(service).toList())
+        }
+    }
 }
