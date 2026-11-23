@@ -269,7 +269,17 @@ class Device:
         }
         return state
 
-    def restore_system(self, state):
+    def restore_system(self, state, passes=3, settle=1.0):
+        """Writes the saved system values back until they hold. AYN reacts to some of them on its own
+        and asynchronously (a changed performance_mode rewrites fan_mode afterwards), so a value set in
+        the same pass can be overwritten again; a later pass only rewrites what still differs."""
+        for _ in range(passes):
+            self._restore_system_once(state)
+            time.sleep(settle)
+            if not self.system_differences(state):
+                return
+
+    def _restore_system_once(self, state):
         lines = []
         for key, value in state["system"].items():
             current = self.setting(key)

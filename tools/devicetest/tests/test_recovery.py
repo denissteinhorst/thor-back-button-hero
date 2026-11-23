@@ -384,5 +384,38 @@ class MultiInstallTest(Isolated):
         self.assertEqual([], d.installs)
 
 
+class RestoreSystemPassesTest(unittest.TestCase):
+    """AYN rewrites fan_mode after a performance_mode change; the restore must win over that reaction."""
+
+    def _device(self, reactions):
+        d = Device.__new__(Device)
+        d.values = {"performance_mode": "1", "fan_mode": "0"}
+        d.writes = 0
+        saved = {"performance_mode": "0", "fan_mode": "4"}
+
+        def once(state):
+            d.writes += 1
+            changed_performance = d.values["performance_mode"] != state["performance_mode"]
+            d.values.update(state)
+            if changed_performance and reactions:
+                d.values["fan_mode"] = reactions.pop(0)
+        d._restore_system_once = once
+        d.system_differences = lambda state: [k for k in state if d.values[k] != state[k]]
+        return d, saved
+
+    def test_second_pass_restores_a_value_ayn_rewrote(self):
+        d, saved = self._device(["1"])
+        with mock.patch.object(dev.time, "sleep"):
+            d.restore_system(saved)
+        self.assertEqual(saved, d.values)
+        self.assertEqual(2, d.writes)
+
+    def test_stops_after_the_first_pass_that_holds(self):
+        d, saved = self._device([])
+        with mock.patch.object(dev.time, "sleep"):
+            d.restore_system(saved)
+        self.assertEqual(1, d.writes)
+
+
 if __name__ == "__main__":
     unittest.main()
