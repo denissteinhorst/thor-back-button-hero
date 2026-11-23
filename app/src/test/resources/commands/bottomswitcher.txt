@@ -1,0 +1,74 @@
+## open, poll, thumbnails, close
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '2022' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '1011' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[opened] showing=true opening=false chose=false thumbs=[com.example.a] requested=[1011=3, 2022=1] focus=1
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '2022' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 1] showing=true opening=false chose=false thumbs=[com.example.a] requested=[1011=3, 2022=2] focus=1
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '2022' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 2] showing=true opening=false chose=false thumbs=[com.example.a] requested=[1011=3, 2022=3] focus=1
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 3] showing=true opening=false chose=false thumbs=[com.example.a] requested=[1011=3, 2022=3] focus=1
+[closed] showing=false opening=false chose=false thumbs=[] requested=[1011=3, 2022=3] focus=1
+[after close] showing=false opening=false chose=false thumbs=[] requested=[1011=3, 2022=3] focus=1
+[end] showing=false opening=false chose=false thumbs=[] requested=[1011=3, 2022=3] focus=1
+## second press while opening
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[pressed twice] showing=false opening=false chose=false thumbs=[] requested=[] focus=1
+[later] showing=false opening=false chose=false thumbs=[] requested=[] focus=1
+[end] showing=false opening=false chose=false thumbs=[] requested=[] focus=1
+## task list unreadable
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[opened] showing=true opening=false chose=false thumbs=[] requested=[] focus=1
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 1] showing=true opening=false chose=false thumbs=[] requested=[] focus=1
+[end] showing=true opening=false chose=false thumbs=[] requested=[] focus=1
+## controller routes to the switcher and back
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[opened] showing=true opening=false chose=false thumbs=[] requested=[] focus=1
+root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+[closed] showing=false opening=false chose=false thumbs=[] requested=[] focus=1
+[end] showing=false opening=false chose=false thumbs=[] requested=[] focus=1
+## a chosen card
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '2022' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'snapshot' '1011' '186' '<path>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[chosen] showing=true opening=false chose=true thumbs=[com.example.a] requested=[1011=3, 2022=1] focus=1
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.b' '<bottom>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[launched] showing=true opening=false chose=true thumbs=[com.example.a] requested=[1011=3, 2022=1] focus=1
+[closed] showing=false opening=false chose=false thumbs=[] requested=[1011=3, 2022=1] focus=1
+[end] showing=false opening=false chose=false thumbs=[] requested=[1011=3, 2022=1] focus=1
+## disconnect while opening
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[disconnected] showing=false opening=true chose=false thumbs=[] requested=[] focus=1
+[end] showing=false opening=true chose=false thumbs=[] requested=[] focus=1
