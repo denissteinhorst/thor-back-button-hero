@@ -55,6 +55,7 @@ import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.BackGestureMachine
 import dev.steinhorst.backbuttonhero.input.ComboButton
+import dev.steinhorst.backbuttonhero.input.ComboRouter
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.FaceButton
 import dev.steinhorst.backbuttonhero.input.GestureActions
@@ -152,8 +153,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val autoControllerFocus by lazy { AutoControllerFocus(this) }
     private var switchingActiveApp = false
     @Volatile private var activeAppSwitchSession = 0
-    private val shoulderKeys = PhysicalKeyTracker()
-    private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
+    private val comboRouter = ComboRouter(object : ComboRouter.Host {
+        override val modifierDown get() = this@SwitcherService.modifierDown
+        override fun action(button: ComboButton) = prefs.shoulderAction(button)
+        override fun allows(button: ComboButton) = allowsCombo(button)
+        override fun markComboFired() = heldGesture.markComboFired()
+        override fun log(message: String) = dlog(message)
+        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action)
+        override fun showFocusIndicator(button: ComboButton) = this@SwitcherService.showFocusIndicator(button)
+        override fun runReleased(button: ComboButton) = runReleasedCombo(button)
+    })
     private var pendingDpadFocus: ComboButton? = null
     private val stickKeys = PhysicalKeyTracker()
     private val stickClicks by lazy {
@@ -495,8 +504,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         backGesture.reset()
         homeGesture.reset()
         stickClickHome.clear()
-        shoulderKeys.clear()
-        pendingFocusTargets.clear()
+        comboRouter.clear()
         pendingDpadFocus = null
         stopLevelRepeat()
         stickClicks.values.forEach(StickClickMachine::reset)
@@ -584,7 +592,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
      */
     private fun isHomeCombo(event: KeyEvent): Boolean {
         if (event.keyCode != KeyEvent.KEYCODE_HOME || !event.isFromSource(InputDevice.SOURCE_GAMEPAD)) return false
-        if (event.action != KeyEvent.ACTION_DOWN) return shoulderKeys.isDown(event.keyCode)
+        if (event.action != KeyEvent.ACTION_DOWN) return comboRouter.isDown(event.keyCode)
         return interceptionEnabled && backGesture.backDown && prefs.shoulderAction(AndroidButton.HOME).isNotEmpty() &&
             allowsCombo(AndroidButton.HOME)
     }
@@ -988,50 +996,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         runReleasedCombo(pending)
     }
 
-    /** Holding Back and pressing a shoulder, Home/Start/Select or face button runs that button's
-     *  configured action instead of whatever Back alone would have done, and swallows the button's
-     *  own event so the focused app/game never sees a stray press. Buttons with nothing
-     *  configured are left alone, even while Back is held. */
-    private fun handleShoulder(event: KeyEvent, button: ComboButton): Boolean {
-        val action = prefs.shoulderAction(button)
-        return when (event.action) {
-            KeyEvent.ACTION_DOWN -> {
-                // Outside an active Back combo the controller belongs entirely to the foreground
-                // app. Do not even track the key in that case, so its UP remains untouched too.
-                if (!modifierDown || action.isEmpty()) return false
-                if (!allowsCombo(button)) {
-                    // The app gets the button, yet the press was still a combo: Back's release must
-                    // not turn into a tap that opens something on top of the app's own shortcut.
-                    heldGesture.markComboFired()
-                    dlog("SHOULDER $button passthrough action=$action")
-                    return false
-                }
-                if (shoulderKeys.down(event.keyCode, event.deviceId) && event.repeatCount == 0) {
-                    heldGesture.markComboFired()
-                    // Changing the controller route while its trigger is physically held is racy
-                    // in AYN's firmware: the setting changes, but the route can stay on the old
-                    // display. Arm focus here and commit after both mirrored devices report UP.
-                    if (action == Prefs.SHOULDER_CONTROLLER_FOCUS || action == Prefs.SHOULDER_SWITCH_APP) {
-                        pendingFocusTargets[event.keyCode] = button
-                        if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) showFocusIndicator(button)
-                    } else {
-                        runComboAction(button, action)
-                    }
-                }
-                true
-            }
-            // Consume releases only for shoulder presses that began as a Back combo. The Thor can
-            // report one physical controller through two device ids, so both releases are tracked.
-            KeyEvent.ACTION_UP -> {
-                val tracked = shoulderKeys.up(event.keyCode, event.deviceId)
-                if (tracked && !shoulderKeys.isDown(event.keyCode)) {
-                    pendingFocusTargets.remove(event.keyCode)?.let(::runReleasedCombo)
-                }
-                tracked
-            }
-            else -> false
-        }
-    }
+    private fun handleShoulder(event: KeyEvent, button: ComboButton): Boolean =
+        comboRouter.handle(event.action, event.keyCode, event.deviceId, event.repeatCount, button)
 
     private fun runReleasedCombo(button: ComboButton) {
         if (prefs.shoulderAction(button) == Prefs.SHOULDER_SWITCH_APP) switchActiveApp(button)
@@ -1759,8 +1725,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         playingMacro = null
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
-        shoulderKeys.clear()
-        pendingFocusTargets.clear()
+        comboRouter.clear()
         pendingDpadFocus = null
         stopDpad()
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
@@ -1783,8 +1748,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         playingMacro = null
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
-        shoulderKeys.clear()
-        pendingFocusTargets.clear()
+        comboRouter.clear()
         pendingDpadFocus = null
         stopDpad()
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
