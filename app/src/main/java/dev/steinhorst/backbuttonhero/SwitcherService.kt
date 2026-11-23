@@ -11,7 +11,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Path
 import android.hardware.display.DisplayManager
 import android.os.Build
@@ -87,14 +86,13 @@ import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.recents.FrontendParking
 import dev.steinhorst.backbuttonhero.recents.TaskOps
 import dev.steinhorst.backbuttonhero.recents.RecentsSelection
+import dev.steinhorst.backbuttonhero.recents.BottomSwitcherController
 import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
 import dev.steinhorst.backbuttonhero.recents.SwapCoordinator
-import dev.steinhorst.backbuttonhero.recents.RecentsThumbnailCache
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.recents.TopRecentsNavigation
 import dev.steinhorst.backbuttonhero.recents.TopRecentsState
 import dev.steinhorst.backbuttonhero.recents.WindowTracker
-import java.io.File
 
 /**
  * Double-tap Back opens the switcher on the bottom screen; a single Back goes to the bottom screen's
@@ -201,19 +199,25 @@ class SwitcherService : AccessibilityService(), GestureActions {
             }
         }
     }
-    private val recentsThumbnails = RecentsThumbnailCache()
-    private val requestedThumbnails = mutableMapOf<RecentsThumbnailCache.Key, Int>()
-    private var thumbnailQueryRunning = false
-    @Volatile private var bottomStateSession = 0
-    private var bottomStateQueryRunning = false
-    private var bottomSwitcherOpening = false
-    private var bottomSwitcherChose = false
+    private val bottomSwitcher by lazy {
+        BottomSwitcherController(this, handler, object : BottomSwitcherController.Host {
+            override val connected get() = isConnected
+            override val overlay get() = this@SwitcherService.overlay
+            override val parkedPackage get() = parking.parkedPackage
+            override fun bottomDisplay() = this@SwitcherService.bottomDisplay()
+            override fun cancelTopRecentsLaunch() = this@SwitcherService.cancelTopRecentsLaunch()
+            override fun verifyParking() = parking.verify()
+            override fun prepareSwitcher(display: Display, then: () -> Unit) { panels.prepareSwitcher(display, then) }
+            override fun captureFrontApp(then: () -> Unit) = this@SwitcherService.captureFrontApp(then = then)
+            override fun retainRecentTasks(states: List<RecentsTaskState>) = source.retainRecentTasks(states)
+            override fun switcherClosed(chose: Boolean) { panels.switcherClosed(chose) }
+        })
+    }
     private var aynButtonDeviceId: Int? = null
     // Our own root press of AYN's button must reach AYN instead of returning its panel.
     private var aynButtonPresses = 0
     private var aynButtonPassing: Int? = null
     private val aynButtonPressExpiry = Runnable { aynButtonPresses = 0 }
-    private val bottomStateRunnable = Runnable { refreshBottomTaskStates() }
     private val windowTracker by lazy { WindowTracker(handler, object : WindowTracker.Host {
         override fun recordWindows() {
             source.record(Display.DEFAULT_DISPLAY)
@@ -1567,7 +1571,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun launchFromRecents(pkg: String, displayId: Int, taskId: Int?) {
         if (!Shell.isPkg(pkg)) return
-        if (overlay.isShowing) bottomSwitcherChose = true
+        bottomSwitcher.markChosen()
         if (parking.parkedPackage == pkg) {
             // The ordinary mover would treat the parking display as a source screen needing a Home.
             prepareBottomLaunch(displayId) {
@@ -1631,7 +1635,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun restorePanel(id: Int) {
-        if (overlay.isShowing) bottomSwitcherChose = true
+        bottomSwitcher.markChosen()
         handler.postDelayed({
             if (isConnected) panels.show(id) { restored -> if (!restored) toastUnavailable() }
         }, SWITCHER_SCREENSHOT_DELAY_MS)
@@ -1793,9 +1797,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onBottomSwitcherShown(displayId: Int) {
-        bottomStateSession++
-        requestedThumbnails.clear()
-        refreshBottomTaskStates()
+        bottomSwitcher.shown()
         if (!prefs.switcherControllerEnabled) return
         recentsFocusRestore = controllerFocus.currentTarget()
         showSwitcherFocusIndicator(top = displayId == Display.DEFAULT_DISPLAY)
@@ -1817,72 +1819,12 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun onBottomSwitcherDismissed() {
-        bottomStateSession++
-        handler.removeCallbacks(bottomStateRunnable)
-        panels.switcherClosed(bottomSwitcherChose)
-        bottomSwitcherChose = false
+        bottomSwitcher.dismissed()
         if (!prefs.switcherControllerEnabled) return
         padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
         dpadOverlay.detach()
         restoreRecentsFocus()
         updatePadHelper()
-    }
-
-    private fun refreshBottomTaskStates() {
-        if (!overlay.isShowing || bottomStateQueryRunning) return
-        bottomStateQueryRunning = true
-        val session = bottomStateSession
-        Thread {
-            val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
-            handler.post {
-                bottomStateQueryRunning = false
-                if (!overlay.isShowing) return@post
-                if (session == bottomStateSession && states != null) {
-                    if (overlay.reconcileTaskStates(states)) source.retainRecentTasks(states)
-                    if (!overlay.isShowing) return@post
-                    loadBottomThumbnails(states, session)
-                }
-                handler.removeCallbacks(bottomStateRunnable)
-                handler.postDelayed(bottomStateRunnable, 1000L)
-            }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun loadBottomThumbnails(states: List<RecentsTaskState>, session: Int) {
-        // A parked frontend's newest task is usually its top-screen activity; keep the captured bottom preview.
-        val packages = overlay.previewPackages() - setOfNotNull(parking.parkedPackage)
-        val width = overlay.previewWidth().coerceIn(1, 1024)
-        val entries = packages.mapNotNull { overlay.taskFor(it, states) }.filter { it.taskId >= 0 }
-        val requests = entries.map { it to RecentsThumbnailCache.Key(it.taskId, it.lastActiveTime, width, it.displayId) }
-        requests.forEach { (state, key) -> recentsThumbnails.get(key)?.let { overlay.updateThumbnail(state.packageName, it) } }
-        if (thumbnailQueryRunning) return
-        val pending = requests.filter { (requestedThumbnails[it.second] ?: 0) < 3 }
-        if (pending.isEmpty()) return
-        thumbnailQueryRunning = true
-        pending.forEach { requestedThumbnails[it.second] = (requestedThumbnails[it.second] ?: 0) + 1 }
-        Thread {
-            try {
-                for ((state, key) in pending) {
-                    if (session != bottomStateSession) break
-                    val bitmap = runCatching {
-                        val file = File.createTempFile("task_snapshot_", ".png", cacheDir)
-                        try {
-                            val output = PService.runEntryPoint(this, "RecentsStateReader", "snapshot",
-                                state.taskId.toString(), width.toString(), file.absolutePath)
-                            if (output?.startsWith("OK snapshot") == true) BitmapFactory.decodeFile(file.absolutePath) else null
-                        } finally { file.delete() }
-                    }.getOrNull()
-                    if (bitmap != null) {
-                        recentsThumbnails.put(key, bitmap)
-                        handler.post {
-                            if (session == bottomStateSession) requestedThumbnails[key] = 3
-                            if (session == bottomStateSession && overlay.isShowing &&
-                                overlay.representsTask(state)) overlay.updateThumbnail(state.packageName, bitmap)
-                        }
-                    }
-                }
-            } finally { handler.post { thumbnailQueryRunning = false } }
-        }.apply { isDaemon = true }.start()
     }
 
     private fun onPadHelperActiveChanged(active: Boolean) {
@@ -2112,7 +2054,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onSingleTap() = runSingleTap(BackGestureButton.SINGLE)
 
     private fun runSingleTap(gesture: ComboButton) {
-        if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
+        if (bottomSwitcher.opening) { cancelBottomSwitcherOpen(); return }
         if (overlay.isShowing) { dlog("ACTION onSingleTap: overlay was showing -> dismiss only"); overlay.dismiss(); return }
         runBackGesture(gesture)
     }
@@ -2128,32 +2070,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    private fun showSwitcherNow() {
-        cancelTopRecentsLaunch()
-        val display = bottomDisplay() ?: return
-        if (bottomSwitcherOpening) { cancelBottomSwitcherOpen(); return }
-        if (overlay.isShowing) { overlay.dismiss(); return }
-        bottomSwitcherOpening = true
-        bottomSwitcherChose = false
-        parking.verify()
-        val session = ++bottomStateSession
-        panels.prepareSwitcher(display) { captureFrontApp {
-            Thread {
-                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
-                handler.post {
-                    if (session != bottomStateSession || !isConnected) return@post
-                    bottomSwitcherOpening = false
-                    if (states != null) source.retainRecentTasks(states)
-                    runCatching { overlay.toggle(display) }.onFailure { Log.e(TAG, "toggle failed", it) }
-                }
-            }.apply { isDaemon = true }.start()
-        } }
-    }
+    private fun showSwitcherNow() = bottomSwitcher.toggle()
 
-    private fun cancelBottomSwitcherOpen() {
-        bottomSwitcherOpening = false
-        bottomStateSession++
-    }
+    private fun cancelBottomSwitcherOpen() = bottomSwitcher.cancelOpen()
+
+    private fun refreshBottomTaskStates() = bottomSwitcher.refreshTaskStates()
 
     /** The AYN Thor's second screen is the non-default internal display (id 4, "Screen-2" here).
      *  The parking display has a higher id but is never a screen. */
