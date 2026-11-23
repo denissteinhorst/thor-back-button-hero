@@ -146,6 +146,9 @@ def capture(run, rev, probe_path=None):
         d.put("tap_hold_ms", 600)
         d.put("hold_ms", 800)
         ensure_helper(d)
+        # Traces log which display holds the controller; pin it to the bottom screen, as in the
+        # reference runs, so a capture does not depend on where the owner last left the focus.
+        d.focus(d.bottom)
         media_session(d)
         # The install recreated the pad clone; its first press can get lost. Warm up until one arrives.
         from dt.pad import BACK, Seq
