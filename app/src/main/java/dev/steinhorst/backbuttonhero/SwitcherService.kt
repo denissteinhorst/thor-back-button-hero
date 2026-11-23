@@ -70,6 +70,7 @@ import dev.steinhorst.backbuttonhero.input.StickButton
 import dev.steinhorst.backbuttonhero.input.StickClick
 import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.input.base
+import dev.steinhorst.backbuttonhero.macro.MacroPlayback
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
@@ -264,17 +265,16 @@ class SwitcherService : AccessibilityService(), GestureActions {
     // Back that nativeBack injects arrives here again with the virtual device id and must pass.
     private var nativeBackInjections = 0
     private val homeAsBack = HomeAsBack()
-    /** The hotkey whose macro the helper is playing, under [playingMacroId]; null when none is. */
-    private var playingMacro: ComboButton? = null
-    private var playingMacroId = 0
-    /** The macro this Back press stopped: its own hotkey in the same press only cancels, it does not restart. */
-    private var macroCancelled: ComboButton? = null
-    /**
-     * The helper stops a macro the moment Back goes down and reports it over its socket, which usually
-     * arrives before the Back key itself has passed Android's input pipeline. That Back press must
-     * still count as the one that cancelled.
-     */
-    private var macroStopAwaitsBack = false
+    private val macroPlayback = MacroPlayback(object : MacroPlayback.Host {
+        override fun play(button: ComboButton, id: Int): Boolean? {
+            val macro = prefs.macro(button) ?: return null
+            if (!padHelper.active || !padHelper.playMacro(id, macro.events(controllerFlipped()))) return false
+            dlog("MACRO  play ${button.prefKey} steps=${macro.steps.size}")
+            return true
+        }
+        override fun stopHelper() = padHelper.stopMacro()
+        override fun helperMissing() = notice.show(R.string.macro_helper_missing)
+    })
     /** The macro editor's sink while it records; the helper then keeps the pad's input from the app. */
     private var macroRecordListener: ((List<String>) -> Unit)? = null
     /** True while a Home press standing in for Back runs through the Back path. */
@@ -382,7 +382,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::onPadHelperActiveChanged,
             onStick = ::handleStick,
             onRecord = { line -> macroRecordListener?.invoke(line) },
-            onMacroEnd = ::onMacroEnd,
+            onMacroEnd = macroPlayback::ended,
         )
         gyroOverride = { rates -> handler.post { gyro.override = rates } }
         gyroRecenter = { gyro.recenter() }
@@ -698,14 +698,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         handleRecentsControllerKey(event)?.let { return it }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !pressGesture.backDown) {
-                // The helper stops the macro on this press too; mirror it and remember whose it was.
-                if (playingMacro != null) {
-                    macroCancelled = playingMacro
-                    stopMacroPlayback()
-                } else if (!macroStopAwaitsBack) {
-                    macroCancelled = null
-                }
-                macroStopAwaitsBack = false
+                macroPlayback.backDown()
             }
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                 backException = currentException()
@@ -953,42 +946,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    /**
-     * Plays [button]'s macro through the helper's pad clone. The helper starts it once Back is
-     * released, so the macro's keys never read as Back + button shortcuts; pressing the same hotkey
-     * while it runs only stops it.
-     */
-    private fun runMacro(button: ComboButton) {
-        if (macroCancelled == button) {
-            macroCancelled = null
-            return
-        }
-        val macro = prefs.macro(button) ?: return
-        val id = ++playingMacroId
-        if (padHelper.active && padHelper.playMacro(id, macro.events(controllerFlipped()))) {
-            playingMacro = button
-            dlog("MACRO  play ${button.prefKey} steps=${macro.steps.size}")
-        } else {
-            notice.show(R.string.macro_helper_missing)
-        }
-    }
-
-    private fun onMacroEnd(id: Int, stopped: Boolean) {
-        if (id != playingMacroId || playingMacro == null) return
-        if (stopped) {
-            macroCancelled = playingMacro
-            macroStopAwaitsBack = true
-        }
-        playingMacro = null
-    }
-
-    private fun stopMacroPlayback() {
-        padHelper.stopMacro()
-        playingMacro = null
-    }
-
     private fun startMacroRecording(onInput: (List<String>) -> Unit) {
-        if (::padHelper.isInitialized && playingMacro != null) stopMacroPlayback()
+        if (::padHelper.isInitialized && macroPlayback.playing != null) macroPlayback.stop()
         macroRecordListener = onInput
         updatePadHelper()
         padHelper.setRecording(true)
@@ -1032,7 +991,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.STANDBY -> runStandby(button)
             Action.Builtin.VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             Action.Builtin.RECORD_VIDEO -> toggleRecording(button)
-            Action.Builtin.MACRO -> runMacro(button)
+            Action.Builtin.MACRO -> macroPlayback.run(button)
             Action.Builtin.MEDIA_PLAY_PAUSE -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
             Action.Builtin.MEDIA_NEXT -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
             Action.Builtin.MEDIA_PREVIOUS -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
@@ -1589,7 +1548,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewRecordIndicator = null
         macroRecorder = null
         macroRecordListener = null
-        playingMacro = null
+        macroPlayback.forget()
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
         comboRouter.clear()
@@ -1612,7 +1571,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         previewRecordIndicator = null
         macroRecorder = null
         macroRecordListener = null
-        playingMacro = null
+        macroPlayback.forget()
         endRecording()
         runCatching { unregisterReceiver(standbyReceiver) }
         comboRouter.clear()
@@ -2248,10 +2207,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun onPadHelperActiveChanged(active: Boolean) {
         if (!active) {
-            // A lost pad stops a macro without any Back press that could claim the cancel.
-            playingMacro = null
-            macroCancelled = null
-            macroStopAwaitsBack = false
+            macroPlayback.padLost()
         }
         if (!interceptionEnabled || !::overlay.isInitialized || !prefs.switcherControllerEnabled ||
             (!overlay.isShowing && !topRecentsControllerActive)

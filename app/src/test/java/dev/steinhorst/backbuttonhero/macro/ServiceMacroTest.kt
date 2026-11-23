@@ -91,12 +91,13 @@ class ServiceMacroTest {
 
     /** The helper accepted [button]'s macro under [id], as playMacro would have reported. */
     private fun playing(service: SwitcherService, button: ComboButton, id: Int) {
-        ReflectionHelpers.setField(service, "playingMacro", button)
-        ReflectionHelpers.setField(service, "playingMacroId", id)
+        val playback = ReflectionHelpers.getField<MacroPlayback>(service, "macroPlayback")
+        ReflectionHelpers.setField(playback, "playing", button)
+        ReflectionHelpers.setField(playback, "playingId", id)
     }
 
-    private fun end(service: SwitcherService, id: Int, stopped: Boolean) = ReflectionHelpers.callInstanceMethod<Unit>(service, "onMacroEnd",
-        ReflectionHelpers.ClassParameter.from(Int::class.javaPrimitiveType, id), ReflectionHelpers.ClassParameter.from(Boolean::class.javaPrimitiveType, stopped))
+    private fun end(service: SwitcherService, id: Int, stopped: Boolean) =
+        ReflectionHelpers.getField<MacroPlayback>(service, "macroPlayback").ended(id, stopped)
 
     private fun padLost(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<Unit>(service, "onPadHelperActiveChanged",
         ReflectionHelpers.ClassParameter.from(Boolean::class.javaPrimitiveType, false))
