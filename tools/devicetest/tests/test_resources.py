@@ -126,6 +126,15 @@ class LifecycleTest(unittest.TestCase):
         grown = [dict(on, fds={"file": 90 + i}) for i in range(5)]
         self.assertTrue(any("grew" in f for f in r.lifecycle_findings(self.states(enabled=grown))))
 
+    def test_the_lazily_started_queued_work_looper_alone_is_not_new(self):
+        on = self.states()["bound"]
+        later = dict(on, threads=dict(on["threads"], **{"queued-work-loo": 1}))
+        self.assertEqual(r.lifecycle_findings(self.states(enabled=[later] * 5)), [])
+        twice = dict(on, threads=dict(on["threads"], **{"queued-work-loo": 2}))
+        self.assertTrue(any("queued-work-loo" in f for f in r.lifecycle_findings(self.states(enabled=[twice] * 5))))
+        other = dict(on, threads=dict(on["threads"], Leaky=1))
+        self.assertTrue(any("Leaky" in f for f in r.lifecycle_findings(self.states(enabled=[other] * 5))))
+
     def test_unobserved_leaks_fail(self):
         self.assertEqual(len(r.lifecycle_findings(self.states(leaks={"watched_services": 3, "analysis_complete": False}))), 2)
 

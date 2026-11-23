@@ -393,7 +393,11 @@ def lifecycle_findings(states, cycles=5):
             problems.append(f"{s['helpers_running']} pad helpers ran with the service bound")
     base = states["bound"]
     for s in states["enabled"]:
-        extra = sorted(set(s["threads"]) - set(base["threads"]) - {"LeakCanary-Heap", "HeapAnalyzer"})
+        # Android's process-wide QueuedWork looper starts on the first SharedPreferences.apply()
+        # and then lives as one thread; whether that apply precedes the bound snapshot depends on
+        # stored state (a pending migration), not on the lifecycle. More than one is still new.
+        lazy = {"queued-work-loo"} if s["threads"].get("queued-work-loo", 0) == 1 else set()
+        extra = sorted(set(s["threads"]) - set(base["threads"]) - {"LeakCanary-Heap", "HeapAnalyzer"} - lazy)
         if extra:
             problems.append(f"new thread roles after re-enabling: {extra}")
     owned = [own_threads(s) for s in states["enabled"]]
