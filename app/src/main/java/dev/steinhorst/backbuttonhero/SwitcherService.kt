@@ -2,7 +2,6 @@ package dev.steinhorst.backbuttonhero
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
-import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -20,7 +19,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
-import android.text.format.Formatter
 import android.util.Log
 import android.view.Display
 import android.view.InputDevice
@@ -87,7 +85,7 @@ import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.recents.FrontendParking
-import dev.steinhorst.backbuttonhero.recents.RecentsMemory
+import dev.steinhorst.backbuttonhero.recents.TaskOps
 import dev.steinhorst.backbuttonhero.recents.RecentsSelection
 import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
 import dev.steinhorst.backbuttonhero.recents.RecentsThumbnailCache
@@ -298,6 +296,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun forget(packageName: String) = source.forget(packageName)
             override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
             override fun unavailable() = toastUnavailable()
+        })
+    }
+    private val taskOps by lazy {
+        TaskOps(this, handler, notice, object : TaskOps.Host {
+            override fun topApp(displayId: Int) = source.topApp(displayId)
+            override fun forgetParked(packageName: String) { if (::parking.isInitialized) parking.forget(packageName) }
+            override fun goHome(displayId: Int) = this@SwitcherService.goHome(displayId, dismissSwitcher = false)
+            override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
         })
     }
     private val appControl by lazy {
@@ -1688,81 +1694,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }, SWITCHER_SCREENSHOT_DELAY_MS)
     }
 
-    /** Only the unprivileged fallback lacks task identity; never relaunch a potential launcher there. */
-    private fun canRelaunch(pkg: String): Boolean = Shell.isPkg(pkg) &&
-        listOf(Intent.CATEGORY_HOME, Intent.CATEGORY_SECONDARY_HOME).none { category ->
-            packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
-        }
+    private fun canRelaunch(pkg: String) = taskOps.canRelaunch(pkg)
 
-    /** Runs on a worker; swap moves must use one ordered worker rather than competing launches. */
-    private fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean = true): Boolean {
-        val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
-        val result = PService.runEntryPoint(this, "RecentsTaskLauncher", *args)
-        Log.d(TAG, "Recents launch: $result")
-        val launched = result?.startsWith("OK ") == true
-        if (!launched) {
-            if (allowRelaunch && TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
-                handler.post { runCatching { launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
-                return true
-            }
-            handler.post { notice.show(R.string.swap_unavailable, long = true) }
-        }
-        return launched
-    }
+    private fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean = true) =
+        taskOps.launch(pkg, displayId, taskId, allowRelaunch)
 
-    /** A normal app can only kill background processes, so leave the app first. With AYN's root
-     *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
-     *  if that fails, the unprivileged kill below still runs. Our own package only loses its tasks:
-     *  this process hosts the service, so stopping it would end every gesture. With [reportMemory]
-     *  the released memory is shown afterwards, as the stock launcher's Clear all does. */
-    private fun killOnly(
-        closing: List<String>,
-        displays: Set<Int>,
-        reportMemory: Boolean = false,
-        afterwards: (() -> Unit)? = null,
-    ) {
-        val activityManager = getSystemService(ActivityManager::class.java)
-        // Measured before the app leaves the screen, so the whole release is counted.
-        val availableBefore = if (reportMemory) RecentsMemory.read(this).available else null
-        val closesOwn = packageName in closing
-        val packages = closing - packageName
-        if (::parking.isInitialized) packages.forEach(parking::forget)
-        packages.forEach { pkg ->
-            displays.forEach { d -> if (source.topApp(d) == pkg) goHome(d, dismissSwitcher = false) }
-        }
-        val rootable = if (PService.cachedAvailable()) packages.filter(Shell::isPkg) else emptyList()
-        handler.postDelayed({
-            if (closesOwn) activityManager.appTasks.forEach { it.finishAndRemoveTask() }
-            if (rootable.isEmpty()) {
-                packages.forEach { activityManager.killBackgroundProcesses(it) }
-                availableBefore?.let(::reportReleasedMemory)
-                afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
-                return@postDelayed
-            }
-            Thread {
-                val removed = PService.runEntryPoint(this, "TaskRemover", rootable.joinToString(","))
-                val stopped = rootable.map { PService.forceStop(it) }
-                if (removed?.startsWith("OK") != true || !stopped.all { it }) {
-                    handler.post { packages.forEach { activityManager.killBackgroundProcesses(it) } }
-                }
-                availableBefore?.let { before -> handler.post { reportReleasedMemory(before) } }
-                afterwards?.let { handler.postDelayed(it, RESTART_DELAY_MS) }
-            }.start()
-        }, 500)
-    }
-
-    /** The kernel hands memory back with a short lag; the stock launcher measures after the same wait. */
-    private fun reportReleasedMemory(availableBefore: Long) {
-        handler.postDelayed({
-            val available = RecentsMemory.read(this).available
-            val released = RecentsMemory.released(availableBefore, available)
-            fun size(bytes: Long) = Formatter.formatShortFileSize(this, bytes).uppercase()
-            notice.show(
-                if (released > 0) getString(R.string.memory_released, size(released), size(available))
-                else getString(R.string.memory_nothing_released),
-            )
-        }, MEMORY_REPORT_DELAY_MS)
-    }
+    private fun killOnly(closing: List<String>, displays: Set<Int>, reportMemory: Boolean = false, afterwards: (() -> Unit)? = null) =
+        taskOps.kill(closing, displays, reportMemory, afterwards)
 
     /** Move the two captured foreground tasks; the first move must not change the second target. */
     // The Back gestures are assignable: the machine reports which gesture fired, the bound action runs.
@@ -2368,8 +2306,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         const val TOP_RECENTS_DISMISS_MS = 110L
         const val POWER_MENU_FOCUS_RETRY_MS = 80L
         /** After a restart's kill: the force-stop must have settled, or the launch could land in the dying process. */
-        const val RESTART_DELAY_MS = 400L
-        const val MEMORY_REPORT_DELAY_MS = 600L
         const val POWER_MENU_FOCUS_ATTEMPTS = 20
         const val CONTROLLER_FLIP_SETTING = "flip_button_layout"
         const val ACTION_EXTRA_DIM_SETTINGS = "android.settings.REDUCE_BRIGHT_COLORS_SETTINGS"
