@@ -72,6 +72,8 @@ EVERYTHING = {"SwitcherService.kt", "Prefs.kt", "PService.kt", "AndroidManifest.
 
 
 WINDOW_PREFIXES = ("Recents", "TopRecents", "Switcher", "Panel", "BottomPanels", "TaskMove", "Frontend", "Parking", "TaskParker")
+# Third-party bottom panels and parked frontend activities, exercised with real frontends.
+FRONTEND_PREFIXES = ("Panel", "BottomPanels", "Frontend", "Parking", "TaskParker")
 
 
 def unmapped(files):
@@ -94,6 +96,8 @@ def areas_for(files):
         areas.update(FILE_AREAS.get(name, []))
         if name.startswith(WINDOW_PREFIXES):
             areas.add("windows")
+        if name.startswith(FRONTEND_PREFIXES):
+            areas.add("frontends")
     return areas
 
 

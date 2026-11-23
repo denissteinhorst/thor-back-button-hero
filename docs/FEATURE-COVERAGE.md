@@ -155,7 +155,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 |---|---|---|---|---|---|---|---|---|---|
 | F-SWP-1 | Hold-to-swap moves the existing tasks between displays (task IDs survive) | TB | TaskMovePolicy | windows: hold Back swaps | B5, C8j | —/S6 | R6 | H | JVM+DEV |
 | F-SWP-2 | An app whose Hold is unchecked stays; only the other app moves | TB | AppException, TaskMovePolicy | exceptions | C18l | —/S6 | R6 | H | JVM; GAP device before R6.1 |
-| F-SWP-3 | A foreground bottom panel blocks the swap with a localized message | TB | BottomPanels | — | C8i | S5/— | R6 | M | MAN → GAP before R6.1 |
+| F-SWP-3 | A foreground bottom panel blocks the swap with a localized message | TB | BottomPanels | frontends: hold-to-swap refused, panel shown or hidden | C8i | S5/— | R6 | M | DEV |
 | F-SWP-4 | A protected task (Home, shared root) cancels the pair with a message; no relaunch fallback | TB | TaskMovePolicy | — | C8j | —/— | R6 | H | JVM |
 | F-SWP-5 | Moving the foreground app reveals the previous app or the screen's own home | TB | TaskMovePolicy | windows: swap | C2a, C8e | —/S6 | R6 | M | JVM+DEV |
 
@@ -163,10 +163,10 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-PNL-1 | Third-party full-screen bottom panels are hidden through the root window host and get their own card | B | PanelWindows, PanelCards, BottomPanels | — (`panels` = system panels) | C8, C8f | S5/— | R6 | H | JVM → GAP device scenario before R6.1 |
-| F-PNL-2 | A hidden panel is restored on every exit path: service off, app death, root process death, standby | B | BottomPanels | — | C8h | —/— | R6, R10 | H | MAN → GAP before R6.1/R10.1 |
+| F-PNL-1 | Third-party full-screen bottom panels are hidden through the root window host and get their own card | B | PanelWindows, PanelCards, BottomPanels | frontends: panel hidden for a bottom launch, restored from its card; cancel never hides | C8, C8f | S5/— | R6 | H | JVM+DEV |
+| F-PNL-2 | A hidden panel is restored on every exit path: service off, app death, root process death, standby | B | BottomPanels | frontends: service restart, root host killed, pause/standby keep it restorable | C8h | —/— | R6, R10 | H | DEV+MAN (app death, recovery-process death, overlapping panels: C8h) |
 | F-PNL-3 | Swiping a panel card keeps it; Close all closes its owner package | B | PanelCards | — | C8g | —/— | R6 | M | JVM (partial) + MAN |
-| F-PNL-4 | Frontend parking keeps Cocoon-style launchers from reclaiming the bottom screen | B | ParkingPolicy | — | — | —/— | R6 | M | JVM → GAP device before R6.1 |
+| F-PNL-4 | Frontend parking keeps Cocoon-style launchers from reclaiming the bottom screen | B | ParkingPolicy | — (Cocoon is no repeatable fixture: its bottom activity depends on its own task history) | — | —/— | R6 | M | JVM+MAN (C8-series) |
 | F-PNL-5 | Panel window host peers are accepted only from uid 0 | — | — | — | — | —/— | R3, R6 | H | GAP → before R3.1 (security) |
 
 ## Activation toggle (TOG)
