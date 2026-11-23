@@ -443,3 +443,97 @@ def choose_app(d):
             raise Fail(f"cancelling the app list changed the screens: {before} -> {d.resumed()}")
     finally:
         _clean(d)
+
+
+def _pause_pair(d):
+    d.put("toggle_buttons", "l1_r1")
+    d.put("toggle_hold_ms", 300)
+    return Seq().key(pad.L1, True).key(pad.R1, True).wait(600).key(pad.L1, False).key(pad.R1, False).wait(300)
+
+
+def _open_bottom_switcher(d):
+    d.start_app(SETTINGS, d.top)
+    d.start_app(GALLERY, d.bottom)
+    d.focus(d.top)
+    d.bind(KEY, "@switcher")
+    _press(d)
+    d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
+    d.eventually(lambda: d.route() == d.bottom, 4, f"the controller did not move to the switcher: route {d.route()}")
+
+
+@test("windows", "Pausing closes the open bottom switcher and returns the controller to its screen")
+def switcher_pause(d):
+    _clean(d)
+    pair = _pause_pair(d)
+    try:
+        _open_bottom_switcher(d)
+        d.press(pair)
+        d.eventually(lambda: not d.own_windows(d.bottom) and not d.own_windows(d.top), 4,
+                     f"pausing left windows open: bottom {d.own_windows(d.bottom)}, top {d.own_windows(d.top)}")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+        d.press(pair)
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "Standby leaves the open bottom switcher open with the controller on it; Back then closes it")
+def switcher_standby(d):
+    _clean(d)
+    try:
+        _open_bottom_switcher(d)
+        d.sh("input keyevent KEYCODE_SLEEP")
+        d.eventually(lambda: not d.awake(), 5, "the device did not go to standby")
+        d.keyevent("KEYCODE_WAKEUP")
+        d.eventually(d.awake, 5, "the device did not wake up")
+        d.sh("wm dismiss-keyguard")
+        time.sleep(1.5)
+        d.reconnect()
+        if not d.own_windows(d.bottom) or d.route() != d.bottom:
+            raise Fail(f"after standby: switcher {d.own_windows(d.bottom)}, route {d.route()}")
+        d.press(Seq().tap(pad.BACK))
+        d.eventually(lambda: not d.own_windows(d.bottom), 4, "Back did not close the switcher after standby")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "A service restart closes the open bottom switcher and the controller is on the top screen")
+def switcher_restart(d):
+    _clean(d)
+    try:
+        _open_bottom_switcher(d)
+        d.restart_service()
+        d.eventually(lambda: not d.own_windows(d.bottom) and not d.own_windows(d.top), 6,
+                     f"windows survived the restart: bottom {d.own_windows(d.bottom)}, top {d.own_windows(d.top)}")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "Pausing in top Recents ends its controller session; Overview itself stays")
+def recents_pause(d):
+    _clean(d)
+    pair = _pause_pair(d)
+    try:
+        d.start_app(SETTINGS, d.top)
+        d.focus(d.top)
+        d.bind(KEY, "@recents")
+        _press(d)
+        d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not open")
+        d.eventually(lambda: d.own_windows(d.top), 4, "top Recents showed no controller pictogram")
+        d.press(pair)
+        d.eventually(lambda: not d.own_windows(d.top), 4, f"pausing left {d.own_windows(d.top)} on top")
+        if not d.resumed().get(d.top, "").startswith(LAUNCHERS):
+            raise Fail(f"pausing closed Overview: {d.resumed().get(d.top)}")
+        if d.route() != d.top:
+            raise Fail(f"the controller left the top screen: {d.route()}")
+        d.press(pair)
+    finally:
+        d.keyevent("KEYCODE_HOME", d.top)
+        _clean(d)
