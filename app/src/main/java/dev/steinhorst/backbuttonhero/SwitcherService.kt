@@ -57,6 +57,7 @@ import dev.steinhorst.backbuttonhero.input.BackGestureMachine
 import dev.steinhorst.backbuttonhero.input.ComboButton
 import dev.steinhorst.backbuttonhero.input.ComboRouter
 import dev.steinhorst.backbuttonhero.input.DirectionalRouter
+import dev.steinhorst.backbuttonhero.input.StickClickRouter
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 import dev.steinhorst.backbuttonhero.input.FaceButton
 import dev.steinhorst.backbuttonhero.input.GestureActions
@@ -65,14 +66,12 @@ import dev.steinhorst.backbuttonhero.input.GestureScheduler
 import dev.steinhorst.backbuttonhero.input.HomeAsBack
 import dev.steinhorst.backbuttonhero.input.HomeLayerButton
 import dev.steinhorst.backbuttonhero.input.KeyInterceptionGate
-import dev.steinhorst.backbuttonhero.input.PhysicalKeyTracker
 import dev.steinhorst.backbuttonhero.input.ServiceToggleGesture
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.input.Stick
 import dev.steinhorst.backbuttonhero.input.StickButton
 import dev.steinhorst.backbuttonhero.input.StickClick
 import dev.steinhorst.backbuttonhero.input.StickClickButton
-import dev.steinhorst.backbuttonhero.input.StickClickMachine
 import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
@@ -180,20 +179,21 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun stopLevelRepeat() = this@SwitcherService.stopLevelRepeat()
         override fun runReleased(button: ComboButton) = runReleasedCombo(button)
     })
-    private val stickKeys = PhysicalKeyTracker()
-    private val stickClicks by lazy {
-        Stick.entries.associateWith { stick ->
-            StickClickMachine(
-                gestureScheduler,
-                gestureClock,
-                { prefs.stickDoubleMs(stick, stickClickHome[stick] == true) },
-                { prefs.stickTapHoldMs(stick, stickClickHome[stick] == true) },
-                { prefs.shoulderAction(stickClickButton(stick, it)).isNotEmpty() },
-            ) { runStickClick(stickClickButton(stick, it)) }
-        }
+    private val stickClickRouter by lazy {
+        StickClickRouter(gestureScheduler, gestureClock, object : StickClickRouter.Host {
+            override val interceptionEnabled get() = this@SwitcherService.interceptionEnabled
+            override val modifierDown get() = this@SwitcherService.modifierDown
+            override val homeDown get() = homeGesture.backDown
+            override val repeatingButton get() = this@SwitcherService.repeatingButton
+            override fun allows(button: ComboButton) = allowsCombo(button)
+            override fun markComboFired() = heldGesture.markComboFired()
+            override fun stopLevelRepeat() = this@SwitcherService.stopLevelRepeat()
+            override fun doubleMs(stick: Stick, home: Boolean) = prefs.stickDoubleMs(stick, home)
+            override fun tapHoldMs(stick: Stick, home: Boolean) = prefs.stickTapHoldMs(stick, home)
+            override fun action(button: ComboButton) = prefs.shoulderAction(button)
+            override fun fire(button: ComboButton) = runStickClick(button)
+        })
     }
-    /** Per stick: whether its click gesture began under Home in dual mode, so it runs the Home layer. */
-    private val stickClickHome = mutableMapOf<Stick, Boolean>()
     private var repeatingButton: ComboButton? = null
     private val levelRepeater by lazy {
         LevelRepeater(gestureScheduler, gestureClock) {
@@ -314,9 +314,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** [button] in the layer of the held modifier: its Home layer copy while Home is held in dual mode. */
     private fun layered(button: ComboButton): ComboButton = if (homeGesture.backDown) HomeLayerButton.of(button) else button
-
-    private fun stickClickButton(stick: Stick, click: StickClick): ComboButton =
-        StickClickButton.of(stick, click).let { if (stickClickHome[stick] == true) HomeLayerButton.of(it) else it }
 
     /** The Home key's gestures run the Home layer's bindings; an excepted one is the app's own Home press. */
     private inner class HomeGestureActions : GestureActions {
@@ -518,12 +515,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun forgetHeldKeys() {
         backGesture.reset()
         homeGesture.reset()
-        stickClickHome.clear()
+        stickClickRouter.forgetLayers()
         comboRouter.clear()
         directionalRouter.forgetArmed()
         stopLevelRepeat()
-        stickClicks.values.forEach(StickClickMachine::reset)
-        stickKeys.clear()
+        stickClickRouter.reset()
         switcherBackDown = false
         switcherBackDeviceId = Int.MIN_VALUE
         topRecentsBackClosePending = false
@@ -844,35 +840,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         levelRepeater.start()
     }
 
-    /**
-     * L3/R3 while Back is held. A press is ours only when the stick has a click action; otherwise
-     * the game keeps it, like an unassigned shoulder button. The Thor mirrors its controller, so
-     * both devices' DOWN/UP are consumed and the gesture sees one press.
-     */
-    private fun handleStickClick(stick: Stick, event: KeyEvent): Boolean {
-        val machine = stickClicks.getValue(stick)
-        return when (event.action) {
-            KeyEvent.ACTION_DOWN -> {
-                if (!interceptionEnabled || !modifierDown || !allowsCombo(StickClickButton.of(stick, StickClick.PRESS))) return false
-                val first = stickKeys.down(event.keyCode, event.deviceId)
-                if (first && event.repeatCount == 0) {
-                    stickClickHome[stick] = homeGesture.backDown
-                    if (!machine.down()) { stickKeys.up(event.keyCode, event.deviceId); return false }
-                    heldGesture.markComboFired()
-                }
-                stickKeys.isDown(event.keyCode)
-            }
-            KeyEvent.ACTION_UP -> {
-                val tracked = stickKeys.up(event.keyCode, event.deviceId)
-                if (tracked && !stickKeys.isDown(event.keyCode)) {
-                    if ((repeatingButton?.base as? StickClickButton)?.stick == stick) stopLevelRepeat()
-                    machine.up()
-                }
-                tracked
-            }
-            else -> false
-        }
-    }
+    private fun handleStickClick(stick: Stick, event: KeyEvent): Boolean =
+        stickClickRouter.handle(stick, event.action, event.keyCode, event.deviceId, event.repeatCount)
 
     private fun runStickClick(button: ComboButton) {
         val action = prefs.shoulderAction(button)
@@ -1709,8 +1678,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         gyroCalibrate = null
         gyroRecenter = null
         stopLevelRepeat()
-        stickClicks.values.forEach(StickClickMachine::reset)
-        stickKeys.clear()
+        stickClickRouter.reset()
         toggleGesture.reset()
         backGesture.reset()
         homeGesture.reset()
