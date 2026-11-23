@@ -188,7 +188,14 @@ object SettingsBackup {
     private fun readBindings(json: JSONObject?, factory: Map<String, BindingSettings>, macros: List<SavedMacro>): Map<String, BindingSettings> =
         factory.mapValues { (key, default) ->
             val entry = json?.objectOrNull(key) ?: return@mapValues default
-            val action = entry.stringOrNull("action")?.takeIf { it.isEmpty() || it in Prefs.KNOWN_ACTIONS || Shell.isPkg(it) }
+            // Unknown values fall back to the default; an app must also be a valid package name.
+            val action = entry.stringOrNull("action")?.takeIf { raw ->
+                when (val typed = ActionCodec.decode(raw)) {
+                    is Action.Unknown -> false
+                    is Action.LaunchApp -> Shell.isPkg(typed.pkg)
+                    else -> true
+                }
+            }
                 // Back's own gestures cannot play macros: the macro would wait for the very Back it started with.
                 ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.ALL_MACRO_BUTTONS.any { button -> button.prefKey == key } }
             default.copy(
