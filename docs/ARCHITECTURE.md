@@ -55,9 +55,24 @@ and the screen swap. It holds the `AccessibilityAppSource`, creates the
 `SwitcherOverlay`, and opportunistically captures thumbnails of the front app.
 
 What it deliberately does **not** own is the Back-press decision — that moved into
-`BackGestureMachine`. Shoulder buttons are handled here directly: they act only while
-Back is held, and an unassigned button's event is left unconsumed so games and apps see
-normal input.
+`BackGestureMachine`. The other per-press decisions sit in small units in `input/`, each
+called from the service's key path in the original order, with the effects left to the
+service behind a small host interface:
+
+- `ComboRouter` — Back (or Home in dual mode) + shoulder, Home/Start/Select or face button:
+  acts only while a modifier is held, leaves an unassigned or excepted button's event to the
+  app (an excepted one still counts as a combo, so Back's release is no tap), tracks both
+  mirrored devices' releases, and arms controller focus / app switch until the last release.
+- `DirectionalRouter` — Back + D-pad and Back + stick from `PadHelper`/`DpadOverlay`: the same
+  run/arm decision per direction, the commit of an armed focus on its own axis or stick, or on
+  Back's release while the overlay held window focus.
+- `StickClickRouter` — Back + L3/R3: mirrored-device tracking and the layer latched at the
+  click's DOWN; each stick's `StickClickMachine` times press, double press and tap-and-hold.
+
+The ordering in the service (toggle gesture, Home-as-Back routing, AYN's button, the
+interception gate, Recents controller keys, exception latch, native Back passthrough) stays in
+`SwitcherService.handleActiveKeyEvent`; it is interleaved with Recents, macro and overlay state
+and is characterized through `onKeyEvent` by `InputPipelineCharacterizationTest`.
 
 ### `BackGestureMachine` — the timing decisions, without Android
 
@@ -231,7 +246,7 @@ The four Back gestures are `BackGestureButton`s: `BackGestureMachine` still deci
 button's action, launch screen and level target the same way.
 
 **Home, Start, Select and the face buttons** (`AndroidButton`, `FaceButton`) are key events like the shoulder
-buttons and share `SwitcherService.handleShoulder`; `comboButton` maps an event to its button. Face buttons are
+buttons and share `ComboRouter` (via `SwitcherService.handleShoulder`); `comboButton` maps an event to its button. Face buttons are
 stored by their printed letter: the Thor's style switch (`flip_button_layout`) swaps the keys the pad reports
 (A↔B, X↔Y, measured on the device), so `FaceButton.of` reads the setting at every press. AYN's own button sends
 the same `KEYCODE_HOME` as the house key, but from `gpio-keys` instead of the pad, so Home counts only with
@@ -399,8 +414,8 @@ Two behavioral facts that regularly surprise people:
 hardware Back
       │
       ▼
-SwitcherService.onKeyEvent ──────────────► shoulder button held with Back?
-      │                                          │
+SwitcherService.onKeyEvent ──────────────► button held with Back? (ComboRouter,
+      │                                          │  DirectionalRouter, StickClickRouter)
       │ no                                       ▼
       ▼                                   run its configured action
 BackGestureMachine.handleBack(event)      (or leave unconsumed if unassigned)

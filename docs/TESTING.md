@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 801 JVM tests pass |
+| `testDebugUnitTest` | All 826 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 113 classes, 801 tests
+### Base — JVM tests (Robolectric + JUnit), 116 classes, 826 tests
 
 Everything the gate can verify without hardware.
 
@@ -106,6 +106,7 @@ Everything the gate can verify without hardware.
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
 | Service key path through the real `onKeyEvent`: shoulder combos per half, DOWN latch, held-press setting changes, exception of the controller-focused app, no unrequested focus/window change | `InputPipelineCharacterizationTest` |
+| Back + button, D-pad/stick and stick-click decisions in isolation | `ComboRouterTest`, `DirectionalRouterTest`, `StickClickRouterTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
 | Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
 | Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
@@ -241,7 +242,7 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 74 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+A further 75 classes (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
@@ -263,7 +264,7 @@ Known and accepted, because the alternatives are worse than the gap.
 | Not covered | Why | Substitute |
 |---|---|---|
 | `SwitcherOverlay` — **36 %** (132/363 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **24 %** (413/1717) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherService` — **55 %** (892/1618) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |

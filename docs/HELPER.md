@@ -69,7 +69,7 @@ The service tracks the card/action rows: Up from actions returns to cards; Up fr
 only the current card using its real geometry. After a dismissal it restores keyboard focus before
 releasing queued navigation. TOP takes precedence over held Back. A captured press stays captured
 until release, even if Back is let go or the switcher closes first.
-5. **The app runs the configured action** (`SwitcherService.handleDpad`), just as it does for a
+5. **The app runs the configured action** (`SwitcherService.handleDpad`, decided by `DirectionalRouter`), just as it does for a
    shoulder-button combo. The game never sees the press and never loses focus.
 
 ### Analog sticks

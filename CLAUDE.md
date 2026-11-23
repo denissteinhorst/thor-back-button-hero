@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **801 JVM tests, 0 failures, 0 skipped** across 113 test classes (as of 2026-11-23). Count from
+- **826 JVM tests, 0 failures, 0 skipped** across 116 test classes (as of 2026-11-23). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -176,10 +176,10 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 74 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  A further 75 classes (incl. the input routers) (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
-  Total line coverage across all classes is about 67 % (8886/13286).
+  Total line coverage across all classes is about 78 % (10546/13487).
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
@@ -214,8 +214,8 @@ compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs,
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **24 %**
-(413/1717) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
+`SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **55 %**
+(892/1618) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
 `ScreenRecorder` are at 0 %. The panel host, Recents task
 routing, and top-Recents controller focus are likewise device-only. The switcher overlay's launcher-derived styling and live behavior (its tree is snapshotted), multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`

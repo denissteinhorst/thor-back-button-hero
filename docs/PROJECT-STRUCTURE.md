@@ -179,12 +179,12 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 113 test classes, **801 tests**. Run by the gate. By area:
+The automated safety net. 116 test classes, **826 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
 | Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values), `ActionCodecTest` (typed actions ↔ stored strings, byte exact against the storage and backup fixtures) |
-| Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest`, `InputPipelineCharacterizationTest` (the service's key path through `onKeyEvent`) |
+| Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest`, `InputPipelineCharacterizationTest` (the service's key path through `onKeyEvent`), `ComboRouterTest`, `DirectionalRouterTest`, `StickClickRouterTest` |
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |

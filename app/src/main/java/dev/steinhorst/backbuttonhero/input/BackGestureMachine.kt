@@ -50,7 +50,7 @@ class BackGestureMachine(
     private val exception: () -> AppException? = { null },
     private val nativeLongPressMs: Long = 500L,
 ) {
-    /** True while the Back key is physically held - read by SwitcherService.handleShoulder. */
+    /** True while the Back key is physically held - read by the combo routers through SwitcherService. */
     var backDown = false
         private set
 
@@ -98,8 +98,8 @@ class BackGestureMachine(
             if (tapHoldOn) SwitcherService.TAP_HOLD_GRACE_MS else 0L)
     } == true
 
-    /** Called by SwitcherService.handleShoulder when a Back+shoulder combo fires. Mirrors the
-     *  three statements that used to live inline there. */
+    /** Called through SwitcherService when a Back + button combo fires (ComboRouter,
+     *  DirectionalRouter, StickClickRouter), so Back's release adds no tap. */
     fun markComboFired() {
         comboFired = true
         scheduler.removeCallbacks(holdRunnable)
