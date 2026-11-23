@@ -76,6 +76,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `KeyInterceptionGate.kt` | 29 | Keeps each key DOWN/UP pair on its original side of a runtime interception change, so pausing never strands a half-consumed press. |
 | `ShoulderButton.kt` | 106 | The `ComboButton` interface and its key and D-pad enums: the four shoulder buttons, Home/Start/Select (`AndroidButton`) and the face buttons by printed letter (`FaceButton`, mapped through the controller-style switch), each with preference key and Android keycode, plus the four D-pad directions and the four Back gestures. |
 | `Prefs.kt` | 385 | `SharedPreferences` wrapper: schema, defaults, typed accessors, atomic application of change plans, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
+| `Action.kt` | 100 | Typed hotkey actions (`Action`) and `ActionCodec`, the only mapping between them and the stored strings; unknown `@` values survive unchanged. Not yet used by callers. |
 | `AppExceptions.kt` | 58 | `ExceptionControl` columns and `AppException` rules, plus their stored line format. |
 | `SettingsActivity.kt` | 907 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, triggers the update check, offers the page and whole-app defaults/unbind actions, and hosts the indicator-appearance popup (also opened directly from the focus pictogram). |
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
@@ -175,11 +176,11 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 109 test classes, **776 tests**. Run by the gate. By area:
+The automated safety net. 110 test classes, **780 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
-| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values) |
+| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values), `ActionCodecTest` (typed actions ↔ stored strings, byte exact against the storage and backup fixtures) |
 | Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest` |
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |

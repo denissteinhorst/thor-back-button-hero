@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **776 JVM tests, 0 failures, 0 skipped** across 109 test classes (as of 2026-11-23). Count from
+- **780 JVM tests, 0 failures, 0 skipped** across 110 test classes (as of 2026-11-23). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -176,7 +176,7 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 69 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  A further 71 classes (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
   Total line coverage across all classes is about 67 % (8886/13286).
