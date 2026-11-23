@@ -52,6 +52,8 @@ import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.pad.GyroAxis
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
+import dev.steinhorst.backbuttonhero.prefs.Action
+import dev.steinhorst.backbuttonhero.prefs.ActionCodec
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.BindingLayer
 import dev.steinhorst.backbuttonhero.prefs.BindingSettings
@@ -342,44 +344,44 @@ class SettingsActivity : Activity() {
 
     /** A short name for the overview's narrow columns; the pages keep the full wording. */
     private fun overviewLabel(action: String): String {
-        val res = when (action) {
-            Prefs.SHOULDER_BACK -> R.string.overview_action_back
-            Prefs.SHOULDER_RECENTS -> R.string.overview_action_recents_top
-            Prefs.SHOULDER_SWITCHER -> R.string.overview_action_recents_bottom
-            Prefs.SHOULDER_SWITCH_APP -> R.string.overview_action_switch_app
-            Prefs.SHOULDER_LAST_APP -> R.string.overview_action_last_app
-            Prefs.SHOULDER_SCREENSHOT -> R.string.overview_action_screenshot
-            Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.overview_action_controller_focus
-            Prefs.SHOULDER_GYRO -> R.string.overview_action_gyro
-            Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.overview_action_gyro_calibrate
-            Prefs.SHOULDER_QUICK_SETTINGS -> R.string.overview_action_quick_settings
-            Prefs.SHOULDER_NOTIFICATIONS -> R.string.overview_action_notifications
-            Prefs.SHOULDER_INTERNET -> R.string.overview_action_internet
-            Prefs.SHOULDER_BLUETOOTH -> R.string.overview_action_bluetooth
-            Prefs.SHOULDER_NIGHT_LIGHT -> R.string.overview_action_night_light
-            Prefs.SHOULDER_EXTRA_DIM -> R.string.overview_action_extra_dim
-            Prefs.SHOULDER_DISPLAY_SETTINGS -> R.string.overview_action_display
-            Prefs.SHOULDER_SOUND_SETTINGS -> R.string.overview_action_sound
-            Prefs.SHOULDER_LOCATION_SETTINGS -> R.string.overview_action_location
-            Prefs.SHOULDER_CAST_SETTINGS -> R.string.overview_action_cast
-            Prefs.SHOULDER_DND_SETTINGS -> R.string.overview_action_dnd
-            Prefs.SHOULDER_BATTERY_SAVER -> R.string.overview_action_battery_saver
-            Prefs.SHOULDER_VOLUME_UP -> R.string.overview_action_volume_up
-            Prefs.SHOULDER_VOLUME_DOWN -> R.string.overview_action_volume_down
-            Prefs.SHOULDER_VOLUME_MUTE -> R.string.overview_action_mute
-            Prefs.SHOULDER_BRIGHTNESS_UP -> R.string.overview_action_brightness_up
-            Prefs.SHOULDER_BRIGHTNESS_DOWN -> R.string.overview_action_brightness_down
-            Prefs.SHOULDER_FLICK_LEFT -> R.string.overview_action_flick_left
-            Prefs.SHOULDER_FLICK_RIGHT -> R.string.overview_action_flick_right
-            Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> R.string.overview_action_play_pause
-            Prefs.SHOULDER_MEDIA_NEXT -> R.string.overview_action_next
-            Prefs.SHOULDER_MEDIA_PREVIOUS -> R.string.overview_action_previous
-            Prefs.SHOULDER_CLOSE_APPS -> R.string.overview_action_close_all
-            Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> R.string.overview_action_close_background
-            Prefs.SHOULDER_POWER_MENU -> R.string.overview_action_power_menu
-            Prefs.SHOULDER_STANDBY -> R.string.overview_action_standby
-            Prefs.SHOULDER_APP_ASK -> R.string.overview_action_app_ask
-            Prefs.SHOULDER_APP_FAVORITES -> R.string.overview_action_app_favorites
+        val res = when (ActionCodec.decode(action)) {
+            Action.Builtin.BACK -> R.string.overview_action_back
+            Action.Builtin.RECENTS -> R.string.overview_action_recents_top
+            Action.Builtin.SWITCHER -> R.string.overview_action_recents_bottom
+            Action.Builtin.SWITCH_ACTIVE_APP -> R.string.overview_action_switch_app
+            Action.Builtin.LAST_APP -> R.string.overview_action_last_app
+            Action.Builtin.SCREENSHOT -> R.string.overview_action_screenshot
+            Action.Builtin.CONTROLLER_FOCUS -> R.string.overview_action_controller_focus
+            Action.Builtin.GYRO -> R.string.overview_action_gyro
+            Action.Builtin.GYRO_CALIBRATE -> R.string.overview_action_gyro_calibrate
+            Action.Builtin.QUICK_SETTINGS -> R.string.overview_action_quick_settings
+            Action.Builtin.NOTIFICATIONS -> R.string.overview_action_notifications
+            Action.Builtin.INTERNET -> R.string.overview_action_internet
+            Action.Builtin.BLUETOOTH -> R.string.overview_action_bluetooth
+            Action.Builtin.NIGHT_LIGHT -> R.string.overview_action_night_light
+            Action.Builtin.EXTRA_DIM -> R.string.overview_action_extra_dim
+            Action.Builtin.DISPLAY_SETTINGS -> R.string.overview_action_display
+            Action.Builtin.SOUND_SETTINGS -> R.string.overview_action_sound
+            Action.Builtin.LOCATION_SETTINGS -> R.string.overview_action_location
+            Action.Builtin.CAST_SETTINGS -> R.string.overview_action_cast
+            Action.Builtin.DND_SETTINGS -> R.string.overview_action_dnd
+            Action.Builtin.BATTERY_SAVER -> R.string.overview_action_battery_saver
+            Action.Builtin.VOLUME_UP -> R.string.overview_action_volume_up
+            Action.Builtin.VOLUME_DOWN -> R.string.overview_action_volume_down
+            Action.Builtin.VOLUME_MUTE -> R.string.overview_action_mute
+            Action.Builtin.BRIGHTNESS_UP -> R.string.overview_action_brightness_up
+            Action.Builtin.BRIGHTNESS_DOWN -> R.string.overview_action_brightness_down
+            Action.Builtin.FLICK_LEFT -> R.string.overview_action_flick_left
+            Action.Builtin.FLICK_RIGHT -> R.string.overview_action_flick_right
+            Action.Builtin.MEDIA_PLAY_PAUSE -> R.string.overview_action_play_pause
+            Action.Builtin.MEDIA_NEXT -> R.string.overview_action_next
+            Action.Builtin.MEDIA_PREVIOUS -> R.string.overview_action_previous
+            Action.Builtin.CLOSE_APPS -> R.string.overview_action_close_all
+            Action.Builtin.CLOSE_BACKGROUND_APPS -> R.string.overview_action_close_background
+            Action.Builtin.POWER_MENU -> R.string.overview_action_power_menu
+            Action.Builtin.STANDBY -> R.string.overview_action_standby
+            Action.Builtin.APP_ASK -> R.string.overview_action_app_ask
+            Action.Builtin.APP_FAVORITES -> R.string.overview_action_app_favorites
             else -> null
         }
         if (res != null) return getString(res)
