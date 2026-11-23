@@ -178,7 +178,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 110 test classes, **780 tests**. Run by the gate. By area:
+The automated safety net. 111 test classes, **787 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|

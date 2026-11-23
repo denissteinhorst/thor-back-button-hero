@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 780 JVM tests pass |
+| `testDebugUnitTest` | All 787 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 110 classes, 780 tests
+### Base — JVM tests (Robolectric + JUnit), 111 classes, 787 tests
 
 Everything the gate can verify without hardware.
 
@@ -176,6 +176,11 @@ an explicitly approved stored-data change.
 script's content too. Cache paths, script numbers and the APK path are replaced by named symbols. The
 expected commands in `app/src/test/resources/commands/` were recorded on the refactoring baseline and
 are frozen by contract A6. `UPDATE_COMMAND_FIXTURES=1` is only for an explicitly approved command change.
+
+`PServiceFailureContractTest` uses the same binder seam for the failure side: a refused or thrown
+transaction is `null`, an empty reply is `""`, a miss is retried only after 10 s and a success stays
+cached, and a swipe-away without the daemon, or after a failed root removal, ends in
+`killBackgroundProcesses`.
 
 ### Tip — instrumented tests
 

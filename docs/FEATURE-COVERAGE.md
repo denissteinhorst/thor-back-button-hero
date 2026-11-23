@@ -86,7 +86,7 @@ pending".
 | F-HLP-3 | The original pad is restored on every exit path: service off, process death, clearing all D-pad bindings | — | PadHelperLifecycle | service: restart, app process death | C17g, C18, C20 | —/S6 | R10, R11 | H | JVM+DEV (S6: app process killed → helper hands back, service, helper and clone return, hotkey works) |
 | F-HLP-4 | Holding Home + Back for 5 s hands the pad back; shortcuts fall back to the overlay until restart | — | — | service: Home + Back held 5 s hands the pad back | C17f | —/S6 | R11 | H | DEV (S6: release, clone gone, native face input reaches the game, Back + D-pad via overlay, helper back after restart) |
 | F-HLP-5 | Controller-style switches (Standard, Xbox, Ban) keep the clone working | — | — | ayn: controller style | C17e | —/— | R11 | H | DEV+MAN |
-| F-HLP-6 | Without pservice, Back + D-pad works through a focus overlay (games may pause) and settings warn | — | — | — | C17h | S5/— | R3, R11 | M | MAN → GAP before R3.1 |
+| F-HLP-6 | Without pservice, Back + D-pad works through a focus overlay (games may pause) and settings warn | — | — | — | C17h | S5/— | R3, R11 | M | MAN — integration limit: pservice cannot be made unavailable on the Thor without a global SELinux change (forbidden); R3 changes no D-pad fallback path; reported for the final owner test |
 | F-HLP-7 | Stick directions fire once per deflection and need the centre before the next | L2 | Stick | sources: D-pad and stick directions | C17i, C17j | —/S6 | R4, R11 | M | JVM+DEV |
 | F-HLP-8 | A stick without an action is never withheld; a stick pushed before Back stays with the game | — | Stick | sources: bound withheld | C17k | —/S6 | R11 | M | JVM+DEV |
 | F-HLP-9 | Stick clicks (L3/R3) distinguish press, double press and tap-and-hold, timed like Back | L2 | Stick | sources: stick clicks | C17m | —/S6 | R4 | M | JVM+DEV |
@@ -242,7 +242,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 |---|---|---|---|---|---|---|---|---|---|
 | F-SVC-1 | After a service restart the helper and every hotkey come back; exactly one helper runs | — | PadHelperLifecycle | service: restart | C20 | —/— | R10, R11 | H | JVM+DEV |
 | F-SVC-2 | No focus or window switch the user did not trigger (owner rule) | TB | — | — | C8e, C40 | —/S6 | R4–R7, R10 | H | MAN → GAP trace assertion before R4.1 |
-| F-SVC-3 | Without pservice, swipe-close falls back to `killBackgroundProcesses`; other privileged actions report unavailable | — | Shell | — | C17h | —/— | R3 | M | MAN → GAP before R3.1 |
+| F-SVC-3 | Without pservice, swipe-close falls back to `killBackgroundProcesses`; other privileged actions report unavailable | — | `PServiceFailureContractTest` (no daemon, failed removal, null/empty/refused/thrown replies, retry cache) | — | C17h | —/— | R3 | M | JVM — closed R3.1 |
 | F-SVC-4 | Every package name reaching a privileged command passes `Shell.isPkg` | — | Shell | — | — | —/S6 | R3 | H | JVM |
 | F-SVC-5 | Frozen class names: SwitcherService, SettingsActivity, UpdateInstaller$StatusReceiver, 10 root entry points | — | — | preflight (service) | — | —/— | R1 | H | STATIC (S2 contract A4: frozen classes and root entry points) |
 | F-SVC-6 | Wire strings: binder descriptors, broadcast actions, helper protocol, log decision texts | — | — | — | — | —/S6 | R1, R3, R11 | H | STATIC (S2 contract A5 wire strings) + JVM (S6 command and helper-protocol fixtures, A6) |
