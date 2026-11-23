@@ -82,6 +82,8 @@ import dev.steinhorst.backbuttonhero.pad.PadHelper
 import dev.steinhorst.backbuttonhero.pad.PadNavigationMode
 import dev.steinhorst.backbuttonhero.panels.BottomPanels
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import dev.steinhorst.backbuttonhero.prefs.Action
+import dev.steinhorst.backbuttonhero.prefs.ActionCodec
 import dev.steinhorst.backbuttonhero.prefs.AppException
 import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
 import dev.steinhorst.backbuttonhero.prefs.Prefs
@@ -1137,53 +1139,54 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun runComboAction(button: ComboButton, action: String) {
-        when (action) {
-            Prefs.SHOULDER_FLICK_LEFT -> navigationFlick(left = true)
-            Prefs.SHOULDER_FLICK_RIGHT -> navigationFlick(left = false)
-            Prefs.SHOULDER_VOLUME_UP, Prefs.SHOULDER_VOLUME_DOWN,
-            Prefs.SHOULDER_BRIGHTNESS_UP, Prefs.SHOULDER_BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
-            Prefs.SHOULDER_CONTROLLER_FOCUS -> runControllerFocus(button)
-            Prefs.SHOULDER_SWITCH_APP -> switchActiveApp(button)
-            Prefs.SHOULDER_APP_CONTROL -> runAppControl(button)
-            Prefs.SHOULDER_CLOSE_APPS -> runCloseApps(button, keepForeground = false)
-            Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> runCloseApps(button, keepForeground = true)
-            Prefs.SHOULDER_POWER_MENU -> showPowerMenu()
-            Prefs.SHOULDER_STANDBY -> runStandby(button)
-            Prefs.SHOULDER_VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
-            Prefs.SHOULDER_RECORD_VIDEO -> toggleRecording(button)
-            Prefs.SHOULDER_MACRO -> runMacro(button)
-            Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            Prefs.SHOULDER_MEDIA_NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
-            Prefs.SHOULDER_MEDIA_PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-            Prefs.SHOULDER_STATUS -> showStatus()
-            Prefs.SHOULDER_GYRO -> toggleGyro(button)
-            Prefs.SHOULDER_GYRO_CALIBRATE -> calibrateGyro()
-            in Ayn.ACTIONS -> runAynAction(button, action)
-            Prefs.SHOULDER_HOME -> onLaunchScreen(button, ::goHome)
-            Prefs.SHOULDER_APP_ASK -> chooseApp(button, favorites = false)
-            Prefs.SHOULDER_APP_FAVORITES -> chooseApp(button, favorites = true)
-            Prefs.SHOULDER_RECENTS -> openTopRecentsNow()
-            Prefs.SHOULDER_SWITCHER -> showSwitcherNow()
-            Prefs.SHOULDER_SWAP_APPS -> swapScreensNow()
-            Prefs.SHOULDER_LAST_APP -> switchToLastApp()
-            Prefs.SHOULDER_BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
-            Prefs.SHOULDER_SCREENSHOT -> screenshot(prefs.levelTarget(button))
-            Prefs.SHOULDER_QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
-            Prefs.SHOULDER_NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            Prefs.SHOULDER_INTERNET -> openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
-            Prefs.SHOULDER_BLUETOOTH -> openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
-            Prefs.SHOULDER_NIGHT_LIGHT -> openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
-            Prefs.SHOULDER_EXTRA_DIM -> openSystemSettings(
+        when (ActionCodec.decode(action)) {
+            Action.Builtin.FLICK_LEFT -> navigationFlick(left = true)
+            Action.Builtin.FLICK_RIGHT -> navigationFlick(left = false)
+            Action.Builtin.VOLUME_UP, Action.Builtin.VOLUME_DOWN,
+            Action.Builtin.BRIGHTNESS_UP, Action.Builtin.BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
+            Action.Builtin.CONTROLLER_FOCUS -> runControllerFocus(button)
+            Action.Builtin.SWITCH_ACTIVE_APP -> switchActiveApp(button)
+            Action.Builtin.APP_CONTROL -> runAppControl(button)
+            Action.Builtin.CLOSE_APPS -> runCloseApps(button, keepForeground = false)
+            Action.Builtin.CLOSE_BACKGROUND_APPS -> runCloseApps(button, keepForeground = true)
+            Action.Builtin.POWER_MENU -> showPowerMenu()
+            Action.Builtin.STANDBY -> runStandby(button)
+            Action.Builtin.VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
+            Action.Builtin.RECORD_VIDEO -> toggleRecording(button)
+            Action.Builtin.MACRO -> runMacro(button)
+            Action.Builtin.MEDIA_PLAY_PAUSE -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            Action.Builtin.MEDIA_NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            Action.Builtin.MEDIA_PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            Action.Builtin.STATUS_OVERLAY -> showStatus()
+            Action.Builtin.GYRO -> toggleGyro(button)
+            Action.Builtin.GYRO_CALIBRATE -> calibrateGyro()
+            is Action.AynChoice, is Action.AynSwitch -> runAynAction(button, action)
+            Action.Builtin.HOME -> onLaunchScreen(button, ::goHome)
+            Action.Builtin.APP_ASK -> chooseApp(button, favorites = false)
+            Action.Builtin.APP_FAVORITES -> chooseApp(button, favorites = true)
+            Action.Builtin.RECENTS -> openTopRecentsNow()
+            Action.Builtin.SWITCHER -> showSwitcherNow()
+            Action.Builtin.SWAP_APPS -> swapScreensNow()
+            Action.Builtin.LAST_APP -> switchToLastApp()
+            Action.Builtin.BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
+            Action.Builtin.SCREENSHOT -> screenshot(prefs.levelTarget(button))
+            Action.Builtin.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+            Action.Builtin.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+            Action.Builtin.INTERNET -> openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
+            Action.Builtin.BLUETOOTH -> openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
+            Action.Builtin.NIGHT_LIGHT -> openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
+            Action.Builtin.EXTRA_DIM -> openSystemSettings(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ACTION_EXTRA_DIM_SETTINGS else Settings.ACTION_DISPLAY_SETTINGS,
                 Settings.ACTION_DISPLAY_SETTINGS,
             )
-            Prefs.SHOULDER_DISPLAY_SETTINGS -> openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
-            Prefs.SHOULDER_SOUND_SETTINGS -> openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
-            Prefs.SHOULDER_LOCATION_SETTINGS -> openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            Prefs.SHOULDER_CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
-            Prefs.SHOULDER_DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
-            Prefs.SHOULDER_BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
-            else -> onLaunchScreen(button) { displayId ->
+            Action.Builtin.DISPLAY_SETTINGS -> openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
+            Action.Builtin.SOUND_SETTINGS -> openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
+            Action.Builtin.LOCATION_SETTINGS -> openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            Action.Builtin.CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
+            Action.Builtin.DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
+            Action.Builtin.BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
+            // An app, and also an empty or unknown value: both reach the launch path as before.
+            is Action.LaunchApp, is Action.Unknown, Action.Unassigned -> onLaunchScreen(button) { displayId ->
                 dlog("COMBO ${button.name} + Back -> launching $action on display $displayId")
                 launchOn(action, displayId)
             }
