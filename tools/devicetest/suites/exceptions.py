@@ -199,6 +199,9 @@ def _task_displays(d, pkg):
         m = re.match(r"Display #(\d+)", line)
         if m:
             current = int(m.group(1))
+        elif line and not line[0].isspace():
+            # A later top-level section (the supervisor's z-order) lists tasks again under no display header.
+            current = None
         elif current is not None and re.search(rf"\* Task\{{.*A=\d+:{re.escape(pkg)}\b", line):
             displays.add(current)
     return displays
