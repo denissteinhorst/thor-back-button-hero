@@ -26,3 +26,11 @@ re-recording. An unknown stored value must be kept, not dropped.
 
 Keeping raw strings is simplest but leaves the scattered parsing. A new storage format would need
 migrations and would break downgrade and backup compatibility.
+
+## Implementation (R2)
+
+`prefs/Action.kt` holds the sealed `Action` and `ActionCodec`, the only string mapping; the service
+dispatch, the overview labels and the backup reader decode through it. Lists keyed by action-list
+entries (groups, the app chooser, search keys) are not stored values and stay string-keyed. The
+migrations moved verbatim to `Migrations.kt`, and the macro library to `MacroStore`, both behind
+`Prefs` as the single file and transaction owner.
