@@ -72,6 +72,7 @@ import dev.steinhorst.backbuttonhero.macro.MacroPlayback
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.GyroActions
 import dev.steinhorst.backbuttonhero.pad.GyroControl
 import dev.steinhorst.backbuttonhero.pad.GyroStatus
 import dev.steinhorst.backbuttonhero.pad.LevelControl
@@ -118,8 +119,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             gyroStatusListener?.invoke(status)
         }
     }
-    /** The devices holding the gyro's hold key, while it has one. */
-    private val gyroHoldDevices = mutableSetOf<Int>()
+    private val gyroActions by lazy { GyroActions({ gyro }, prefs, notice, { padHelper.active }, { modifierDown }) }
     private lateinit var dpadOverlay: DpadOverlay
     private lateinit var appControlPrompt: AppControlPrompt
     private lateinit var levels: LevelControl
@@ -411,7 +411,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         )
         gyroOverride = { rates -> handler.post { gyro.override = rates } }
         gyroRecenter = { gyro.recenter() }
-        gyroCalibrate = { calibrateGyro() }
+        gyroCalibrate = { gyroActions.calibrate() }
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
         appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
         prefs.registerListener(prefsListener)
@@ -433,7 +433,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (calibration != gyro.calibration) gyro.calibration = calibration
         val gyroButton = gyro.button
         if (gyroButton != null) {
-            if (prefs.shoulderAction(gyroButton) == Prefs.SHOULDER_GYRO) gyro.update(prefs.gyro(gyroButton)) else stopGyro()
+            if (prefs.shoulderAction(gyroButton) == Prefs.SHOULDER_GYRO) gyro.update(prefs.gyro(gyroButton)) else gyroActions.stop()
         }
     }
 
@@ -548,8 +548,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         topRecentsBackClosePending = false
         recentsConfirmKeys.clear()
         nativeBackDevices.clear()
-        gyroHoldDevices.clear()
-        gyro.setHeld(false)
+        gyroActions.releaseHold()
     }
 
     private val standbyReceiver = object : BroadcastReceiver() {
@@ -762,7 +761,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             return pressGesture.handleBack(event)
         }
         if (handlePushToTalk(event)) return true
-        if (handleGyroHold(event)) return true
+        if (gyroActions.handleHold(event)) return true
         comboButton(event)?.let { return handleShoulder(event, layered(it)) }
         Stick.entries.firstOrNull { it.keyCode == event.keyCode }?.let { return handleStickClick(it, event) }
         return false
@@ -1021,8 +1020,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.MEDIA_NEXT -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
             Action.Builtin.MEDIA_PREVIOUS -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             Action.Builtin.STATUS_OVERLAY -> system.showStatus()
-            Action.Builtin.GYRO -> toggleGyro(button)
-            Action.Builtin.GYRO_CALIBRATE -> calibrateGyro()
+            Action.Builtin.GYRO -> gyroActions.toggle(button)
+            Action.Builtin.GYRO_CALIBRATE -> gyroActions.calibrate()
             is Action.AynChoice, is Action.AynSwitch -> runAynAction(button, action)
             Action.Builtin.HOME -> onLaunchScreen(button, ::goHome)
             Action.Builtin.APP_ASK -> chooseApp(button, favorites = false)
@@ -1242,55 +1241,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         return true
     }
 
-    /**
-     * With holding chosen, the gyro steers only while its key is held. The key still reaches the game
-     * unless the setup keeps it back; with Back held it stays the button of its Back combination.
-     */
-    private fun handleGyroHold(event: KeyEvent): Boolean {
-        val key = gyro.settings.holdKeyInUse?.takeIf { gyro.on } ?: return false
-        if (event.keyCode != key) return false
-        when (event.action) {
-            KeyEvent.ACTION_DOWN -> {
-                if (gyroHoldDevices.isEmpty() && modifierDown) return false
-                if (gyroHoldDevices.add(event.deviceId) && gyroHoldDevices.size == 1) gyro.setHeld(true)
-            }
-            KeyEvent.ACTION_UP -> {
-                if (!gyroHoldDevices.remove(event.deviceId)) return false
-                if (gyroHoldDevices.isEmpty()) gyro.setHeld(false)
-            }
-        }
-        return !gyro.settings.holdPasses
-    }
-
-    /** Turns the gyro on with [button]'s setup, or off again; a notice says which. */
-    private fun toggleGyro(button: ComboButton) {
-        if (gyro.on) {
-            stopGyro()
-            return notice.show(R.string.gyro_off)
-        }
-        if (!gyro.available) return notice.show(R.string.gyro_no_sensor)
-        if (!padHelper.active) return notice.show(R.string.gyro_helper_missing)
-        gyroHoldDevices.clear()
-        gyro.calibration = prefs.gyroCalibration
-        gyro.start(button, prefs.gyro(button))
-        notice.show(R.string.gyro_on)
-    }
-
-    /** Calibration measures rest independently of the posture used to aim. */
-    private fun calibrateGyro() {
-        if (!gyro.available) return notice.show(R.string.gyro_no_sensor)
-        notice.show(R.string.gyro_calibration_started)
-        gyro.calibrate { result ->
-            if (result != null) prefs.gyroCalibration = result
-            notice.show(if (result != null) R.string.gyro_calibrated else R.string.gyro_calibration_failed)
-        }
-    }
-
-    private fun stopGyro() {
-        gyroHoldDevices.clear()
-        gyro.stop()
-    }
-
     private fun setTalking(on: Boolean) {
         recording.talk(on)
         recordIndicator.setTalking(on)
@@ -1471,7 +1421,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
-        stopGyro()
+        gyroActions.stop()
         gyroOverride = null
         gyroCalibrate = null
         gyroRecenter = null

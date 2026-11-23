@@ -12,6 +12,7 @@ import dev.steinhorst.backbuttonhero.input.ComboButton
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.GyroActions
 import dev.steinhorst.backbuttonhero.pad.GyroControl
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
 import dev.steinhorst.backbuttonhero.pad.PadHelper
@@ -75,10 +76,11 @@ class ServiceGyroTest {
 
     private fun gyro(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<GyroControl>(service, "getGyro")
 
-    private fun toggle(service: SwitcherService) =
-        ReflectionHelpers.callInstanceMethod<Unit>(service, "toggleGyro", ClassParameter.from(ComboButton::class.java, button))
+    private fun actions(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<GyroActions>(service, "getGyroActions")
 
-    private fun calibrate(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<Unit>(service, "calibrateGyro")
+    private fun toggle(service: SwitcherService) = actions(service).toggle(button)
+
+    private fun calibrate(service: SwitcherService) = actions(service).calibrate()
 
     private fun key(service: SwitcherService, action: Int, code: Int, device: Int = 7) = ReflectionHelpers.callInstanceMethod<Boolean>(
         service, "onKeyEvent", ClassParameter.from(KeyEvent::class.java,
