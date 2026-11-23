@@ -235,7 +235,7 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 72 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+A further 73 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 

@@ -250,42 +250,26 @@ class Prefs(context: Context) : GestureSettings {
      *  it on never recreates the controller under a running game. */
     fun hasGyroAction(): Boolean = withHomeLayer(ALL_BUTTONS).any { shoulderAction(it) == SHOULDER_GYRO }
 
+    private val macros = MacroStore(sp)
+
     /** The named macros, in the order they were first saved. Hotkeys refer to them by id. */
-    var macroLibrary: List<SavedMacro>
-        get() = SavedMacro.decode(sp.getString("macro_library", null))
-        set(v) = sp.edit().putString("macro_library", SavedMacro.encode(v)).apply()
+    var macroLibrary: List<SavedMacro> by macros::library
 
     /** The library macro [button] plays for [SHOULDER_MACRO]; null until one is chosen or recorded. */
-    fun savedMacro(button: ComboButton): SavedMacro? =
-        sp.getString("${button.prefKey}_macro", null)?.let { id -> macroLibrary.firstOrNull { it.id == id } }
+    fun savedMacro(button: ComboButton): SavedMacro? = macros.saved(button)
     fun macro(button: ComboButton): Macro? = savedMacro(button)?.macro
-    fun setMacroRef(button: ComboButton, id: String?) {
-        sp.edit().apply { if (id == null) remove("${button.prefKey}_macro") else putString("${button.prefKey}_macro", id) }.apply()
-    }
+    fun setMacroRef(button: ComboButton, id: String?) = macros.setRef(button, id)
 
     /** Stores [macro] as [name] under [id], or as a new library entry when [id] is null or unknown. */
-    fun saveMacro(id: String?, name: String, macro: Macro): SavedMacro {
-        val library = macroLibrary
-        val existing = library.any { it.id == id }
-        val newId = if (existing) checkNotNull(id) else SavedMacro.nextId(library)
-        val saved = SavedMacro(newId, SavedMacro.cleanName(name, newId), macro)
-        macroLibrary = if (existing) library.map { if (it.id == newId) saved else it } else library + saved
-        return saved
-    }
+    fun saveMacro(id: String?, name: String, macro: Macro): SavedMacro = macros.save(id, name, macro)
 
-    fun renameMacro(id: String, name: String) {
-        macroLibrary = macroLibrary.map { if (it.id == id) it.copy(name = SavedMacro.cleanName(name, it.name)) else it }
-    }
+    fun renameMacro(id: String, name: String) = macros.rename(id, name)
 
     /** The hotkeys that play library macro [id]. */
-    fun macroUsers(id: String): List<ComboButton> = ALL_MACRO_BUTTONS.filter { sp.getString("${it.prefKey}_macro", null) == id }
+    fun macroUsers(id: String): List<ComboButton> = macros.users(id)
 
     /** Removes macro [id] from the library and from every hotkey that played it, in one write. */
-    fun deleteMacro(id: String) {
-        val edit = sp.edit().putString("macro_library", SavedMacro.encode(macroLibrary.filterNot { it.id == id }))
-        macroUsers(id).forEach { edit.remove("${it.prefKey}_macro") }
-        edit.apply()
-    }
+    fun deleteMacro(id: String) = macros.delete(id)
 
     /** Whether any hotkey plays a recorded macro - only then must the helper hold the pad for it. */
     fun hasMacroAction(): Boolean = withHomeLayer(MACRO_BUTTONS).any { shoulderAction(it) == SHOULDER_MACRO && macro(it) != null }

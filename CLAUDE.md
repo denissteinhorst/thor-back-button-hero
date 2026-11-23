@@ -176,7 +176,7 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 72 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  A further 73 classes (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
   Total line coverage across all classes is about 67 % (8886/13286).
