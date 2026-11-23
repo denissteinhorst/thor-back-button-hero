@@ -88,9 +88,9 @@ import dev.steinhorst.backbuttonhero.recents.FrontendParking
 import dev.steinhorst.backbuttonhero.recents.TaskOps
 import dev.steinhorst.backbuttonhero.recents.RecentsSelection
 import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.SwapCoordinator
 import dev.steinhorst.backbuttonhero.recents.RecentsThumbnailCache
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
-import dev.steinhorst.backbuttonhero.recents.TaskMovePolicy
 import dev.steinhorst.backbuttonhero.recents.TopRecentsNavigation
 import dev.steinhorst.backbuttonhero.recents.TopRecentsState
 import dev.steinhorst.backbuttonhero.recents.WindowTracker
@@ -147,8 +147,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val notice by lazy { NoticeOverlay(this) }
     private val system by lazy { SystemActions(this, notice) }
     private val autoControllerFocus by lazy { AutoControllerFocus(this) }
-    private var switchingActiveApp = false
-    @Volatile private var activeAppSwitchSession = 0
     private val comboRouter = ComboRouter(object : ComboRouter.Host {
         override val modifierDown get() = this@SwitcherService.modifierDown
         override fun action(button: ComboButton) = prefs.shoulderAction(button)
@@ -304,6 +302,30 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun forgetParked(packageName: String) { if (::parking.isInitialized) parking.forget(packageName) }
             override fun goHome(displayId: Int) = this@SwitcherService.goHome(displayId, dismissSwitcher = false)
             override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
+        })
+    }
+    private val swap by lazy {
+        SwapCoordinator(this, handler, notice, object : SwapCoordinator.Host {
+            override val connected get() = isConnected
+            override val interceptionEnabled get() = this@SwitcherService.interceptionEnabled
+            override val appExceptions get() = prefs.appExceptions
+            override fun bottomDisplay() = this@SwitcherService.bottomDisplay()
+            override fun topApp(displayId: Int) = source.topApp(displayId)
+            override fun cancelSwitcherOpen() = cancelBottomSwitcherOpen()
+            override fun dismissSwitcher() = overlay.dismiss()
+            override fun refreshPanels(display: Display, then: () -> Unit) { panels.refresh(display, then) }
+            override fun panelsPreventSwap(topPackage: String?, bottomPackage: String?) = panels.preventsSwap(topPackage, bottomPackage)
+            override fun prepareBottomLaunch(displayId: Int, then: () -> Unit) = this@SwitcherService.prepareBottomLaunch(displayId, then)
+            override fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean) =
+                this@SwitcherService.launchTask(pkg, displayId, taskId, allowRelaunch)
+            override fun canRelaunch(pkg: String) = this@SwitcherService.canRelaunch(pkg)
+            override fun holdSwapBlocked() = this@SwitcherService.holdSwapBlocked()
+            override fun unavailable() = toastUnavailable()
+            override fun focusRoute() = controllerFocus.currentTarget()
+            override fun switchAppFollowFocus(button: ComboButton) = prefs.switchAppFollowFocus(button)
+            override fun runFocus(target: String, onComplete: (Boolean) -> Unit) = controllerFocus.run(target, onComplete)
+            override fun runAutoFocus(displayId: Int, then: (Boolean) -> Unit) = autoControllerFocus.run(displayId, then)
+            override fun dismissAutoFocus() = autoControllerFocus.dismiss()
         })
     }
     private val appControl by lazy {
@@ -1088,88 +1110,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
-    private fun cancelActiveAppSwitch() {
-        activeAppSwitchSession++
-        switchingActiveApp = false
-        autoControllerFocus.dismiss()
-    }
+    private fun cancelActiveAppSwitch() = swap.cancel()
 
-    private fun switchActiveApp(button: ComboButton) {
-        if (switchingActiveApp) return
-        val display = bottomDisplay() ?: return
-        val top = Display.DEFAULT_DISPLAY
-        val bottom = display.displayId
-        val route = controllerFocus.currentTarget()
-        val follow = prefs.switchAppFollowFocus(button)
-        val foreground = mapOf(top to source.topApp(top), bottom to source.topApp(bottom))
-        switchingActiveApp = true
-        val session = ++activeAppSwitchSession
-        fun active() = isConnected && interceptionEnabled && session == activeAppSwitchSession
-        Thread {
-            val from = when (route) {
-                Prefs.DISPLAY_TOP -> top
-                Prefs.DISPLAY_BOTTOM -> bottom
-                else -> AutoControllerFocus.focusedDisplay(PService.exec("dumpsys input | grep -m1 'FocusedDisplayId:'"))
-            }
-            val pkg = foreground[from]
-            val task = if (pkg == null) null else {
-                val tasks = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
-                tasks?.firstOrNull { it.packageName == pkg && it.displayId == from && it.movable }
-            }
-            handler.post resolved@ {
-                if (!active()) return@resolved
-                if (from != top && from != bottom) {
-                    switchingActiveApp = false
-                    toastUnavailable()
-                    return@resolved
-                }
-                val target = if (from == top) bottom else top
-                if (pkg == null) {
-                    switchingActiveApp = false
-                    notice.show(R.string.app_control_no_app)
-                    return@resolved
-                }
-                if (task == null) {
-                    switchingActiveApp = false
-                    toastUnavailable()
-                    return@resolved
-                }
-                cancelBottomSwitcherOpen()
-                overlay.dismiss()
-                panels.refresh(display) {
-                    if (!active()) return@refresh
-                    if (panels.preventsSwap(pkg, null)) {
-                        switchingActiveApp = false
-                        notice.show(R.string.panel_swap_unavailable, long = true)
-                        return@refresh
-                    }
-                    prepareBottomLaunch(target) {
-                        if (!active()) return@prepareBottomLaunch
-                        Thread {
-                            val moved = session == activeAppSwitchSession && launchTask(pkg, target, task.taskId, allowRelaunch = false)
-                            handler.post moved@ {
-                                if (!active()) return@moved
-                                switchingActiveApp = false
-                                if (!moved) return@moved
-                                if (route == ControllerFocus.AUTO_TARGET) {
-                                    switchingActiveApp = true
-                                    autoControllerFocus.run(if (follow) target else from) { ok ->
-                                        switchingActiveApp = false
-                                        if (active() && !ok) toastUnavailable()
-                                    }
-                                } else if (follow) {
-                                    switchingActiveApp = true
-                                    controllerFocus.run(if (target == top) Prefs.DISPLAY_TOP else Prefs.DISPLAY_BOTTOM) {
-                                        if (active()) switchingActiveApp = false
-                                    }
-                                }
-                            }
-                        }.apply { isDaemon = true }.start()
-                    }
-                }
-            }
-        }.apply { isDaemon = true }.start()
-    }
+    private fun switchActiveApp(button: ComboButton) = swap.switchActiveApp(button)
 
     /** Opens the system's own power dialog and gives its first option input focus, so the D-pad,
      *  the stick and A operate it right away. */
@@ -1702,7 +1645,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun killOnly(closing: List<String>, displays: Set<Int>, reportMemory: Boolean = false, afterwards: (() -> Unit)? = null) =
         taskOps.kill(closing, displays, reportMemory, afterwards)
 
-    /** Move the two captured foreground tasks; the first move must not change the second target. */
     // The Back gestures are assignable: the machine reports which gesture fired, the bound action runs.
     override fun swapScreens() = runBackGesture(BackGestureButton.HOLD)
     override fun openTopRecents() = runBackGesture(BackGestureButton.TAP_HOLD)
@@ -1714,41 +1656,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (action.isNotEmpty()) runComboAction(gesture, action)
     }
 
-    private fun swapScreensNow() {
-        cancelBottomSwitcherOpen()
-        val display = bottomDisplay() ?: return
-        val bottom = display.displayId
-        val top = Display.DEFAULT_DISPLAY
-        overlay.dismiss()
-        panels.refresh(display) {
-            if (!isConnected) return@refresh
-            val exceptions = prefs.appExceptions
-            val topPackage = source.topApp(top)
-            val bottomPackage = source.topApp(bottom)
-            val topApp = TaskMovePolicy.swapParticipant(topPackage, exceptions)
-            val bottomApp = TaskMovePolicy.swapParticipant(bottomPackage, exceptions)
-            if (topApp == null && bottomApp == null &&
-                (topPackage != null || bottomPackage != null)) {
-                holdSwapBlocked()
-                return@refresh
-            }
-            if (panels.preventsSwap(topApp, bottomApp)) {
-                notice.show(R.string.panel_swap_unavailable, long = true)
-                return@refresh
-            }
-            Thread {
-                val states = RecentsTaskState.parse(PService.runEntryPoint(this, "RecentsStateReader", "include-excluded"))
-                val moves = TaskMovePolicy.planSwap(topApp, bottomApp, top, bottom, states, ::canRelaunch)
-                if (moves.isNullOrEmpty()) {
-                    handler.post { notice.show(R.string.swap_unavailable, long = true) }
-                    return@Thread
-                }
-                for (move in moves) {
-                    if (!launchTask(move.packageName, move.targetDisplay, move.taskId)) break
-                }
-            }.apply { isDaemon = true }.start()
-        }
-    }
+    private fun swapScreensNow() = swap.swapScreens()
 
     private fun launchOn(pkg: String, displayId: Int) {
         val intent = packageManager.getLaunchIntentForPackage(pkg)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) ?: return

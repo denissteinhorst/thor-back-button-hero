@@ -94,7 +94,7 @@ class ServiceSwapTest {
                 .forEach { out.append("root ").append(it).append('\n') }
             ShadowLog.getLogsForTag("BackButtonHero").filter { it.msg.startsWith("Notice: ") }
                 .forEach { out.append(it.msg).append('\n') }
-            out.append("switching ").append(ReflectionHelpers.getField<Boolean>(service, "switchingActiveApp")).append('\n')
+            out.append("switching ").append(ReflectionHelpers.getField<Boolean>(ReflectionHelpers.callInstanceMethod<Any>(service, "getSwap"), "switching")).append('\n')
         } finally {
             runCatching { service.onDestroy() }
             if (root) fake.uninstall()
