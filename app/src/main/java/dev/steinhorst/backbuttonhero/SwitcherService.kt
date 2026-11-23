@@ -15,9 +15,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Path
 import android.hardware.display.DisplayManager
-import android.media.AudioManager
-import android.net.Uri
-import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -42,7 +39,7 @@ import dev.steinhorst.backbuttonhero.actions.CloseApps
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
 import dev.steinhorst.backbuttonhero.actions.LastApp
 import dev.steinhorst.backbuttonhero.actions.PowerMenu
-import dev.steinhorst.backbuttonhero.actions.StatusSummary
+import dev.steinhorst.backbuttonhero.actions.SystemActions
 import dev.steinhorst.backbuttonhero.capture.PushToTalk
 import dev.steinhorst.backbuttonhero.capture.RecordingIndicatorOverlay
 import dev.steinhorst.backbuttonhero.capture.ScreenRecording
@@ -150,6 +147,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             onToggle = ::toggleInterception)
     }
     private val notice by lazy { NoticeOverlay(this) }
+    private val system by lazy { SystemActions(this, notice) }
     private val autoControllerFocus by lazy { AutoControllerFocus(this) }
     private var switchingActiveApp = false
     @Volatile private var activeAppSwitchSession = 0
@@ -1035,10 +1033,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             Action.Builtin.RECORD_VIDEO -> toggleRecording(button)
             Action.Builtin.MACRO -> runMacro(button)
-            Action.Builtin.MEDIA_PLAY_PAUSE -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            Action.Builtin.MEDIA_NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
-            Action.Builtin.MEDIA_PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-            Action.Builtin.STATUS_OVERLAY -> showStatus()
+            Action.Builtin.MEDIA_PLAY_PAUSE -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            Action.Builtin.MEDIA_NEXT -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            Action.Builtin.MEDIA_PREVIOUS -> system.sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            Action.Builtin.STATUS_OVERLAY -> system.showStatus()
             Action.Builtin.GYRO -> toggleGyro(button)
             Action.Builtin.GYRO_CALIBRATE -> calibrateGyro()
             is Action.AynChoice, is Action.AynSwitch -> runAynAction(button, action)
@@ -1053,19 +1051,19 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.SCREENSHOT -> screenshot(prefs.levelTarget(button))
             Action.Builtin.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             Action.Builtin.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            Action.Builtin.INTERNET -> openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
-            Action.Builtin.BLUETOOTH -> openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
-            Action.Builtin.NIGHT_LIGHT -> openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
-            Action.Builtin.EXTRA_DIM -> openSystemSettings(
+            Action.Builtin.INTERNET -> system.openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
+            Action.Builtin.BLUETOOTH -> system.openSystemSettings(Settings.ACTION_BLUETOOTH_SETTINGS)
+            Action.Builtin.NIGHT_LIGHT -> system.openSystemSettings(Settings.ACTION_NIGHT_DISPLAY_SETTINGS, Settings.ACTION_DISPLAY_SETTINGS)
+            Action.Builtin.EXTRA_DIM -> system.openSystemSettings(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ACTION_EXTRA_DIM_SETTINGS else Settings.ACTION_DISPLAY_SETTINGS,
                 Settings.ACTION_DISPLAY_SETTINGS,
             )
-            Action.Builtin.DISPLAY_SETTINGS -> openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
-            Action.Builtin.SOUND_SETTINGS -> openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
-            Action.Builtin.LOCATION_SETTINGS -> openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            Action.Builtin.CAST_SETTINGS -> openSystemSettings(Settings.ACTION_CAST_SETTINGS)
-            Action.Builtin.DND_SETTINGS -> openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
-            Action.Builtin.BATTERY_SAVER -> openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
+            Action.Builtin.DISPLAY_SETTINGS -> system.openSystemSettings(Settings.ACTION_DISPLAY_SETTINGS)
+            Action.Builtin.SOUND_SETTINGS -> system.openSystemSettings(Settings.ACTION_SOUND_SETTINGS)
+            Action.Builtin.LOCATION_SETTINGS -> system.openSystemSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            Action.Builtin.CAST_SETTINGS -> system.openSystemSettings(Settings.ACTION_CAST_SETTINGS)
+            Action.Builtin.DND_SETTINGS -> system.openSystemSettings(ACTION_ZEN_MODE_SETTINGS, Settings.ACTION_SOUND_SETTINGS)
+            Action.Builtin.BATTERY_SAVER -> system.openSystemSettings(Settings.ACTION_BATTERY_SAVER_SETTINGS)
             // An app, and also an empty or unknown value: both reach the launch path as before.
             is Action.LaunchApp, is Action.Unknown, Action.Unassigned -> onLaunchScreen(button) { displayId ->
                 dlog("COMBO ${button.name} + Back -> launching $action on display $displayId")
@@ -1340,43 +1338,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     /** Media keys go to whichever session plays, as a headset button would; no root needed. */
-    private fun sendMediaKey(keyCode: Int) {
-        val audio = getSystemService(AudioManager::class.java)
-        val now = SystemClock.uptimeMillis()
-        audio.dispatchMediaKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0))
-        audio.dispatchMediaKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0))
-    }
-
-    /** One line of battery facts as a toast on the top screen, the one AYN's assistant leaves visible. */
-    private fun showStatus() {
-        val battery = getSystemService(BatteryManager::class.java)
-        // Sticky: no receiver is registered, the last battery broadcast is only read.
-        val sticky = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val level = battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-        val plugged = (sticky?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0
-        val tenths = sticky?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE) ?: Int.MIN_VALUE
-        val minutes = if (plugged) {
-            battery.computeChargeTimeRemaining().takeIf { it > 0 }?.let { (it / 60_000L).toInt() }
-        } else {
-            StatusSummary.minutesLeft(
-                battery.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER),
-                battery.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
-            )
-        }
-        fun duration(m: Int) = if (m >= 60) getString(R.string.status_hours_minutes, m / 60, m % 60) else getString(R.string.status_minutes, m)
-        val parts = listOfNotNull(
-            getString(R.string.status_battery, level),
-            when {
-                plugged && minutes != null -> getString(R.string.status_full_in, duration(minutes))
-                plugged -> getString(R.string.status_plugged)
-                minutes != null -> getString(R.string.status_left, duration(minutes))
-                else -> null
-            },
-            if (tenths == Int.MIN_VALUE) null else getString(R.string.status_temperature, tenths / 10f),
-        )
-        notice.show(parts.joinToString(" · "), long = true)
-    }
-
     private fun toggleRecording(button: ComboButton) {
         recording.toggle {
             recordPosition = prefs.recordPosition(button).takeIf { prefs.recordIndicator(button) }
@@ -1598,14 +1559,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         else bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY
 
     /** Opens the narrowest system-owned panel available, with a safe fallback for OEM builds. */
-    private fun openSystemSettings(action: String, fallback: String = Settings.ACTION_SETTINGS, data: Uri? = null) {
-        val primary = Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).apply { this.data = data }
-        val fallbackIntent = Intent(fallback).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        runCatching { startActivity(primary) }
-            .recoverCatching { startActivity(fallbackIntent) }
-            .onFailure { notice.show(R.string.shoulder_action_unavailable) }
-    }
-
     /** Replays the fast bottom-edge flick measured from the Thor's navigation pill. */
     private fun navigationFlick(left: Boolean) {
         val display = getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY) ?: return
