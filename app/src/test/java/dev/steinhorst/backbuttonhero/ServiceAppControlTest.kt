@@ -13,6 +13,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.actions.AppControlActions
 import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.core.AppSource
@@ -35,7 +36,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowDisplayManager
 import org.robolectric.shadows.ShadowLog
 import org.robolectric.util.ReflectionHelpers
-import org.robolectric.util.ReflectionHelpers.ClassParameter
 
 /**
  * App control, close apps and standby with apps on both screens: their prompts, what a choice or
@@ -153,16 +153,13 @@ class ServiceAppControlTest {
         text.replace(service.cacheDir.absolutePath, "<cache>").replace(service.applicationInfo.sourceDir, "<apk>"), "pservice_<n>.sh")
         .replace("'$bottomId'", "'<bottom>'").replace("-d $bottomId ", "-d <bottom> ").replace("display $bottomId", "display <bottom>")
 
-    private fun call(service: SwitcherService, name: String, vararg args: ClassParameter<*>) {
-        ReflectionHelpers.callInstanceMethod<Any?>(service, name, *args)
-    }
+    private fun handler(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<AppControlActions>(service, "getAppControl")
 
-    private fun appControl(service: SwitcherService) = call(service, "runAppControl", ClassParameter.from(ComboButton::class.java, button))
+    private fun appControl(service: SwitcherService) = handler(service).runAppControl(button)
 
-    private fun closeApps(service: SwitcherService, keep: Boolean) = call(service, "runCloseApps",
-        ClassParameter.from(ComboButton::class.java, button), ClassParameter.from(Boolean::class.javaPrimitiveType, keep))
+    private fun closeApps(service: SwitcherService, keep: Boolean) = handler(service).runCloseApps(button, keep)
 
-    private fun standby(service: SwitcherService) = call(service, "runStandby", ClassParameter.from(ComboButton::class.java, button))
+    private fun standby(service: SwitcherService) = handler(service).runStandby(button)
 
     private fun mode(mode: String, screen: String, confirm: Boolean): (Prefs) -> Unit = { prefs ->
         prefs.setAppMode(button, mode)

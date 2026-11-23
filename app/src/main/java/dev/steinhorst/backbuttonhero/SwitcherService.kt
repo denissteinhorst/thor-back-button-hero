@@ -29,13 +29,11 @@ import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
-import dev.steinhorst.backbuttonhero.actions.AppControl
+import dev.steinhorst.backbuttonhero.actions.AppControlActions
 import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
-import dev.steinhorst.backbuttonhero.actions.AppControlTarget
 import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
 import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.actions.AynControls
-import dev.steinhorst.backbuttonhero.actions.CloseApps
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
 import dev.steinhorst.backbuttonhero.actions.LastApp
 import dev.steinhorst.backbuttonhero.actions.PowerMenu
@@ -280,6 +278,23 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** True while a Home press standing in for Back runs through the Back path. */
     private var translatingHome = false
     private val prefs by lazy { Prefs(this) }
+    private val appControl by lazy {
+        AppControlActions(this, prefs, notice, object : AppControlActions.Host {
+            override fun bottomDisplayId() = bottomDisplay()?.displayId
+            override fun topApp(displayId: Int) = source.topApp(displayId)
+            override fun appsOnDisplay(displayId: Int) = source.appsOnDisplay(displayId).map { it.packageName }
+            override fun forget(packageName: String) = source.forget(packageName)
+            override fun prompt(title: String, options: List<AppControlPrompt.Option>, onChoice: (String) -> Unit) =
+                appControlPrompt.show(promptDisplay(), title, options, onChoice)
+            override fun kill(packages: List<String>, displays: Set<Int>, reportMemory: Boolean, afterwards: (() -> Unit)?) =
+                killOnly(packages, displays, reportMemory, afterwards)
+            override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
+            override fun goHome(displayId: Int) = this@SwitcherService.goHome(displayId, dismissSwitcher = false)
+            override fun lockScreen() {
+                performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+            }
+        })
+    }
     private val handler = Handler(Looper.getMainLooper())
 
     private val gestureClock = object : GestureClock {
@@ -984,11 +999,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.BRIGHTNESS_UP, Action.Builtin.BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
             Action.Builtin.CONTROLLER_FOCUS -> runControllerFocus(button)
             Action.Builtin.SWITCH_ACTIVE_APP -> switchActiveApp(button)
-            Action.Builtin.APP_CONTROL -> runAppControl(button)
-            Action.Builtin.CLOSE_APPS -> runCloseApps(button, keepForeground = false)
-            Action.Builtin.CLOSE_BACKGROUND_APPS -> runCloseApps(button, keepForeground = true)
+            Action.Builtin.APP_CONTROL -> appControl.runAppControl(button)
+            Action.Builtin.CLOSE_APPS -> appControl.runCloseApps(button, keepForeground = false)
+            Action.Builtin.CLOSE_BACKGROUND_APPS -> appControl.runCloseApps(button, keepForeground = true)
             Action.Builtin.POWER_MENU -> showPowerMenu()
-            Action.Builtin.STANDBY -> runStandby(button)
+            Action.Builtin.STANDBY -> appControl.runStandby(button)
             Action.Builtin.VOLUME_MUTE -> levels.toggleMute(prefs.levelTarget(button))
             Action.Builtin.RECORD_VIDEO -> toggleRecording(button)
             Action.Builtin.MACRO -> macroPlayback.run(button)
@@ -1164,92 +1179,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }.apply { isDaemon = true }.start()
     }
 
-    /**
-     * Minimizes or force-closes the foreground app of the chosen screen. The apps are resolved
-     * before any prompt opens, so "the app behind the modal" is the one that gets hit even if the
-     * window state shifts while the user decides.
-     */
-    private fun runAppControl(button: ComboButton) {
-        val mode = prefs.appMode(button)
-        val screen = prefs.appScreen(button)
-        val bottomId = bottomDisplay()?.displayId
-        fun resolve(chosen: String) = AppControl.targets(chosen, Display.DEFAULT_DISPLAY, bottomId, source::topApp)
-        if (screen == Prefs.APP_SCREEN_ASK) {
-            val labels = mapOf(
-                Prefs.DISPLAY_TOP to getString(R.string.level_target_top),
-                Prefs.DISPLAY_BOTTOM to getString(R.string.level_target_bottom),
-                Prefs.TARGET_BOTH to getString(R.string.level_target_both),
-            )
-            val options = listOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH)
-                .map { AppControlPrompt.Option(it, labels.getValue(it)) }
-            // Resolved up front: the modal must not change which app counts as "in front".
-            val resolved = options.associate { it.value to resolve(it.value) }
-            appControlPrompt.show(promptDisplay(), getString(R.string.app_control_prompt_title), options) { chosen ->
-                applyAppControl(mode, resolved.getValue(chosen))
-            }
-            return
-        }
-        val targets = resolve(screen)
-        if (mode != Prefs.APP_MINIMIZE && prefs.appConfirm(button) && targets.isNotEmpty()) {
-            val pm = packageManager
-            val names = targets.joinToString(", ") {
-                runCatching { pm.getApplicationInfo(it.packageName, 0).loadLabel(pm).toString() }.getOrDefault(it.packageName)
-            }
-            val restart = mode == Prefs.APP_RESTART
-            // The prompt adds its own Cancel row below.
-            val options = listOf(
-                AppControlPrompt.Option("yes", getString(if (restart) R.string.app_control_prompt_restart_yes else R.string.app_control_prompt_close_yes)),
-            )
-            val title = getString(if (restart) R.string.app_control_prompt_restart_title else R.string.app_control_prompt_close_title, names)
-            appControlPrompt.show(promptDisplay(), title, options) {
-                if (it == "yes") applyAppControl(mode, targets)
-            }
-            return
-        }
-        applyAppControl(mode, targets)
-    }
-
-    /** Closes the apps known to run on the button's screens, optionally sparing whatever is in front. */
-    private fun runCloseApps(button: ComboButton, keepForeground: Boolean) {
-        val all = listOfNotNull(Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId)
-        val displays = CloseApps.displays(prefs.levelTarget(button), Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId)
-        val packages = CloseApps.packages(displays, all, keepForeground, { id -> source.appsOnDisplay(id).map { it.packageName } }, source::topApp)
-        Log.d(TAG, "Close apps on $displays (keep foreground: $keepForeground): $packages")
-        if (packages.isEmpty()) {
-            notice.show(R.string.close_apps_none)
-            return
-        }
-        // Every screen, not only the chosen ones: a closed app may have moved in front of the other one.
-        fun close() {
-            packages.forEach(source::forget)
-            killOnly(packages, all.toSet(), reportMemory = true)
-        }
-        if (!prefs.closeConfirm(button)) {
-            close()
-            return
-        }
-        val pm = packageManager
-        val names = packages.joinToString(", ") {
-            runCatching { pm.getApplicationInfo(it, 0).loadLabel(pm).toString() }.getOrDefault(it)
-        }
-        val options = listOf(AppControlPrompt.Option("yes", getString(R.string.close_apps_prompt_yes)))
-        appControlPrompt.show(promptDisplay(), getString(R.string.close_apps_prompt_title, names), options) {
-            if (it == "yes") close()
-        }
-    }
-
-    /** Locks and switches off the screens as a short press of the power button does. */
-    private fun runStandby(button: ComboButton) {
-        if (!prefs.standbyConfirm(button)) {
-            performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
-            return
-        }
-        val options = listOf(AppControlPrompt.Option("yes", getString(R.string.group_standby)))
-        appControlPrompt.show(promptDisplay(), getString(R.string.standby_prompt_title), options) {
-            if (it == "yes") performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
-        }
-    }
-
     /** Opens the system's own power dialog and gives its first option input focus, so the D-pad,
      *  the stick and A operate it right away. */
     private fun showPowerMenu() {
@@ -1277,24 +1206,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** The prompt belongs where the controller is, so its D-pad and buttons reach it. */
     private fun promptDisplay(): Display = getSystemService(DisplayManager::class.java)
         .getDisplay(controllerDisplayId()) ?: getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
-
-    private fun applyAppControl(mode: String, targets: List<AppControlTarget>) {
-        if (targets.isEmpty()) {
-            notice.show(R.string.app_control_no_app)
-            return
-        }
-        if (mode == Prefs.APP_FORCE_CLOSE) {
-            // killOnly already leaves the app for Home first and falls back to an unprivileged kill.
-            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet(), reportMemory = true)
-        } else if (mode == Prefs.APP_RESTART) {
-            // Each app comes back on the screen it left; our own settings only lose their task, see killOnly.
-            killOnly(targets.map { it.packageName }.distinct(), targets.map { it.displayId }.toSet()) {
-                targets.filter { it.packageName != packageName }.forEach { launchOn(it.packageName, it.displayId) }
-            }
-        } else {
-            targets.forEach { goHome(it.displayId, dismissSwitcher = false) }
-        }
-    }
 
     /** Media keys go to whichever session plays, as a headset button would; no root needed. */
     private fun toggleRecording(button: ComboButton) {
