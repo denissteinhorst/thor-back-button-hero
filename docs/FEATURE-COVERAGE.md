@@ -63,17 +63,17 @@ pending".
 | F-GES-5 | An unassigned gesture does nothing (Back is swallowed) while Back + button hotkeys keep working | L2 | BackGestureMachine, UnassignedRow, g:settings_main_*_basic | gestures: unassigned gestures | C17o | —/S6 | R4, R8 | H | JVM+DEV |
 | F-GES-6 | A gesture switched off (double tap, tap-hold, hold) is skipped without delaying the others | L2 | BackGestureMachine, PrefsDefaults | gestures: single fires at once | B7, B8 | —/S6 | R4 | M | JVM+DEV (hold/tap-hold disable not device-asserted) |
 | F-GES-7 | Timings are adjustable per gesture and the slider shows only for an assigned gesture | — | SettingsActivitySnapshot, g:settings_main_*_basic | — | C17o | S5/— | R8 | L | JVM |
-| F-GES-8 | `pressFollowsTap` is latched at DOWN, so a pending single tap firing mid-hold does not change the decision | — | BackGestureMachine | — | — | —/S6 | R4 | H | JVM (boundary t−1/t/t+1 with fake clock → GAP before R4.1) |
+| F-GES-8 | `pressFollowsTap` is latched at DOWN, so a pending single tap firing mid-hold does not change the decision | — | BackGestureMachine | — | — | —/S6 | R4 | H | JVM (BackGestureThreshold boundaries; DOWN latch through the service: InputPipelineCharacterization) |
 
 ## Back + button hotkeys (CMB)
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-CMB-1 | Back + L1/L2/R1/R2 runs that button's binding; the game never sees the bound press | L2 | — (service key path has no JVM test), g:shoulder_* (settings only) | sources: every button | C9–C15, C17 | S5/S6 | R4, R5 | H | DEV → GAP JVM characterization (B3) before R4.1 |
+| F-CMB-1 | Back + L1/L2/R1/R2 runs that button's binding; the game never sees the bound press | L2 | — (service key path has no JVM test), g:shoulder_* (settings only) | sources: every button | C9–C15, C17 | S5/S6 | R4, R5 | H | JVM (InputPipelineCharacterization, B3: same result on the pre-R1 tree) + DEV |
 | F-CMB-2 | Back + A/B/X/Y follow the printed letter in every controller style | L2 | FaceButton | sources: every button; ayn: controller style | C17r, C17s | —/S6 | R4 | H | JVM+DEV |
 | F-CMB-3 | Back + Home/Start/Select run their bindings; AYN's own button keeps its role | L2 | FaceButton (key mapping), PhysicalKeyTracker, HomeAsBackService | sources: every button | C17r, C17t | —/S6 | R4 | H | JVM+DEV |
-| F-CMB-4 | An unassigned button is left alone, with and without Back held | L2 | KeyInterceptionGate (consume/release retention) | sources: bound withheld, unbound reaches game | C17, C17u | —/S6 | R4 | H | DEV; JVM partial → GAP before R4.1 |
-| F-CMB-5 | Shoulder buttons act only while Back is held; otherwise events stay unconsumed | — | — | sources: bound withheld | C17 | —/S6 | R4 | H | DEV → GAP JVM characterization before R4.1 |
+| F-CMB-4 | An unassigned button is left alone, with and without Back held | L2 | KeyInterceptionGate (consume/release retention) | sources: bound withheld, unbound reaches game | C17, C17u | —/S6 | R4 | H | JVM (InputPipelineCharacterization) + DEV |
+| F-CMB-5 | Shoulder buttons act only while Back is held; otherwise events stay unconsumed | — | — | sources: bound withheld | C17 | —/S6 | R4 | H | JVM (InputPipelineCharacterization) + DEV |
 | F-CMB-6 | A hotkey releasing Back produces no Back tap | L2 | DualModeService (layer swallow), HomeAsBackService | sources: every button | C17r | —/S6 | R4 | H | DEV; JVM partial |
 | F-CMB-7 | Volume and brightness hotkeys repeat while held after 0.25 s, accelerating to about 40 ms | — | LevelSteps | levels: held stick repeats | C17n | —/S6 | R5, R11 | M | JVM+DEV |
 
@@ -185,7 +185,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 |---|---|---|---|---|---|---|---|---|---|
 | F-EXC-1 | An unchecked action behaves as if the app were not installed (tap = Back, hold = long press, combo reaches game) | — | AppException, ExceptionGroupSnapshot | exceptions: blocks excluded combo | C18b–C18f | —/S6 | R4 | H | JVM+DEV |
 | F-EXC-2 | All four Back gestures unchecked: Back and every combo reach the app untouched; one message after the swap timeout | — | AppException | exceptions: all Back excluded | C18g | —/S6 | R4 | H | JVM+DEV |
-| F-EXC-3 | The app on the controller-focused screen decides; a switched-off row is ignored | — | AppException | — | C18h, C18i | —/S6 | R4 | H | JVM → GAP device before R4.1 |
+| F-EXC-3 | The app on the controller-focused screen decides; a switched-off row is ignored | — | AppException | — | C18h, C18i | —/S6 | R4 | H | JVM (InputPipelineCharacterization: focus top/bottom, game on either screen, inactive row); device C18h/C18i stays MAN |
 | F-EXC-4 | Exception editor pages, modals and "Remove all" with preview | — | ExceptionSettingsPage, g:exceptions_*, g:settings_*_exceptions | — | C18k | S5/— | R8 | M | JVM |
 | F-EXC-5 | Native Back passthrough uses the root path for excepted apps | — | — | exceptions | C18b | —/S6 | R3, R4 | H | DEV (partial) |
 
@@ -241,7 +241,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
 | F-SVC-1 | After a service restart the helper and every hotkey come back; exactly one helper runs | — | PadHelperLifecycle | service: restart | C20 | —/— | R10, R11 | H | JVM+DEV |
-| F-SVC-2 | No focus or window switch the user did not trigger (owner rule) | TB | — | — | C8e, C40 | —/S6 | R4–R7, R10 | H | MAN → GAP trace assertion before R4.1 |
+| F-SVC-2 | No focus or window switch the user did not trigger (owner rule) | TB | — | — | C8e, C40 | —/S6 | R4–R7, R10 | H | JVM key-path assertion (InputPipelineCharacterization: no privileged command, focus setting or activity start) + GT core; MAN C8e, C40 |
 | F-SVC-3 | Without pservice, swipe-close falls back to `killBackgroundProcesses`; other privileged actions report unavailable | — | `PServiceFailureContractTest` (no daemon, failed removal, null/empty/refused/thrown replies, retry cache) | — | C17h | —/— | R3 | M | JVM — closed R3.1 |
 | F-SVC-4 | Every package name reaching a privileged command passes `Shell.isPkg` | — | Shell | — | — | —/S6 | R3 | H | JVM |
 | F-SVC-5 | Frozen class names: SwitcherService, SettingsActivity, UpdateInstaller$StatusReceiver, 10 root entry points | — | — | preflight (service) | — | —/— | R1 | H | STATIC (S2 contract A4: frozen classes and root entry points) |
@@ -259,9 +259,9 @@ which it needs one or an accepted manual procedure.
 
 | ID | Scenario | Groups | Risk | Status → due |
 |---|---|---|---|---|
-| F-X-1 | A setting changes while Back or a combo is held | R2, R4 | M | GAP → before R4.1 |
+| F-X-1 | A setting changes while Back or a combo is held | R2, R4 | M | JVM (InputPipelineCharacterization: held combo rebind/unbind, binding made while held, single tap read at fire time, exception latched at Back DOWN) |
 | F-X-2 | Both modifiers held, both release orders (dual mode, Home as Back) | R4 | H | DEV (dual: first owns) + MAN C17x, C17za |
-| F-X-3 | Exception on the controller-focused display while the other screen has another app | R4 | H | MAN C18i → GAP before R4.1 |
+| F-X-3 | Exception on the controller-focused display while the other screen has another app | R4 | H | JVM (InputPipelineCharacterization) + MAN C18i |
 | F-X-4 | Panel plus ordinary task in one Recents session and in a swap | R6 | H | MAN C8f, C8i |
 | F-X-5 | Excluded Companion task versus genuine Home task | R6 | M | MAN C2d, C8j |
 | F-X-6 | Failed task query preserves history; stale asynchronous replies are ignored | R6, R10 | M | JVM (SwitcherTaskSync partial) → GAP stale reply before R10.1 |
@@ -333,7 +333,7 @@ before R1 must have evidence by then):
 | R1 (static contracts, S2) | F-SVC-5, F-SVC-6, F-SVC-9 |
 | R2.1 (stored data, S3) | closed by S3: F-DAT-1, F-DAT-3, F-DAT-5, F-DAT-8 |
 | R3.1 (platform boundary) | F-HLP-6, F-HLP-11, F-PNL-5, F-SVC-3; root commands frozen by PrivilegedCommandContractTest (call sites, AYN controls, FrontendParking, AutoControllerFocus), ServiceActionCommandTest (every stored action, helper launch script) and ServiceInternalCommandTest (native Back, swipe-kill, Recents routing, swap, last app, screenshot, top/bottom Recents). SocketLaunchCommandTest freezes the screen recorder launch script; PadHelperProtocolTest freezes the pad helper line protocol (commands, takeover replay, event reactions incl. malformed lines). Still open, due before the first semantic change of the helper connection (needs a production seam, LocalServerSocket is unavailable on the JVM): uid-0 peer acceptance/rejection, line framing from the socket reader, relaunch after a lost helper; until then device suite. Device/manual only: the PanelConnection launch script (needs a LocalServerSocket, unavailable on the JVM) and the AYN panel close (needs a covering panel window) |
-| R4.1 (input pipeline) | F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
+| R4.1 (input pipeline) | CLOSED 2026-11-23 (InputPipelineCharacterization): F-GES-8, F-CMB-1, F-CMB-4, F-CMB-5, F-EXC-3, F-SVC-2, F-X-1, F-X-3 |
 | R5.1 (actions) | F-ACT-2 |
 | R6.1 (Recents, panels) | F-SWI-3, F-SWP-2, F-SWP-3, F-PNL-1, F-PNL-2, F-PNL-4 |
 | R8.1 (settings UI) | F-SET-9, F-SET-15, F-SET-16 |

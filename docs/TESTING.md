@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 789 JVM tests pass |
+| `testDebugUnitTest` | All 801 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 112 classes, 789 tests
+### Base — JVM tests (Robolectric + JUnit), 113 classes, 801 tests
 
 Everything the gate can verify without hardware.
 
@@ -105,6 +105,7 @@ Everything the gate can verify without hardware.
 | Settings actions: the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
+| Service key path through the real `onKeyEvent`: shoulder combos per half, DOWN latch, held-press setting changes, exception of the controller-focused app, no unrequested focus/window change | `InputPipelineCharacterizationTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
 | Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
 | Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
