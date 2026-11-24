@@ -49,8 +49,8 @@ class SwitcherOverlay(
     private val badgeViews = mutableMapOf<String, Pair<ImageView, ImageView>>()
     private var bulkClosing = false
     private var windowManager: WindowManager? = null
-    private var shownApps = emptyList<RunningApp>()
-    private var shownCards = emptyList<View>()
+    /** The displayed cards in row order; each app travels with the views built for it. */
+    private var shown = emptyList<ShownCard>()
     private var shownDisplayId = Display.DEFAULT_DISPLAY
     private var selected = 0
     private var closeAllButton: View? = null
@@ -66,8 +66,7 @@ class SwitcherOverlay(
         if (root == null) return
         root?.let { runCatching { windowManager?.removeView(it) } }
         root = null
-        shownApps = emptyList()
-        shownCards = emptyList()
+        shown = emptyList()
         badgeViews.clear()
         // Any one of these would keep the whole detached tree alive through its parents.
         memoryLabel = null
@@ -101,7 +100,7 @@ class SwitcherOverlay(
     }
 
     fun representsTask(state: RecentsTaskState): Boolean {
-        if (shownApps.none { it.panel == null && it.packageName == state.packageName }) return false
+        if (shown.none { it.app.panel == null && it.app.packageName == state.packageName }) return false
         val current = taskFor(state.packageName) ?: return false
         return current.taskId == state.taskId && current.lastActiveTime == state.lastActiveTime && current.displayId == state.displayId
     }
@@ -112,23 +111,23 @@ class SwitcherOverlay(
         return own.firstOrNull { it.displayId == shownDisplayId } ?: own.firstOrNull()
     }
 
-    fun previewPackages(): Set<String> = shownApps.filter { it.panel == null }.map { it.packageName }.toSet()
+    fun previewPackages(): Set<String> = shown.filter { it.app.panel == null }.map { it.app.packageName }.toSet()
 
-    fun previewWidth(): Int = shownCards.firstOrNull()?.width?.takeIf { it > 0 }
-        ?: shownCards.firstOrNull()?.layoutParams?.width?.coerceAtLeast(1) ?: 1
+    fun previewWidth(): Int = shown.firstOrNull()?.card?.width?.takeIf { it > 0 }
+        ?: shown.firstOrNull()?.card?.layoutParams?.width?.coerceAtLeast(1) ?: 1
 
     fun updateThumbnail(packageName: String, bitmap: android.graphics.Bitmap) {
-        val index = shownApps.indexOfFirst { it.panel == null && it.packageName == packageName }
-        if (index < 0 || shownApps[index].thumbnail === bitmap) return
-        ((shownCards[index] as ViewGroup).getChildAt(1) as ImageView).setImageBitmap(bitmap)
-        shownApps = shownApps.toMutableList().apply { set(index, get(index).copy(thumbnail = bitmap)) }
+        val index = shown.indexOfFirst { it.app.panel == null && it.app.packageName == packageName }
+        if (index < 0 || shown[index].app.thumbnail === bitmap) return
+        shown[index].thumb?.setImageBitmap(bitmap)
+        shown = shown.toMutableList().apply { set(index, get(index).let { it.copy(app = it.app.copy(thumbnail = bitmap)) }) }
     }
 
     fun updateTaskStates(tasks: List<RecentsTaskState>) {
         taskStates = tasks
         memoryLabel?.let { it.text = memoryText(it.context) }
         badgeViews.forEach { (key, views) ->
-            val panel = shownApps.firstOrNull { it.key == key }?.panel
+            val panel = shown.firstOrNull { it.app.key == key }?.app?.panel
             badgeStyle?.update(views, if (panel == null) taskFor(key, tasks)
                 else RecentsTaskState(panel.packageName, panel.displayId, false))
             if (panel != null) views.first.visibility = View.INVISIBLE
@@ -139,20 +138,10 @@ class SwitcherOverlay(
     fun reconcileTaskStates(tasks: List<RecentsTaskState>): Boolean {
         if (bulkClosing) return false
         val packages = tasks.map { it.packageName }.toSet()
-        val selectedPackage = shownApps.getOrNull(selected)?.key
-        val keep = shownApps.indices.filter { shownApps[it].panel != null || shownApps[it].packageName in packages }
-        if (keep.size != shownApps.size) {
-            shownApps.indices.filterNot { it in keep }.forEach { index ->
-                val card = shownCards.getOrNull(index)
-                card?.animate()?.cancel()
-                (card?.parent as? ViewGroup)?.removeView(card)
-                badgeViews.remove(shownApps[index].key)
-            }
-            shownApps = keep.map { shownApps[it] }
-            shownCards = keep.mapNotNull { shownCards.getOrNull(it) }
-            selected = shownApps.indexOfFirst { it.key == selectedPackage }
-                .takeIf { it >= 0 } ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
-            if (shownApps.isEmpty()) dismiss() else updateSelection()
+        val selectedKey = shown.getOrNull(selected)?.app?.key
+        if (removeCards { it.app.panel == null && it.app.packageName !in packages }) {
+            keepSelection(selectedKey)
+            if (shown.isEmpty()) dismiss() else updateSelection()
         }
         updateTaskStates(tasks)
         return true
@@ -162,24 +151,31 @@ class SwitcherOverlay(
     fun reconcilePanels(panels: List<RunningApp>) {
         if (!isShowing || bulkClosing) return
         val current = panels.associateBy { it.key }
-        val selectedKey = shownApps.getOrNull(selected)?.key
-        val keep = shownApps.indices.filter { shownApps[it].panel == null || shownApps[it].key in current }
-        val expired = keep.size != shownApps.size
-        shownApps.indices.filterNot { it in keep }.forEach { index ->
-            val card = shownCards.getOrNull(index)
-            card?.animate()?.cancel()
-            (card?.parent as? ViewGroup)?.removeView(card)
-            badgeViews.remove(shownApps[index].key)
-        }
-        shownCards = keep.mapNotNull { shownCards.getOrNull(it) }
-        shownApps = keep.map { index -> current[shownApps[index].key] ?: shownApps[index] }
-        shownApps.forEachIndexed { index, app ->
-            if (app.panel != null) ((shownCards[index] as ViewGroup).getChildAt(1) as ImageView).setImageBitmap(app.thumbnail)
-        }
-        selected = shownApps.indexOfFirst { it.key == selectedKey }.takeIf { it >= 0 }
-            ?: selected.coerceAtMost(shownApps.lastIndex).coerceAtLeast(0)
+        val selectedKey = shown.getOrNull(selected)?.app?.key
+        val expired = removeCards { it.app.panel != null && it.app.key !in current }
+        shown = shown.map { entry -> current[entry.app.key]?.let { entry.copy(app = it) } ?: entry }
+        shown.forEach { entry -> if (entry.app.panel != null) entry.thumb?.setImageBitmap(entry.app.thumbnail) }
+        keepSelection(selectedKey)
         // Only an expired last card closes the switcher; the empty state itself must stay open.
-        if (shownApps.isEmpty() && expired) dismiss() else updateSelection(scrollToSelection = false)
+        if (shown.isEmpty() && expired) dismiss() else updateSelection(scrollToSelection = false)
+    }
+
+    /** Detaches the matching cards (stopping their animations, dropping their badges); true if any went. */
+    private fun removeCards(expired: (ShownCard) -> Boolean): Boolean {
+        val (gone, kept) = shown.partition(expired)
+        gone.forEach { entry ->
+            entry.card.animate().cancel()
+            (entry.card.parent as? ViewGroup)?.removeView(entry.card)
+            badgeViews.remove(entry.app.key)
+        }
+        shown = kept
+        return gone.isNotEmpty()
+    }
+
+    /** The previously selected card keeps the selection; if it went, the same position does. */
+    private fun keepSelection(selectedKey: String?) {
+        selected = shown.indexOfFirst { it.app.key == selectedKey }.takeIf { it >= 0 }
+            ?: selected.coerceAtMost(shown.lastIndex).coerceAtLeast(0)
     }
 
     fun moveSelection(right: Boolean) {
@@ -190,10 +186,10 @@ class SwitcherOverlay(
             (if (screenshotSelected) screenshotButton else closeAllButton)?.requestFocus()
             return
         }
-        if (shownApps.isEmpty()) return
+        if (shown.isEmpty()) return
         closeAllSelected = false
         screenshotSelected = false
-        selected = (selected + if (right) 1 else -1).coerceIn(0, shownApps.lastIndex)
+        selected = (selected + if (right) 1 else -1).coerceIn(0, shown.lastIndex)
         updateSelection()
     }
 
@@ -209,7 +205,7 @@ class SwitcherOverlay(
             screenshotSelected = false
             closeAllSelected = false
             updateSelection()
-            shownCards.getOrNull(selected)?.requestFocus()
+            shown.getOrNull(selected)?.card?.requestFocus()
         } else closeSelected()
     }
 
@@ -223,7 +219,7 @@ class SwitcherOverlay(
             closeAllFromController()
             return
         }
-        val app = shownApps.getOrNull(selected)
+        val app = shown.getOrNull(selected)?.app
         if (app == null) dismiss() else { launch(app, shownDisplayId); dismiss() }
     }
 
@@ -232,13 +228,13 @@ class SwitcherOverlay(
             closeAllFromController()
             return
         }
-        val app = shownApps.getOrNull(selected) ?: return
-        shownCards.getOrNull(selected)?.let { closeCard(it, app) }
+        val entry = shown.getOrNull(selected) ?: return
+        closeCard(entry.card, entry.app)
     }
 
     fun closeAllFromController() {
-        val row = shownCards.firstOrNull()?.parent as? ViewGroup ?: return
-        closeEverything(row, shownApps, bothScreens = showAppsFromAllDisplays())
+        val row = shown.firstOrNull()?.card?.parent as? ViewGroup ?: return
+        closeEverything(row, shown.map { it.app }, bothScreens = showAppsFromAllDisplays())
     }
 
     private fun show(display: Display) {
@@ -255,7 +251,7 @@ class SwitcherOverlay(
             source.appsOnDisplay(display.displayId)
         }
         val apps = (source.panelsOnDisplay(display.displayId) + regularApps).distinctBy { it.key }.reversed()
-        shownApps = apps
+        shown = emptyList()
         shownDisplayId = display.displayId
         // As in Quickstep, the newest task starts centered at the right-hand end of the row.
         selected = apps.lastIndex.coerceAtLeast(0)
@@ -303,7 +299,7 @@ class SwitcherOverlay(
         }
         screenshotButton = screenshot
         val closeAll = action(ctx, R.drawable.ic_clear_all, ctx.getString(R.string.close_all)) {
-            closeEverything(row, shownApps, bothScreens = showingAllApps)
+            closeEverything(row, shown.map { it.app }, bothScreens = showingAllApps)
         }
         closeAllButton = closeAll
         val buttonRow = LinearLayout(ctx).apply {
@@ -343,11 +339,11 @@ class SwitcherOverlay(
             }
         }
         val cards = apps.map { app ->
-            val card = card(ctx, app, cardW, thumbH, display.displayId, style)
-            row.addView(card, LinearLayout.LayoutParams(cardW, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            val entry = card(ctx, app, cardW, thumbH, display.displayId, style)
+            row.addView(entry.card, LinearLayout.LayoutParams(cardW, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = gap / 2; marginEnd = gap - gap / 2
             })
-            card
+            entry
         }
 
         val params = WindowManager.LayoutParams(
@@ -361,12 +357,12 @@ class SwitcherOverlay(
         wm.addView(frame, params)
         windowManager = wm
         root = frame
-        shownCards = cards
+        shown = cards
         updateSelection()
         onShown(display.displayId)
     }
 
-    private fun card(ctx: Context, app: RunningApp, w: Int, thumbH: Int, displayId: Int, style: RecentsCardStyle): View {
+    private fun card(ctx: Context, app: RunningApp, w: Int, thumbH: Int, displayId: Int, style: RecentsCardStyle): ShownCard {
         val corner = style.cornerRadius
         val icon = ImageView(ctx).apply {
             setImageDrawable(app.icon)
@@ -384,7 +380,7 @@ class SwitcherOverlay(
             }
             app.thumbnail?.let { setImageBitmap(it) }
         }
-        return LinearLayout(ctx).apply {
+        val card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             contentDescription = app.label
@@ -398,6 +394,7 @@ class SwitcherOverlay(
                 if (closing) closeCard(this, app) else { launch(app, displayId); dismiss() }
             })
         }
+        return ShownCard(app, card, thumb)
     }
 
     private fun closeEverything(row: ViewGroup, apps: List<RunningApp>, bothScreens: Boolean) {
@@ -412,7 +409,7 @@ class SwitcherOverlay(
         val packages = all.map { it.packageName }.distinct()
         val closesCovering = apps.any { it.panel?.covering == true }
         if (packages.isEmpty() && !closesCovering) { bulkClosing = false; return }
-        shownCards.forEach { card ->
+        shown.forEach { (_, card) ->
             card.animate().translationY(-row.height.toFloat()).alpha(0f).setDuration(200).start()
         }
         row.postDelayed({
@@ -443,9 +440,8 @@ class SwitcherOverlay(
             if (lastCard) {
                 dismiss()
             } else {
-                shownApps = shownApps.filterNot { it.key == app.key }
-                shownCards = shownCards.filterNot { it == card }
-                selected = selected.coerceAtMost(shownApps.lastIndex)
+                removeCards { it.card === card }
+                selected = selected.coerceAtMost(shown.lastIndex)
                 updateSelection()
             }
         }.start()
@@ -455,7 +451,7 @@ class SwitcherOverlay(
         closeAllButton?.setBackgroundColor(if (closeAllSelected) recentsTheme.selection else Color.TRANSPARENT)
         screenshotButton?.setBackgroundColor(if (screenshotSelected) recentsTheme.selection else Color.TRANSPARENT)
         if (!scrollToSelection || screenshotSelected || closeAllSelected) return
-        shownCards.getOrNull(selected)?.let { card ->
+        shown.getOrNull(selected)?.card?.let { card ->
             val row = card.parent as? ViewGroup ?: return@let
             val scroller = row.parent as? RecentsCarousel ?: return@let
             scroller.post {
@@ -505,3 +501,6 @@ class SwitcherOverlay(
     private fun dp(ctx: Context, v: Int) =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).roundToInt()
 }
+
+/** One displayed Recents card: its app or panel, the card view and its thumbnail view (null only in tests). */
+internal data class ShownCard(val app: RunningApp, val card: View, val thumb: ImageView?)

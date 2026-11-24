@@ -8,6 +8,7 @@ import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.recents.ShownCard
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File
@@ -126,7 +127,7 @@ class ServiceBottomSwitcherTest {
             .forEach { out.append("root ").append(it).append('\n') }
         seen = commands.size
         val overlay = ReflectionHelpers.getField<SwitcherOverlay>(service, "overlay")
-        val shown = ReflectionHelpers.getField<List<RunningApp>>(overlay, "shownApps")
+        val shown = ReflectionHelpers.getField<List<ShownCard>>(overlay, "shown").map { it.app }
         val switcher = ReflectionHelpers.callInstanceMethod<Any>(service, "getBottomSwitcher")
         val requested = ReflectionHelpers.getField<Map<Any, Int>>(switcher, "requestedThumbnails")
             .map { (key, count) -> "${ReflectionHelpers.getField<Int>(key, "taskId")}=$count" }.sorted()

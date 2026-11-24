@@ -38,8 +38,7 @@ class SwitcherTaskSyncTest {
             val root = FrameLayout(activity).apply { addView(row) }
             activity.setContentView(root)
             field("root", root)
-            field("shownApps", apps)
-            field("shownCards", cards)
+            field("shown", shownCards(apps, cards))
             field("shownDisplayId", 17)
             field("selected", 2)
         }

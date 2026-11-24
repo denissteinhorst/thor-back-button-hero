@@ -52,8 +52,7 @@ class SwitcherCloseAllTest {
         fun field(name: String, value: Any) = SwitcherOverlay::class.java.getDeclaredField(name)
             .apply { isAccessible = true }.set(overlay, value)
         field("root", root)
-        field("shownApps", apps)
-        field("shownCards", cards)
+        field("shown", shownCards(apps, cards))
         overlay.updateTaskStates(listOf(RecentsTaskState("dev.example.locked", 17, true),
             RecentsTaskState("dev.example.free", 17, false)))
         overlay.closeAllFromController()
