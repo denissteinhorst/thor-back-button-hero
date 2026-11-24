@@ -34,6 +34,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
+| `hostTests` | The device harness's 111 host tests pass (`tools/devicetest/host_tests.py`: synthetic state, no adb; fails on an empty discovery) |
 
 One command is the acceptance criterion for any change. It runs in three places, all
 identical:

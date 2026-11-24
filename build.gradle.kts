@@ -15,10 +15,20 @@ tasks.register<Exec>("installGitHooks") {
     isIgnoreExitValue = true
 }
 
+// The device harness's own logic (selection, recovery, trace/visual comparison) runs on synthetic
+// state, so it belongs in the routine gate; the device suite itself stays separate.
+tasks.register<Exec>("hostTests") {
+    group = "verification"
+    description = "Device-harness host tests (no adb, no device)."
+    workingDir = rootDir
+    commandLine("python3", "tools/devicetest/host_tests.py")
+}
+
 tasks.register("verify") {
     group = "verification"
-    description = "Single gate: lint, unit tests, debug+release build, androidTest compile."
+    description = "Single gate: lint, unit tests, harness host tests, debug+release build, androidTest compile."
     dependsOn(
+        "hostTests",
         ":app:lintDebug",
         ":app:testDebugUnitTest",
         ":app:jacocoCoverageVerification",
