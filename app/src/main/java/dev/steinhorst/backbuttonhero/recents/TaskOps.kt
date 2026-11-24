@@ -26,7 +26,13 @@ class TaskOps(private val context: Context, private val handler: Handler, privat
             context.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg), 0).isNotEmpty()
         }
 
-    /** Runs on a worker; swap moves must use one ordered worker rather than competing launches. */
+    /**
+     * Runs on a worker; swap moves must use one ordered worker rather than competing launches.
+     * True means one of two things: RecentsTaskLauncher answered `OK` over pservice (it moved the
+     * task; nothing re-reads the task state afterwards), or, only with [allowRelaunch], a plain
+     * relaunch was posted. False: refused or no transport, and the message is already posted.
+     * Callers that act on a real move (auto-focus after a switch) pass `allowRelaunch = false`.
+     */
     fun launch(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean): Boolean {
         val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
         val result = PService.runEntryPoint(context, "RecentsTaskLauncher", *args)
@@ -46,7 +52,10 @@ class TaskOps(private val context: Context, private val handler: Handler, privat
      *  service reachable ([PService]) the task is also removed from Recents and the app force-stopped;
      *  if that fails, the unprivileged kill below still runs. Our own package only loses its tasks:
      *  this process hosts the service, so stopping it would end every gesture. With [reportMemory]
-     *  the released memory is shown afterwards, as the stock launcher's Clear all does. */
+     *  the released memory is shown afterwards, as the stock launcher's Clear all does.
+     *  "Root succeeded" means TaskRemover answered `OK` and pservice replied to each force-stop at
+     *  all (an empty reply counts); neither checks that the process is gone. [afterwards] runs once
+     *  either way, it does not report success. */
     fun kill(closing: List<String>, displays: Set<Int>, reportMemory: Boolean, afterwards: (() -> Unit)?) {
         val activityManager = context.getSystemService(ActivityManager::class.java)
         // Measured before the app leaves the screen, so the whole release is counted.
