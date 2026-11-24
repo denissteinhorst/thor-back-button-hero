@@ -122,6 +122,7 @@ private fun factoryBindings(): Map<String, BindingSettings> = buildMap {
 /** [DEFAULTS] loads the welcome sheet's defaults ([startSetup]); [PRESET] the empty factory settings. */
 enum class SettingsChangeAction { PRESET, UNBIND, RESTORE, DEFAULTS }
 
+/** A bulk change before it is applied: both whole states, the page it came from, and the bound layers it touches. */
 data class SettingsChangePlan(
     val before: SettingsState,
     val after: SettingsState,

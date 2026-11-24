@@ -40,6 +40,10 @@ interface GestureActions {
     fun holdSwapBlocked()
 }
 
+/**
+ * The Back key's tap, double tap, hold and tap-then-hold decisions over one press's DOWN/UP, on an
+ * injectable clock and scheduler so every timing branch runs on the JVM. Effects go to [GestureActions].
+ */
 class BackGestureMachine(
     private val prefs: GestureSettings,
     private val clock: GestureClock,

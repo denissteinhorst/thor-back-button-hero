@@ -674,6 +674,7 @@ private const val NO_BRANCH = "settings_no_branch"
 const val POSITION_GRID_WIDTH_DP = 288
 const val POSITION_GRID_HEIGHT_DP = 162
 
+/** The nine-position picker's view and the call that moves its highlight or disables it. */
 class PositionGrid(val view: View, val update: (selected: String, enabled: Boolean) -> Unit)
 
 /** A screen outline holding a 3x3 grid of dots; tapping a dot calls [onSelect].

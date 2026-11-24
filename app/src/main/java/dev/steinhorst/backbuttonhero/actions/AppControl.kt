@@ -24,6 +24,7 @@ import dev.steinhorst.backbuttonhero.settings.dp
 /** One foreground app an active-app-control press acts on. */
 data class AppControlTarget(val displayId: Int, val packageName: String)
 
+/** Which foreground apps an Active App Control press reaches. */
 object AppControl {
     /**
      * The foreground apps [screen] covers. Displays without an app (only a launcher or system UI

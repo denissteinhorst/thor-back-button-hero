@@ -23,6 +23,10 @@ interface PanelTransport {
     fun close()
 }
 
+/**
+ * The uid-0 socket to the root [PanelWindowHost], started through pservice. Its own ordered worker
+ * keeps commands in sequence; [onLost] runs on the main thread when the host goes away.
+ */
 class PanelConnection(private val context: Context, private val onLost: () -> Unit) : PanelTransport {
     private val main = Handler(Looper.getMainLooper())
     private val worker = Executors.newSingleThreadScheduledExecutor()

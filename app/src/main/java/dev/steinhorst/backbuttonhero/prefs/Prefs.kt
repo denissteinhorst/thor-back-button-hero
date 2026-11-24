@@ -21,6 +21,11 @@ import dev.steinhorst.backbuttonhero.pad.GyroBias
 import dev.steinhorst.backbuttonhero.pad.GyroCalibration
 import dev.steinhorst.backbuttonhero.pad.GyroSettings
 
+/**
+ * The one owner of the `back_button_hero` preferences file: typed access to every stored value with
+ * its default, the one-time [Migrations] when it is created, and [applySettings], the atomic write behind
+ * every bulk change. Keys and encodings are frozen (docs/decisions/0001).
+ */
 class Prefs(context: Context) : GestureSettings {
     private val sp = context.applicationContext.getSharedPreferences("back_button_hero", Context.MODE_PRIVATE)
 
