@@ -440,7 +440,8 @@ the existing Android accessibility-settings repair flow.
 The activity builds the pages and wires their dialogs; what is pure text lives beside it.
 `BindingDescriber` names every action, option and row value and holds the lists the choosers
 offer, `ChangeDescriber` writes the lines of a change preview, and `BackupFlow` runs saving and
-restoring the settings file up to that preview. `BindingTextTableTest` freezes every binding text
+restoring the settings file up to that preview. `UpdateFlow` runs the manual update check and its dialogs; the
+activity's `updateCheck()` supplies the check, so activity tests can replace the network with a fake. `BindingTextTableTest` freezes every binding text
 in both languages and both layers.
 
 `SettingsChanges` captures immutable before/after snapshots for page defaults/unbind and

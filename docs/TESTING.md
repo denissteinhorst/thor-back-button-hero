@@ -321,6 +321,8 @@ Robolectric activity test genuinely contacts `api.github.com` and may wait out a
 timeout. Failures are swallowed and the tests stay green — leave it alone. Only report it
 if an activity test becomes *flaky* with `UpdateChecker`, `HttpURLConnection` or `Thread`
 in the trace.
+A test that needs control over the check subclasses the activity and overrides
+`updateCheck()` with a local fake, as `UpdateFlowTest` does; nothing then leaves the process.
 
 ## Reference: other environment traps
 

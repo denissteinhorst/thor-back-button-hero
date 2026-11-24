@@ -257,7 +257,8 @@ the gate green.
 - Start fake clocks above `0L`; `DoubleTapDetector` uses zero as its sentinel.
 - Robolectric qualifiers must be ordered like `en-night-xxhdpi`.
 - `SettingsActivity` starts the real `UpdateChecker` network thread in Robolectric;
-  failures are swallowed and a timeout can add about five seconds.
+  failures are swallowed and a timeout can add about five seconds. Override
+  `updateCheck()` in a test subclass (see `UpdateFlowTest`) when a test needs control.
 - `windowsOnAllDisplays` is unreliable/unavailable under Robolectric.
 - A local release APK is unsigned unless all release-signing environment variables are
   supplied; install debug for ordinary device testing.

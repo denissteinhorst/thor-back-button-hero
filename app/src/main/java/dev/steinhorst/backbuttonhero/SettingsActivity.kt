@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -72,6 +71,8 @@ import dev.steinhorst.backbuttonhero.settings.SettingsNavigation
 import dev.steinhorst.backbuttonhero.settings.SettingsPage
 import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import dev.steinhorst.backbuttonhero.settings.SettingsSurface
+import dev.steinhorst.backbuttonhero.settings.UpdateCheck
+import dev.steinhorst.backbuttonhero.settings.UpdateFlow
 import dev.steinhorst.backbuttonhero.settings.WelcomeSheet
 import dev.steinhorst.backbuttonhero.settings.alignSettingsRange
 import dev.steinhorst.backbuttonhero.settings.currentServiceStatus
@@ -86,7 +87,7 @@ import dev.steinhorst.backbuttonhero.settings.tabBar
 import dev.steinhorst.backbuttonhero.settings.themedColor
 
 /** Configuration pages share the same rows and keep their state while navigating. */
-class SettingsActivity : Activity() {
+open class SettingsActivity : Activity() {
 
     private lateinit var prefs: Prefs
     private lateinit var navigation: SettingsNavigation
@@ -111,7 +112,7 @@ class SettingsActivity : Activity() {
     private var overviewHome = false
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
-    private var updateDialog: AlertDialog? = null
+    private val updateFlow by lazy { UpdateFlow(this, updateCheck(), ::openUrl) }
     private var macroEditor: MacroEditor? = null
     private var welcomeSheet: WelcomeSheet? = null
 
@@ -155,7 +156,7 @@ class SettingsActivity : Activity() {
         setContentView(navigation.view)
         openIndicatorFromIntent()
         ensureNotificationPermission()
-        UpdateChecker.checkInBackground(this)
+        updateCheck().run(this, null)
         if (!prefs.welcomeSeen) welcomeSheet = WelcomeSheet(this, prefs, ::invalidatePages).also { it.show() }
     }
 
@@ -235,7 +236,7 @@ class SettingsActivity : Activity() {
 
     override fun onDestroy() {
         navigation.dismiss()
-        updateDialog?.dismiss()
+        updateFlow.dismiss()
         welcomeSheet?.dismiss()
         exceptionsPage?.dispose()
         super.onDestroy()
@@ -1671,125 +1672,15 @@ class SettingsActivity : Activity() {
     }
 
     private fun checkForUpdates() {
-        val updateHandle = updateHandle ?: return
-        updateHandle.row.isClickable = false
-        updateHandle.row.alpha = 0.5f
-        updateHandle.title.setText(R.string.checking_for_updates)
-        UpdateChecker.checkInBackground(this) { result ->
-            if (isFinishing || isDestroyed) return@checkInBackground
-            updateHandle.row.isClickable = true
-            updateHandle.row.alpha = 1f
-            updateHandle.title.setText(R.string.check_for_updates)
-            when (result.status) {
-                UpdateChecker.Status.UPDATE_AVAILABLE -> {
-                    val apk = result.apk
-                    val developerBuild = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-                    val offerInstall = UpdateInstaller.canOfferInstall(apk, developerBuild)
-                    val found = getString(R.string.update_found_message, result.tagName.orEmpty())
-                    val builder = AlertDialog.Builder(this)
-                        .setTitle(R.string.update_found_title)
-                        .setMessage(when {
-                            offerInstall -> "$found\n\n${getString(R.string.update_install_hint)}"
-                            apk != null -> "$found\n\n${getString(R.string.update_developer_build_hint)}"
-                            else -> found
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                    if (offerInstall && apk != null) {
-                        builder.setPositiveButton(R.string.update_install_action) { _, _ -> startUpdate(apk) }
-                        builder.setNeutralButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
-                    } else {
-                        builder.setPositiveButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
-                    }
-                    builder.show()
-                }
-                UpdateChecker.Status.UP_TO_DATE -> AlertDialog.Builder(this)
-                    .setTitle(R.string.no_update_title)
-                    .setMessage(R.string.no_update_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-                UpdateChecker.Status.ERROR -> AlertDialog.Builder(this)
-                    .setTitle(R.string.update_check_failed_title)
-                    .setMessage(updateFailureMessage(result))
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-        }
-    }
-
-    /** Downloads the release into Android's installer; Android then asks for the final confirmation itself. */
-    private fun startUpdate(apk: UpdateChecker.Asset) {
-        val installer = UpdateInstaller(this)
-        if (!installer.canInstall()) return explainInstallPermission()
-        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
-        val label = TextView(this).apply { textSize = 14f; text = getString(R.string.update_installing_progress, 0) }
-        val content = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(24), dp(16), dp(24), dp(8))
-            addView(bar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
-        }
-        updateDialog?.dismiss()
-        val progress = AlertDialog.Builder(this)
-            .setTitle(R.string.update_installing_title)
-            .setView(content)
-            .setCancelable(false)
-            .setNegativeButton(android.R.string.cancel) { _, _ -> installer.cancel() }
-            .show()
-        updateDialog = progress
-        installer.install(apk, object : UpdateInstaller.Listener {
-            override fun onProgress(done: Long, total: Long) {
-                val percent = (done * 100 / total).toInt().coerceIn(0, 100)
-                bar.progress = percent
-                label.text = getString(R.string.update_installing_progress, percent)
-            }
-
-            override fun onHandedOver() {
-                progress.dismiss()
-            }
-
-            override fun onFailed(failure: UpdateInstaller.Failure) {
-                progress.dismiss()
-                if (isFinishing || isDestroyed) return
-                if (failure == UpdateInstaller.Failure.NOT_ALLOWED) return explainInstallPermission()
-                AlertDialog.Builder(this@SettingsActivity)
-                    .setTitle(R.string.update_failed_title)
-                    .setMessage(when (failure) {
-                        UpdateInstaller.Failure.NETWORK -> R.string.update_failed_network
-                        UpdateInstaller.Failure.CORRUPT -> R.string.update_failed_corrupt
-                        else -> R.string.update_failed_session
-                    })
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-        })
-    }
-
-    /** Installing from an app is something Android asks the user to allow per app, once. */
-    private fun explainInstallPermission() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.update_allow_title)
-            .setMessage(R.string.update_allow_message)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.update_allow_open) { _, _ ->
-                runCatching {
-                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-                }
-            }
-            .show()
-    }
-
-    /** Names what actually went wrong; "check your connection" is only true when no answer came at all. */
-    private fun updateFailureMessage(result: UpdateChecker.CheckResult): String = when (result.failure) {
-        UpdateChecker.Failure.RATE_LIMITED -> result.retryMinutes
-            ?.let { resources.getQuantityString(R.plurals.update_rate_limited_minutes, it, it) }
-            ?: getString(R.string.update_rate_limited_message)
-        UpdateChecker.Failure.UNEXPECTED -> getString(R.string.update_check_unexpected_message)
-        else -> getString(R.string.update_check_failed_message)
+        updateHandle?.let(updateFlow::checkNow)
     }
 
     @Suppress("DEPRECATION")
     private fun appVersionName(): String =
         packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+
+    /** Where release checks go; activity tests substitute a local fake so nothing reaches the network. */
+    internal open fun updateCheck(): UpdateCheck = UpdateCheck(UpdateChecker::checkInBackground)
 
     private fun openUrl(url: String) {
         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
