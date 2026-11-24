@@ -2,10 +2,8 @@ package dev.steinhorst.backbuttonhero.overlay
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
-import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +11,6 @@ import android.view.WindowManager
 import android.widget.ImageView
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.prefs.Prefs
-import dev.steinhorst.backbuttonhero.settings.dp
 
 /** A brief, display-specific confirmation that never takes touch, key or controller focus. */
 class FocusIndicatorOverlay(private val context: Context) {
@@ -38,10 +35,9 @@ class FocusIndicatorOverlay(private val context: Context) {
         if (position == null) return
         shownKey = Triple(top, position, onTap != null)
         tapAction = onTap
-        val displayManager = context.getSystemService(DisplayManager::class.java)
         // AYN's privileged game-assistant window can cover accessibility overlays on the bottom
         // display, so focus confirmations always use the unobstructed top display.
-        displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.let { addToDisplay(it, top, position.orEmpty(), onTap) }
+        TopOverlayWindow.context(context)?.let { addToDisplay(it, top, position.orEmpty(), onTap) }
         handler.postDelayed(::hide, visibleMs)
     }
 
@@ -55,26 +51,15 @@ class FocusIndicatorOverlay(private val context: Context) {
         dismiss()
         if (position == null) return
         shownKey = Triple(top, position, false)
-        val displayManager = context.getSystemService(DisplayManager::class.java)
-        displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.let { addToDisplay(it, top, position, null) }
+        TopOverlayWindow.context(context)?.let { addToDisplay(it, top, position, null) }
     }
 
-    private fun addToDisplay(display: Display, top: Boolean, position: String, onTap: (() -> Unit)?) {
-        val windowContext = context.createDisplayContext(display)
-            .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+    private fun addToDisplay(windowContext: Context, top: Boolean, position: String, onTap: (() -> Unit)?) {
         val wm = windowContext.getSystemService(WindowManager::class.java)
         val density = windowContext.resources.displayMetrics.density
         fun dp(value: Int) = (value * density + 0.5f).toInt()
-        val horizontal = when (position) {
-            Prefs.FOCUS_POS_TOP_LEFT, Prefs.FOCUS_POS_CENTER_LEFT, Prefs.FOCUS_POS_BOTTOM_LEFT -> Gravity.START
-            Prefs.FOCUS_POS_TOP_RIGHT, Prefs.FOCUS_POS_CENTER_RIGHT, Prefs.FOCUS_POS_BOTTOM_RIGHT -> Gravity.END
-            else -> Gravity.CENTER_HORIZONTAL
-        }
-        val vertical = when (position) {
-            Prefs.FOCUS_POS_TOP_LEFT, Prefs.FOCUS_POS_TOP_CENTER, Prefs.FOCUS_POS_TOP_RIGHT -> Gravity.TOP
-            Prefs.FOCUS_POS_BOTTOM_LEFT, Prefs.FOCUS_POS_BOTTOM_CENTER, Prefs.FOCUS_POS_BOTTOM_RIGHT -> Gravity.BOTTOM
-            else -> Gravity.CENTER_VERTICAL
-        }
+        val horizontal = TopOverlayWindow.horizontalGravity(position)
+        val vertical = TopOverlayWindow.verticalGravity(position)
         val corner = position != Prefs.FOCUS_POS_CENTER
         val size = dp(if (corner) CORNER_DP else CENTER_DP)
         val pad = dp(if (corner) CORNER_DP / 13 else 12)

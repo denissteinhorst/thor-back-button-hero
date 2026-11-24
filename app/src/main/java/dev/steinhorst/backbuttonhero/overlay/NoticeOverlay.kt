@@ -4,19 +4,16 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
-import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
-import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import dev.steinhorst.backbuttonhero.settings.dp
 
 /**
  * The service's short messages, drawn like a toast. Android rate-limits toasts from apps in the
@@ -50,9 +47,7 @@ class NoticeOverlay(private val context: Context) {
     fun show(textRes: Int, long: Boolean = false) = show(context.getString(textRes), long)
 
     private fun add(): Shown? {
-        val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY) ?: return null
-        val windowContext = context.createDisplayContext(display)
-            .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+        val windowContext = TopOverlayWindow.context(context) ?: return null
         val wm = windowContext.getSystemService(WindowManager::class.java)
         val density = windowContext.resources.displayMetrics.density
         fun dp(value: Int) = (value * density + 0.5f).toInt()

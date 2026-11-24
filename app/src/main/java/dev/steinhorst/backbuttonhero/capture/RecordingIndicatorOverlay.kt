@@ -8,16 +8,13 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.RectF
-import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
-import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import dev.steinhorst.backbuttonhero.R
-import dev.steinhorst.backbuttonhero.prefs.Prefs
-import dev.steinhorst.backbuttonhero.settings.dp
+import dev.steinhorst.backbuttonhero.overlay.TopOverlayWindow
 
 /**
  * A small blinking red dot while a recording runs, which turns into a steady microphone while the
@@ -35,9 +32,7 @@ class RecordingIndicatorOverlay(private val context: Context) {
         if (shown != null && shownPosition == position) return
         dismiss()
         // AYN's game-assistant window can cover accessibility overlays on the bottom display.
-        val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY) ?: return
-        val windowContext = context.createDisplayContext(display)
-            .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+        val windowContext = TopOverlayWindow.context(context) ?: return
         val wm = windowContext.getSystemService(WindowManager::class.java)
         val density = windowContext.resources.displayMetrics.density
         fun dp(value: Int) = (value * density + 0.5f).toInt()
@@ -46,16 +41,8 @@ class RecordingIndicatorOverlay(private val context: Context) {
             contentDescription = windowContext.getString(R.string.record_indicator_overlay)
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
         }
-        val horizontal = when (position) {
-            Prefs.FOCUS_POS_TOP_LEFT, Prefs.FOCUS_POS_CENTER_LEFT, Prefs.FOCUS_POS_BOTTOM_LEFT -> Gravity.START
-            Prefs.FOCUS_POS_TOP_RIGHT, Prefs.FOCUS_POS_CENTER_RIGHT, Prefs.FOCUS_POS_BOTTOM_RIGHT -> Gravity.END
-            else -> Gravity.CENTER_HORIZONTAL
-        }
-        val vertical = when (position) {
-            Prefs.FOCUS_POS_TOP_LEFT, Prefs.FOCUS_POS_TOP_CENTER, Prefs.FOCUS_POS_TOP_RIGHT -> Gravity.TOP
-            Prefs.FOCUS_POS_BOTTOM_LEFT, Prefs.FOCUS_POS_BOTTOM_CENTER, Prefs.FOCUS_POS_BOTTOM_RIGHT -> Gravity.BOTTOM
-            else -> Gravity.CENTER_VERTICAL
-        }
+        val horizontal = TopOverlayWindow.horizontalGravity(position)
+        val vertical = TopOverlayWindow.verticalGravity(position)
         val params = WindowManager.LayoutParams(
             size,
             size,
