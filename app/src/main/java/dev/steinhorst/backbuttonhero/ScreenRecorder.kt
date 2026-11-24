@@ -32,11 +32,8 @@ import android.os.StatFs
 import android.os.SystemClock
 import android.view.Surface
 import dev.steinhorst.backbuttonhero.capture.EchoTrim
-import dev.steinhorst.backbuttonhero.capture.GameBed
-import dev.steinhorst.backbuttonhero.capture.TalkGate
-import dev.steinhorst.backbuttonhero.capture.VoiceBand
-import dev.steinhorst.backbuttonhero.capture.VoiceLeveler
 import dev.steinhorst.backbuttonhero.capture.VoicePolish
+import dev.steinhorst.backbuttonhero.capture.recorder.AudioMixer
 import dev.steinhorst.backbuttonhero.capture.recorder.MicRing
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
@@ -45,8 +42,6 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
  * Root side of the video recording, run through pservice in its own app_process VM. A normal app
@@ -391,15 +386,6 @@ object ScreenRecorder {
      * the playback explains, and [VoicePolish] the pauses.
      */
     private class PlaybackAudio(private val microphone: Boolean, private val pushToTalk: Boolean, private val duck: String) {
-        @Volatile private var talking = !pushToTalk
-        private var micGain = if (pushToTalk) 0f else 1f
-        private var gameGain = 1f
-        private val ducking = pushToTalk && duck != Prefs.DUCK_OFF
-        private val bed = GameBed()
-        private var bedGain = GameBed.MAX_GAIN
-        private var lowered = false
-        /** What the closed microphone last heard, mostly the speaker; decides how late a talk opens. */
-        @Volatile private var ambient = 0f
         @Volatile private var deviceDucked = false
         private val duckLock = Object()
         private var policy: Any? = null
@@ -409,19 +395,11 @@ object ScreenRecorder {
         // The delay lets push-to-talk cut the button clicks out; a few chunks of lag on top are allowed.
         private val micRing = MicRing(SAMPLE_RATE, if (pushToTalk) MIC_DELAY_FRAMES else 0,
             MIC_DELAY_FRAMES + CHUNK_FRAMES * MAX_MIC_LAG_CHUNKS)
-        private val band = VoiceBand(SAMPLE_RATE)
-        private val leveler = VoiceLeveler()
-        private var leveling = !pushToTalk
-        private val polish = VoicePolish(SAMPLE_RATE)
-        /** Only with push to talk: without it the speaker stays loud and there is no pause to learn in. */
-        private val trim = if (pushToTalk) EchoTrim(SAMPLE_RATE) else null
         @Volatile private var speakerChangedMs = 0L
-        /** The talk gate's decisions, as late as [trim] and [polish] hand the samples they belong to back. */
-        private val openLine = BooleanArray(polish.delay + (trim?.delay ?: 0)) { !pushToTalk }
-        private var openAt = 0
-        private val gate = TalkGate(TALK_OPEN_LATE_FRAMES, TALK_CLOSE_EARLY_FRAMES)
-        private val voice = FloatArray(CHUNK_FRAMES)
-        private val open = BooleanArray(CHUNK_FRAMES)
+        private val mixer = AudioMixer(pushToTalk, duck, micRing, object : AudioMixer.Speaker {
+            override val ducked get() = deviceDucked
+            override val changedMs get() = speakerChangedMs
+        })
         private var speakerRestore = 0
 
         @SuppressLint("MissingPermission") // runs as uid 0, which the audio server trusts
@@ -485,7 +463,7 @@ object ScreenRecorder {
                 while (!stopped()) {
                     val read = record.read(chunk, 0, chunk.size)
                     if (read <= 0) break
-                    trim?.reference(chunk, read / 2)
+                    mixer.reference(chunk, read / 2)
                     mix(chunk, read / 2, micChunk)
                     bytes.clear()
                     bytes.asShortBuffer().put(chunk, 0, read)
@@ -522,12 +500,7 @@ object ScreenRecorder {
 
         fun talk(on: Boolean) {
             if (!pushToTalk) return
-            talking = on
-            val at = micRing.written()
-            // A speaker that was audible at the microphone needs its fade and the audio path's latency
-            // before it is gone; opened earlier, the leveled microphone would start with a tinny burst.
-            val echo = !deviceDucked && ambient > ECHO_LEVEL
-            if (on) gate.press(at, if (echo) TALK_OPEN_AFTER_ECHO_FRAMES else TALK_OPEN_LATE_FRAMES) else gate.release(at)
+            mixer.talk(on)
             // The speaker always goes far down while talking; the video follows the duck setting. It comes
             // back only once the delayed microphone has closed.
             val restore = synchronized(duckLock) { ++speakerRestore }
@@ -536,76 +509,12 @@ object ScreenRecorder {
             } else {
                 Thread({
                     SystemClock.sleep(SPEAKER_RESTORE_DELAY_MS)
-                    if (!talking && restore == synchronized(duckLock) { speakerRestore }) duckDevice(false)
+                    if (!mixer.talking && restore == synchronized(duckLock) { speakerRestore }) duckDevice(false)
                 }, "RecorderSpeaker").apply { isDaemon = true }.start()
             }
         }
 
-        /**
-         * Adds the microphone to [chunk]'s [frames] stereo frames (a short supply is padded with silence)
-         * and moves both levels toward their targets by at most one fade step per frame, so no switch clicks.
-         */
-        private fun mix(chunk: ShortArray, frames: Int, mono: ShortArray) {
-            // The device-side shaper only reaches the speaker, never the captured copy, so the video fades
-            // here, and stays down until the delayed voice has faded out.
-            val lower = ducking && (talking || micGain > 0f)
-            if (ducking && !lower) bed.hear(chunk, frames * 2)
-            // One depth per talk, from how loud the game was before it: a level that followed the game
-            // while talking would pump.
-            if (lower && !lowered) bedGain = bed.gain()
-            lowered = lower
-            val gameTarget = if (lower) bedGain else 1f
-            if (mic == null && gameGain == 1f && gameTarget == 1f) return
-            val available = if (mic == null) 0 else micRing.pull(frames, mono)
-            if (available == 0 && gameGain == 1f && gameTarget == 1f) return
-            var anyOpen = !pushToTalk
-            for (i in 0 until available) {
-                open[i] = !pushToTalk || gate.isOpen(micRing.pulledFrom + i)
-                if (open[i]) anyOpen = true
-            }
-            band.process(mono, available, voice)
-            // A closed push-to-talk microphone must not teach the leveler the room's noise.
-            val closed = micGain == 0f && !anyOpen
-            if (closed) ambient = maxOf(rms(voice, available), ambient * AMBIENT_DECAY_PER_CHUNK)
-            // While a talk is open the speaker is down; what it plays at its normal level between talks
-            // teaches the trim, once the fades and the audio path's latency are over.
-            trim?.process(voice, available, micRing.pulledFrom, if (anyOpen) SPEAKER_GAIN else 1f,
-                closed && !deviceDucked && SystemClock.uptimeMillis() - speakerChangedMs > SPEAKER_SETTLE_MS)
-            if (anyOpen && !leveling) leveler.restart()
-            leveling = anyOpen
-            if (leveling) leveler.process(voice, available)
-            polish.process(voice, available)
-            val micStep = 1f / TALK_FADE_FRAMES
-            for (i in 0 until frames) {
-                if (i < available) {
-                    val wasOpen = openLine[openAt]
-                    openLine[openAt] = open[i]
-                    openAt = (openAt + 1) % openLine.size
-                    micGain = toward(micGain, if (wasOpen) 1f else 0f, micStep)
-                }
-                // The same number of dB per frame: an even fade to the ear, however deep it goes.
-                gameGain = if (gameGain > gameTarget) maxOf(gameTarget, gameGain * GAME_FADE_PER_FRAME)
-                else minOf(gameTarget, gameGain / GAME_FADE_PER_FRAME)
-                val spoken = if (i < available) voice[i] * micGain else 0f
-                for (channel in 0..1) {
-                    val at = i * 2 + channel
-                    chunk[at] = VoiceLeveler.limit(chunk[at] * gameGain + spoken)
-                }
-            }
-        }
-
-        private fun rms(samples: FloatArray, count: Int): Float {
-            if (count <= 0) return 0f
-            var sum = 0.0
-            for (i in 0 until count) sum += samples[i].toDouble() * samples[i]
-            return sqrt(sum / count).toFloat()
-        }
-
-        private fun toward(value: Float, target: Float, step: Float) = when {
-            value < target -> minOf(target, value + step)
-            value > target -> maxOf(target, value - step)
-            else -> value
-        }
+        private fun mix(chunk: ShortArray, frames: Int, mono: ShortArray) = mixer.mix(chunk, frames, mono, mic != null)
 
         /** Lowers or restores every other app's player on the device, with a short fade. */
         private fun duckDevice(on: Boolean): Unit = synchronized(duckLock) {
@@ -833,37 +742,20 @@ object ScreenRecorder {
     }
 
     private const val FRAME_RATE = 60
-    private const val SAMPLE_RATE = 48_000
+    private const val SAMPLE_RATE = AudioMixer.SAMPLE_RATE
     private const val AUDIO_BIT_RATE = 192_000
-    private const val CHUNK_FRAMES = SAMPLE_RATE / 50
+    private const val CHUNK_FRAMES = AudioMixer.CHUNK_FRAMES
     private const val MAX_MIC_LAG_CHUNKS = 5
     private const val DEQUEUE_US = 100_000L
     private const val JOIN_MS = 3_000L
     /** MediaMuxer writes 32-bit MP4 offsets and silently stops at 4 GB; start a new file well before. */
     private const val SEGMENT_BYTES = 3_500L * 1024 * 1024
     private const val RULE_MATCH_ATTRIBUTE_USAGE = 1
-    /** 120 dB a second: the deepest duck takes 200 ms, the usual one less. */
-    private val GAME_FADE_PER_FRAME = 10.0.pow(-120.0 / 20 / SAMPLE_RATE).toFloat()
     /** Push to talk hears the microphone this late, so a release is known before its click plays. */
     private const val MIC_DELAY_FRAMES = SAMPLE_RATE * 150 / 1000
-    /** The press click (plus the key's way here) is over by then. */
-    private const val TALK_OPEN_LATE_FRAMES = SAMPLE_RATE * 100 / 1000
-    /** Measured on the Thor: the microphone hears the speaker's fade until about 300 ms after the press. */
-    private const val TALK_OPEN_AFTER_ECHO_FRAMES = SAMPLE_RATE * 300 / 1000
-    /** About -48 dBFS: a speaker quieter than this at the microphone stays under the game in the video. */
-    private const val ECHO_LEVEL = 130f
-    /** The closed microphone's level is held and falls by about 45 dB a second. */
-    private const val AMBIENT_DECAY_PER_CHUNK = 0.9f
-    /** The release click can start before the key event arrives. */
-    private const val TALK_CLOSE_EARLY_FRAMES = SAMPLE_RATE * 80 / 1000
-    private const val TALK_FADE_FRAMES = SAMPLE_RATE * 20 / 1000
     private const val SPEAKER_RESTORE_DELAY_MS = 250L
     private const val SPEAKER_FADE_MS = 60L
-    /** The fade, the latency to the speaker and back, and the microphone's own delay, with room to spare. */
-    private const val SPEAKER_SETTLE_MS = 700L
-    /** Measured on the Thor: the microphone hears the speaker 23 dB quieter, 17 dB under a voice instead
-     *  of 6 dB over it, and the game stays audible to the player. */
-    private const val SPEAKER_GAIN = 0.1f
+    private const val SPEAKER_GAIN = AudioMixer.SPEAKER_GAIN
     private const val DUCK_SHAPER_ID = 0x4242
     private val DUCKED_USAGES = setOf(AudioAttributes.USAGE_MEDIA, AudioAttributes.USAGE_GAME, AudioAttributes.USAGE_UNKNOWN)
     private const val ROUTE_FLAG_RENDER = 1
