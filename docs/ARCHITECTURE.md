@@ -378,6 +378,12 @@ Accessibility warnings appear at the right of the top bar; root-helper/setup war
 remain below it. Service health still distinguishes on / unresponsive / off and offers
 the existing Android accessibility-settings repair flow.
 
+The activity builds the pages and wires their dialogs; what is pure text lives beside it.
+`BindingDescriber` names every action, option and row value and holds the lists the choosers
+offer, `ChangeDescriber` writes the lines of a change preview, and `BackupFlow` runs saving and
+restoring the settings file up to that preview. `BindingTextTableTest` freezes every binding text
+in both languages and both layers.
+
 `SettingsChanges` captures immutable before/after snapshots for page defaults/unbind and
 whole-app reset/unbind. Confirmations list actual changes; `Prefs.applySettings` rejects
 stale previews and writes accepted plans atomically. Whole-app unbind clears button, stick,
