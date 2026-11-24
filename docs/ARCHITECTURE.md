@@ -63,6 +63,36 @@ own thread. A shared queue would change head-of-line blocking and timeouts. The 
 the panel watchdog and the recorder's death link restore the device on real process death, which
 no in-process close can replace.
 
+## Packages and their dependencies
+
+The packages are feature slices around the frozen root package, not layers, and they reference
+each other where a feature needs another (measured from the imports):
+
+| Package | Uses |
+|---|---|
+| `overlay` | `prefs` only |
+| `panels` | `core`, root |
+| `core` | the `panels` and `recents` value types a running app carries |
+| `input` | `pad`, `prefs`, root |
+| `capture` | `core`, `overlay`, `prefs`, root |
+| `actions`, `macro`, `pad`, `recents`, `settings` | most others |
+| `prefs` | the feature types it stores (actions, macros, sticks, settings state) |
+| root | everything: `SwitcherService` and `SettingsActivity` wire the features together |
+
+No dependency rule is enforced beyond the frozen contracts; a cycle between two feature packages
+is a review prompt, not a gate failure. Same-package and reflection references (tests, root entry
+points started by class name) do not show in imports.
+
+## External contracts — never change
+
+Names and formats that something other than the compiler reads ([ADR 0001](decisions/0001-frozen-external-contracts.md)):
+the manifest components (`SwitcherService` in every user's `enabled_accessibility_services`), the
+ten root `app_process` entry points in the root package, the wire strings to the helpers and
+pservice, the `back_button_hero` preferences file with every key, encoding and migration flag, the
+backup format, media locations, resources, the native helper, and the release runtime classpath.
+`tools/contract/check.sh` enforces them; frozen fixtures under `app/src/test/resources/commands/`
+pin stored data, root commands, the helper protocol and the recorder's audio mix.
+
 ## Components
 
 ### `SwitcherService` — runtime coordinator
@@ -527,6 +557,40 @@ The five outcomes and their triggers:
 | Hold for the configured duration | Swap the apps on the top and bottom screens |
 | Tap, then hold again within the tap-hold window | System Recents on the **top** screen instead of a swap |
 | Hold + L1/L2/R1/R2 or a D-pad direction | That button's configured action, on its configured screen |
+
+### Bottom Recents, from opening to closing
+
+```
+double tap (or its hotkey)
+      │
+      ▼
+BottomSwitcherController.toggle ── AccessibilityAppSource.appsOnDisplay ◄─ window events
+      │                                   + panelsOnDisplay (hidden frontend panels)
+      ▼
+SwitcherOverlay on the bottom display ── CardTouch: tap │ swipe up
+      │                                        │            │
+      │ task-state poll while open             ▼            ▼
+      │                         RecentsTaskLauncher     TaskOps: force-stop +
+      │                         (move task via pservice) TaskRemover (root)
+      ▼
+dismiss: Back, outside tap, launch, or service unbind ── panels restored, poll stopped
+```
+
+### Settings: from a tap to stored values
+
+```
+row tap ──► chooser / dialog ──► Prefs setter (one value) ──► row refresh
+
+defaults, unbind, backup load, welcome setup
+      │
+      ▼
+SettingsChangePlan (SettingsState before → after) ──► ChangeDescriber preview
+      │ accepted
+      ▼
+Prefs.applySettings (one atomic write) ──► pages rebuilt
+
+SwitcherService reads Prefs on demand; the two share no memory.
+```
 
 ### Why `pressFollowsTap` is latched at DOWN
 
