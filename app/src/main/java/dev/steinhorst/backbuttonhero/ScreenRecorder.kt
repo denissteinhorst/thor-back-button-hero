@@ -37,6 +37,7 @@ import dev.steinhorst.backbuttonhero.capture.TalkGate
 import dev.steinhorst.backbuttonhero.capture.VoiceBand
 import dev.steinhorst.backbuttonhero.capture.VoiceLeveler
 import dev.steinhorst.backbuttonhero.capture.VoicePolish
+import dev.steinhorst.backbuttonhero.capture.recorder.MicRing
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import java.io.File
 import java.nio.ByteBuffer
@@ -405,15 +406,9 @@ object ScreenRecorder {
         private var playback: AudioRecord? = null
         private var mic: AudioRecord? = null
         private lateinit var encoder: MediaCodec
-        private val micBuffer = ShortArray(SAMPLE_RATE)
-        private var micRead = 0
-        private var micWrite = 0
-        private var micCount = 0
-        /** Microphone samples written so far; push-to-talk edges are placed on this position. */
-        private var micWritten = 0L
-        /** Position of the first sample the last [pullMic] handed out. */
-        private var micPulledFrom = 0L
-        private val micLock = Object()
+        // The delay lets push-to-talk cut the button clicks out; a few chunks of lag on top are allowed.
+        private val micRing = MicRing(SAMPLE_RATE, if (pushToTalk) MIC_DELAY_FRAMES else 0,
+            MIC_DELAY_FRAMES + CHUNK_FRAMES * MAX_MIC_LAG_CHUNKS)
         private val band = VoiceBand(SAMPLE_RATE)
         private val leveler = VoiceLeveler()
         private var leveling = !pushToTalk
@@ -521,21 +516,14 @@ object ScreenRecorder {
             while (!stopped()) {
                 val read = source.read(buffer, 0, buffer.size)
                 if (read <= 0) break
-                synchronized(micLock) {
-                    for (i in 0 until read) {
-                        micBuffer[micWrite] = buffer[i]
-                        micWrite = (micWrite + 1) % micBuffer.size
-                        if (micCount == micBuffer.size) micRead = (micRead + 1) % micBuffer.size else micCount++
-                    }
-                    micWritten += read
-                }
+                micRing.write(buffer, read)
             }
         }
 
         fun talk(on: Boolean) {
             if (!pushToTalk) return
             talking = on
-            val at = synchronized(micLock) { micWritten }
+            val at = micRing.written()
             // A speaker that was audible at the microphone needs its fade and the audio path's latency
             // before it is gone; opened earlier, the leveled microphone would start with a tinny burst.
             val echo = !deviceDucked && ambient > ECHO_LEVEL
@@ -568,11 +556,11 @@ object ScreenRecorder {
             lowered = lower
             val gameTarget = if (lower) bedGain else 1f
             if (mic == null && gameGain == 1f && gameTarget == 1f) return
-            val available = if (mic == null) 0 else pullMic(frames, mono)
+            val available = if (mic == null) 0 else micRing.pull(frames, mono)
             if (available == 0 && gameGain == 1f && gameTarget == 1f) return
             var anyOpen = !pushToTalk
             for (i in 0 until available) {
-                open[i] = !pushToTalk || gate.isOpen(micPulledFrom + i)
+                open[i] = !pushToTalk || gate.isOpen(micRing.pulledFrom + i)
                 if (open[i]) anyOpen = true
             }
             band.process(mono, available, voice)
@@ -581,7 +569,7 @@ object ScreenRecorder {
             if (closed) ambient = maxOf(rms(voice, available), ambient * AMBIENT_DECAY_PER_CHUNK)
             // While a talk is open the speaker is down; what it plays at its normal level between talks
             // teaches the trim, once the fades and the audio path's latency are over.
-            trim?.process(voice, available, micPulledFrom, if (anyOpen) SPEAKER_GAIN else 1f,
+            trim?.process(voice, available, micRing.pulledFrom, if (anyOpen) SPEAKER_GAIN else 1f,
                 closed && !deviceDucked && SystemClock.uptimeMillis() - speakerChangedMs > SPEAKER_SETTLE_MS)
             if (anyOpen && !leveling) leveler.restart()
             leveling = anyOpen
@@ -651,24 +639,6 @@ object ScreenRecorder {
                 }
             }
         }
-
-        private fun pullMic(frames: Int, mono: ShortArray): Int =
-            synchronized(micLock) {
-                // The two clocks drift apart; keep the microphone from lagging more than a few chunks
-                // behind the delay that lets push-to-talk cut the button clicks out.
-                while (micCount > MIC_DELAY_FRAMES + CHUNK_FRAMES * MAX_MIC_LAG_CHUNKS) {
-                    micRead = (micRead + 1) % micBuffer.size
-                    micCount--
-                }
-                micPulledFrom = micWritten - micCount
-                val n = minOf(frames, maxOf(0, micCount - if (pushToTalk) MIC_DELAY_FRAMES else 0))
-                for (i in 0 until n) {
-                    mono[i] = micBuffer[micRead]
-                    micRead = (micRead + 1) % micBuffer.size
-                }
-                micCount -= n
-                n
-            }
 
         fun release() {
             // Players must never stay lowered once the recording is over.
