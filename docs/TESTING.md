@@ -112,15 +112,18 @@ Everything the gate can verify without hardware.
 | Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
 | Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
 | Active App Control: target resolution, defaults, snapshots | `AppControlTest` |
-| Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest` |
-| Top Recents navigation and state parsing | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
+| Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `SwitcherCardListTest` |
+| Top Recents navigation, state parsing and the controller session (stale worker results by session and focus version, retirement) | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest`, `TopRecentsSessionTest` |
 | Task moves, frontend parking and bottom panels | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper lifecycle, navigation mode | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
 | Shell quoting and package validation | `ShellTest` |
 | Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
+| One binding card follows its binding: option rows come and go in place, Home layer cards act on their own binding | `BindingCardTest` |
+| Every binding field keeps its name through raw keys, snapshot, apply, backup and import in both layers | `BindingProjectionTest` |
 | Card touch arbitration | `CardTouchTest` |
 | Recent-app bookkeeping, thumbnail cache | `AccessibilityAppSourceTest` |
 | Release parsing, semver ordering, legacy tags, APK asset selection, failure classification | `UpdateCheckerParseTest` |
+| Update check in the settings: one automatic check at startup, each result's dialog, results after the activity ended (local fake, no network) | `UpdateFlowTest` |
 | In-app update: streaming, checksum, installer session against a local server, status receiver | `UpdateInstallerTest` |
 | UI-kit helpers | `SettingsUiKitTest` |
 | EN/DE string parity | `ResourceIntegrityTest` |

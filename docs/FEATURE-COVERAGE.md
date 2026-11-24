@@ -146,7 +146,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
 | F-TRC-1 | Tap-then-hold opens system Recents over the top screen's app | T | TopRecentsState | windows: top Recents opens | B6 | S5/S6 | R6 | H | JVM+DEV |
-| F-TRC-2 | Controller navigation through Quickstep's native path; up closes one card; no autonomous step | T | TopRecentsNavigation, TopRecentsBack | windows: controller opens from top Recents | C8b, C8d, C8e | —/S6 | R6 | H | JVM+DEV |
+| F-TRC-2 | Controller navigation through Quickstep's native path; up closes one card; no autonomous step | T | TopRecentsNavigation, TopRecentsBack, TopRecentsSession | windows: controller opens from top Recents | C8b, C8d, C8e | —/S6 | R6 | H | JVM+DEV |
 | F-TRC-3 | Selecting a bottom app moves its task to the top; launchers never move; focus restored | TB | RecentsSelection, TaskMovePolicy | windows: controller opens from top Recents | C2b, C8d | —/S6 | R6 | H | JVM+DEV |
 
 ## Swapping and moving tasks (SWP)
@@ -210,7 +210,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SET-5 | Shoulder/D-pad/face/stick rows show every state (sentinel, app, target, toggle) | T | ShoulderRowSnapshot, g:shoulder_*, g:dpad_* | — | A4 | S5/— | R8 | M | JVM |
 | F-SET-6 | Clear bindings / load defaults preview before/after and apply atomically | T | SettingsChanges, SettingsChangeDialog, g:dialog_unbind_*, g:dialog_preset_basic, g:dialog_reset_settings_confirm | — | C18k | S5/— | R2, R8 | H | JVM |
 | F-SET-7 | Service health line, warning row and "Repair service" flow | T | ServiceBlocker, SettingsUiKit, SettingsDialogSnapshot, g:dialog_repair_service | preflight | A2, C18, C19 | S5/— | R8 | H | JVM + MAN |
-| F-SET-8 | Version footer; manual and automatic update check with notification | T | UpdateCheckerParse | — | A3, D7 | —/— | R8 | M | JVM (parse) + MAN |
+| F-SET-8 | Version footer; manual and automatic update check with notification | T | UpdateCheckerParse, UpdateFlow | — | A3, D7 | —/— | R8 | M | JVM (parse) + MAN |
 | F-SET-9 | In-app update download/install through PackageInstaller, status receiver opens confirmation | T | UpdateInstaller | — | — | —/— | R8 | H | JVM → GAP device scenario before R8.1 |
 | F-SET-10 | Welcome sheet: defaults, clean start, start setup keeping macros, customized detection | T | WelcomeSheet, g:welcome_* | — | — | S5/— | R8 | M | JVM |
 | F-SET-11 | Macro editor: record, edit, drag, undo, preview, save, rename, delete | T | MacroSettings, Macro | macro | C17z–C17z8 | S5/— | R8 | M | JVM + MAN |
@@ -226,14 +226,14 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
-| F-DAT-1 | Preferences live in `back_button_hero` with unchanged keys and encodings, both layers | — | PrefsDefaults, Prefs* | — | A5 | —/— | R2 | H | JVM + StoredDataContractTest raw typed fixtures (S3, A6) |
+| F-DAT-1 | Preferences live in `back_button_hero` with unchanged keys and encodings, both layers | — | PrefsDefaults, Prefs*, BindingProjection | — | A5 | —/— | R2 | H | JVM + StoredDataContractTest raw typed fixtures (S3, A6) |
 | F-DAT-2 | Fresh install: nothing assigned, no toggle; documented defaults (timings, focus centre right 500 ms) | — | PrefsDefaults | — | C17q | —/— | R2 | H | JVM |
 | F-DAT-3 | Migrations run once in order: navigation_flick_defaults_v1, navigation_flick_directions_v2, removed `@swap_screens`, shoulder_defaults_v3, back_gestures_v1, exception_sticks_v2, exception_buttons_v1, toggle_pairs_v1, toggle_default_v2, unassigned_defaults_v1, gyro_calibration_v1 | — | PrefsMigration | — | C17q, D4a | —/— | R2 | H | JVM (each) + StoredDataContractTest order, partial-flag and second-construction idempotence (S3) |
 | F-DAT-4 | An update keeps settings; new defaults reach only never-touched settings | — | PrefsMigration | — | D2–D4a | —/— | R2 | H | JVM + device in-place update via `tools/devicetest/upgrade.py` (F5: populated, legacy migration, fresh) |
 | F-DAT-5 | Backup: one JSON named `back-button-hero-backup_v<version>_<date>.json` through the file picker | — | SettingsBackup, SettingsBackupUi | — | C17p | —/— | R2, R8 | H | JVM + StoredDataContractTest fixed-bytes backup fixtures (S3, A6) |
 | F-DAT-6 | Load backup previews changes, warns on another version, ignores unknown parts, validates each value, refuses non-backups unchanged | — | SettingsBackup, SettingsBackupUi | — | C17p, C21 | S5/— | R2, R8 | H | JVM |
 | F-DAT-7 | Gyro calibration is excluded from backups and survives defaults/restore | — | GyroSettings, SettingsBackup | — | Gyro 6 | —/— | R2 | M | JVM |
-| F-DAT-8 | `applySettings` writes a plan atomically; listeners see a complete state; stale previews are rejected | — | SettingsChanges | — | — | —/— | R2 | H | JVM + StoredDataContractTest listener-visible state (S3) |
+| F-DAT-8 | `applySettings` writes a plan atomically; listeners see a complete state; stale previews are rejected | — | SettingsChanges, BindingProjection | — | — | —/— | R2 | H | JVM + StoredDataContractTest listener-visible state (S3) |
 | F-DAT-9 | Macros, favorites and exceptions are stored and round-trip | — | Macro, AppException, SettingsBackup | — | C17z6 | —/— | R2 | H | JVM |
 
 ## Service, platform and non-functional promises (SVC)
