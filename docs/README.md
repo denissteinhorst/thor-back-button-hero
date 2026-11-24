@@ -38,6 +38,7 @@ changing it. Agent and owner rules live in the repository root (`AGENTS.md`, `CL
 
 | Item | Purpose |
 |---|---|
+| [REFACTORING-VERIFICATION.md](REFACTORING-VERIFICATION.md) | Final verification of the structural refactoring against the pre-refactoring baseline. |
 | [release-notes/](release-notes/) | Release text per version; the landing page and release workflow read it. |
 | [gesture-explainer.html](gesture-explainer.html) | The self-contained App-Simulation (clickable device diagram). |
 | [check-simulation.mjs](check-simulation.mjs) | Consistency check for the App-Simulation. |
