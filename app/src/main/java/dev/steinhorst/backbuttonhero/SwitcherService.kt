@@ -254,6 +254,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun end() = restoreRecentsFocus()
     }) }
     private val topRecentsControllerActive get() = topSession.active
+    /** Marks this instance's registrations in the companion's bridges without the companion holding the service. */
+    private val bridgeToken = Any()
     private val topLaunch: TopRecentsLauncher by lazy {
         TopRecentsLauncher(this, handler, object : TopRecentsLauncher.Host {
             override val connected get() = isConnected
@@ -413,6 +415,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         backGesture.reset()
         homeGesture.reset()
         homePressDual = false
+        bridgeOwner = bridgeToken
         isConnected = true
         previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
         if (::recording.isInitialized) endRecording()
@@ -1315,6 +1318,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         if (::focusIndicator.isInitialized) focusIndicator.dismiss()
+        if (bridgeOwner === bridgeToken) bridgeOwner = null
         super.onDestroy()
     }
 
@@ -1330,10 +1334,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun releaseSession() {
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
-        isConnected = false
-        previewFocusIndicator = null
-        previewRecordIndicator = null
-        macroRecorder = null
+        // The bridges are shared with a replacement service, which may already have registered its
+        // own before this one is unbound; only the instance that registered them may clear them.
+        if (bridgeOwner === bridgeToken) {
+            isConnected = false
+            previewFocusIndicator = null
+            previewRecordIndicator = null
+            macroRecorder = null
+        }
         macroRecordListener = null
         macroPlayback.forget()
         endRecording()
@@ -1349,9 +1357,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
     private fun stopDpad() {
         gyroActions.stop()
-        gyroOverride = null
-        gyroCalibrate = null
-        gyroRecenter = null
+        if (bridgeOwner === bridgeToken) {
+            gyroOverride = null
+            gyroCalibrate = null
+            gyroRecenter = null
+        }
         stopLevelRepeat()
         stickClickRouter.reset()
         toggleGesture.reset()
@@ -1773,6 +1783,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun bottomDisplay(): Display? = Displays.bottom(this)
 
     companion object {
+        /** The instance whose registrations the bridges below hold. */
+        @Volatile
+        private var bridgeOwner: Any? = null
+
         @Volatile
         var isConnected = false
             private set
