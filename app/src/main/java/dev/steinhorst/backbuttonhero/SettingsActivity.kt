@@ -52,10 +52,10 @@ import dev.steinhorst.backbuttonhero.macro.SavedMacro
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.prefs.BindingLayer
 import dev.steinhorst.backbuttonhero.prefs.Prefs
-import dev.steinhorst.backbuttonhero.prefs.SettingsBackup
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import dev.steinhorst.backbuttonhero.settings.ActionChooser
+import dev.steinhorst.backbuttonhero.settings.BackupFlow
 import dev.steinhorst.backbuttonhero.settings.BindingDescriber
 import dev.steinhorst.backbuttonhero.settings.ChangeDescriber
 import dev.steinhorst.backbuttonhero.settings.Choice
@@ -95,6 +95,7 @@ class SettingsActivity : Activity() {
     private lateinit var warnings: LinearLayout
     private val describer by lazy { BindingDescriber(this, prefs) }
     private val changeDescriber by lazy { ChangeDescriber(this, describer) }
+    private val backup by lazy { BackupFlow(this, prefs, ::appVersionName, ::showChanges) }
     private lateinit var serviceWarning: TextView
     private lateinit var rootWarning: SettingsPage.WarningHandle
     private var toggleButtonsValue: TextView? = null
@@ -536,8 +537,8 @@ class SettingsActivity : Activity() {
 
         page.sectionHeader(R.string.backup_section)
         page.card {
-            actionRow(R.string.backup_save, R.string.backup_save_hint) { startBackupSave() }
-            actionRow(R.string.backup_load, R.string.backup_load_hint) { startBackupLoad() }
+            actionRow(R.string.backup_save, R.string.backup_save_hint) { backup.startSave() }
+            actionRow(R.string.backup_load, R.string.backup_load_hint) { backup.startLoad() }
         }
     }
 
@@ -1572,99 +1573,15 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    // The file picker is the whole permission model: the user hands over one file, nothing else.
-    private fun startBackupSave() {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("application/json").putExtra(Intent.EXTRA_TITLE, SettingsBackup.fileName(appVersionName()))
-        runCatching { startActivityForResult(intent, REQUEST_BACKUP_SAVE) }
-            .onFailure { Toast.makeText(this, R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
-    }
-
-    private fun startBackupLoad() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
-            .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/plain", "application/octet-stream"))
-        runCatching { startActivityForResult(intent, REQUEST_BACKUP_LOAD) }
-            .onFailure { Toast.makeText(this, R.string.backup_read_failed, Toast.LENGTH_LONG).show() }
-    }
-
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val uri = data?.data?.takeIf { resultCode == RESULT_OK } ?: return
-        when (requestCode) {
-            REQUEST_BACKUP_SAVE -> saveBackup(uri)
-            REQUEST_BACKUP_LOAD -> loadBackup(uri)
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun saveBackup(uri: Uri) {
-        val json = SettingsBackup.write(prefs.snapshot(), appVersionName(),
-            packageManager.getPackageInfo(packageName, 0).let { it.longVersionCode })
-        Thread {
-            val saved = runCatching {
-                contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.toByteArray(Charsets.UTF_8)) }
-            }.isSuccess
-            runOnUiThread { if (!isFinishing && !isDestroyed) Toast.makeText(this, if (saved) R.string.backup_saved else R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun loadBackup(uri: Uri) {
-        Thread {
-            // One byte over the limit is enough to tell a file is too large, without reading all of it.
-            val bytes = runCatching {
-                contentResolver.openInputStream(uri)!!.use { input ->
-                    val out = java.io.ByteArrayOutputStream()
-                    val chunk = ByteArray(8192)
-                    while (out.size() <= SettingsBackup.MAX_BYTES) {
-                        val n = input.read(chunk, 0, minOf(chunk.size, SettingsBackup.MAX_BYTES + 1 - out.size()))
-                        if (n < 0) break
-                        out.write(chunk, 0, n)
-                    }
-                    out.toByteArray()
-                }
-            }.getOrNull()
-            runOnUiThread { if (!isFinishing && !isDestroyed) offerBackup(bytes) }
-        }.apply { isDaemon = true }.start()
+        backup.onResult(requestCode, uri)
     }
 
     /** What a picked file leads to: a refusal, or the version hint and the preview of every change. */
-    internal fun offerBackup(bytes: ByteArray?) {
-        if (bytes == null) { showBackupProblem(R.string.backup_read_failed); return }
-        when (val result = SettingsBackup.read(String(bytes, Charsets.UTF_8))) {
-            is SettingsBackup.Result.Rejected -> showBackupProblem(when (result.reason) {
-                SettingsBackup.Rejection.TOO_LARGE -> R.string.backup_too_large
-                SettingsBackup.Rejection.NOT_JSON -> R.string.backup_not_json
-                SettingsBackup.Rejection.NOT_A_BACKUP -> R.string.backup_not_a_backup
-            })
-            is SettingsBackup.Result.Loaded -> confirmBackup(result)
-        }
-    }
-
-    private fun showBackupProblem(message: Int) {
-        AlertDialog.Builder(this).setTitle(R.string.backup_problem_title).setMessage(message)
-            .setPositiveButton(android.R.string.ok, null).show()
-    }
-
-    /** A backup from another version is allowed, but says so first: it may not fit, and that is all it says. */
-    private fun confirmBackup(loaded: SettingsBackup.Result.Loaded) {
-        val plan = SettingsChangePlan(prefs.snapshot(), loaded.state, null, SettingsChangeAction.RESTORE)
-        val version = appVersionName()
-        val compatibility = SettingsBackup.compatibility(loaded.info, version)
-        if (compatibility == SettingsBackup.Compatibility.SAME) { showChanges(plan); return }
-        val message = when (compatibility) {
-            SettingsBackup.Compatibility.OLDER -> R.string.backup_version_older
-            SettingsBackup.Compatibility.NEWER -> R.string.backup_version_newer
-            else -> R.string.backup_version_unknown
-        }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.backup_version_title)
-            .setMessage(if (compatibility == SettingsBackup.Compatibility.UNKNOWN) getString(message, version)
-                else getString(message, loaded.info.appVersion ?: "?", version))
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.backup_continue) { _, _ -> showChanges(plan) }
-            .show()
-    }
+    internal fun offerBackup(bytes: ByteArray?) = backup.offer(bytes)
 
     /** Dual mode's Unbind asks first which layer it reaches; the answer goes to [then]. */
     private fun chooseLayers(then: (Set<BindingLayer>) -> Unit) {
@@ -1881,8 +1798,6 @@ class SettingsActivity : Activity() {
     companion object {
         const val EXTRA_INDICATOR_BUTTON = "indicator_button"
         private const val REQUEST_NOTIFICATIONS = 1
-        private const val REQUEST_BACKUP_SAVE = 2
-        private const val REQUEST_BACKUP_LOAD = 3
         private const val ACTION_APP = BindingDescriber.ACTION_APP
         private const val GUIDE_SETTLE_MS = 150L
         private const val CHEVRON_TAG = "settings_chooser_chevron"
