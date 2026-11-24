@@ -20,6 +20,16 @@ def ensure_helper(d, timeout=12):
     d.eventually(settled, timeout, "the root input helper keeps restarting")
 
 
+def helper_settled(d, timeout=12):
+    """Waits until the helper neither starts nor stops: while it swaps the pad, presses get lost.
+    Unlike [ensure_helper] this assigns nothing, so it also fits areas that run without the helper."""
+    def settled():
+        first = d.helper_pid()
+        time.sleep(1.0)
+        return first == d.helper_pid()
+    d.eventually(settled, timeout, "the root input helper keeps starting or stopping")
+
+
 def combo(d, code, **kw):
     d.press(Seq().combo(code, **kw))
 
