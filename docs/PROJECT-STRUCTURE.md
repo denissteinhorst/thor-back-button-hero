@@ -55,7 +55,7 @@ below are grouped by role, not by package; the package of each file is listed he
 | `pad` | Root pad helper client, D-pad overlay, level control and repeat, gyro |
 | `macro` | Macro model, recorder, editor and widgets |
 | `capture` | Screen recording, screenshots, push-to-talk and the voice chain, recording indicator |
-| `overlay` | Notice and focus-indicator overlays |
+| `overlay` | Notice and focus-indicator overlays, and their shared top-display window helper |
 | `settings` | Settings navigation, UI kit, bindings overview, choosers, welcome sheet, exception and gyro dialogs |
 
 Tests live in the same package as the class they cover; cross-feature tests and the snapshot
@@ -140,7 +140,8 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 |---|---|---|
 | `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. |
 | `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
-| `FocusIndicatorOverlay.kt` | 145 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `FocusIndicatorOverlay.kt` | 133 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `TopOverlayWindow.kt` | 32 | Window context on the top display and the nine-point position grid shared by the notice, the focus pictogram and the recording dot. |
 | `SettingsBackup.kt` | 160 | The backup file: JSON writer, defensive reader (validates and clamps every value, ignores the unknown), file name and version comparison. |
 | `StickButton.kt` | 70 | The two sticks, their eight direction buttons and `StickDetector`, the engage/neutral state machine shared with the overlay fallback. |
 | `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |

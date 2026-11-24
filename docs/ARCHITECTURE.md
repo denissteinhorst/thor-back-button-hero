@@ -211,6 +211,14 @@ to the app UID, failing closed when the shield is absent, not touchable, or cove
 shield is removed after delivery; with follow disabled, the same path retains the source display.
 Fixed routes use the existing OEM command sequence only when follow is enabled.
 
+### Small indicators — `NoticeOverlay`, `FocusIndicatorOverlay`, `RecordingIndicatorOverlay`
+
+All three draw on the top screen, because AYN's assistant covers the bottom one, and never take
+key or controller focus. `TopOverlayWindow` gives them their window context there and maps the
+nine-point position grid that the pictogram and the recording dot share. Their sizes, colours and
+margins stay with each overlay as named constants
+([decision 0006](decisions/0006-overlay-design-values-stay-local.md)).
+
 ### Active App Control — `AppControl` and `AppControlPrompt`
 
 A Back + button action that minimizes or force-closes the app in front. Per button it stores a mode

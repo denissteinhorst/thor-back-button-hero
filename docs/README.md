@@ -56,6 +56,8 @@ record stays, marked superseded, with a link to its successor.
 | [0002](decisions/0002-one-module-framework-views-no-new-dependencies.md) | One module with packages by feature, framework Views, no new dependencies. |
 | [0003](decisions/0003-typed-domain-over-unchanged-storage.md) | Typed actions and settings over byte-identical stored data. |
 | [0004](decisions/0004-keep-threading-model.md) | Keep handlers and threads as they are; no coroutines or executor consolidation. |
+| [0005](decisions/0005-reuse-the-binder-seam-over-new-ports.md) | Reuse the binder seam instead of new platform ports. |
+| [0006](decisions/0006-overlay-design-values-stay-local.md) | Overlay design values stay with their overlay; only real sharing moves to `overlay/TopOverlayWindow`. |
 
 ## KDoc and comment conventions
 
