@@ -66,6 +66,8 @@ FILE_AREAS = {
     "AccessibilityAppSource.kt": ["windows", "appcontrol", "exceptions"], "RunningApp.kt": ["windows", "appcontrol"],
     "RecordingIndicatorOverlay.kt": ["capture"], "EchoTrim.kt": ["capture"], "VoiceBand.kt": ["capture"],
     "VoiceLeveler.kt": ["capture"], "VoicePolish.kt": ["capture"],
+    "SettingsActivity.kt": ["settings"], "SettingsNavigation.kt": ["settings"], "BindingCard.kt": ["settings"],
+    "UpdateFlow.kt": ["settings"], "UpdateChecker.kt": ["settings"],
 }
 # Changes here can break anything the service does.
 EVERYTHING = {"SwitcherService.kt", "Prefs.kt", "PService.kt", "AndroidManifest.xml", "accessibility_config.xml", "Shell.kt"}

@@ -136,7 +136,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SWI-4 | "Close all" closes the listed apps (bottom or both scopes) | TB | SwitcherCloseAll | windows: X closes listed apps | C6, C6a | —/S6 | R6 | H | JVM+DEV |
 | F-SWI-5 | Empty state shows the Quickstep icon and "No recent items", theme updates live | B | RecentsEmptyView, RecentsTheme | — | C7 | S5/— | R7 | L | JVM |
 | F-SWI-6 | "Show apps from both screens" adds top apps with a screen badge | TB | RecentsDisplayBadge, RecentsBadges | — | C2a | S5/— | R6 | M | JVM |
-| F-SWI-7 | Controller navigation: left/right selects, confirm opens, up closes; focus returns after every close path | B | RecentsSelection, RecentsCarousel, SwitcherSnapshot · g:switcher_many_* | windows: controller opens app | C8a, C8c | —/S6 | R6 | H | JVM+DEV |
+| F-SWI-7 | Controller navigation: left/right selects, confirm opens, up closes; focus returns after every close path | B | RecentsSelection, RecentsCarousel, SwitcherSnapshot · g:switcher_many_* | windows: controller opens app; D-pad selects, up closes only the selected | C8a, C8c | —/S6 | R6 | H | JVM+DEV |
 | F-SWI-8 | Thumbnails are cached per task and shown when available; a package on both screens previews the switcher's task | B | RecentsThumbnailCache, SwitcherPreview, AccessibilityAppSource | — | C1 | S5/— | R6 | L | JVM |
 | F-SWI-9 | Stale tasks disappear; failed system queries never clear history | B | SwitcherTaskSync, RecentTaskQuery, RecentsTaskState | — | C2c | —/— | R6 | M | JVM |
 | F-SWI-10 | ES-DE Companion keeps its card although Android excludes it from native Recents | B | RecentTaskQuery | — | C2d | —/— | R6 | M | JVM + MAN |
@@ -146,7 +146,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
 |---|---|---|---|---|---|---|---|---|---|
 | F-TRC-1 | Tap-then-hold opens system Recents over the top screen's app | T | TopRecentsState | windows: top Recents opens | B6 | S5/S6 | R6 | H | JVM+DEV |
-| F-TRC-2 | Controller navigation through Quickstep's native path; up closes one card; no autonomous step | T | TopRecentsNavigation, TopRecentsBack, TopRecentsSession | windows: controller opens from top Recents | C8b, C8d, C8e | —/S6 | R6 | H | JVM+DEV |
+| F-TRC-2 | Controller navigation through Quickstep's native path; up closes one card; no autonomous step | T | TopRecentsNavigation, TopRecentsBack, TopRecentsSession | windows: controller opens from top Recents; D-pad, up removes a task, Back closes | C8b, C8d, C8e | —/S6 | R6 | H | JVM+DEV |
 | F-TRC-3 | Selecting a bottom app moves its task to the top; launchers never move; focus restored | TB | RecentsSelection, TaskMovePolicy | windows: controller opens from top Recents | C2b, C8d | —/S6 | R6 | H | JVM+DEV |
 
 ## Swapping and moving tasks (SWP)
@@ -207,10 +207,10 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-SET-2 | Overview drawing: leader lines to every binding; tapping a part opens its page | T | BindingsOverview, g:*_overview, g:overview_all_assigned | — | — | S5/— | R8 | M | JVM |
 | F-SET-3 | Navigation: menu dialog below 720 dp, icon rail + overlay panel at ≥ 720 dp | T | SettingsNavigation | — | — | S5/— | R8 | M | JVM |
 | F-SET-4 | Action chooser lists actions with groups and sub-options per button type | T | ActionChooser, ActionGroups, OptionGuide, g:dialog_*chooser | — | A4 | S5/— | R8 | M | JVM |
-| F-SET-5 | Shoulder/D-pad/face/stick rows show every state (sentinel, app, target, toggle) | T | ShoulderRowSnapshot, g:shoulder_*, g:dpad_* | — | A4 | S5/— | R8 | M | JVM |
+| F-SET-5 | Shoulder/D-pad/face/stick rows show every state (sentinel, app, target, toggle) | T | ShoulderRowSnapshot, BindingCard, g:shoulder_*, g:dpad_* | settings: card opens its chooser | A4 | S5/— | R8 | M | JVM |
 | F-SET-6 | Clear bindings / load defaults preview before/after and apply atomically | T | SettingsChanges, SettingsChangeDialog, g:dialog_unbind_*, g:dialog_preset_basic, g:dialog_reset_settings_confirm | — | C18k | S5/— | R2, R8 | H | JVM |
 | F-SET-7 | Service health line, warning row and "Repair service" flow | T | ServiceBlocker, SettingsUiKit, SettingsDialogSnapshot, g:dialog_repair_service | preflight | A2, C18, C19 | S5/— | R8 | H | JVM + MAN |
-| F-SET-8 | Version footer; manual and automatic update check with notification | T | UpdateCheckerParse, UpdateFlow | — | A3, D7 | —/— | R8 | M | JVM (parse) + MAN |
+| F-SET-8 | Version footer; manual and automatic update check with notification | T | UpdateCheckerParse, UpdateFlow | settings: manual check answers | A3, D7 | —/— | R8 | M | JVM (parse) + MAN |
 | F-SET-9 | In-app update download/install through PackageInstaller, status receiver opens confirmation | T | UpdateInstaller | — | — | —/— | R8 | H | JVM → GAP device scenario before R8.1 |
 | F-SET-10 | Welcome sheet: defaults, clean start, start setup keeping macros, customized detection | T | WelcomeSheet, g:welcome_* | — | — | S5/— | R8 | M | JVM |
 | F-SET-11 | Macro editor: record, edit, drag, undo, preview, save, rename, delete | T | MacroSettings, Macro | macro | C17z–C17z8 | S5/— | R8 | M | JVM + MAN |
