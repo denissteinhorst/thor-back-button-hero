@@ -55,6 +55,7 @@ import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
 import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
 import dev.steinhorst.backbuttonhero.settings.ActionChooser
 import dev.steinhorst.backbuttonhero.settings.BackupFlow
+import dev.steinhorst.backbuttonhero.settings.BindingCard
 import dev.steinhorst.backbuttonhero.settings.BindingDescriber
 import dev.steinhorst.backbuttonhero.settings.ChangeDescriber
 import dev.steinhorst.backbuttonhero.settings.Choice
@@ -103,7 +104,7 @@ open class SettingsActivity : Activity() {
     /** The hold-time slider below the on/off shortcut; without a shortcut there is nothing to time. */
     private var toggleDurationOptions: View? = null
     private var statusLabel: TextView? = null
-    private val comboRows = mutableMapOf<String, ComboRow>()
+    private val comboRows = mutableMapOf<String, BindingCard>()
     private val stickPages = mutableListOf<SettingsPage>()
     private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
     private var stickTabBar: LinearLayout? = null
@@ -662,7 +663,7 @@ open class SettingsActivity : Activity() {
         }.distinctBy { it.value }.sortedBy { it.label }
     }
 
-    private fun chooseRecordDuck(row: ComboRow) {
+    private fun chooseRecordDuck(row: BindingCard) {
         val choices = describer.recordDucks()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.record_duck_title)
@@ -676,7 +677,7 @@ open class SettingsActivity : Activity() {
     }
 
     /** Waits for the next button press and takes it as the push-to-talk button. */
-    private fun choosePushToTalkKey(row: ComboRow) = chooseKey(
+    private fun choosePushToTalkKey(row: BindingCard) = chooseKey(
         R.string.record_ptt_key_title, R.string.record_ptt_dialog_message, R.string.record_ptt_dialog_warning,
         R.string.record_ptt_key_rejected,
         onKeep = { updateShoulderRow(row) },
@@ -724,14 +725,14 @@ open class SettingsActivity : Activity() {
         dialog.show()
     }
 
-    private fun openGyroSettings(row: ComboRow) {
+    private fun openGyroSettings(row: BindingCard) {
         GyroSettingsDialog(this, row.button.prefKey, prefs.gyro(row.button), { hasKey, onChosen ->
             chooseKey(R.string.gyro_hold_key_title, R.string.gyro_key_dialog_message, R.string.gyro_key_dialog_warning,
                 R.string.gyro_key_rejected, if (hasKey) ({ onChosen(0) }) else null, onChosen = onChosen)
         }) { prefs.setGyro(row.button, it) }.show { updateShoulderRow(row) }
     }
 
-    private fun chooseRecordQuality(row: ComboRow) {
+    private fun chooseRecordQuality(row: BindingCard) {
         val choices = describer.recordQualities()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.record_quality_title)
@@ -746,7 +747,7 @@ open class SettingsActivity : Activity() {
 
     /** The indicator dialog of the controller-focus pictogram, or with [record] of the recording dot,
      *  which has no display time. */
-    private fun choosePosition(row: ComboRow, record: Boolean = false) {
+    private fun choosePosition(row: BindingCard, record: Boolean = false) {
         val positions = describer.focusPositions()
         lateinit var grid: PositionGrid
         fun position() = if (record) prefs.recordPosition(row.button) else prefs.focusPosition(row.button)
@@ -857,47 +858,7 @@ open class SettingsActivity : Activity() {
             }
     }
 
-    /** The views of one button's card that change with its action. */
-    private class ComboRow(
-        val card: SettingsPage.Card,
-        val button: ComboButton,
-        val label: String,
-        val action: SettingsPage.ChooserHandle,
-        val display: SettingsPage.ChooserHandle,
-        val target: SettingsPage.ChooserHandle,
-        val displayOptions: View,
-        val targetOptions: View,
-        /** A timing slider that only means something once the row has an action. */
-        val timingOptions: View? = null,
-    ) {
-        var focusOptions: SettingsPage.FocusOptionsHandle? = null
-        /** The choice below a grouped action, built when first needed so unassigned rows stay as they were. */
-        var option: SettingsPage.ChooserHandle? = null
-        var optionOptions: View? = null
-        /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
-        var switcherOptions: View? = null
-        var switchAppOptions: View? = null
-        var closeAppsOptions: View? = null
-        var standbyOptions: View? = null
-        var recordOptions: RecordOptions? = null
-        var appOptions: SettingsPage.AppControlOptionsHandle? = null
-        var macroOptions: View? = null
-        var macroLibrary: SettingsPage.ChooserHandle? = null
-        var gyroOptions: View? = null
-        var gyroSetup: SettingsPage.ChooserHandle? = null
-        val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
-    }
-
-    private class RecordOptions(
-        val group: View,
-        val pushToTalk: SettingsPage.ToggleHandle,
-        val pushToTalkKey: SettingsPage.ChooserHandle,
-        val duck: SettingsPage.ChooserHandle,
-        val quality: SettingsPage.ChooserHandle,
-        val indicator: SettingsPage.ChooserHandle,
-    )
-
-    private fun chooseShoulderAction(row: ComboRow) {
+    private fun chooseShoulderAction(row: BindingCard) {
         val choices = describer.shoulderActions(macro = row.button.base !is BackGestureButton)
         val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.launchesApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
@@ -956,7 +917,7 @@ open class SettingsActivity : Activity() {
      * shows them; options that only appear after an earlier answer join in. Leaving a dialog without an
      * answer ends the walk and keeps everything chosen so far.
      */
-    private class OptionGuide(val row: ComboRow, skip: Set<View>) {
+    private class OptionGuide(val row: BindingCard, skip: Set<View>) {
         val done = skip.toMutableSet()
         var pending = false
         var chosen = false
@@ -973,7 +934,7 @@ open class SettingsActivity : Activity() {
         if (walk.pending && !walk.chosen) guide = null else guideNext()
     }
 
-    private fun startGuide(row: ComboRow, skip: Set<View> = emptySet()) {
+    private fun startGuide(row: BindingCard, skip: Set<View> = emptySet()) {
         guide = OptionGuide(row, skip)
         // The action chooser is still closing; the walk starts when the page has the focus back.
         if (hasWindowFocus()) guideNext()
@@ -998,7 +959,7 @@ open class SettingsActivity : Activity() {
     }
 
     /** Button › function, the path to what a dialog edits; the function stays while the steps change below it. */
-    private fun crumb(row: ComboRow, function: String? = describer.functionName(prefs.shoulderAction(row.button))): String =
+    private fun crumb(row: BindingCard, function: String? = describer.functionName(prefs.shoulderAction(row.button))): String =
         function?.let { getString(R.string.dialog_breadcrumb, row.label, it) } ?: row.label
 
     private fun AlertDialog.Builder.bindingTitle(binding: String, titleRes: Int): AlertDialog.Builder =
@@ -1083,7 +1044,7 @@ open class SettingsActivity : Activity() {
     }
 
     /** [assign] false edits a library macro from the list: the hotkey keeps playing whatever it played before. */
-    private fun openMacroEditor(row: ComboRow, initial: SavedMacro? = prefs.savedMacro(row.button), assign: Boolean = true) {
+    private fun openMacroEditor(row: BindingCard, initial: SavedMacro? = prefs.savedMacro(row.button), assign: Boolean = true) {
         if (macroEditor != null) return
         val editor = MacroEditor(this, row.label, initial, getString(R.string.macro_default_name, row.label), { prefs.macroLibrary }, {
             Settings.System.getInt(contentResolver, SwitcherService.CONTROLLER_FLIP_SETTING, 0) != 0
@@ -1100,7 +1061,7 @@ open class SettingsActivity : Activity() {
         }
     }
 
-    private fun openMacroLibrary(row: ComboRow) {
+    private fun openMacroLibrary(row: BindingCard) {
         MacroLibraryDialog(this, prefs, prefs.savedMacro(row.button)?.id, { saved ->
             if (saved == null) {
                 openMacroEditor(row, null)
@@ -1119,7 +1080,7 @@ open class SettingsActivity : Activity() {
      * apps and every other app. A star marks an app for every hotkey; the order follows the stars only
      * the next time the list opens, so nothing moves under the finger.
      */
-    private fun chooseShoulderApp(row: ComboRow) {
+    private fun chooseShoulderApp(row: BindingCard) {
         val favorites = prefs.favoriteApps
         val apps = allApps().sortedBy { it.value !in favorites }
         val current = prefs.shoulderAction(row.button)
@@ -1191,7 +1152,7 @@ open class SettingsActivity : Activity() {
         dialog.show()
     }
 
-    private fun chooseOption(row: ComboRow) {
+    private fun chooseOption(row: BindingCard) {
         val action = prefs.shoulderAction(row.button)
         Ayn.groupOf(action)?.let { return chooseAynOption(row, it) }
         val group = ActionGroups.groupOf(action) ?: return
@@ -1207,7 +1168,7 @@ open class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseAynOption(row: ComboRow, group: Ayn.Group) {
+    private fun chooseAynOption(row: BindingCard, group: Ayn.Group) {
         val choices = describer.aynOptions(group)
         val selected = prefs.aynOption(row.button, group)
         AlertDialog.Builder(this)
@@ -1220,7 +1181,7 @@ open class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseTarget(row: ComboRow) {
+    private fun chooseTarget(row: BindingCard) {
         val focus = prefs.shoulderAction(row.button) == Prefs.SHOULDER_CONTROLLER_FOCUS
         val targets = if (focus) describer.focusTargets() else describer.levelTargets()
         val selected = if (focus) prefs.focusTarget(row.button) else prefs.levelTarget(row.button)
@@ -1238,7 +1199,7 @@ open class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseShoulderDisplay(row: ComboRow) {
+    private fun chooseShoulderDisplay(row: BindingCard) {
         // Ask is offered where an app opens; Home goes to a fixed screen.
         val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) describer.launchScreens() else describer.screenTargets()
         AlertDialog.Builder(this)
@@ -1254,7 +1215,7 @@ open class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseAppControl(row: ComboRow, mode: Boolean) {
+    private fun chooseAppControl(row: BindingCard, mode: Boolean) {
         val choices = if (mode) describer.appModes() else describer.appScreens()
         val selected = if (mode) prefs.appMode(row.button) else prefs.appScreen(row.button)
         AlertDialog.Builder(this)
@@ -1316,252 +1277,32 @@ open class SettingsActivity : Activity() {
         titleRes: Int,
         extra: (SettingsPage.Card.(ComboButton) -> View)?,
     ) {
-        val card = page.card {}
-        lateinit var row: ComboRow
-        val action = card.chooserRow(titleRes, describer.describeShoulderAction(button)) { chooseShoulderAction(row) }
-        val timing = extra?.let { card.it(button) }
-        lateinit var display: SettingsPage.ChooserHandle
-        val displayOptions = card.subOptions {
-            display = chooserRow(R.string.level_target_title, describer.describeShoulderDisplay(button)) { chooseShoulderDisplay(row) }
-        }
-        lateinit var target: SettingsPage.ChooserHandle
-        val targetOptions = card.subOptions {
-            target = chooserRow(R.string.level_target_title, describer.describeLevelTarget(button)) { chooseTarget(row) }
-        }
-        // The Home column's label names its layer, so the dialogs and screen readers say which binding it is.
-        val label = if (button is HomeLayerButton) getString(R.string.settings_home_binding_label, getString(titleRes)) else getString(titleRes)
-        row = ComboRow(card, button, label, action, display, target, displayOptions, targetOptions, timing)
+        val row = BindingCard(page, button, titleRes, extra, this, prefs, describer, cardHost)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
 
-    private fun updateShoulderRow(row: ComboRow) {
+    private val cardHost = object : BindingCard.Host {
+        override fun chooseAction(card: BindingCard) = chooseShoulderAction(card)
+        override fun chooseDisplay(card: BindingCard) = chooseShoulderDisplay(card)
+        override fun chooseTarget(card: BindingCard) = this@SettingsActivity.chooseTarget(card)
+        override fun chooseOption(card: BindingCard) = this@SettingsActivity.chooseOption(card)
+        override fun choosePosition(card: BindingCard, record: Boolean) = this@SettingsActivity.choosePosition(card, record)
+        override fun choosePushToTalkKey(card: BindingCard) = this@SettingsActivity.choosePushToTalkKey(card)
+        override fun chooseRecordDuck(card: BindingCard) = this@SettingsActivity.chooseRecordDuck(card)
+        override fun chooseRecordQuality(card: BindingCard) = this@SettingsActivity.chooseRecordQuality(card)
+        override fun chooseAppControl(card: BindingCard, mode: Boolean) = this@SettingsActivity.chooseAppControl(card, mode)
+        override fun openMacroLibrary(card: BindingCard) =
+            if (PService.cachedAvailable()) this@SettingsActivity.openMacroLibrary(card) else showMacroUnavailable()
+        override fun openGyroSettings(card: BindingCard) = this@SettingsActivity.openGyroSettings(card)
+        override fun changed(card: BindingCard) = updateShoulderRow(card)
+    }
+
+    private fun updateShoulderRow(row: BindingCard) {
         // A guided dialog that writes its choice updates its row itself; a page-wide refresh says nothing about it.
         guide?.let { if (it.row === row && it.pending && !refreshingRows) it.chosen = true }
-        val action = prefs.shoulderAction(row.button)
-        val described = describer.describeShoulderAction(row.button)
-        // The chosen action stands out from the options under it; "Not set" stays plain.
-        row.action.value.text = if (action.isEmpty()) described else getString(R.string.shoulder_action_selected, described)
-        row.action.value.typeface = if (action.isEmpty()) Typeface.DEFAULT else Typeface.DEFAULT_BOLD
-        row.display.row.visibility = if (Prefs.launchesApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
-        row.display.value.text = describer.describeShoulderDisplay(row.button)
-        row.display.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.display.value.text)
-        val hasOption = Ayn.groupOf(action) != null || ActionGroups.groupOf(action) != null
-        val hasTarget = Prefs.hasScreenTarget(action)
-        val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
-        row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
-        row.displayOptions.visibility = row.display.row.visibility
-        row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
-        val switcher = action == Prefs.SHOULDER_SWITCHER
-        if (switcher && row.switcherOptions == null) {
-            row.switcherOptions = row.card.subOptions {
-                toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
-                    prefs.switcherShowsAllApps = it
-                }
-            }
-        }
-        row.switcherOptions?.visibility = if (switcher) View.VISIBLE else View.GONE
-        row.targetOptions.visibility = row.target.row.visibility
-        val switchApp = action == Prefs.SHOULDER_SWITCH_APP
-        val appControl = action == Prefs.SHOULDER_APP_CONTROL
-        row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.row.visibility == View.VISIBLE) 0 else 10))
-        if (hasOption && row.option == null) {
-            lateinit var created: SettingsPage.ChooserHandle
-            val options = row.card.subOptions {
-                created = chooserRow(R.string.ayn_option_title, describer.describeOption(row.button)) { chooseOption(row) }
-            }
-            // Built last, but it belongs right above the screen row.
-            (options.parent as ViewGroup).let { parent ->
-                parent.removeView(options)
-                parent.addView(options, parent.indexOfChild(row.targetOptions))
-            }
-            row.option = created
-            row.optionOptions = options
-        }
-        row.option?.let { option ->
-            option.row.visibility = if (hasOption) View.VISIBLE else View.GONE
-            row.optionOptions?.visibility = option.row.visibility
-            option.value.text = describer.describeOption(row.button)
-            val screen = describer.isScreenOption(action)
-            option.title.setText(if (screen) R.string.level_target_title else R.string.ayn_option_title)
-            option.row.contentDescription =
-                getString(if (screen) R.string.level_target_accessibility else R.string.ayn_option_accessibility, row.label, option.value.text)
-        }
-        row.target.value.text = describer.describeLevelTarget(row.button)
-        row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
-        if (focus && row.focusOptions == null) {
-            row.focusOptions = row.card.focusOptions(
-                describer.describeFocusTarget(row.button), describer.describeFocusPosition(row.button),
-                { chooseTarget(row) }, { choosePosition(row) },
-            )
-        }
-        if (switchApp && row.switchAppOptions == null) {
-            row.switchAppOptions = row.card.subOptions {
-                toggleRow(R.string.switch_app_follow_focus, null, prefs.switchAppFollowFocus(row.button),
-                    readValue = { prefs.switchAppFollowFocus(row.button) }) {
-                    prefs.setSwitchAppFollowFocus(row.button, it)
-                }
-            }
-        }
-        row.switchAppOptions?.visibility = if (switchApp) View.VISIBLE else View.GONE
-        val closeApps = Prefs.isCloseApps(action)
-        if (closeApps && row.closeAppsOptions == null) {
-            row.closeAppsOptions = row.card.subOptions {
-                toggleRow(R.string.app_control_confirm_title, null, prefs.closeConfirm(row.button),
-                    readValue = { prefs.closeConfirm(row.button) }) {
-                    prefs.setCloseConfirm(row.button, it)
-                }
-            }
-        }
-        row.closeAppsOptions?.visibility = if (closeApps) View.VISIBLE else View.GONE
-        val standby = action == Prefs.SHOULDER_STANDBY
-        if (standby && row.standbyOptions == null) {
-            row.standbyOptions = row.card.subOptions {
-                toggleRow(R.string.standby_confirm_title, null, prefs.standbyConfirm(row.button),
-                    readValue = { prefs.standbyConfirm(row.button) }) {
-                    prefs.setStandbyConfirm(row.button, it)
-                }
-            }
-        }
-        row.standbyOptions?.visibility = if (standby) View.VISIBLE else View.GONE
-        val record = action == Prefs.SHOULDER_RECORD_VIDEO
-        if (record && row.recordOptions == null) {
-            lateinit var pushToTalk: SettingsPage.ToggleHandle
-            lateinit var pushToTalkKey: SettingsPage.ChooserHandle
-            lateinit var duck: SettingsPage.ChooserHandle
-            lateinit var quality: SettingsPage.ChooserHandle
-            lateinit var indicator: SettingsPage.ChooserHandle
-            val group = row.card.subOptions {
-                toggleRow(R.string.record_mic_title, null, prefs.recordMic(row.button),
-                    readValue = { prefs.recordMic(row.button) }) {
-                    prefs.setRecordMic(row.button, it)
-                    updateShoulderRow(row)
-                }
-                pushToTalk = toggleRow(R.string.record_ptt_title, null, prefs.recordPtt(row.button),
-                    readValue = { prefs.recordPtt(row.button) }) {
-                    prefs.setRecordPtt(row.button, it)
-                    updateShoulderRow(row)
-                }
-                pushToTalkKey = chooserRow(R.string.record_ptt_key_title, describer.describePushToTalkKey(prefs.recordPttKey(row.button))) {
-                    choosePushToTalkKey(row)
-                }
-                duck = chooserRow(R.string.record_duck_title, describer.describeRecordDuck(row.button)) { chooseRecordDuck(row) }
-                quality = chooserRow(R.string.record_quality_title, describer.describeRecordQuality(row.button)) { chooseRecordQuality(row) }
-                indicator = chooserRow(R.string.record_indicator_row, describer.describeRecordIndicator(row.button)) {
-                    choosePosition(row, record = true)
-                }
-            }
-            row.recordOptions = RecordOptions(group, pushToTalk, pushToTalkKey, duck, quality, indicator)
-        }
-        row.recordOptions?.let { options ->
-            options.group.visibility = if (record) View.VISIBLE else View.GONE
-            // Push to talk only exists with the microphone, its button and fade only with push to talk.
-            val mic = prefs.recordMic(row.button)
-            val talk = mic && prefs.recordPtt(row.button)
-            fun show(view: View, visible: Boolean) {
-                val state = if (visible) View.VISIBLE else View.GONE
-                view.visibility = state
-                dividerBefore(view)?.visibility = state
-            }
-            show(options.pushToTalk.row, mic)
-            show(options.pushToTalkKey.row, talk)
-            show(options.duck.row, talk)
-            options.pushToTalkKey.value.text = describer.describePushToTalkKey(prefs.recordPttKey(row.button))
-            options.pushToTalkKey.row.contentDescription =
-                getString(R.string.record_ptt_key_accessibility, row.label, options.pushToTalkKey.value.text)
-            options.duck.value.text = describer.describeRecordDuck(row.button)
-            options.duck.row.contentDescription = getString(R.string.record_duck_accessibility, row.label, options.duck.value.text)
-            options.quality.value.text = describer.describeRecordQuality(row.button)
-            options.quality.row.contentDescription = getString(R.string.record_quality_accessibility, row.label, options.quality.value.text)
-            options.indicator.value.text = describer.describeRecordIndicator(row.button)
-            options.indicator.row.contentDescription =
-                getString(R.string.record_indicator_accessibility, row.label, options.indicator.value.text)
-        }
-        val macroAction = action == Prefs.SHOULDER_MACRO
-        if (macroAction && row.macroOptions == null) {
-            lateinit var library: SettingsPage.ChooserHandle
-            // One row: the list both picks a saved macro and records a new one, and its value names the one this hotkey plays.
-            row.macroOptions = row.card.subOptions {
-                library = chooserRow(R.string.macro_library_title, describer.describeMacro(prefs.savedMacro(row.button))) {
-                    if (PService.cachedAvailable()) openMacroLibrary(row) else showMacroUnavailable()
-                }
-            }
-            row.macroLibrary = library
-        }
-        row.macroOptions?.visibility = if (macroAction) View.VISIBLE else View.GONE
-        row.macroLibrary?.let { library ->
-            library.value.text = describer.describeMacro(prefs.savedMacro(row.button))
-            library.row.contentDescription = getString(R.string.macro_library_accessibility, row.label, library.value.text)
-        }
-        val gyroAction = action == Prefs.SHOULDER_GYRO
-        if (gyroAction && row.gyroOptions == null) {
-            lateinit var setup: SettingsPage.ChooserHandle
-            row.gyroOptions = row.card.subOptions {
-                setup = chooserRow(R.string.gyro_setup_title, describer.describeGyro(prefs.gyro(row.button))) { openGyroSettings(row) }
-            }
-            row.gyroSetup = setup
-        }
-        row.gyroOptions?.visibility = if (gyroAction) View.VISIBLE else View.GONE
-        row.gyroSetup?.let { setup ->
-            setup.value.text = describer.describeGyro(prefs.gyro(row.button))
-            setup.row.contentDescription = getString(R.string.gyro_setup_accessibility, row.label, setup.value.text)
-        }
-        if (appControl && row.appOptions == null) {
-            row.appOptions = row.card.appControlOptions(
-                describer.describeAppMode(row.button), describer.describeAppScreen(row.button), prefs.appConfirm(row.button),
-                { chooseAppControl(row, mode = true) }, { chooseAppControl(row, mode = false) },
-                { prefs.setAppConfirm(row.button, it) },
-            )
-        }
-        row.appOptions?.let { options ->
-            val close = prefs.appMode(row.button) != Prefs.APP_MINIMIZE
-            options.row.visibility = if (appControl) View.VISIBLE else View.GONE
-            options.mode.value.text = describer.describeAppMode(row.button)
-            options.screen.value.text = describer.describeAppScreen(row.button)
-            options.mode.row.contentDescription = getString(R.string.app_control_mode_accessibility, row.label, options.mode.value.text)
-            options.screen.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.screen.value.text)
-            // Ask already is a confirmation; minimizing destroys nothing.
-            fun show(view: View, visible: Boolean) {
-                val state = if (visible) View.VISIBLE else View.GONE
-                view.visibility = state
-                dividerBefore(view)?.visibility = state
-            }
-            show(options.confirm.row, appControl && close && prefs.appScreen(row.button) != Prefs.APP_SCREEN_ASK)
-            show(options.warning.parent as View, appControl && close)
-        }
-        row.focusOptions?.let { options ->
-            options.row.visibility = if (focus) View.VISIBLE else View.GONE
-            options.target.value.text = describer.describeFocusTarget(row.button)
-            options.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.target.value.text)
-            options.position.value.text = describer.describeFocusPosition(row.button)
-            options.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, options.position.value.text)
-        }
-        // With Home standing in for Back, or Back + Home as the activation shortcut, Back + Home cannot
-        // run its own shortcut; the binding stays stored.
-        val toggleBlocks = row.button == AndroidButton.HOME && prefs.toggleButtons == Prefs.TOGGLE_BACK_HOME
-        val dualBlocks = row.button == AndroidButton.HOME && prefs.dualMode
-        val blocked = toggleBlocks || dualBlocks || row.button == AndroidButton.HOME && prefs.homeAsBack
-        if (blocked) row.action.value.text = getString(when {
-            toggleBlocks -> R.string.toggle_combo_blocked
-            dualBlocks -> R.string.dual_mode_combo_blocked
-            else -> R.string.home_as_back_combo_blocked
-        })
-        (row.action.row.parent as View).let { card ->
-            card.alpha = if (blocked) 0.5f else 1f
-            setTreeEnabled(card, !blocked)
-        }
-        row.action.row.contentDescription =
-            getString(R.string.shoulder_action_accessibility, row.label, if (blocked) row.action.value.text else described)
+        row.update()
     }
-
-    private fun setTreeEnabled(view: View, enabled: Boolean) {
-        view.isEnabled = enabled
-        if (view is ViewGroup) for (i in 0 until view.childCount) setTreeEnabled(view.getChildAt(i), enabled)
-    }
-
-    private fun dividerBefore(row: View): View? =
-        (row.parent as? ViewGroup)?.let { card -> card.getChildAt(card.indexOfChild(row) - 1) }
 
     private fun explainServiceRepair() {
         AlertDialog.Builder(this)

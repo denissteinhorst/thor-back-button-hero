@@ -438,6 +438,8 @@ remain below it. Service health still distinguishes on / unresponsive / off and 
 the existing Android accessibility-settings repair flow.
 
 The activity builds the pages and wires their dialogs; what is pure text lives beside it.
+Each binding's card is a `BindingCard` registered once per page build; preference changes call its
+`update()`, which changes the existing views rather than rebuilding the card.
 `BindingDescriber` names every action, option and row value and holds the lists the choosers
 offer, `ChangeDescriber` writes the lines of a change preview, and `BackupFlow` runs saving and
 restoring the settings file up to that preview. `UpdateFlow` runs the manual update check and its dialogs; the
