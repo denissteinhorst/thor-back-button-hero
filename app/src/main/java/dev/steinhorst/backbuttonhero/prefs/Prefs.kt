@@ -476,15 +476,12 @@ class Prefs(context: Context) : GestureSettings {
         const val TOGGLE_BACK_HOME = "back_home"
         const val DEFAULT_TOGGLE_BUTTONS = TOGGLE_NONE
         const val DEFAULT_TOGGLE_HOLD_MS = 300L
-        const val DEFAULT_DOUBLE_TAP_ENABLED = true
         const val DEFAULT_DOUBLE_TAP_MS = 300L
         const val DEFAULT_SWITCHER_SHOWS_ALL_APPS = false
         const val DEFAULT_SWITCHER_CONTROLLER_ENABLED = true
         const val DEFAULT_HOME_AS_BACK = false
         const val DEFAULT_DUAL_MODE = false
-        const val DEFAULT_TAP_HOLD_ENABLED = true
         const val DEFAULT_TAP_HOLD_MS = 1000L
-        const val DEFAULT_HOLD_ENABLED = true
         const val DEFAULT_HOLD_MS = 1000L
         const val DISPLAY_TOP = "top"
         const val DISPLAY_BOTTOM = "bottom"
