@@ -58,4 +58,13 @@ def expect_closed(d, pkg, previous_pid, timeout=6):
         return (not previous.intersection(d.pid(pkg).split()) and not d.task_ids(pkg)
                 and not any(front.startswith(pkg + "/") for front in d.resumed().values()))
 
-    d.eventually(closed, timeout, f"{pkg} kept its original process, task or foreground activity")
+    try:
+        d.eventually(closed, timeout, "")
+    except Fail:
+        kept = [name for name, held in (
+            ("process", previous.intersection(d.pid(pkg).split())),
+            ("task", d.task_ids(pkg)),
+            ("foreground activity", [f for f in d.resumed().values() if f.startswith(pkg + "/")]))
+            if held]
+        raise Fail(f"{pkg} kept its original {', '.join(kept) or 'state only briefly'} "
+                   f"(pids {previous} -> {d.pid(pkg) or 'none'}, tasks {d.task_ids(pkg)}, front {d.resumed()})")
