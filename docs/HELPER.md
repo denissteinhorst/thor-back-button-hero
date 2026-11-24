@@ -4,7 +4,7 @@ Back + D-pad shortcuts (default: brightness on up/down, volume on left/right) ne
 helper. This document explains why, how it works, what it touches on your device, and how it stays
 out of the way. Everything here is implemented in this repository. The helper is
 [`app/src/main/cpp/padhelper.c`](../app/src/main/cpp/padhelper.c), and the app side is
-`PadHelper.kt`, `DpadOverlay.kt`, `LevelControl.kt` and `BrightnessControl.kt`.
+`PadHelper.kt` (with its command lines in `HelperProtocol.kt`), `DpadOverlay.kt`, `LevelControl.kt` and `BrightnessControl.kt`.
 
 ## Why a helper exists at all
 
