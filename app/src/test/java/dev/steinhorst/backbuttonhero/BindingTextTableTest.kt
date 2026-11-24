@@ -46,8 +46,10 @@ class BindingTextTableTest {
         val activity = Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
         shadowOf(Looper.getMainLooper()).idle()
         val out = StringBuilder()
+        // The texts moved out of the activity in R8; the baseline still answers on the activity itself.
+        val target: Any = runCatching { ReflectionHelpers.callInstanceMethod<Any>(activity, "getDescriber") }.getOrDefault(activity)
         fun call(name: String, vararg args: ClassParameter<*>): String =
-            runCatching { ReflectionHelpers.callInstanceMethod<Any?>(activity, name, *args).toString() }
+            runCatching { ReflectionHelpers.callInstanceMethod<Any?>(target, name, *args).toString() }
                 .getOrElse { "<${(it.cause ?: it)::class.java.simpleName}>" }
         fun on(button: ComboButton, name: String) = call(name, ClassParameter.from(ComboButton::class.java, button))
         fun str(name: String, value: String) = call(name, ClassParameter.from(String::class.java, value))
