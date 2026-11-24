@@ -45,6 +45,24 @@ Two, both declared in the manifest:
 They share no state in memory. `Prefs` is the only channel between them: the activity
 writes, the service reads on demand.
 
+### Lifetimes and work lanes
+
+An unbind and a destroy release the same session state through `releaseSession()`, in one
+order: pending switcher and top-Recents launches, previews and macro recording, the screen
+recording, the standby receiver, the input routers, the D-pad helper, the app-control prompt,
+panels and frontend parking. Android follows an unbind with a destroy, so every step is safe
+to run twice. Only the destroy then drops the main handler's pending work and the switcher and
+focus windows.
+
+Background work deliberately keeps its own lanes and is not merged into one executor:
+`PService` serializes its own transactions, `PanelConnection` has an ordered scheduled worker,
+`ControllerFocus`, `AynControls`, `LevelControl` and `FrontendParking` each own a single-thread
+executor, the recorder has independent start/stop, audio and codec threads with a Binder death
+link, screenshots launch and connect concurrently, and the update check does blocking I/O on its
+own thread. A shared queue would change head-of-line blocking and timeouts. The native helper,
+the panel watchdog and the recorder's death link restore the device on real process death, which
+no in-process close can replace.
+
 ## Components
 
 ### `SwitcherService` — runtime coordinator
