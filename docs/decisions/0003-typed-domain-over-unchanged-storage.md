@@ -22,6 +22,10 @@ Callers get compile-time checks, and stored data, backups and migrations stay co
 directions. The stored-data fixtures and `StoredDataContractTest` must stay green without
 re-recording. An unknown stored value must be kept, not dropped.
 
+## Observed after the refactoring
+
+Held: `StoredDataContractTest` and the backup fixtures stayed green without a re-record from R2 to R12.
+
 ## Alternatives considered
 
 Keeping raw strings is simplest but leaves the scattered parsing. A new storage format would need

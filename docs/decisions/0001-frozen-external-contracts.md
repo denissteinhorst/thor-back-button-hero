@@ -28,6 +28,10 @@ contract mechanically (A1–A11), and `tools/contract/drills.sh` shows that it c
 renames and lost entry points. Fixtures freeze stored data and root commands. Adding a reviewed
 line to `tools/contract/renames.txt` is the only way to rename a frozen test or ratchet.
 
+## Observed after the refactoring
+
+Held through R1–R12: every phase ended with `check.sh --phase R` at 0 FAIL, the ten entry points stayed in the root package, and no stored key, wire string or fixture hash changed.
+
 ## Alternatives considered
 
 Moving the entry points with a compatibility shim would still break the stored service component

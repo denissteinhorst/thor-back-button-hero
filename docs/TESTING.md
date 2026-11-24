@@ -257,6 +257,24 @@ Coverage requires `enableUnitTestCoverage = true` in the debug build type and
 `isIncludeNoLocationClasses = true` for the Robolectric-loaded classes — without the
 latter the report silently shows 0 % for everything while the build stays green.
 
+## Choosing checks for a change
+
+Each oracle family catches a different kind of change; pick by what the change can affect.
+
+| Family | Catches | Run |
+|---|---|---|
+| Static contracts | Renamed entry points, stored keys, wire strings, dependencies, fixture hashes | `tools/contract/check.sh`, always |
+| JVM tests and ratchets | Decisions, text, coverage drops | the gate, always |
+| Stored data and commands | Preference, backup, root-command, helper-protocol and audio-mix changes | the gate (frozen fixtures) |
+| View-tree goldens | Any settings or overlay layout, text or style change | the gate |
+| Device behavior | What a game or the system actually receives | `run.py --changed` for touched device paths |
+| Visual frames | Rendering differences the tree cannot see | `visual.py capture` + `compare` for touched UI |
+| Gesture traces | Changed timing decisions in behavior-neutral work | trace comparison, `DEBUG_GESTURES` builds |
+| Resources and lifecycle | Threads, descriptors, memory, leaks across disable/enable | `resources.py`, for lifecycle or threading changes |
+
+Docs-only or test-only changes need only the gate. Anything under the "barely protected" paths
+below needs the matching device check, scaled by the tiers further down.
+
 ## What is deliberately not automated
 
 Known and accepted, because the alternatives are worse than the gap.

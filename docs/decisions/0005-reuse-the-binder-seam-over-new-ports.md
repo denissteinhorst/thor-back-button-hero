@@ -26,6 +26,10 @@ Call sites and generated commands stay byte-identical, frozen by the command fix
 the wish for an interface. The helper and panel sockets still accept only uid 0; tests for that
 remain due before their connection code changes.
 
+## Observed after the refactoring
+
+Held: the command, helper-protocol and recorder fixtures stayed byte-identical; R11 moved the helper's command lines into `HelperProtocol` without a new port.
+
 ## Alternatives considered
 
 A `RootShell` interface with a fake would add a second indirection over the same Binder seam and

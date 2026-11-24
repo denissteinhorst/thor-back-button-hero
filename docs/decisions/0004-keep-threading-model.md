@@ -22,6 +22,10 @@ No new runtime dependency is needed, and the timing evidence stays valid. Lifecy
 to prove that queues and order are preserved, not just that work still runs on the main thread or
 a background thread.
 
+## Observed after the refactoring
+
+Held: R10 kept every lane (see ARCHITECTURE "Lifetimes and work lanes"); the only lifecycle change shares the identical unbind/destroy release.
+
 ## Alternatives considered
 
 `kotlinx-coroutines` would be a new Apache-2.0 runtime dependency and would change the dispatch

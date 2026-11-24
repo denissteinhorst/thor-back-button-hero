@@ -26,6 +26,10 @@ An overlay's look is readable in one file. The overlay goldens (`OverlaySnapshot
 `SwitcherSnapshotTest`) and the settings visual baseline keep protecting the values; changing a
 shared helper shows up in every golden that depends on it.
 
+## Observed after the refactoring
+
+Held: R7 extracted only `TopOverlayWindow` (shared window context and position grid); every colour and size stayed beside its overlay, and the overlay goldens did not change.
+
 ## Alternatives considered
 
 A `ui/Tokens.kt` with one name per existing literal: every name would have exactly one user, which

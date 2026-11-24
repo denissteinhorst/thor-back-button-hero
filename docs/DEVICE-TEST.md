@@ -166,6 +166,7 @@ The order keeps related checks together and the most disruptive ones last.
 | Apps and windows | `dumpsys activity` (resumed activity per display), `dumpsys window` (windows with owner and display) |
 | Controller route | `screen_focus_lock`. AYN's route is independent of Android's focused display |
 | Screen off | AYN covers a dark screen with its own window. Power and backlight stay on |
+| Recordings | The MP4 is read over `exec-out` and its tracks parsed by `dt/mp4.py` (no dependency): video plus, with the microphone, a 48 kHz stereo AAC track of about the same length |
 
 Face buttons are named by their print. In Xbox Style the Thor swaps their codes, which `Device.face()`
 accounts for. The confirm button in the app's prompts and the switcher is the bottom one, printed B.

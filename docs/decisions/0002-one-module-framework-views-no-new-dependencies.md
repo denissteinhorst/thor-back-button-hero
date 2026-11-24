@@ -25,6 +25,10 @@ to measure).
 The goldens can still prove the UI unchanged, and the dependency check (A9) stays exact. Package
 boundaries remain conventions plus review: within one module, `internal` does not isolate packages.
 
+## Observed after the refactoring
+
+Held: the release classpath is still `kotlin-stdlib` plus `annotations`, and every extraction (routers, describers, recorder mix, helper protocol) is plain Kotlin in the one module.
+
 ## Alternatives considered
 
 Multi-module builds enforce boundaries but add build overhead this size does not need. Compose or
