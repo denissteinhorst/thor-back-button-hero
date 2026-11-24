@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **853 JVM tests, 0 failures, 0 skipped** across 123 test classes (as of 2026-11-23). Count from
+- **868 JVM tests, 0 failures, 0 skipped** across 131 test classes (as of 2026-11-24). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -176,10 +176,10 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 80 classes (incl. the input routers and the action handlers) (settings, navigation, app exceptions, Recents routing/state, panels,
+  Further classes (92 ratchets in total, incl. the input routers, the action handlers and the classes extracted by the refactoring) (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
-  Total line coverage across all classes is about 79 % (10728/13545).
+  Total line coverage across all classes is about 82 % (11230/13656).
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
@@ -192,7 +192,7 @@ to record:
   `UpdateChecker$Version` is its own entry. Aggregating a class with its nested types
   overstates the figure the rule actually enforces. Measured values come from
   `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
-- **Release APK ~4.19 MB** (`app-release-unsigned.apk`), including the ~18 KB native helper
+- **Release APK ~4.27 MB** (`app-release-unsigned.apk`), including the ~18 KB native helper
   `lib/arm64-v8a/libpadhelper.so`. Debug is much larger because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -214,8 +214,8 @@ compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs,
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **58 %**
-(842/1444) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
+`SwitcherOverlay` is at about **85 %** line coverage (309/363, mostly through its tree snapshots), `SwitcherService` about **70 %**
+(791/1124) and `FocusIndicatorOverlay` about **86 %** (71/83); `PanelWindowHost` and
 `ScreenRecorder` are at 0 %. The panel host, Recents task
 routing, and top-Recents controller focus are likewise device-only. The switcher overlay's launcher-derived styling and live behavior (its tree is snapshotted), multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`

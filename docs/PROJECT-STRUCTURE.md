@@ -68,6 +68,15 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 
 | File | Lines | Purpose |
 |---|---|---|
+| `ComboRouter.kt` | 76 | Back + shoulder, Home/Start/Select or face button: runs that button's action and swallows its event; unassigned buttons stay the game's. |
+| `DirectionalRouter.kt` | 117 | Back + D-pad and Back + stick from the helper or the focus overlay: run, arm or leave to the game, and when an armed focus or app switch commits. |
+| `StickClickRouter.kt` | 77 | L3/R3 while Back is held: ours only when the stick has a click action; both mirrored devices' events are consumed as one press. |
+| `HomeAsBack.kt` | 63 | The pad's Home key as Back: the first key down owns the one virtual Back until both are released. |
+| `ActionChooser.kt` | 279 | The hotkey action list with "Not set", A–Z entries and a search that also finds options inside groups and AYN tiles. |
+| `GyroSettingsDialog.kt` | 414 | The gyro hotkey's setup popup with a live ball preview beside every switch and slider. |
+| `WelcomeSheet.kt` | 202 | First-start sheet and `startSetup`, the defaults it applies, and whether settings are already customized. |
+| `StatusSummary.kt` | 19 | The arithmetic behind the battery status notice, apart from the battery service. |
+| `NoticeOverlay.kt` | 124 | The service's short messages as one toast-like window that only changes its text, so background rate limits never drop one. |
 | `SwitcherService.kt` | 1759 | The accessibility service and runtime coordinator. Intercepts Back and the shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, controller focus, task-preserving screen swap, Active App Control, exceptions at runtime), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
 | `BackGestureMachine.kt` | 158 | The Back-press state machine, free of Android side effects: single tap vs. double tap vs. hold vs. tap-then-hold, including blocked gestures from app exceptions. Clock, scheduling and actions enter through small interfaces so the timing logic is unit-testable on the JVM. |
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
@@ -141,6 +150,29 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 
 | File | Lines | Purpose |
 |---|---|---|
+| `ActionGroups.kt` | 96 | Single actions the settings show as one entry with a choice; storage keeps the single action. |
+| `AppControlActions.kt` | 141 | Minimize, force-close or restart the app in front, close apps on chosen screens, standby; each may ask first. |
+| `CloseApps.kt` | 28 | The displays a close-apps target covers. |
+| `LastApp.kt` | 37 | Which app was used before the one in front on the controller's screen; pressing again flips back. |
+| `LastAppAction.kt` | 69 | Brings that app back, as an existing task through root or a plain launch without it. |
+| `PowerMenu.kt` | 13 | Finds the system power dialog's first real option so the D-pad is not stuck on its strip. |
+| `SystemActions.kt` | 64 | Media keys, Android settings pages with a fallback, and the battery status notice. |
+| `AynControls.kt` | 331 | AYN's assistant and quick-settings tiles as hotkeys, writing exactly the values the tiles write. |
+| `AutoControllerFocus.kt` | 92 | Auto-lock: the screen touched last gets the controller, through an app-owned touch shield. |
+| `ControllerFocusTouch.kt` | 62 | *(root)* Touches only the app-owned shield, never an underlying app. |
+| `MacroPlayback.kt` | 83 | Which hotkey's macro plays, and the one-press cancel by Back or the same hotkey. |
+| `Gyro.kt` | 309 | Gyro math: bias, tilt, posture and the mapping from turns to stick deflection. |
+| `GyroFusion.kt` | 178 | Rest detection and the device's sensor-pair measurements. |
+| `GyroControl.kt` | 208 | The sole live sensor path; feeds the helper and the settings preview with the same samples. |
+| `GyroActions.kt` | 80 | Gyro on/off, calibration and the hold key, each with a notice. |
+| `ScreenRecording.kt` | 203 | App side of a recording: starts and stops `ScreenRecorder` as root, one recording at a time. |
+| `ScreenRecorder.kt` | 763 | *(root)* Mirrors the chosen screens into an encoder, captures playback and microphone, and writes the MP4. |
+| `RecordingIndicatorOverlay.kt` | 145 | The blinking recording dot that turns into a microphone while push to talk is held. |
+| `PushToTalk.kt` | 31 | Which keys can be the push-to-talk button, and their names. |
+| `EchoTrim.kt` | 313 | Takes what the speaker plays out of the microphone, learnt from the captured playback. |
+| `VoiceBand.kt` | 91 | Keeps the microphone to the speech band. |
+| `VoiceLeveler.kt` | 115 | Brings the microphone up to speech level and limits the mix. |
+| `VoicePolish.kt` | 72 | The last voice step: pauses go down, a few samples ahead of the sound. |
 | `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. |
 | `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
 | `FocusIndicatorOverlay.kt` | 133 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
@@ -193,7 +225,7 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 123 test classes, **853 tests**. Run by the gate. By area:
+The automated safety net. 131 test classes, **868 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
@@ -246,6 +278,10 @@ first build, so they work right after a clone without a manual step.
 | File | Purpose |
 |---|---|
 | `verify.sh` | **The gate.** Resolves JDK 17 itself (it is not on `PATH` on the author's machine) and runs `./gradlew verify`. Use this rather than a bare Gradle call. |
+| `contract/` | Static contract oracles (`check.sh`): frozen manifest, class names, stored keys, wire strings and fixture hashes, plus the move-only and rename tools used by the refactoring. |
+| `devicetest/` | The on-device suite (`run.py`), visual capture (`visual.py`), resource and lifecycle measurements (`resources.py`) and instrumentation; see [`DEVICE-TEST.md`](DEVICE-TEST.md). |
+| `docs/check-links.py` | Every relative link and anchor in `docs/`, `README.md`, `AGENTS.md` and `CLAUDE.md` resolves. |
+| `docs/check-structure.py` | This file names every tracked production and instrumented source file, and none that is gone. |
 
 ## `docs/`
 
@@ -278,3 +314,4 @@ read at build time.
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
+

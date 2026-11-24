@@ -634,8 +634,8 @@ freezes the failure side (`null` vs `""`, the 10 s retry, the unprivileged kill 
 [ADR 0005](decisions/0005-reuse-the-binder-seam-over-new-ports.md).
 
 Everything that needs a real accessibility connection, a second display, or a real
-window remains outside automated reach: `SwitcherOverlay` is only partly covered (about
-36 % of its lines) and `SwitcherService` barely (about 24 %). Robolectric cannot provide
+window remains outside automated reach: `SwitcherOverlay` is only partly covered (its tree is snapshotted; live behavior is not) and `SwitcherService` only
+through its extracted decisions (about 70 % of its lines, no live connection). Robolectric cannot provide
 `windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and

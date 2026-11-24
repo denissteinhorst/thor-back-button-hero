@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 853 JVM tests pass |
+| `testDebugUnitTest` | All 868 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -86,7 +86,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 123 classes, 853 tests
+### Base — JVM tests (Robolectric + JUnit), 131 classes, 868 tests
 
 Everything the gate can verify without hardware.
 
@@ -242,7 +242,7 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 80 classes (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` and the action handlers `SystemActions`, `AppControlActions`, `LastAppAction`, `MacroPlayback`, `GyroActions` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+Further classes (92 ratchets in total) (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` and the action handlers `SystemActions`, `AppControlActions`, `LastAppAction`, `MacroPlayback`, `GyroActions` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
@@ -263,13 +263,13 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **36 %** (132/363 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **58 %** (842/1444) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
+| `SwitcherOverlay` — **85 %** (309/363 lines, mostly snapshot-driven construction) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **70 %** (791/1124) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
-| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (9/93) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
+| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (71/83, construction only) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.
