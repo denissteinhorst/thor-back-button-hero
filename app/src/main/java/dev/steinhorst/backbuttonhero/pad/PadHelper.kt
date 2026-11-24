@@ -106,7 +106,7 @@ class PadHelper(
     /** Selects how bare D-pad input is handled while one of the two switchers is open. */
     fun setSwitcherNavigation(mode: PadNavigationMode) {
         navigationMode = mode
-        val command = "SWITCHER ${if (suspended) PadNavigationMode.PASSTHROUGH.wireValue else mode.wireValue}\n"
+        val command = HelperProtocol.switcher(if (suspended) PadNavigationMode.PASSTHROUGH.wireValue else mode.wireValue)
         runCatching { client?.outputStream?.write(command.toByteArray()) }
     }
 
@@ -118,21 +118,20 @@ class PadHelper(
     /** Directions the helper leaves to the game even while Back is held; see [AppException]. */
     /** Returns whether the mask changed. */
     fun setPassthrough(directions: Set<DpadDirection>): Boolean {
-        val mask = directions.sumOf { 1 shl it.ordinal }
+        val mask = HelperProtocol.passthroughMask(directions)
         if (mask == passthrough) return false
         passthrough = mask
         sendPassthrough()
         return true
     }
 
-    // Bits follow DpadDirection's order: up 1, down 2, left 4, right 8.
     private fun sendPassthrough() {
-        runCatching { client?.outputStream?.write("PASS $passthrough\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.passthrough(passthrough).toByteArray()) }
     }
 
     /** Sticks (bits of [Stick.bit]) whose deflections made while Back is held the helper takes for the app. */
     fun setSticks(sticks: Set<Stick>) {
-        val mask = sticks.sumOf { it.bit }
+        val mask = HelperProtocol.stickMask(sticks)
         if (mask == stickMask) return
         stickMask = mask
         sendSticks()
@@ -143,7 +142,7 @@ class PadHelper(
      * Bits are the stick's index times four plus [DpadDirection]'s order, like [setPassthrough].
      */
     fun setStickPassthrough(buttons: Set<StickButton>) {
-        val mask = buttons.sumOf { 1 shl (it.stick.ordinal * 4 + it.direction.ordinal) }
+        val mask = HelperProtocol.stickPassthroughMask(buttons)
         if (mask == stickPassthrough) return
         stickPassthrough = mask
         sendStickPassthrough()
@@ -160,7 +159,7 @@ class PadHelper(
     }
 
     private fun sendHomeMode() {
-        runCatching { client?.outputStream?.write("HOMEBACK $homeMode\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.homeMode(homeMode).toByteArray()) }
     }
 
     /** While on, the pad's buttons, sticks and D-pad reach only [onRecord], not the foreground app. */
@@ -171,7 +170,7 @@ class PadHelper(
     }
 
     private fun sendRecording() {
-        runCatching { client?.outputStream?.write("RECORD ${if (recording) 1 else 0}\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.recording(recording).toByteArray()) }
     }
 
     /**
@@ -181,42 +180,28 @@ class PadHelper(
     fun playMacro(id: Int, events: List<MacroEvent>): Boolean {
         val out = client?.outputStream ?: return false
         if (!active) return false
-        val text = buildString {
-            append("MCLEAR\n")
-            events.forEach { append(it.wire()).append('\n') }
-            append("MPLAY ").append(id).append('\n')
-        }
-        return runCatching { out.write(text.toByteArray()) }.isSuccess
+        return runCatching { out.write(HelperProtocol.macro(id, events).toByteArray()) }.isSuccess
     }
 
     fun stopMacro() {
-        runCatching { client?.outputStream?.write("MSTOP\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.MACRO_STOP.toByteArray()) }
     }
 
     /** Adds a gyro deflection in per mille to [stick]; a null stick ends it. Sent as it comes, about 100 times a second. */
     fun setGyro(stick: Stick?, x: Int, y: Int) {
-        val wire = when (stick) { null -> 0; Stick.LEFT -> 1; Stick.RIGHT -> 2 }
-        runCatching { client?.outputStream?.write("GYRO $wire $x $y\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.gyro(stick, x, y).toByteArray()) }
     }
 
     private fun sendStickPassthrough() {
-        runCatching { client?.outputStream?.write("SPASS $stickPassthrough\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.stickPassthrough(stickPassthrough).toByteArray()) }
     }
 
     private fun sendSticks() {
-        runCatching { client?.outputStream?.write("STICKS $stickMask\n".toByteArray()) }
+        runCatching { client?.outputStream?.write(HelperProtocol.sticks(stickMask).toByteArray()) }
     }
 
-    /** Linux key codes, emitted by the existing clone without another root-shell round trip. */
-    fun navigateTop(direction: DpadDirection) = sendNavigation(when (direction) {
-        DpadDirection.UP -> 103
-        DpadDirection.DOWN -> 108
-        DpadDirection.LEFT -> 105
-        DpadDirection.RIGHT -> 106
-    })
-
-    private fun sendNavigation(key: Int) {
-        runCatching { client?.outputStream?.write("NAV $key\n".toByteArray()) }
+    fun navigateTop(direction: DpadDirection) {
+        runCatching { client?.outputStream?.write(HelperProtocol.navigation(direction).toByteArray()) }
     }
 
     private fun serve() {
