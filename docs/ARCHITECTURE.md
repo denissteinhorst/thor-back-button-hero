@@ -211,6 +211,17 @@ to the app UID, failing closed when the shield is absent, not touchable, or cove
 shield is removed after delivery; with follow disabled, the same path retains the source display.
 Fixed routes use the existing OEM command sequence only when follow is enabled.
 
+### Screen recording — `ScreenRecording` and the root `ScreenRecorder`
+
+`ScreenRecording` in the service owns the recording state (idle, starting, recording, stopping)
+and its session guard; the root entry point `ScreenRecorder` mirrors the screens through a GL
+compositor into the video encoder, captures the game's playback through an audio policy, and
+writes MP4 segments. Its audio mix is plain Kotlin in `capture.recorder`: `MicRing` carries the
+microphone to the mix, `AudioMixer` adds it to the game sound through the voice chain and the
+push-to-talk gate and lowers the video's game sound while a talk is open. The device speaker is
+lowered separately and always restored; the voice itself is never altered beyond the chain.
+`RecorderMixTest` freezes the mix bit for bit; encoder, muxer and compositor are device-only.
+
 ### Small indicators — `NoticeOverlay`, `FocusIndicatorOverlay`, `RecordingIndicatorOverlay`
 
 All three draw on the top screen, because AYN's assistant covers the bottom one, and never take

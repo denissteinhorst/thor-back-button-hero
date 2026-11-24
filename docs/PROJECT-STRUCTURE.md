@@ -161,6 +161,8 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `BrightnessControl.kt` | 55 | *(root)* Steps the brightness of one or more displays via `IDisplayManager`. |
 | `SystemScreenshot.kt` | 148 | *(root)* Short-lived entry point and Binder handshake for Android's native, display-targeted screenshot flow. |
 | `ScreenshotSaver.kt` | 40 | Fallback: saves a screenshot of one display to `Pictures/Screenshots` through MediaStore when the native flow is unavailable. |
+| `AudioMixer.kt` | 155 | *(capture/recorder)* The recording's audio mix: game playback plus microphone through the voice chain, the push-to-talk gate, fades, the video duck and the echo-late opening. Pure; frozen bit for bit by `RecorderMixTest`. |
+| `MicRing.kt` | 49 | *(capture/recorder)* The microphone ring between the reader thread and the mix: push-to-talk delay, drift cap, written and pulled sample positions. |
 | `PService.kt` | 120 | Bridge to AYN's root daemon `pservice` (`PServerBinder`), and `runEntryPoint` for root `app_process` entry points. |
 | `Displays.kt` | 20 | The one rule for which display is which screen: top is `DEFAULT_DISPLAY`, bottom is the highest non-default, non-private id. |
 | `Shell.kt` | 15 | Validation and quoting for everything that reaches a root shell. |
