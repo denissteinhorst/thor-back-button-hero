@@ -143,7 +143,9 @@ class ServiceInternalCommandTest {
             call(it, "nativeSystemScreenshot", ClassParameter.from(Int::class.javaPrimitiveType, 0), ClassParameter.from(Function0::class.java, {}))
         }
         run("open top Recents", out) { call(it, "openTopRecentsNow") }
-        run("prime top Recents focus", out) { call(it, "primeTopRecentsFocus") }
+        run("prime top Recents focus", out) {
+            ReflectionHelpers.callInstanceMethod<Any?>(ReflectionHelpers.callInstanceMethod<Any>(it, "getTopSession"), "primeFocus")
+        }
         run("close top Recents", out) { call(it, "closeTopRecents") }
         run("refresh bottom task states", out) { call(it, "refreshBottomTaskStates") }
         run("show bottom Recents", out) { call(it, "showSwitcherNow") }

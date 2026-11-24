@@ -127,6 +127,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `RecentsTaskLauncher.kt` | 114 | *(root)* Resumes an existing task on the requested screen without relaunching it. |
 | `TaskMovePolicy.kt` | 34 | Rules for task moves: protected tasks and which app stays in front. |
 | `TopRecentsFocus.kt` | 46 | *(root)* Completes AYN's paused Overview handoff so native controller navigation works in the top Recents. |
+| `TopRecentsSession.kt` | 323 | The top Recents controller session: its flags, Quickstep state checks, focus priming, dismissal queue and closing Back, with stale worker results dropped by session token and focus version. |
 | `TopRecentsNavigation.kt` | 45 | Buffers D-pad presses while top Recents initializes, then releases them. |
 | `TopRecentsState.kt` | 48 | The small subset of AYN Launcher3's dump needed to know the Overview state and card geometry. |
 | `TaskRemover.kt` | 57 | *(root)* Removes recent tasks like Recents' "Clear all". |

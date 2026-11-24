@@ -122,10 +122,12 @@ class ServiceTopRecentsTest {
         (if (unordered) actions.drop(actionsSeen).distinct().sorted() else actions.drop(actionsSeen)).forEach { out.append("global ").append(it).append('\n') }
         actionsSeen = actions.size
         fun flag(name: String) = ReflectionHelpers.getField<Any?>(service, name)
-        out.append("[").append(step).append("] active=").append(flag("topRecentsControllerActive"))
-            .append(" confirmed=").append(flag("topRecentsConfirmed"))
-            .append(" exit=").append(flag("topRecentsExitRequested"))
-            .append(" primed=").append(flag("topRecentsFocusPrimed"))
+        val session = ReflectionHelpers.callInstanceMethod<Any>(service, "getTopSession")
+        fun state(name: String) = ReflectionHelpers.getField<Any?>(session, name)
+        out.append("[").append(step).append("] active=").append(state("active"))
+            .append(" confirmed=").append(state("confirmed"))
+            .append(" exit=").append(state("exitRequested"))
+            .append(" primed=").append(state("focusPrimed"))
             .append(" launch=").append((ReflectionHelpers.getField<Any?>(ReflectionHelpers.callInstanceMethod<Any>(service, "getTopLaunch"), "baseline") != null))
             .append(" restore=").append(flag("recentsFocusRestore"))
             .append('\n')

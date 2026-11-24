@@ -155,9 +155,14 @@ Recents, windows and task moves sit in `recents/`, each behind a host for the se
   opens, the 250 ms Quickstep poll (25 attempts), and the selection read or card click that
   identifies the moved task.
 
-The top Recents controller session (routing, state checks, focus priming, dismissal queue,
-restore) stays in the service: the key path writes its flags and it drives the pad helper,
-accessibility nodes and gestures. Panel capture/hide/restore is `panels.BottomPanels`.
+- `TopRecentsSession` — the controller session over native top Recents once it opens: every
+  flag (active, confirmed, input ready, focus transaction, queued dismissals, the closing Back),
+  the Quickstep state checks and the focus priming. Each worker result carries the session token
+  and focus version it started with and is dropped when either moved on. The service supplies the
+  platform work through `TopRecentsSession.Host` (root queries, accessibility nodes, gestures, pad
+  navigation) and keeps the routing and the focus restore.
+
+Panel capture/hide/restore is `panels.BottomPanels`.
 
 ### `BackGestureMachine` — the timing decisions, without Android
 

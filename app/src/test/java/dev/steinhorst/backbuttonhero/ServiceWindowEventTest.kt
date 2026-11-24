@@ -65,6 +65,11 @@ class ServiceWindowEventTest {
     }
 
     /** Whether the named runnable of the service is waiting on its handler. */
+    private fun topSession(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<Any>(service, "getTopSession")
+
+    private fun topPending(service: SwitcherService) =
+        handler(service).hasCallbacks(ReflectionHelpers.getField<Runnable>(topSession(service), "stateRunnable"))
+
     private fun pending(service: SwitcherService, name: String) = handler(service).hasCallbacks(runnable(service, name))
 
     /** How often the named runnable waits in the main queue: a debounce keeps it at one. */
@@ -99,7 +104,7 @@ class ServiceWindowEventTest {
         assertTrue(pending(service, "panelStateRunnable"))
         assertTrue(pending(service, "captureRunnable"))
         assertFalse("nothing is parked", pending(service, "reclaimRunnable"))
-        assertFalse("no top Recents session", pending(service, "topRecentsStateRunnable"))
+        assertFalse("no top Recents session", topPending(service))
         idle(300)
         event(service)
         assertEquals("waiting once", 1, queued(service, "panelStateRunnable"))
@@ -131,10 +136,10 @@ class ServiceWindowEventTest {
 
     @Test
     fun `a running top Recents session rechecks its state after 140 ms`() = withService { service ->
-        ReflectionHelpers.setField(service, "topRecentsControllerActive", true)
+        ReflectionHelpers.setField(topSession(service), "active", true)
         event(service)
-        assertTrue(pending(service, "topRecentsStateRunnable"))
-        ReflectionHelpers.setField(service, "topRecentsControllerActive", false)
+        assertTrue(topPending(service))
+        ReflectionHelpers.setField(topSession(service), "active", false)
     }
 
     @Test
