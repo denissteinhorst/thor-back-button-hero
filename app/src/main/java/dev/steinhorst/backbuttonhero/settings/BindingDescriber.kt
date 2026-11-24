@@ -32,7 +32,8 @@ internal class BindingDescriber(private val context: Context, private val prefs:
 
     /** A short name for the overview's narrow columns; the pages keep the full wording. */
     fun overviewLabel(action: String): String {
-        val res = when (ActionCodec.decode(action)) {
+        val decoded = ActionCodec.decode(action)
+        val res = when (decoded) {
             Action.Builtin.BACK -> R.string.overview_action_back
             Action.Builtin.RECENTS -> R.string.overview_action_recents_top
             Action.Builtin.SWITCHER -> R.string.overview_action_recents_bottom
@@ -73,8 +74,8 @@ internal class BindingDescriber(private val context: Context, private val prefs:
             else -> null
         }
         if (res != null) return context.getString(res)
-        if (Prefs.isShoulderApp(action)) {
-            return runCatching { context.getString(R.string.overview_action_open_app, context.packageManager.getApplicationInfo(action, 0).loadLabel(context.packageManager)) }
+        if (decoded is Action.LaunchApp) {
+            return runCatching { context.getString(R.string.overview_action_open_app, context.packageManager.getApplicationInfo(decoded.pkg, 0).loadLabel(context.packageManager)) }
                 .getOrDefault(context.getString(R.string.shoulder_launch_app))
         }
         return describeAction(action)
