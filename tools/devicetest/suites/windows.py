@@ -451,6 +451,13 @@ def _pause_pair(d):
     return Seq().key(pad.L1, True).key(pad.R1, True).wait(600).key(pad.L1, False).key(pad.R1, False).wait(300)
 
 
+def _resume(d, pair):
+    """The second pair must switch the hotkeys back on; a lost resume would leave every later area
+    running against a paused service, where Back alone reaches the app and passes for a minimize."""
+    d.press(pair)
+    d.expect_toast(d.text("service_toggle_active", "L1 + R1"))
+
+
 def _open_bottom_switcher(d):
     d.start_app(SETTINGS, d.top)
     d.start_app(GALLERY, d.bottom)
@@ -471,7 +478,7 @@ def switcher_pause(d):
         d.eventually(lambda: not d.own_windows(d.bottom) and not d.own_windows(d.top), 4,
                      f"pausing left windows open: bottom {d.own_windows(d.bottom)}, top {d.own_windows(d.top)}")
         d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
-        d.press(pair)
+        _resume(d, pair)
     finally:
         if d.own_windows(d.bottom):
             d.press(Seq().tap(pad.BACK))
@@ -533,7 +540,7 @@ def recents_pause(d):
             raise Fail(f"pausing closed Overview: {d.resumed().get(d.top)}")
         if d.route() != d.top:
             raise Fail(f"the controller left the top screen: {d.route()}")
-        d.press(pair)
+        _resume(d, pair)
     finally:
         d.keyevent("KEYCODE_HOME", d.top)
         _clean(d)
