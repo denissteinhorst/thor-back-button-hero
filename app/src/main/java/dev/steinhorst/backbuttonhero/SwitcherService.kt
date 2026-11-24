@@ -1351,22 +1351,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
-        cancelBottomSwitcherOpen()
-        cancelTopRecentsLaunch()
-        isConnected = false
-        previewFocusIndicator = null
-        previewRecordIndicator = null
-        macroRecorder = null
-        macroRecordListener = null
-        macroPlayback.forget()
-        endRecording()
-        runCatching { unregisterReceiver(standbyReceiver) }
-        comboRouter.clear()
-        directionalRouter.forgetArmed()
-        stopDpad()
-        if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
-        if (::panels.isInitialized) panels.close()
-        if (::parking.isInitialized) parking.close()
+        releaseSession()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         if (::focusIndicator.isInitialized) focusIndicator.dismiss()
@@ -1374,6 +1359,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        releaseSession()
+        return super.onUnbind(intent)
+    }
+
+    /**
+     * What both an unbind and a destroy release, in this order; the destroy additionally drops the
+     * handler's pending work and the windows. Safe to run twice: an unbind is followed by a destroy.
+     */
+    private fun releaseSession() {
         cancelBottomSwitcherOpen()
         cancelTopRecentsLaunch()
         isConnected = false
@@ -1390,7 +1384,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
         if (::parking.isInitialized) parking.close()
-        return super.onUnbind(intent)
     }
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */
