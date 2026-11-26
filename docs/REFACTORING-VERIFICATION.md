@@ -10,7 +10,7 @@ was pushed, tagged or released.
 | Item | Value |
 |---|---|
 | Commit | `713ed4583ad88783c5fb54981d88bce4311fcd24` (tree `1ef40577`) |
-| Baseline | `f3f8dbf` (frozen artifacts in the local, untracked `refactoring/baseline/`) |
+| Baseline | `f3f8dbf` (its frozen artifacts were kept locally and removed after acceptance) |
 | Toolchain | JDK 17.0.21, Kotlin 2.4.21, AGP 9.5.1, Gradle 9.9.2, NDK 29.0.14206865 |
 | Debug APK | sha256 `c6784619…b0ed` |
 | Release APK (unsigned) | 4 270 691 bytes, sha256 `e37dedd3…cb68` |

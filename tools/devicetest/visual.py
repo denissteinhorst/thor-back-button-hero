@@ -6,7 +6,7 @@
   python3 tools/devicetest/visual.py compare RUN_A RUN_B    exact comparison outside the status bar
 
 Frames are screenshots: capture and inspection need the owner's permission (AGENTS.md). They are kept
-privately under refactoring/baseline/S5/frames (git-excluded), never committed. Capturing runs inside
+privately under .devicetest/frames (gitignored), never committed. Capturing runs inside
 the recovery transaction, so the owner's settings and system values are restored and verified.
 The status bar belongs to System UI (clock, signal, battery) and is the only masked area; it is read
 from the device's status-bar inset, never assumed.
@@ -24,7 +24,7 @@ from dt.adb import REPO  # noqa: E402
 from dt.device import Device, PKG  # noqa: E402
 from dt.frames import FrameError, capture, differences, parse  # noqa: E402
 
-STORE = os.path.join(REPO, "refactoring", "baseline", "S5", "frames")
+STORE = os.path.join(REPO, ".devicetest", "frames")
 ACTIVITY = f"{PKG}/.SettingsActivity"
 NODE = re.compile(r"<node [^>]*>")
 ASSIGNED = [

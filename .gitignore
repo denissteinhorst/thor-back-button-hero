@@ -15,3 +15,7 @@ docs/hardening/
 
 # Local video checkpoints
 /checkpoints/
+
+# Local device-suite captures (visual frames, gesture traces)
+/.devicetest/
+__pycache__/

@@ -210,7 +210,7 @@ Android's `BUTTON_X` is always the left button (evdev 307).
 `tools/devicetest/visual.py` captures the settings screen on the top display as raw frames and
 compares runs pixel for pixel. Frames are screenshots: capture and inspection need the owner's
 permission each time the scope changes (AGENTS.md). They stay private under
-`refactoring/baseline/S5/frames/` and are never committed.
+`.devicetest/frames/` and are never committed.
 
 ```sh
 python3 tools/devicetest/visual.py capture --run NAME
@@ -251,7 +251,7 @@ python3 tools/devicetest/visual.py compare RUN_A RUN_B
 
 `tools/devicetest/trace.py build [--rev REV]` builds a debug APK of a pinned revision with
 `DEBUG_GESTURES` switched on, in a temporary git worktree, never in the checkout. The result is cached
-under `refactoring/baseline/S6/trace-cache/` by source tree, trace patch and JDK, with the applied diff
+under `.devicetest/trace-cache/` by source tree, trace patch and JDK, with the applied diff
 and the APK hash beside it; a cached APK whose hash no longer matches is refused. Accepted source keeps
 the flag off (contract A10). Both builds share the machine's debug key, so the trace build installs in
 place over the normal debug build.
@@ -270,7 +270,7 @@ python3 tools/devicetest/trace.py compare RUN_A RUN_B
 
 `capture` builds (or reuses) the trace APK, installs it as an arm of the recovery transaction, warms
 the new pad clone up until a Back press arrives, then records each scenario's normalized trace and its
-observed effect (media keys) under `refactoring/baseline/S6/traces/<run>/`. The restore reinstalls the
+observed effect (media keys) under `.devicetest/traces/<run>/`. The restore reinstalls the
 original build. Scenarios use the gesture suite's timings (double 300 ms, tap-hold 600 ms, hold 800 ms),
 plus two bands released at 700 ms, 100 ms clear of both thresholds: the trace prints *configured*
 durations, not the delay a timer was actually posted with, so only those bands show a wrong delay on the

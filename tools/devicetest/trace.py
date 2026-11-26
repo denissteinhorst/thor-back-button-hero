@@ -27,8 +27,8 @@ sys.dont_write_bytecode = True
 
 from dt.adb import JAVA_HOME, REPO  # noqa: E402
 
-CACHE = os.path.join(REPO, "refactoring", "baseline", "S6", "trace-cache")
-RUNS = os.path.join(REPO, "refactoring", "baseline", "S6", "traces")
+CACHE = os.path.join(REPO, ".devicetest", "trace-cache")
+RUNS = os.path.join(REPO, ".devicetest", "traces")
 SOURCE = "app/src/main/java/dev/steinhorst/backbuttonhero/SwitcherService.kt"
 OFF = "const val DEBUG_GESTURES = false"
 ON = "const val DEBUG_GESTURES = true"
