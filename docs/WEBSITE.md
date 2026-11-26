@@ -23,6 +23,7 @@ editor the film is built on. None of it has a build step, a CDN request or a pac
 | `site/guide.html`, `guide.css` | The single content source for actions, FAQ, setup, compatibility, screenshots and release summaries. The homepage reads it for its dialogs; on its own it is a script-free guide. |
 | `site/hotkey-layers.js`, `hotkey-layer-state.js` | The homepage's Back/Home layer illustration. |
 | `site/app-simulation.html` | Symlink to [`docs/app-simulation.html`](app-simulation.html), so Pages serves the same file the release ships. |
+| `site/gesture-explainer.html` | Redirect from the App-Simulation's former name, so links in earlier posts keep working. |
 | `site/assets/` | Screenshots, app/device illustrations and the 1.5.0 video and still linked by the README. |
 | `site/thor-ad-v2/` | The 30-second 2.0 film, its embed and export player. |
 | `site/model-editor/` | The standalone Three.js model editor and the shared Thor model and renderer. |
