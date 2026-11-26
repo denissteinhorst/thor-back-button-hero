@@ -1,0 +1,111 @@
+## launch, baseline unreadable
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[opened] active=false confirmed=false exit=false primed=false launch=false restore=null
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, a card moves its task to the top
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[opened] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 1] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+[poll 2] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'selection' '<time>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '1011' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[poll 3] active=false confirmed=false exit=false primed=false launch=false restore=null
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, Overview never appears
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root x24 code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+global 3
+[24 polls] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, cancelled while polling
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+global 3
+[polling] active=false confirmed=false exit=false primed=false launch=true restore=null
+[cancelled] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, selection unreadable
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'selection' '<time>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[closed] active=false confirmed=false exit=false primed=false launch=false restore=null
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## launch, a clicked card selects its task
+root x2 code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[unknown label] active=false confirmed=false exit=false primed=false launch=true restore=null
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '1011' 2>&1 | grep -m1 -E '^(OK|ERR)'
+[selected] active=false confirmed=false exit=false primed=false launch=false restore=null
+[later] active=false confirmed=false exit=false primed=false launch=false restore=null
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## controller, confirmed then closed
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+root code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'selection' '<time>' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '1011' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[end] active=false confirmed=false exit=false primed=false launch=false restore=null
+## controller, never confirmed
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+root code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 3
+[end] active=false confirmed=false exit=false primed=false launch=true restore=null
+## controller, route refused
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+root code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+[end] active=false confirmed=false exit=false primed=false launch=true restore=null
+## controller, closed with Back
+root code=0 args=[0] dumpsys activity com.android.launcher3 | awk '<path>'
+root code=0 args=[0] input keyboard -d 0 keyevent 4 && echo OK
+root code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] sh '<path>'
+  script: CLASSPATH='<path>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+global 1
+global 3
+[end] active=true confirmed=true exit=true primed=false launch=false restore=bottom

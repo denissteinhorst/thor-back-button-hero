@@ -1,0 +1,5 @@
+## attached
+window type=2032 size=1x1 x=0 y=0 gravity=0x800033 flags=0x01020030 format=-3 alpha=1.0 title=""
+   visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=none

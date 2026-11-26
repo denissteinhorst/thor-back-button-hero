@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: 0BSD
+# Reviewed bytecode differences a package move may cause, one class per line with its reason.
+# Only the named kind is masked for the named class; everything else must still match.
+#   <binary class name> <kind> <reason>
+# Kinds: data-object-hash = the compile-time hashCode() constant Kotlin derives from a data object's
+# fully qualified name.
+StickDetector$Edge$Released data-object-hash Only compared with equals in DpadOverlay's when; never stored in a hashed collection, so its hash is not observable.

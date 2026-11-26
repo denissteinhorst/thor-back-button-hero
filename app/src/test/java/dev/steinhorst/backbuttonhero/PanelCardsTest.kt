@@ -3,10 +3,16 @@ package dev.steinhorst.backbuttonhero
 import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.os.Looper
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.os.Looper
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -17,7 +23,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class PanelCardsTest {
@@ -52,8 +57,7 @@ class PanelCardsTest {
             val root = FrameLayout(activity).apply { addView(row) }
             activity.setContentView(root)
             field("root", root)
-            field("shownApps", listOf(app, panel))
-            field("shownCards", cards)
+            field("shown", shownCards(listOf(app, panel), cards))
             field("shownDisplayId", 17)
             field("selected", 1)
         }
@@ -106,8 +110,7 @@ class PanelCardsTest {
     @Test
     fun `a panel scan keeps the empty switcher open until the user closes it`() {
         val f = Fixture()
-        f.field("shownApps", emptyList<RunningApp>())
-        f.field("shownCards", emptyList<Any>())
+        f.field("shown", shownCards(emptyList(), emptyList()))
         f.overlay.reconcilePanels(emptyList())
         assertTrue(f.overlay.isShowing)
         f.activity.finish()
@@ -116,8 +119,7 @@ class PanelCardsTest {
     @Test
     fun `expiring the last panel card still closes the switcher`() {
         val f = Fixture()
-        f.field("shownApps", listOf(f.panel))
-        f.field("shownCards", listOf(f.cards[1]))
+        f.field("shown", shownCards(listOf(f.panel), listOf(f.cards[1])))
         f.overlay.reconcilePanels(emptyList())
         assertFalse(f.overlay.isShowing)
         f.activity.finish()
@@ -153,8 +155,7 @@ class PanelCardsTest {
         val f = Fixture()
         val ordinary = RunningApp("dev.example.ordinary", "Ordinary", null, null)
         val card = LinearLayout(f.activity).also(f.row::addView)
-        f.field("shownApps", listOf(f.app, f.panel, ordinary))
-        f.field("shownCards", f.cards + card)
+        f.field("shown", shownCards(listOf(f.app, f.panel, ordinary), f.cards + card))
         f.overlay.closeAllFromController()
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(300))
         assertEquals(listOf(f.panel.packageName, ordinary.packageName), f.closedAll)
@@ -168,8 +169,7 @@ class PanelCardsTest {
     fun `bottom only close all closes a panel owner even without a separate top activity card`() {
         val f = Fixture(bothScreens = false)
         f.row.removeView(f.cards[0])
-        f.field("shownApps", listOf(f.panel))
-        f.field("shownCards", listOf(f.cards[1]))
+        f.field("shown", shownCards(listOf(f.panel), listOf(f.cards[1])))
         f.overlay.closeAllFromController()
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(300))
         assertEquals(listOf(f.panel.packageName), f.closedAll)

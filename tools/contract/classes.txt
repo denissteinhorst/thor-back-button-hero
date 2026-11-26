@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: 0BSD
+# Frozen class names (refactoring plan 02 §3). Kinds: component = manifest component in the release
+# APK; root = started by name through app_process and must keep public static main(String[]);
+# debug = debug-only component. Renaming any of these breaks installed users or the root helpers.
+component SwitcherService
+component SettingsActivity
+component UpdateInstaller$StatusReceiver
+root PanelWindowHost
+root TaskParker
+root SystemScreenshot
+root TopRecentsFocus
+root BrightnessControl
+root RecentsTaskLauncher
+root ScreenRecorder
+root RecentsStateReader
+root ControllerFocusTouch
+root TaskRemover
+debug DeviceTestReceiver
+debug DeviceTestKeyActivity

@@ -20,6 +20,16 @@ def ensure_helper(d, timeout=12):
     d.eventually(settled, timeout, "the root input helper keeps restarting")
 
 
+def helper_settled(d, timeout=12):
+    """Waits until the helper neither starts nor stops: while it swaps the pad, presses get lost.
+    Unlike [ensure_helper] this assigns nothing, so it also fits areas that run without the helper."""
+    def settled():
+        first = d.helper_pid()
+        time.sleep(1.0)
+        return first == d.helper_pid()
+    d.eventually(settled, timeout, "the root input helper keeps starting or stopping")
+
+
 def combo(d, code, **kw):
     d.press(Seq().combo(code, **kw))
 
@@ -58,4 +68,13 @@ def expect_closed(d, pkg, previous_pid, timeout=6):
         return (not previous.intersection(d.pid(pkg).split()) and not d.task_ids(pkg)
                 and not any(front.startswith(pkg + "/") for front in d.resumed().values()))
 
-    d.eventually(closed, timeout, f"{pkg} kept its original process, task or foreground activity")
+    try:
+        d.eventually(closed, timeout, "")
+    except Fail:
+        kept = [name for name, held in (
+            ("process", previous.intersection(d.pid(pkg).split())),
+            ("task", d.task_ids(pkg)),
+            ("foreground activity", [f for f in d.resumed().values() if f.startswith(pkg + "/")]))
+            if held]
+        raise Fail(f"{pkg} kept its original {', '.join(kept) or 'state only briefly'} "
+                   f"(pids {previous} -> {d.pid(pkg) or 'none'}, tasks {d.task_ids(pkg)}, front {d.resumed()})")

@@ -1,0 +1,50 @@
+## native back
+code=0 args=[0] input -d 0 keyevent 4 && echo OK
+## native back, long press
+code=0 args=[0] input -d 0 keyevent --longpress 4 && echo OK
+## swipe-kill two apps
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a,com.example.b' 2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] am force-stop 'com.example.a'
+code=0 args=[0] am force-stop 'com.example.b'
+## swipe-kill refuses an invalid name
+## launch a known task on the top screen
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '17' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## launch a package without task id
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## hold-to-swap without apps
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## hold-to-swap moves both known tasks
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.top' '<bottom>' '11' 2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.bottom' '0' '22' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## hold-to-swap with an unmovable task
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## switch to last app
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## system screenshot top
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.SystemScreenshot '0' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## open top Recents
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+code=0 args=[0] dumpsys activity com.android.launcher3 | awk '/ACTIVITY /{a=/QuickstepLauncher/} a&&(/mState:|mResumed=|mHasWindowFocus=/||(/TaskView\{/&&(!t++||/ \.F/))||(/ \.F/&&/app:id\/(action_screenshot|clear_all_button)/)){printf "%s|",$0}'
+code=0 args=[0] setprop persist.sys.input.dispaly 0 && settings put system screen_focus_lock 0 && input keyevent 60 && echo OK
+## prime top Recents focus
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TopRecentsFocus  2>&1 | grep -m1 -E '^(OK|ERR)'
+## close top Recents
+code=0 args=[0] input keyboard -d 0 keyevent 4 && echo OK
+## refresh bottom task states
+## show bottom Recents
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'

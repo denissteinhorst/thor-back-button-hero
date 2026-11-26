@@ -1,0 +1,79 @@
+## @app_ask
+## @app_control
+## @app_favorites
+## @back
+## @battery_saver
+## @bluetooth
+## @brightness_down
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.BrightnessControl 'down' '0' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## @brightness_up
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.BrightnessControl 'up' '0' 2>&1 | grep -m1 -E '^(OK|ERR)'
+## @cast_settings
+## @close_apps
+## @close_background_apps
+## @controller_focus
+code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+## @direct_power
+code=0 args=[0] settings put system is_charging_separation 1 && echo OK
+## @display
+code=0 args=[0] settings put system dual_screen_display_mode 2 && settings put system enable_system_key_focus_lock 1 && settings put system screen_focus_lock 2 && setprop persist.sys.input.dispaly 2 && echo OK
+## @display_settings
+## @dnd_settings
+## @do_not_disturb
+code=0 args=[0] cmd notification set_dnd priority && echo OK
+## @extra_dim
+## @fan
+## @force_landscape
+code=0 args=[0] settings put system force_landscape 1 && echo OK
+## @gyro
+## @gyro_calibrate
+## @handle
+## @home
+## @internet
+## @last_app
+## @location_settings
+## @macro
+## @media_next
+## @media_play_pause
+## @media_previous
+## @mute_microphone
+code=0 args=[0] dumpsys sensor_privacy | tr -d ' \n'
+code=0 args=[0] cmd sensor_privacy enable $(am get-current-user) microphone && echo OK
+## @navigation_flick_left
+## @navigation_flick_right
+## @night_light
+## @notifications
+## @performance
+## @power_menu
+## @quick_settings
+## @recents
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+code=0 args=[0] dumpsys activity com.android.launcher3 | awk '/ACTIVITY /{a=/QuickstepLauncher/} a&&(/mState:|mResumed=|mHasWindowFocus=/||(/TaskView\{/&&(!t++||/ \.F/))||(/ \.F/&&/app:id\/(action_screenshot|clear_all_button)/)){printf "%s|",$0}'
+code=0 args=[0] setprop persist.sys.input.dispaly 0 && settings put system screen_focus_lock 0 && input keyevent 60 && echo OK
+## @record_video
+## @refresh_rate
+code=0 args=[0] settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 120.0 && echo OK
+## @screenshot
+## @sound_settings
+## @standby
+## @status_overlay
+## @stick_light
+code=0 args=[0] settings put system joystick_light_enabled 1,1 && echo OK
+## @swap_apps
+## @switch_active_app
+## @switcher
+## @vibration
+code=0 args=[0] settings put system vibrate_on 1 && echo OK
+## @virtual_mouse
+code=0 args=[0] settings put system global_gamepad_to_mouse_mode 1 && echo OK
+## @volume_down
+## @volume_mute
+## @volume_up
+## root helper launch, whenever it happens
+code=0 args=[0] sh '<cache>/padhelper_start.sh'
+  script: '<lib>/libpadhelper.so' 'dev.steinhorst.backbuttonhero.padhelper' >/dev/null 2>&1 &
+  script: sleep 1

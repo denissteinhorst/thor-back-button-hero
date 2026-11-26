@@ -4,7 +4,7 @@ Back + D-pad shortcuts (default: brightness on up/down, volume on left/right) ne
 helper. This document explains why, how it works, what it touches on your device, and how it stays
 out of the way. Everything here is implemented in this repository. The helper is
 [`app/src/main/cpp/padhelper.c`](../app/src/main/cpp/padhelper.c), and the app side is
-`PadHelper.kt`, `DpadOverlay.kt`, `LevelControl.kt` and `BrightnessControl.kt`.
+`PadHelper.kt` (with its command lines in `HelperProtocol.kt`), `DpadOverlay.kt`, `LevelControl.kt` and `BrightnessControl.kt`.
 
 ## Why a helper exists at all
 
@@ -69,7 +69,7 @@ The service tracks the card/action rows: Up from actions returns to cards; Up fr
 only the current card using its real geometry. After a dismissal it restores keyboard focus before
 releasing queued navigation. TOP takes precedence over held Back. A captured press stays captured
 until release, even if Back is let go or the switcher closes first.
-5. **The app runs the configured action** (`SwitcherService.handleDpad`), just as it does for a
+5. **The app runs the configured action** (`SwitcherService.handleDpad`, decided by `DirectionalRouter`), just as it does for a
    shoulder-button combo. The game never sees the press and never loses focus.
 
 ### Analog sticks
@@ -237,6 +237,9 @@ SELinux" off). It is the same requirement swipe-to-close has.
     and tells the app not to restart it until the service restarts. While Home stands in for Back
     (`HOMEBACK 1`) holding both is ordinary use, so the release is off then. In dual mode
     (`HOMEBACK 2`) Home and Back are separate modifiers and the release stays on.
+    Known limits (F-LIM-7/8 in `FEATURE-COVERAGE.md`): the 5 s are checked only when a pad event
+    arrives, so a hold during which nothing else on the pad moves does not release; and after a
+    release the native pad reports the bottom face button as B where the clone reported A.
   - **Style switch:** switching the controller style creates a fresh pad and node in any case.
 - **A restarted helper recreates the pad.** Whenever the helper starts again (an app update, a
   reinstall, a service restart), Android sees the pad vanish and reappear with a new device id.

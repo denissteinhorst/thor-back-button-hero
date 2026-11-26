@@ -6,6 +6,11 @@ import android.os.Looper
 import android.view.Display
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.recents.RecentsTaskState
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
+import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,7 +20,6 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAppTask
-import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class SwitcherCloseAllTest {
@@ -48,8 +52,7 @@ class SwitcherCloseAllTest {
         fun field(name: String, value: Any) = SwitcherOverlay::class.java.getDeclaredField(name)
             .apply { isAccessible = true }.set(overlay, value)
         field("root", root)
-        field("shownApps", apps)
-        field("shownCards", cards)
+        field("shown", shownCards(apps, cards))
         overlay.updateTaskStates(listOf(RecentsTaskState("dev.example.locked", 17, true),
             RecentsTaskState("dev.example.free", 17, false)))
         overlay.closeAllFromController()

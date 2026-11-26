@@ -181,7 +181,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // never lower them.
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.BackGestureMachine")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.BackGestureMachine")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -190,7 +190,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.Prefs")
+            includes = listOf("dev.steinhorst.backbuttonhero.prefs.Prefs")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -199,7 +199,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.LevelSteps")
+            includes = listOf("dev.steinhorst.backbuttonhero.pad.LevelSteps")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -208,7 +208,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.DpadDirection*")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.DpadDirection*")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -217,7 +217,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.DoubleTapDetector")
+            includes = listOf("dev.steinhorst.backbuttonhero.input.DoubleTapDetector")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -226,7 +226,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.AccessibilityAppSource")
+            includes = listOf("dev.steinhorst.backbuttonhero.core.AccessibilityAppSource")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -244,7 +244,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         }
         rule {
             element = "CLASS"
-            includes = listOf("dev.steinhorst.backbuttonhero.CardTouch")
+            includes = listOf("dev.steinhorst.backbuttonhero.recents.CardTouch")
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
@@ -255,32 +255,32 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
         // grouped settings, Recents routing and panel work. Exact class names, so nested
         // classes are not folded in. Same rule: raise, never lower.
         mapOf(
-            "RecentsSelection" to "1.00", "ServiceToggleGesture" to "1.00",
-            "ExceptionSettingsPage" to "0.98", "PhysicalKeyTracker" to "1.00",
-            "AppException" to "1.00", "ExceptionControl" to "1.00",
-            "TopRecentsNavigation" to "1.00", "TopRecentsState" to "1.00",
-            "RecentTaskQuery" to "1.00", "PanelWindows" to "1.00",
-            "RecentsBadges" to "1.00", "SettingsState" to "1.00",
-            "PadNavigationMode" to "1.00", "RecentsCardStyle" to "0.95",
-            "TaskMovePolicy" to "1.00", "BindingSettings" to "1.00",
-            "SettingsNavigation" to "1.00", "ShoulderButton" to "1.00",
-            "SettingsPage" to "1.00", "SettingsChangesKt" to "1.00",
-            "KeyInterceptionGate" to "1.00", "SettingsUiKitKt" to "1.00",
-            "SettingsSection" to "1.00", "BottomPanels" to "0.98",
-            "GestureScheduler" to "1.00", "SettingsChangePlan" to "1.00",
-            "StickDetector" to "1.00", "LevelRepeater" to "1.00", "RepeatCurve" to "1.00",
-            "StickClickMachine" to "1.00", "StickClickButton" to "1.00", "StickClick" to "1.00",
-            "StickButton" to "1.00", "Stick" to "1.00",
-            "SettingsBackup" to "1.00",
-            "AndroidButton" to "1.00", "FaceButton" to "1.00", "ExceptionGroup" to "1.00", "HomeAsBack" to "1.00",
-            "Macro" to "1.00", "MacroRecorder" to "1.00", "MacroButton" to "1.00", "MacroDirection" to "1.00",
-            "Evdev" to "1.00", "MacroEditor" to "0.97", "SavedMacro" to "1.00", "MacroLibraryDialog" to "1.00",
-            "MacroEdits" to "1.00", "MacroUi" to "1.00", "MacroUi\$Sheet" to "1.00", "MacroWidgetsKt" to "1.00", "StepStrip" to "0.80", "ScrollIndicator" to "1.00",
-            "GyroSettings" to "1.00", "GyroSettings\$Companion" to "1.00", "GyroAxis" to "1.00", "GyroMapper" to "1.00",
-            "GyroFusion" to "1.00", "GyroRest" to "1.00", "GyroRest\$Companion" to "1.00",
-            "GyroCalibration" to "1.00", "GyroCalibration\$Companion" to "1.00",
-            "GyroControl" to "1.00", "GyroTilt" to "1.00", "GyroPosture" to "1.00", "GyroPreview" to "1.00", "GyroSettingsDialog" to "1.00",
-            "WelcomeSheet" to "1.00", "WelcomeSheetKt" to "1.00",
+            "recents.RecentsSelection" to "1.00", "input.ServiceToggleGesture" to "1.00",
+            "settings.ExceptionSettingsPage" to "0.98", "input.PhysicalKeyTracker" to "1.00",
+            "prefs.AppException" to "1.00", "prefs.ExceptionControl" to "1.00",
+            "recents.TopRecentsNavigation" to "1.00", "recents.TopRecentsState" to "1.00",
+            "recents.RecentTaskQuery" to "1.00", "panels.PanelWindows" to "1.00",
+            "recents.RecentsBadges" to "1.00", "prefs.SettingsState" to "1.00",
+            "pad.PadNavigationMode" to "1.00", "recents.RecentsCardStyle" to "0.95",
+            "recents.TaskMovePolicy" to "1.00", "prefs.BindingSettings" to "1.00",
+            "settings.SettingsNavigation" to "1.00", "input.ShoulderButton" to "1.00",
+            "settings.SettingsPage" to "1.00", "prefs.SettingsChangesKt" to "1.00",
+            "input.KeyInterceptionGate" to "1.00", "settings.SettingsUiKitKt" to "1.00",
+            "settings.SettingsSection" to "1.00", "panels.BottomPanels" to "0.98",
+            "input.GestureScheduler" to "1.00", "prefs.SettingsChangePlan" to "1.00",
+            "input.StickDetector" to "1.00", "pad.LevelRepeater" to "1.00", "pad.RepeatCurve" to "1.00",
+            "input.StickClickMachine" to "1.00", "input.StickClickButton" to "1.00", "input.StickClick" to "1.00",
+            "input.StickButton" to "1.00", "input.Stick" to "1.00",
+            "prefs.SettingsBackup" to "1.00", "prefs.ActionCodec" to "1.00", "prefs.Migrations" to "1.00", "input.ComboRouter" to "1.00", "input.DirectionalRouter" to "1.00", "input.StickClickRouter" to "1.00", "actions.SystemActions" to "1.00", "macro.MacroPlayback" to "1.00", "actions.AppControlActions" to "1.00", "actions.LastAppAction" to "1.00", "pad.GyroActions" to "1.00", "recents.WindowTracker" to "1.00", "recents.TaskOps" to "0.98", "recents.SwapCoordinator" to "0.95", "recents.BottomSwitcherController" to "1.00", "recents.TopRecentsLauncher" to "0.94", "recents.TopRecentsSession" to "0.91", "overlay.TopOverlayWindow" to "1.00", "settings.BindingDescriber" to "1.00", "settings.ChangeDescriber" to "0.97", "settings.BackupFlow" to "0.57", "settings.UpdateFlow" to "0.57", "settings.BindingCard" to "0.91", "capture.recorder.MicRing" to "1.00", "capture.recorder.AudioMixer" to "0.97", "pad.HelperProtocol" to "1.00","prefs.Action\$Builtin" to "1.00",
+            "input.AndroidButton" to "1.00", "input.FaceButton" to "1.00", "prefs.ExceptionGroup" to "1.00", "input.HomeAsBack" to "1.00",
+            "macro.Macro" to "1.00", "macro.MacroRecorder" to "1.00", "macro.MacroButton" to "1.00", "macro.MacroDirection" to "1.00",
+            "macro.Evdev" to "1.00", "macro.MacroEditor" to "0.97", "macro.SavedMacro" to "1.00", "macro.MacroLibraryDialog" to "1.00",
+            "macro.MacroEdits" to "1.00", "macro.MacroUi" to "1.00", "macro.MacroUi\$Sheet" to "1.00", "macro.MacroWidgetsKt" to "1.00", "macro.StepStrip" to "0.80", "macro.ScrollIndicator" to "1.00",
+            "pad.GyroSettings" to "1.00", "pad.GyroSettings\$Companion" to "1.00", "pad.GyroAxis" to "1.00", "pad.GyroMapper" to "1.00",
+            "pad.GyroFusion" to "1.00", "pad.GyroRest" to "1.00", "pad.GyroRest\$Companion" to "1.00",
+            "pad.GyroCalibration" to "1.00", "pad.GyroCalibration\$Companion" to "1.00",
+            "pad.GyroControl" to "1.00", "pad.GyroTilt" to "1.00", "pad.GyroPosture" to "1.00", "settings.GyroPreview" to "1.00", "settings.GyroSettingsDialog" to "1.00",
+            "settings.WelcomeSheet" to "1.00", "settings.WelcomeSheetKt" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

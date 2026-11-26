@@ -2,9 +2,11 @@
 deleted again through the media store, so the gallery keeps no trace of the run."""
 
 import re
+import subprocess
 import time
 
 from dt.device import Fail
+from dt.mp4 import Mp4Error, tracks
 from dt.pad import Seq
 from dt.runner import test
 
@@ -85,5 +87,36 @@ def record(d):
             raise Fail(f"{path} is no MP4 (header {head!r})")
         if not path.endswith("_top.mp4"):
             raise Fail(f"unexpected file name {path}")
+    finally:
+        _delete(d, VIDEOS, new)
+
+
+@test("capture", "A recording with the microphone carries a video and a 48 kHz stereo AAC track of the same length")
+def record_mic(d):
+    d.sh(f"mkdir -p {VIDEOS}")
+    before = d.files(VIDEOS)
+    d.bind(KEY, "@record_video", target="top", record_mic=True)
+    d.wait_toasts_gone(3)
+    _press(d)
+    time.sleep(4.0)
+    _press(d)
+    new = _new_files(d, VIDEOS, before, 1, timeout=10)
+    try:
+        path = f"{VIDEOS}/{next(iter(new))}"
+        d.eventually(lambda: int(d.root(f"stat -c %s {path}") or 0) > 50_000, 6, f"{path} stayed (nearly) empty")
+        time.sleep(1.0)
+        data = subprocess.run(["adb", "-s", d.adb.serial, "exec-out", "cat", path],
+                              capture_output=True, timeout=60).stdout
+        try:
+            found = {t["handler"]: t for t in tracks(data)}
+        except Mp4Error as e:
+            raise Fail(f"{path} is no readable MP4: {e}")
+        video, audio = found.get("vide"), found.get("soun")
+        if not video or not audio:
+            raise Fail(f"{path} has tracks {sorted(found)}, expected video and audio")
+        if (audio["codec"], audio["rate"], audio["channels"]) != ("mp4a", 48000, 2):
+            raise Fail(f"audio track is {audio}")
+        if video["seconds"] < 2.0 or abs(video["seconds"] - audio["seconds"]) > 0.5:
+            raise Fail(f"video {video['seconds']:.2f} s vs audio {audio['seconds']:.2f} s")
     finally:
         _delete(d, VIDEOS, new)

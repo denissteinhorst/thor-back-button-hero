@@ -266,6 +266,106 @@ def switcher_close_all(d):
         _clean(d)
 
 
+def _dpad(d, direction):
+    """While either Recents holds the controller, the D-pad alone navigates; Back would close them."""
+    d.press(Seq().hat(direction))
+
+
+def _bottom_home(d):
+    d.keyevent("KEYCODE_HOME", d.bottom)
+    d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(LAUNCHERS), 4, "the bottom app stayed in front")
+
+
+def _switcher_up(d):
+    """Opens the bottom switcher and waits until it takes the controller."""
+    _press(d)
+    d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
+    time.sleep(0.8)
+
+
+@test("windows", "The D-pad moves the bottom switcher's selection and Up closes only the selected app")
+def switcher_select_close(d):
+    """The selection starts on the last card; the two test apps are the two most recent on the bottom
+    screen, so one step left reaches the other one. Closing a card keeps the selection on the survivor."""
+    apps = ("com.android.settings", "com.android.gallery3d")
+    _clean(d)
+    try:
+        d.start_app(SETTINGS, d.bottom)
+        time.sleep(0.8)
+        d.start_app(GALLERY, d.bottom)
+        time.sleep(0.8)
+        d.focus(d.top)
+        d.bind(KEY, "@switcher")
+        opened = []
+        for steps in (0, 1):
+            _bottom_home(d)
+            _switcher_up(d)
+            for _ in range(steps):
+                _dpad(d, "left")
+            d.press(Seq().tap(d.face("b")))
+            d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(apps), 6,
+                         f"confirm opened nothing on the bottom screen: {d.resumed().get(d.bottom)}")
+            opened.append(next(a for a in apps if d.resumed().get(d.bottom, "").startswith(a)))
+            d.eventually(lambda: not d.own_windows(d.bottom), 3, "the switcher stayed open after opening an app")
+        if opened[0] == opened[1]:
+            raise Fail(f"Left did not move the selection: both confirms opened {opened[0]}")
+        # The app opened last is now the most recent card, where the selection starts.
+        selected, other = opened[1], opened[0]
+        _bottom_home(d)
+        _switcher_up(d)
+        selected_pid, other_pid = d.pid(selected), d.pid(other)
+        _dpad(d, "up")
+        expect_closed(d, selected, selected_pid)
+        if d.pid(other) != other_pid:
+            raise Fail(f"Up also closed {other}")
+        if not d.own_windows(d.bottom):
+            raise Fail("closing one card closed the switcher")
+        d.press(Seq().tap(d.face("b")))
+        d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(other), 6,
+                     f"after the close, confirm did not open {other}: {d.resumed().get(d.bottom)}")
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "The D-pad moves through top Recents, Up removes one task and Back closes Overview")
+def recents_navigate(d):
+    """Overview centres the app it opened over; the app used before it is the card one step left."""
+    _clean(d)
+    try:
+        d.start_app(GALLERY, d.top)
+        time.sleep(0.8)
+        d.start_app(SETTINGS, d.top)
+        d.focus(d.top)
+        d.bind(KEY, "@recents")
+        _press(d)
+        d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not open")
+        time.sleep(1.5)
+        _dpad(d, "left")
+        d.press(Seq().tap(d.face("b")))
+        _front(d, d.top, "com.android.gallery3d", 6)
+
+        _press(d)
+        d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not reopen")
+        time.sleep(1.5)
+        if not d.task_ids("com.android.gallery3d"):
+            raise Fail("Gallery had no task before the dismissal")
+        _dpad(d, "up")
+        d.eventually(lambda: not d.task_ids("com.android.gallery3d"), 5,
+                     f"Up left Gallery's task: {d.task_ids('com.android.gallery3d')}")
+        # Settings' task affinity is its package plus ".root".
+        if not d.task_ids("com.android.settings.root"):
+            raise Fail("Up also removed Settings' task")
+        d.press(Seq().tap(pad.BACK))
+        d.eventually(lambda: not d.own_windows(d.top), 5, f"Back left the Recents session open: {d.own_windows(d.top)}")
+        if d.route() != d.top:
+            raise Fail(f"the controller left the top screen: {d.route()}")
+    finally:
+        d.keyevent("KEYCODE_HOME", d.top)
+        _clean(d)
+
+
 @test("windows", "The controller opens an app from top Recents on the top screen")
 def recents_open(d):
     _clean(d)
@@ -416,3 +516,131 @@ def last_app_fast(d):
     finally:
         d.unbind("face_x")
         clean()
+
+
+@test("windows", "Launch app (ask) opens the app list and Cancel leaves everything; favorites without stars only explain")
+def choose_app(d):
+    _clean(d)
+    try:
+        d.start_app(SETTINGS, d.top)
+        d.focus(d.top)
+        time.sleep(1.0)
+        before = d.resumed()
+        d.bind(KEY, "@app_favorites", display="top")
+        _press(d)
+        d.eventually(lambda: d.text("app_favorites_none") in d.notices(), 4,
+                     f"no 'no favorites' notice, saw {d.notices()}")
+        if d.own_windows(d.route() or d.top):
+            raise Fail("favorites without stars opened a list")
+        d.bind(KEY, "@app_ask", display="top")
+        _press(d)
+        d.eventually(lambda: d.own_windows(d.route() or d.top), 4, "no app list appeared")
+        # The prompt's cancel is the face button that is not confirm: printed A on the Thor.
+        d.press(Seq().tap(d.face("a")))
+        d.eventually(lambda: not d.own_windows(d.route() or d.top), 3, "Cancel left the app list open")
+        time.sleep(0.8)
+        if d.resumed() != before:
+            raise Fail(f"cancelling the app list changed the screens: {before} -> {d.resumed()}")
+    finally:
+        _clean(d)
+
+
+def _pause_pair(d):
+    d.put("toggle_buttons", "l1_r1")
+    d.put("toggle_hold_ms", 300)
+    return Seq().key(pad.L1, True).key(pad.R1, True).wait(600).key(pad.L1, False).key(pad.R1, False).wait(300)
+
+
+def _resume(d, pair):
+    """The second pair must switch the hotkeys back on; a lost resume would leave every later area
+    running against a paused service, where Back alone reaches the app and passes for a minimize."""
+    d.press(pair)
+    d.expect_toast(d.text("service_toggle_active", "L1 + R1"))
+
+
+def _open_bottom_switcher(d):
+    d.start_app(SETTINGS, d.top)
+    d.start_app(GALLERY, d.bottom)
+    d.focus(d.top)
+    d.bind(KEY, "@switcher")
+    _press(d)
+    d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
+    d.eventually(lambda: d.route() == d.bottom, 4, f"the controller did not move to the switcher: route {d.route()}")
+
+
+@test("windows", "Pausing closes the open bottom switcher and returns the controller to its screen")
+def switcher_pause(d):
+    _clean(d)
+    pair = _pause_pair(d)
+    try:
+        _open_bottom_switcher(d)
+        d.press(pair)
+        d.eventually(lambda: not d.own_windows(d.bottom) and not d.own_windows(d.top), 4,
+                     f"pausing left windows open: bottom {d.own_windows(d.bottom)}, top {d.own_windows(d.top)}")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+        _resume(d, pair)
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "Standby leaves the open bottom switcher open with the controller on it; Back then closes it")
+def switcher_standby(d):
+    _clean(d)
+    try:
+        _open_bottom_switcher(d)
+        d.sh("input keyevent KEYCODE_SLEEP")
+        d.eventually(lambda: not d.awake(), 5, "the device did not go to standby")
+        d.keyevent("KEYCODE_WAKEUP")
+        d.eventually(d.awake, 5, "the device did not wake up")
+        d.sh("wm dismiss-keyguard")
+        time.sleep(1.5)
+        d.reconnect()
+        if not d.own_windows(d.bottom) or d.route() != d.bottom:
+            raise Fail(f"after standby: switcher {d.own_windows(d.bottom)}, route {d.route()}")
+        d.press(Seq().tap(pad.BACK))
+        d.eventually(lambda: not d.own_windows(d.bottom), 4, "Back did not close the switcher after standby")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "A service restart closes the open bottom switcher and the controller is on the top screen")
+def switcher_restart(d):
+    _clean(d)
+    try:
+        _open_bottom_switcher(d)
+        d.restart_service()
+        d.eventually(lambda: not d.own_windows(d.bottom) and not d.own_windows(d.top), 6,
+                     f"windows survived the restart: bottom {d.own_windows(d.bottom)}, top {d.own_windows(d.top)}")
+        d.eventually(lambda: d.route() == d.top, 4, f"the controller stayed on {d.route()}")
+    finally:
+        if d.own_windows(d.bottom):
+            d.press(Seq().tap(pad.BACK))
+        _clean(d)
+
+
+@test("windows", "Pausing in top Recents ends its controller session; Overview itself stays")
+def recents_pause(d):
+    _clean(d)
+    pair = _pause_pair(d)
+    try:
+        d.start_app(SETTINGS, d.top)
+        d.focus(d.top)
+        d.bind(KEY, "@recents")
+        _press(d)
+        d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not open")
+        d.eventually(lambda: d.own_windows(d.top), 4, "top Recents showed no controller pictogram")
+        d.press(pair)
+        d.eventually(lambda: not d.own_windows(d.top), 4, f"pausing left {d.own_windows(d.top)} on top")
+        if not d.resumed().get(d.top, "").startswith(LAUNCHERS):
+            raise Fail(f"pausing closed Overview: {d.resumed().get(d.top)}")
+        if d.route() != d.top:
+            raise Fail(f"the controller left the top screen: {d.route()}")
+        _resume(d, pair)
+    finally:
+        d.keyevent("KEYCODE_HOME", d.top)
+        _clean(d)

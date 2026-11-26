@@ -1,12 +1,15 @@
 """The Thor as the tests see it: the app's settings, the system state they touch, and observers."""
 
+import hashlib
 import json
 import os
 import re
 import shlex
+import subprocess
 import time
+import xml.etree.ElementTree as ElementTree
 
-from .adb import WORK, Adb, AdbError
+from .adb import JAVA_HOME, WORK, Adb, AdbError, _sdk_dir
 from .pad import Seq
 from .strings import Strings
 
@@ -32,10 +35,75 @@ class Fail(AssertionError):
     pass
 
 
+class RecoveryError(AdbError):
+    """The owner's settings could not be saved or verifiably restored. The saved state is kept."""
+
+
+PREF_TYPES = {"string", "int", "long", "boolean", "float", "set"}
+
+
+def parse_prefs(text):
+    """The typed content of a SharedPreferences XML file: name -> (type, value). Raises ValueError for
+    anything that is not such a file, so a failed read can never pass for an empty settings map."""
+    try:
+        root = ElementTree.fromstring(text)
+    except ElementTree.ParseError as e:
+        raise ValueError(f"not a settings file: {e}") from None
+    if root.tag != "map":
+        raise ValueError(f"not a settings file: root <{root.tag}>")
+    prefs = {}
+    for el in root:
+        name = el.get("name")
+        if el.tag not in PREF_TYPES or name is None or name in prefs:
+            raise ValueError(f"unexpected settings entry <{el.tag} name={name!r}>")
+        if el.tag == "string":
+            value = el.text or ""
+        elif el.tag == "set":
+            value = frozenset(child.text or "" for child in el)
+        else:
+            value = el.get("value")
+            if value is None:
+                raise ValueError(f"settings entry {name!r} has no value")
+        prefs[name] = (el.tag, value)
+    return prefs
+
+
+def prefs_differences(saved, current):
+    """Every key whose presence, type or value differs, for the recovery error message."""
+    return [f"{key}: saved {saved.get(key)} now {current.get(key)}"
+            for key in sorted(set(saved) | set(current)) if saved.get(key) != current.get(key)]
+
+
+def snapshot_count(reply):
+    """The number of settings the app copied aside; anything but a fresh complete copy is refused."""
+    m = re.fullmatch(r"OK (\d+)", reply)
+    if not m:
+        raise RecoveryError(f"the app did not take a fresh copy of the settings: {reply!r}"
+                            + (" (an earlier copy exists; run with --restore or see docs/DEVICE-TEST.md)"
+                               if reply.startswith("KEPT") else ""))
+    return int(m.group(1))
+
+
+def restore_count(reply):
+    """The restored settings count; None when the app holds no copy of this run (none, or another
+    run's, which is never adopted); an error for anything else."""
+    if reply == "NONE" or reply.startswith("OTHER "):
+        return None
+    m = re.fullmatch(r"OK (\d+)", reply)
+    if not m:
+        raise RecoveryError(f"the app could not restore the settings: {reply!r}")
+    return int(m.group(1))
+
+
 # Keys the Home layer of dual mode stores under its own "dual_" prefix (docs/DUAL-MODE.md). Back + Home
 # ("home") has no Home layer counterpart.
 LAYERED_TIMINGS = {"double_ms", "tap_hold_ms", "hold_ms", "lstick_double_ms", "lstick_tap_hold_ms",
                    "rstick_double_ms", "rstick_tap_hold_ms"}
+
+
+def file_sha256(path):
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 class Device:
@@ -115,9 +183,17 @@ class Device:
         out = self.sh(" ".join(args))
         m = re.search(r'data="(.*)"', out)
         result = m.group(1) if m else out
-        if result.startswith("ERR") or result == "FAIL":
+        if result.startswith(("ERR", "FAIL")):
             raise AdbError(f"app {op} {extras}: {result}")
         return result
+
+    def app_reply(self, op, **extras):
+        """Like [app], but hands every reply to the caller, which checks it against its own contract."""
+        args = [f"am broadcast -a {ACTION} -p {PKG} --es op {op}"]
+        for key, value in extras.items():
+            args.append(f"--es {key} {shlex.quote(str(value))}")
+        m = re.search(r'data="(.*)"', self.sh(" ".join(args)))
+        return m.group(1) if m else ""
 
     def layered(self, key):
         """[key] in the layer under test: the Home layer's own key while it runs."""
@@ -193,7 +269,17 @@ class Device:
         }
         return state
 
-    def restore_system(self, state):
+    def restore_system(self, state, passes=3, settle=1.0):
+        """Writes the saved system values back until they hold. AYN reacts to some of them on its own
+        and asynchronously (a changed performance_mode rewrites fan_mode afterwards), so a value set in
+        the same pass can be overwritten again; a later pass only rewrites what still differs."""
+        for _ in range(passes):
+            self._restore_system_once(state)
+            time.sleep(settle)
+            if not self.system_differences(state):
+                return
+
+    def _restore_system_once(self, state):
         lines = []
         for key, value in state["system"].items():
             current = self.setting(key)
@@ -213,28 +299,178 @@ class Device:
             self.adb.probe("set", str(display), str(value))
 
     def begin(self):
-        """Saves the owner's settings once; a saved state from a crashed run is never overwritten."""
+        """Saves the owner's settings before anything changes them; a saved state from an unfinished
+        run is never overwritten. The host keeps the settings file and the system values, the app a
+        complete copy; both stay until [end] has verified the restore."""
         os.makedirs(WORK, exist_ok=True)
         if os.path.exists(STATE_FILE):
             raise AdbError(f"a previous run did not finish; run with --restore first ({STATE_FILE})")
-        prefs = self.prefs_xml()
-        with open(os.path.join(WORK, f"owner-prefs-{time.strftime('%Y%m%d-%H%M%S')}.xml"), "w") as f:
-            f.write(prefs)
-        kept = self.app("snapshot")
-        state = {"system": self.snapshot_system(), "app_snapshot": kept}
-        with open(STATE_FILE, "w") as f:
-            json.dump(state, f, indent=2)
+        run = time.strftime("%Y%m%d-%H%M%S")
+        xml = self.prefs_xml()
+        saved = parse_prefs(xml)
+        xml_path = os.path.join(WORK, f"owner-prefs-{run}.xml")
+        with open(xml_path, "w") as f:
+            f.write(xml)
+        # The installed artifact is kept too, so a session that installs other builds ends on this one.
+        state = {"run": run, "prefs_xml": xml_path, "count": len(saved), "system": self.snapshot_system(),
+                 "installed": self.save_installed(run), "stage": "saving"}
+        self._write_state(state)
+        count = snapshot_count(self.app_reply("snapshot", run=run))
+        if count != len(saved):
+            raise RecoveryError(f"the app copied {count} settings, the settings file holds {len(saved)}")
+        state["stage"] = "saved"
+        self._write_state(state)
         self.app("reset")
 
     def end(self):
+        """Restores and verifies the owner's settings and system values. Anything uncertain raises
+        [RecoveryError] and keeps every saved copy, so the restore can simply be repeated."""
         if not os.path.exists(STATE_FILE):
             return False
-        state = json.load(open(STATE_FILE))
-        self.app("media", value="stop")
-        self.app("restore")
+        with open(STATE_FILE) as f:
+            state = json.load(f)
+        with open(state["prefs_xml"]) as f:
+            xml = f.read()
+        saved = parse_prefs(xml)
+        installed = state.get("installed")
+        if installed and self.installed_sha() != installed["sha256"]:
+            self.reinstall_original(installed)
+        try:
+            self.app("media", value="stop")
+        except AdbError as e:
+            self.log(f"media session not stopped: {e}")
+        if restore_count(self.app_reply("restore", run=state["run"])) is None:
+            # The app has no complete copy (the run stopped before it took one, or after it dropped it):
+            # the host's own settings file is the source.
+            self.restore_prefs_file(xml)
+        current = parse_prefs(self.prefs_xml())
+        differences = prefs_differences(saved, current)
+        if differences:
+            raise RecoveryError("restored settings differ from the saved ones: " + "; ".join(differences[:5]))
         self.restore_system(state["system"])
+        differences = self.system_differences(state["system"])
+        if differences:
+            raise RecoveryError("restored system values differ: " + "; ".join(differences))
+        if self.app_reply("drop") != "OK":
+            raise RecoveryError("restored and verified, but the app's copy could not be dropped; run --restore again")
+        if installed and self.installed_sha() != installed["sha256"]:
+            raise RecoveryError("settings restored, but the original build is no longer installed; run --restore again")
         os.unlink(STATE_FILE)
+        if installed and os.path.exists(installed["apk"]):
+            os.unlink(installed["apk"])
         return True
+
+    # --- installed artifact: sessions that install other builds -----------------------------
+
+    def _pull_installed(self, name):
+        paths = [l.removeprefix("package:") for l in self.sh(f"pm path {PKG}").splitlines() if l.startswith("package:")]
+        if len(paths) != 1:
+            raise RecoveryError(f"expected one installed APK of {PKG}, found {paths or 'none'}")
+        local = os.path.join(WORK, name)
+        self.adb.run("pull", paths[0], local, timeout=120)
+        return local
+
+    def installed_sha(self):
+        return file_sha256(self._pull_installed("installed-check.apk"))
+
+    def save_installed(self, run):
+        """A host copy of the installed APK and its hash, taken before anything changes."""
+        local = self._pull_installed(f"installed-{run}.apk")
+        return {"sha256": file_sha256(local), "apk": local}
+
+    def apk_certificate(self, path):
+        out = subprocess.run([os.path.join(_sdk_dir(), "build-tools", "34.0.0", "apksigner"), "verify", "--print-certs", path],
+                             capture_output=True, text=True, env=dict(os.environ, JAVA_HOME=JAVA_HOME,
+                             PATH=os.path.join(JAVA_HOME, "bin") + os.pathsep + os.environ.get("PATH", "")))
+        m = re.search(r"Signer #1 certificate SHA-256 digest: ([0-9a-f]{64})", out.stdout)
+        if not m:
+            raise RecoveryError(f"no signing certificate readable from {path}")
+        return m.group(1)
+
+    def install_apk(self, path):
+        """An in-place update that keeps the app's data; never an uninstall."""
+        self.adb.run("install", "-r", path, timeout=180)
+
+    def restore_prerequisites(self):
+        self.sh(f"pm grant {PKG} android.permission.POST_NOTIFICATIONS")
+        self.reconnect()
+
+    def _saved_state(self):
+        if not os.path.exists(STATE_FILE):
+            raise RecoveryError("installing another build needs a saved transaction: begin first")
+        with open(STATE_FILE) as f:
+            state = json.load(f)
+        if state.get("stage") != "saved" or not state.get("installed"):
+            raise RecoveryError(f"the transaction is not ready for installs (stage {state.get('stage')!r})")
+        return state
+
+    def install(self, apk, observe=None):
+        """Installs [apk] in place as one arm of a session. Signing must match the original build; the
+        owner's settings copy in the app and the host's settings file must both survive the install.
+        [observe] runs right after the install, before the prerequisites are restored, so an upgrade
+        test sees the service exactly as the update left it."""
+        state = self._saved_state()
+        if self.apk_certificate(apk) != self.apk_certificate(state["installed"]["apk"]):
+            raise RecoveryError(f"{apk} is signed differently from the installed build; never uninstall to work around it")
+        sha = file_sha256(apk)
+        state["arm"] = {"apk": os.path.abspath(apk), "sha256": sha}
+        self._write_state(state)
+        self.install_apk(apk)
+        if self.installed_sha() != sha:
+            raise RecoveryError(f"after installing {apk} a different build is installed")
+        observed = observe() if observe else None
+        self.restore_prerequisites()
+        self.verify_recovery_copies(state)
+        return observed
+
+    def verify_recovery_copies(self, state):
+        # Read-only on purpose: "snapshot" would replace a lost copy with the test settings now on disk.
+        reply = self.app_reply("status")
+        if reply != f"KEPT {state['run']} {state['count']}":
+            raise RecoveryError(f"the app's settings copy did not survive the install ({reply!r})")
+        with open(state["prefs_xml"]) as f:
+            if len(parse_prefs(f.read())) != state["count"]:
+                raise RecoveryError("the host's settings file no longer matches the saved count")
+
+    def reinstall_original(self, installed):
+        if not os.path.exists(installed["apk"]) or file_sha256(installed["apk"]) != installed["sha256"]:
+            raise RecoveryError(f"the original build's copy {installed['apk']} is missing or changed; reinstall it manually")
+        self.log("reinstalling the original build")
+        self.install_apk(installed["apk"])
+        if self.installed_sha() != installed["sha256"]:
+            raise RecoveryError("reinstalling the original build did not take effect")
+        self.restore_prerequisites()
+
+    def _write_state(self, state):
+        tmp = STATE_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(state, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, STATE_FILE)
+
+    def system_differences(self, saved):
+        now = self.snapshot_system()
+        out = [f"{k}: saved {saved[k]!r} now {now[k]!r}" for k in ("system", "props", "zen", "mic", "volume")
+               if saved[k] != now[k]]
+        if any(abs(a - b) > 0.005 for a, b in zip(saved["brightness"], now["brightness"])):
+            out.append(f"brightness: saved {saved['brightness']} now {now['brightness']}")
+        return out
+
+    def restore_prefs_file(self, xml):
+        """Writes the saved settings file back while the app is stopped, so no live preference cache
+        overwrites it, then starts the service again. Other accessibility services stay enabled."""
+        enabled = [s for s in self.sh("settings get secure enabled_accessibility_services").split(":") if s not in ("", "null")]
+        others = [s for s in enabled if s != SERVICE]
+        self.sh(f"settings put secure enabled_accessibility_services {shlex.quote(':'.join(others) or 'null')}")
+        self.sh(f"am force-stop {PKG}")
+        self.eventually(lambda: not self.sh(f"pidof {PKG}"), 10, "the app did not stop for the settings restore")
+        remote = "/data/local/tmp/bbh-owner-prefs.xml"
+        self.adb.push_text(xml, remote)
+        self.sh(f"chmod 644 {remote}")
+        self.sh(f"run-as {PKG} cp {remote} shared_prefs/back_button_hero.xml")
+        self.sh(f"rm {remote}")
+        self.reconnect()
 
     # --- input ------------------------------------------------------------------------------
 

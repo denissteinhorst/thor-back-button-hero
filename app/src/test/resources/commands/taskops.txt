@@ -1,0 +1,43 @@
+## close without root
+afterwards ran
+Notice: Nothing to clear in cache
+killBackgroundProcesses com.example.a
+## close, root removal refused
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.a'
+killBackgroundProcesses com.example.a
+## close, force-stop refused
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.a'
+## close the app in front
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a,com.example.b' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.a'
+root code=0 args=[0] am force-stop 'com.example.b'
+activity action=android.intent.action.MAIN categories=[android.intent.category.HOME] package=null display=0
+Notice: Nothing to clear in cache
+## close our own settings and another app
+afterwards ran
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.TaskRemover 'com.example.a' 2>&1 | grep -m1 -E '^(OK|ERR)'
+root code=0 args=[0] am force-stop 'com.example.a'
+## launch refused, relaunch allowed
+result true
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '17' 2>&1 | grep -m1 -E '^(OK|ERR)'
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.a display=0
+## launch refused, relaunch not allowed
+result false
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '17' 2>&1 | grep -m1 -E '^(OK|ERR)'
+Notice: These apps cannot be swapped.
+## launch refused for another display
+result true
+root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.a' '0' '17' 2>&1 | grep -m1 -E '^(OK|ERR)'
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.a display=0
+## launch without root
+result true
+activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.a display=0

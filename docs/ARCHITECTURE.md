@@ -5,6 +5,11 @@ constraints shaped it. For a file-by-file inventory see
 [`PROJECT-STRUCTURE.md`](PROJECT-STRUCTURE.md); for the safety net around all of it,
 [`TESTING.md`](TESTING.md).
 
+The code is one module in feature packages (`core`, `prefs`, `input`, `actions`, `recents`,
+`panels`, `pad`, `macro`, `capture`, `overlay`, `settings`). Classes whose names are read outside
+the compiler (the service, the activity, the update receiver and the root entry points) stay in the
+root package; see [decision 0001](decisions/0001-frozen-external-contracts.md).
+
 ## What the app has to work around
 
 Three constraints explain most design decisions here.
@@ -40,6 +45,54 @@ Two, both declared in the manifest:
 They share no state in memory. `Prefs` is the only channel between them: the activity
 writes, the service reads on demand.
 
+### Lifetimes and work lanes
+
+An unbind and a destroy release the same session state through `releaseSession()`, in one
+order: pending switcher and top-Recents launches, previews and macro recording, the screen
+recording, the standby receiver, the input routers, the D-pad helper, the app-control prompt,
+panels and frontend parking. Android follows an unbind with a destroy, so every step is safe
+to run twice. Only the destroy then drops the main handler's pending work and the switcher and
+focus windows.
+
+Background work deliberately keeps its own lanes and is not merged into one executor:
+`PService` serializes its own transactions, `PanelConnection` has an ordered scheduled worker,
+`ControllerFocus`, `AynControls`, `LevelControl` and `FrontendParking` each own a single-thread
+executor, the recorder has independent start/stop, audio and codec threads with a Binder death
+link, screenshots launch and connect concurrently, and the update check does blocking I/O on its
+own thread. A shared queue would change head-of-line blocking and timeouts. The native helper,
+the panel watchdog and the recorder's death link restore the device on real process death, which
+no in-process close can replace.
+
+## Packages and their dependencies
+
+The packages are feature slices around the frozen root package, not layers, and they reference
+each other where a feature needs another (measured from the imports):
+
+| Package | Uses |
+|---|---|
+| `overlay` | `prefs` only |
+| `panels` | `core`, root |
+| `core` | the `panels` and `recents` value types a running app carries |
+| `input` | `pad`, `prefs`, root |
+| `capture` | `core`, `overlay`, `prefs`, root |
+| `actions`, `macro`, `pad`, `recents`, `settings` | most others |
+| `prefs` | the feature types it stores (actions, macros, sticks, settings state) |
+| root | everything: `SwitcherService` and `SettingsActivity` wire the features together |
+
+No dependency rule is enforced beyond the frozen contracts; a cycle between two feature packages
+is a review prompt, not a gate failure. Same-package and reflection references (tests, root entry
+points started by class name) do not show in imports.
+
+## External contracts — never change
+
+Names and formats that something other than the compiler reads ([ADR 0001](decisions/0001-frozen-external-contracts.md)):
+the manifest components (`SwitcherService` in every user's `enabled_accessibility_services`), the
+ten root `app_process` entry points in the root package, the wire strings to the helpers and
+pservice, the `back_button_hero` preferences file with every key, encoding and migration flag, the
+backup format, media locations, resources, the native helper, and the release runtime classpath.
+`tools/contract/check.sh` enforces them; frozen fixtures under `app/src/test/resources/commands/`
+pin stored data, root commands, the helper protocol and the recorder's audio mix.
+
 ## Components
 
 ### `SwitcherService` — runtime coordinator
@@ -50,9 +103,66 @@ and the screen swap. It holds the `AccessibilityAppSource`, creates the
 `SwitcherOverlay`, and opportunistically captures thumbnails of the front app.
 
 What it deliberately does **not** own is the Back-press decision — that moved into
-`BackGestureMachine`. Shoulder buttons are handled here directly: they act only while
-Back is held, and an unassigned button's event is left unconsumed so games and apps see
-normal input.
+`BackGestureMachine`. The other per-press decisions sit in small units in `input/`, each
+called from the service's key path in the original order, with the effects left to the
+service behind a small host interface:
+
+- `ComboRouter` — Back (or Home in dual mode) + shoulder, Home/Start/Select or face button:
+  acts only while a modifier is held, leaves an unassigned or excepted button's event to the
+  app (an excepted one still counts as a combo, so Back's release is no tap), tracks both
+  mirrored devices' releases, and arms controller focus / app switch until the last release.
+- `DirectionalRouter` — Back + D-pad and Back + stick from `PadHelper`/`DpadOverlay`: the same
+  run/arm decision per direction, the commit of an armed focus on its own axis or stick, or on
+  Back's release while the overlay held window focus.
+- `StickClickRouter` — Back + L3/R3: mirrored-device tracking and the layer latched at the
+  click's DOWN; each stick's `StickClickMachine` times press, double press and tap-and-hold.
+
+The ordering in the service (toggle gesture, Home-as-Back routing, AYN's button, the
+interception gate, Recents controller keys, exception latch, native Back passthrough) stays in
+`SwitcherService.handleActiveKeyEvent`; it is interleaved with Recents, macro and overlay state
+and is characterized through `onKeyEvent` by `InputPipelineCharacterizationTest`.
+
+The stored actions are dispatched by `SwitcherService.runComboAction` in one `when`; families
+with their own logic or state run in small handlers, the effects they need from the service
+passed in through a host:
+
+- `actions/SystemActions` — media keys for whatever app plays, Android's settings pages (with a
+  fallback page and a message), and the battery status notice.
+- `actions/AppControlActions` — minimize, force-close or restart the app in front, close the apps
+  known on the chosen screens, and standby; each may ask first on the controller's screen, and
+  "ask" resolves the apps before its prompt opens.
+- `actions/LastAppAction` — the previous app on the controller's screen, via the root task
+  launcher (skipping apps that moved to the other screen) or a plain launch without root.
+- `macro/MacroPlayback` — which hotkey's macro the helper plays, and the one-press cancel: Back
+  stops it, and its own hotkey in that press does not restart it.
+- `pad/GyroActions` — gyro on/off with a button's setup, calibration, and the hold key.
+
+Thin actions bound to the service's own state (power menu, Home, screenshots, launches, AYN
+switches, Recents) stay in the service.
+
+Recents, windows and task moves sit in `recents/`, each behind a host for the service's effects:
+
+- `WindowTracker` — the window-change part of `onAccessibilityEvent`: records both screens and
+  debounces the panel refresh (400 ms), the front-app capture (800 ms) and the parked reclaim.
+- `TaskOps` — closing apps (root removal and force-stop, else `killBackgroundProcesses`), the
+  memory report, and launching an existing task with the relaunch fallback where allowed.
+- `SwapCoordinator` — hold-to-swap and moving the app with controller focus to the other screen;
+  Hold exceptions and captured panels refuse the move before anything leaves its screen.
+- `BottomSwitcherController` — the bottom switcher's open state: task list first, then the
+  overlay; while it shows, a task-state poll every second and at most three snapshot requests
+  per task. Closed → opening → open → closed; a second press while opening cancels.
+- `TopRecentsLauncher` — the launch phase of native top Recents: the task list before Overview
+  opens, the 250 ms Quickstep poll (25 attempts), and the selection read or card click that
+  identifies the moved task.
+
+- `TopRecentsSession` — the controller session over native top Recents once it opens: every
+  flag (active, confirmed, input ready, focus transaction, queued dismissals, the closing Back),
+  the Quickstep state checks and the focus priming. Each worker result carries the session token
+  and focus version it started with and is dropped when either moved on. The service supplies the
+  platform work through `TopRecentsSession.Host` (root queries, accessibility nodes, gestures, pad
+  navigation) and keeps the routing and the focus restore.
+
+Panel capture/hide/restore is `panels.BottomPanels`.
 
 ### `BackGestureMachine` — the timing decisions, without Android
 
@@ -154,6 +264,25 @@ to the app UID, failing closed when the shield is absent, not touchable, or cove
 shield is removed after delivery; with follow disabled, the same path retains the source display.
 Fixed routes use the existing OEM command sequence only when follow is enabled.
 
+### Screen recording — `ScreenRecording` and the root `ScreenRecorder`
+
+`ScreenRecording` in the service owns the recording state (idle, starting, recording, stopping)
+and its session guard; the root entry point `ScreenRecorder` mirrors the screens through a GL
+compositor into the video encoder, captures the game's playback through an audio policy, and
+writes MP4 segments. Its audio mix is plain Kotlin in `capture.recorder`: `MicRing` carries the
+microphone to the mix, `AudioMixer` adds it to the game sound through the voice chain and the
+push-to-talk gate and lowers the video's game sound while a talk is open. The device speaker is
+lowered separately and always restored; the voice itself is never altered beyond the chain.
+`RecorderMixTest` freezes the mix bit for bit; encoder, muxer and compositor are device-only.
+
+### Small indicators — `NoticeOverlay`, `FocusIndicatorOverlay`, `RecordingIndicatorOverlay`
+
+All three draw on the top screen, because AYN's assistant covers the bottom one, and never take
+key or controller focus. `TopOverlayWindow` gives them their window context there and maps the
+nine-point position grid that the pictogram and the recording dot share. Their sizes, colours and
+margins stay with each overlay as named constants
+([decision 0006](decisions/0006-overlay-design-values-stay-local.md)).
+
 ### Active App Control — `AppControl` and `AppControlPrompt`
 
 A Back + button action that minimizes or force-closes the app in front. Per button it stores a mode
@@ -174,7 +303,7 @@ A/B flip setting) accepts it and the other face button cancels. It is dismissed 
 ### `Prefs` — storage and migrations
 
 Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time
-**migrations** in its `init` block. Factory shortcuts (L2 screenshot, R2 controller focus) are
+**migrations**, which its `init` runs from `Migrations.kt` in their fixed order. Factory shortcuts (L2 screenshot, R2 controller focus) are
 written once on a fresh install; an update pins L2 and R2 to their existing values, unassigned
 included, so changed defaults never reach an existing install (`shoulder_defaults_v3`). Shoulder actions are stored either as a bare package
 name (launch that app) or as an `@`-prefixed sentinel (`SHOULDER_HOME`,
@@ -226,7 +355,7 @@ The four Back gestures are `BackGestureButton`s: `BackGestureMachine` still deci
 button's action, launch screen and level target the same way.
 
 **Home, Start, Select and the face buttons** (`AndroidButton`, `FaceButton`) are key events like the shoulder
-buttons and share `SwitcherService.handleShoulder`; `comboButton` maps an event to its button. Face buttons are
+buttons and share `ComboRouter` (via `SwitcherService.handleShoulder`); `comboButton` maps an event to its button. Face buttons are
 stored by their printed letter: the Thor's style switch (`flip_button_layout`) swaps the keys the pad reports
 (A↔B, X↔Y, measured on the device), so `FaceButton.of` reads the setting at every press. AYN's own button sends
 the same `KEYCODE_HOME` as the house key, but from `gpio-keys` instead of the pad, so Home counts only with
@@ -313,6 +442,15 @@ Accessibility warnings appear at the right of the top bar; root-helper/setup war
 remain below it. Service health still distinguishes on / unresponsive / off and offers
 the existing Android accessibility-settings repair flow.
 
+The activity builds the pages and wires their dialogs; what is pure text lives beside it.
+Each binding's card is a `BindingCard` registered once per page build; preference changes call its
+`update()`, which changes the existing views rather than rebuilding the card.
+`BindingDescriber` names every action, option and row value and holds the lists the choosers
+offer, `ChangeDescriber` writes the lines of a change preview, and `BackupFlow` runs saving and
+restoring the settings file up to that preview. `UpdateFlow` runs the manual update check and its dialogs; the
+activity's `updateCheck()` supplies the check, so activity tests can replace the network with a fake. `BindingTextTableTest` freezes every binding text
+in both languages and both layers.
+
 `SettingsChanges` captures immutable before/after snapshots for page defaults/unbind and
 whole-app reset/unbind. Confirmations list actual changes; `Prefs.applySettings` rejects
 stale previews and writes accepted plans atomically. Whole-app unbind clears button, stick,
@@ -394,8 +532,8 @@ Two behavioral facts that regularly surprise people:
 hardware Back
       │
       ▼
-SwitcherService.onKeyEvent ──────────────► shoulder button held with Back?
-      │                                          │
+SwitcherService.onKeyEvent ──────────────► button held with Back? (ComboRouter,
+      │                                          │  DirectionalRouter, StickClickRouter)
       │ no                                       ▼
       ▼                                   run its configured action
 BackGestureMachine.handleBack(event)      (or leave unconsumed if unassigned)
@@ -428,6 +566,40 @@ The five outcomes and their triggers:
 | Tap, then hold again within the tap-hold window | System Recents on the **top** screen instead of a swap |
 | Hold + L1/L2/R1/R2 or a D-pad direction | That button's configured action, on its configured screen |
 
+### Bottom Recents, from opening to closing
+
+```
+double tap (or its hotkey)
+      │
+      ▼
+BottomSwitcherController.toggle ── AccessibilityAppSource.appsOnDisplay ◄─ window events
+      │                                   + panelsOnDisplay (hidden frontend panels)
+      ▼
+SwitcherOverlay on the bottom display ── CardTouch: tap │ swipe up
+      │                                        │            │
+      │ task-state poll while open             ▼            ▼
+      │                         RecentsTaskLauncher     TaskOps: force-stop +
+      │                         (move task via pservice) TaskRemover (root)
+      ▼
+dismiss: Back, outside tap, launch, or service unbind ── panels restored, poll stopped
+```
+
+### Settings: from a tap to stored values
+
+```
+row tap ──► chooser / dialog ──► Prefs setter (one value) ──► row refresh
+
+defaults, unbind, backup load, welcome setup
+      │
+      ▼
+SettingsChangePlan (SettingsState before → after) ──► ChangeDescriber preview
+      │ accepted
+      ▼
+Prefs.applySettings (one atomic write) ──► pages rebuilt
+
+SwitcherService reads Prefs on demand; the two share no memory.
+```
+
 ### Why `pressFollowsTap` is latched at DOWN
 
 `pressFollowsTap` is captured when the key goes down, not recomputed on the way up. A
@@ -440,8 +612,8 @@ deliberately and should not be "simplified".
 ## Display targeting
 
 All display logic distinguishes `Display.DEFAULT_DISPLAY` (the top screen) from the
-dynamically detected bottom display — `bottomDisplay()` returns the non-default display
-with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
+dynamically detected bottom display — `core.Displays.bottom` (the service's `bottomDisplay()`
+and `FrontendParking` both use it) returns the non-default, non-private display with the highest ID. **Do not hardcode display IDs anywhere else.** Shoulder actions that
 target a screen, the overlay's window binding, and the swap all route through this.
 
 `AccessibilityAppSource` additionally tracks whether a display is *covered*, so panel
@@ -528,9 +700,14 @@ Three extractions exist purely so that logic became reachable from the JVM:
 `BackGestureMachine` (key timing), `CardTouch` (touch arbitration) and
 `UpdateChecker.parseVersion`/`parseRelease` (release parsing).
 
+Root commands are observed one level lower: tests put `support/FakePService` in place of AYN's
+Binder, so every call site's command and script is recorded unchanged, and `PServiceFailureContractTest`
+freezes the failure side (`null` vs `""`, the 10 s retry, the unprivileged kill as fallback). See
+[ADR 0005](decisions/0005-reuse-the-binder-seam-over-new-ports.md).
+
 Everything that needs a real accessibility connection, a second display, or a real
-window remains outside automated reach: `SwitcherOverlay` is only partly covered (about
-36 % of its lines) and `SwitcherService` barely (about 24 %). Robolectric cannot provide
+window remains outside automated reach: `SwitcherOverlay` is only partly covered (its tree is snapshotted; live behavior is not) and `SwitcherService` only
+through its extracted decisions (about 70 % of its lines, no live connection). Robolectric cannot provide
 `windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and

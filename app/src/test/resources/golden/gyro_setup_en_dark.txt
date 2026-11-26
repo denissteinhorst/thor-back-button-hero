@@ -1,0 +1,68 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[48,48,48,48] clickable=false focusable=false
+  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      AlertDialogLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[72,54,72,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+            DialogTitle visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Gyro settings (BETA)" textSizePx=60.0 textColor=#FFF0F0F3 maxLines=1 bold=false
+          Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=GONE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=GONE minHeight=0 padding=[72,0,72,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=48.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+              Space visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FrameLayout visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[48,36,48,12] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Preview" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  GyroPreview visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0] contentDescription="Gyro preview: a ball moves the way the stick would. Tap to center it."
+                  Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,12,0,0] text="Calibrate" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Before first use, place the handheld on a stable surface and tap Calibrate. Leave it untouched for about 4 seconds; it does not need to be level. Movement delays the measurement (up to 20 seconds). Then pick it up and turn the gyro off/on, or press its hold button, to set your playing posture as the middle. Tap the preview to centre again without recalibrating." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,72,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mode" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Follow turning speed" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="The stick follows how far the handheld is tilted from the middle posture, and is back in the middle as soon as the handheld is." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0] text="Stick" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  RadioGroup visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    RadioButton visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Left stick" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                    RadioButton visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Right stick" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=true
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0] text="Sideways" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  RadioGroup visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    RadioButton visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Swing (yaw)" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=true
+                    RadioButton visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Steer (roll)" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0] text="Invert" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  Switch visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Invert sideways (X)" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                  Switch visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Invert up and down (Y)" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=false
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,72,0,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Activation" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  LinearLayout visibility=VISIBLE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Button to hold: None. Double-tap to change."
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Button to hold" textSizePx=42.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                    TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="None" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Without a button, the hotkey simply turns the gyro on and off." textSizePx=36.0 textColor=#FFC0C7CD maxLines=2147483647 bold=false
+                  Switch visibility=GONE minHeight=132 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] text="Button still reaches the game" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false checked=true
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,48,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Sensitivity" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="100 %" textSizePx=39.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0] contentDescription="Sensitivity" max=29 progress=9
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Deadzone" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="1.5 °" textSizePx=39.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0] contentDescription="Deadzone" max=20 progress=3
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0]
+                    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Minimum deflection" textSizePx=39.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+                      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="0 %" textSizePx=39.0 textColor=#FF8A9297 maxLines=2147483647 bold=false
+                    SeekBar visibility=VISIBLE minHeight=144 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0] contentDescription="Minimum deflection" max=10 progress=0
+        ScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+          ButtonBarLayout visibility=VISIBLE minHeight=168 padding=[36,12,36,12] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="Defaults" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+            Space visibility=INVISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            Button visibility=GONE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+            Button visibility=VISIBLE minHeight=144 padding=[36,30,36,30] clickable=true focusable=true margin=[0,0,0,0] text="OK" textSizePx=42.0 textColor=#FFC1E8FF maxLines=2147483647 bold=false
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]

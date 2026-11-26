@@ -1,0 +1,332 @@
+package dev.steinhorst.backbuttonhero.pad
+
+import android.content.Context
+import android.net.LocalServerSocket
+import android.net.LocalSocket
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.util.Log
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.core.Shell
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickDetector
+import dev.steinhorst.backbuttonhero.macro.MacroEvent
+import dev.steinhorst.backbuttonhero.macro.MacroRecorder
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import java.io.File
+
+/**
+ * Starts and talks to the root input helper (src/main/cpp/padhelper.c, docs/HELPER.md). While the
+ * helper holds the pad ([active]), Back + D-pad and the open switcher's D-pad arrive in [onPress]
+ * and the game never sees them nor loses focus. Without it - no pservice, or the user pulled the
+ * emergency release - [DpadOverlay] is the fallback.
+ *
+ * The helper is launched through [PService] and connects back over an abstract socket. Abstract
+ * sockets have no file permissions, so every peer that is not root is turned away.
+ */
+class PadHelper(
+    private val context: Context,
+    private val onPress: (DpadDirection) -> Unit,
+    private val onRelease: (horizontal: Boolean) -> Unit,
+    private val onActiveChanged: (Boolean) -> Unit,
+    /** One recorded input while [setRecording] is on: a "REC" line without its prefix, see [MacroRecorder]. */
+    private val onRecord: (List<String>) -> Unit = {},
+    /** The macro [playMacro] started under this id has ended: played through, or [stopped] by a Back press or a lost pad. */
+    private val onMacroEnd: (id: Int, stopped: Boolean) -> Unit = { _, _ -> },
+    /** A stick deflection (direction) or its return to neutral (null); see [StickDetector]. */
+    private val onStick: (Stick, DpadDirection?) -> Unit = { _, _ -> },
+) {
+
+    /** True while the helper has taken over a pad and gates its D-pad. */
+    @Volatile var active = false
+        private set
+
+    @Volatile private var wanted = false
+    // Home + Back held 5 s in the helper: the user wants the pad left alone until the service restarts.
+    @Volatile private var released = false
+    @Volatile private var client: LocalSocket? = null
+    @Volatile private var server: LocalServerSocket? = null
+    @Volatile private var closed = false
+    @Volatile private var navigationMode = PadNavigationMode.OFF
+    @Volatile private var suspended = false
+    @Volatile private var passthrough = 0
+    @Volatile private var stickMask = 0
+    @Volatile private var stickPassthrough = 0
+    @Volatile private var homeMode = HOME_PLAIN
+    @Volatile private var recording = false
+    private var listening = false
+    private var failedLaunches = 0
+    private var launchPending = false
+    private val connectionLock = Any()
+    private val main = Handler(Looper.getMainLooper())
+    private val socketName = "${context.packageName}.padhelper"
+
+    fun start() {
+        if (released || closed) return
+        wanted = true
+        if (!listening) {
+            listening = true
+            Thread(::serve, "PadHelper").apply { isDaemon = true }.start()
+        } else if (client == null) {
+            launchSoon(0)
+        }
+    }
+
+    /** Closing our end makes the helper hand the pad back to Android and exit. */
+    fun stop() {
+        val socket = synchronized(connectionLock) {
+            wanted = false
+            client
+        }
+        setActive(false)
+        socket?.let(::closeSocket)
+    }
+
+    /** A service instance must release its abstract socket before a replacement can bind it. */
+    fun dispose() {
+        closed = true
+        stop()
+        server?.let { listener ->
+            // Wake accept as well: closing an fd on another thread need not interrupt that call.
+            runCatching { android.system.Os.shutdown(listener.fileDescriptor, android.system.OsConstants.SHUT_RDWR) }
+            runCatching { listener.close() }
+        }
+    }
+
+    private fun closeSocket(socket: LocalSocket) {
+        // close alone can leave a blocking read holding the fd, so root never sees EOF.
+        runCatching { socket.shutdownOutput() }
+        runCatching { socket.shutdownInput() }
+        runCatching { socket.close() }
+    }
+
+    /** Selects how bare D-pad input is handled while one of the two switchers is open. */
+    fun setSwitcherNavigation(mode: PadNavigationMode) {
+        navigationMode = mode
+        val command = HelperProtocol.switcher(if (suspended) PadNavigationMode.PASSTHROUGH.wireValue else mode.wireValue)
+        runCatching { client?.outputStream?.write(command.toByteArray()) }
+    }
+
+    fun setSuspended(value: Boolean) {
+        suspended = value
+        setSwitcherNavigation(navigationMode)
+    }
+
+    /** Directions the helper leaves to the game even while Back is held; see [AppException]. */
+    /** Returns whether the mask changed. */
+    fun setPassthrough(directions: Set<DpadDirection>): Boolean {
+        val mask = HelperProtocol.passthroughMask(directions)
+        if (mask == passthrough) return false
+        passthrough = mask
+        sendPassthrough()
+        return true
+    }
+
+    private fun sendPassthrough() {
+        runCatching { client?.outputStream?.write(HelperProtocol.passthrough(passthrough).toByteArray()) }
+    }
+
+    /** Sticks (bits of [Stick.bit]) whose deflections made while Back is held the helper takes for the app. */
+    fun setSticks(sticks: Set<Stick>) {
+        val mask = HelperProtocol.stickMask(sticks)
+        if (mask == stickMask) return
+        stickMask = mask
+        sendSticks()
+    }
+
+    /**
+     * Stick directions the helper leaves to the game even while Back is held; see [AppException].
+     * Bits are the stick's index times four plus [DpadDirection]'s order, like [setPassthrough].
+     */
+    fun setStickPassthrough(buttons: Set<StickButton>) {
+        val mask = HelperProtocol.stickPassthroughMask(buttons)
+        if (mask == stickPassthrough) return
+        stickPassthrough = mask
+        sendStickPassthrough()
+    }
+
+    /**
+     * [HOME_AS_BACK] and [HOME_DUAL] let the pad's Home key count as a held modifier for captures. Only
+     * [HOME_AS_BACK] also turns the Home + Back release off: there both keys are one, in dual mode they are not.
+     */
+    fun setHomeMode(mode: Int) {
+        if (mode == homeMode) return
+        homeMode = mode
+        sendHomeMode()
+    }
+
+    private fun sendHomeMode() {
+        runCatching { client?.outputStream?.write(HelperProtocol.homeMode(homeMode).toByteArray()) }
+    }
+
+    /** While on, the pad's buttons, sticks and D-pad reach only [onRecord], not the foreground app. */
+    fun setRecording(value: Boolean) {
+        if (value == recording) return
+        recording = value
+        sendRecording()
+    }
+
+    private fun sendRecording() {
+        runCatching { client?.outputStream?.write(HelperProtocol.recording(recording).toByteArray()) }
+    }
+
+    /**
+     * Loads [events] into the helper and plays them through the pad clone once Back is released.
+     * False when no helper holds the pad, so nothing can play.
+     */
+    fun playMacro(id: Int, events: List<MacroEvent>): Boolean {
+        val out = client?.outputStream ?: return false
+        if (!active) return false
+        return runCatching { out.write(HelperProtocol.macro(id, events).toByteArray()) }.isSuccess
+    }
+
+    fun stopMacro() {
+        runCatching { client?.outputStream?.write(HelperProtocol.MACRO_STOP.toByteArray()) }
+    }
+
+    /** Adds a gyro deflection in per mille to [stick]; a null stick ends it. Sent as it comes, about 100 times a second. */
+    fun setGyro(stick: Stick?, x: Int, y: Int) {
+        runCatching { client?.outputStream?.write(HelperProtocol.gyro(stick, x, y).toByteArray()) }
+    }
+
+    private fun sendStickPassthrough() {
+        runCatching { client?.outputStream?.write(HelperProtocol.stickPassthrough(stickPassthrough).toByteArray()) }
+    }
+
+    private fun sendSticks() {
+        runCatching { client?.outputStream?.write(HelperProtocol.sticks(stickMask).toByteArray()) }
+    }
+
+    fun navigateTop(direction: DpadDirection) {
+        runCatching { client?.outputStream?.write(HelperProtocol.navigation(direction).toByteArray()) }
+    }
+
+    private fun serve() {
+        val listener = runCatching { LocalServerSocket(socketName) }.getOrElse {
+            Log.w(TAG, "socket: ${it.javaClass.simpleName}")
+            return
+        }
+        server = listener
+        if (closed) { runCatching { listener.close() }; return }
+        launchSoon(0)
+        while (!closed) {
+            val socket = runCatching { listener.accept() }.getOrNull() ?: break
+            val root = runCatching { socket.peerCredentials.uid }.getOrDefault(-1) == 0
+            val accepted = synchronized(connectionLock) {
+                if (!root || !wanted || closed) false else { client = socket; true }
+            }
+            if (!accepted) {
+                closeSocket(socket)
+                continue
+            }
+            runCatching { socket.inputStream.bufferedReader().forEachLine(::handle) }
+            client = null
+            setActive(false)
+            closeSocket(socket)
+            if (wanted && !released) launchSoon(RELAUNCH_DELAY_MS)
+        }
+        runCatching { listener.close() }
+    }
+
+    private fun handle(line: String) {
+        val parts = line.split(' ')
+        when (parts[0]) {
+            "PAD" -> if (wanted && !closed) {
+                setActive(true)
+                failedLaunches = 0
+                setSwitcherNavigation(navigationMode)
+                sendPassthrough()
+                sendSticks()
+                sendStickPassthrough()
+                sendHomeMode()
+                sendRecording()
+            }
+            "PAD_GONE" -> setActive(false)
+            "RELEASED" -> { released = true; wanted = false; setActive(false) }
+            "MODE" -> Unit
+            "REC" -> if (recording) {
+                val values = parts.drop(1)
+                main.post { if (wanted && !closed) onRecord(values) }
+            }
+            "MACRO_DONE", "MACRO_STOPPED" -> parts.getOrNull(1)?.toIntOrNull()?.let { id ->
+                val stopped = parts[0] == "MACRO_STOPPED"
+                main.post { if (!closed) onMacroEnd(id, stopped) }
+            }
+            "STICK" -> if (parts.size == 3) {
+                val stick = Stick.fromWire(parts[1])
+                val direction = DpadDirection.fromWire(parts[2])
+                // "N" (neutral) maps to no direction: only a press or a release is reported.
+                if (stick != null && (direction != null || parts[2] == "N")) main.post {
+                    if (wanted && !closed) onStick(stick, direction)
+                }
+            }
+            "HAT" -> if (parts.size == 3) {
+                val horizontal = parts[1] == "X"
+                val direction = DpadDirection.fromHat(horizontal, parts[2].toFloatOrNull() ?: 0f)
+                // A release (value 0) only matters to an action that commits on release.
+                main.post {
+                    if (wanted && !closed) {
+                        if (direction != null) onPress(direction) else onRelease(horizontal)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setActive(value: Boolean) {
+        if (active == value) return
+        active = value
+        main.post { if (!closed) onActiveChanged(value) }
+    }
+
+    @Synchronized
+    private fun launchSoon(delayMs: Long) {
+        // A helper that keeps dying without ever taking a pad over is not worth restarting forever.
+        if (closed || launchPending || failedLaunches >= MAX_FAILED_LAUNCHES) return
+        launchPending = true
+        failedLaunches++
+        Thread({
+            try {
+                SystemClock.sleep(delayMs)
+                if (!closed && wanted && client == null && PService.isAvailable()) launch()
+            } finally {
+                synchronized(this) { launchPending = false }
+                // A helper can disconnect while pservice's startup script is still sleeping.
+                // Its retry request was coalesced above; retain the bounded retry afterward.
+                if (!closed && wanted && client == null && !released) launchSoon(RELAUNCH_DELAY_MS)
+            }
+        }, "PadHelperLaunch").apply { isDaemon = true }.start()
+    }
+
+    private fun launch() {
+        val binary = File(context.applicationInfo.nativeLibraryDir, "libpadhelper.so").absolutePath
+        // pservice reaps its shell at once, so '&' alone kills the child before it detaches; a script
+        // that backgrounds it and then sleeps briefly lets it survive (see docs/HELPER.md).
+        val script = File(context.cacheDir, "padhelper_start.sh")
+        runCatching {
+            script.writeText("${Shell.q(binary)} ${Shell.q(socketName)} >/dev/null 2>&1 &\nsleep 1\n")
+            PService.exec("sh ${Shell.q(script.absolutePath)}")
+        }.onFailure { Log.w(TAG, "launch: ${it.javaClass.simpleName}") }
+        script.delete()
+    }
+
+    companion object {
+        const val HOME_PLAIN = 0
+        const val HOME_AS_BACK = 1
+        const val HOME_DUAL = 2
+        private const val TAG = "PadHelper"
+        private const val RELAUNCH_DELAY_MS = 3000L
+        private const val MAX_FAILED_LAUNCHES = 5
+    }
+}
+
+/** TOP captures directions until Overview is ready; NAV replays them through the clone. */
+enum class PadNavigationMode(val wireValue: Int) {
+    OFF(0),
+    CAPTURE(1),
+    TOP(2),
+    PASSTHROUGH(3),
+}

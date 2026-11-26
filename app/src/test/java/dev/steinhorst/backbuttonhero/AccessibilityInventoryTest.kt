@@ -1,8 +1,9 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.selectSettingsPage
-
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.dp
 import dev.steinhorst.backbuttonhero.support.Golden
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric

@@ -96,6 +96,8 @@ when release preparation starts; do not infer, tag, publish, or push a release e
 Before editing, inspect the relevant implementation and its tests. Then use these docs
 as needed:
 
+- `docs/README.md`: index of every document, architecture decisions (`docs/decisions/`)
+  and the KDoc conventions
 - `CLAUDE.md`: detailed operational knowledge, toolchain traps, coverage baselines,
   release signing/recovery, and component notes
 - `docs/ARCHITECTURE.md`: runtime flows and component collaboration
@@ -111,7 +113,9 @@ not casually rewrite unrelated documentation while implementing a focused change
 
 ## Repository map
 
-- `app/src/main/java/dev/steinhorst/backbuttonhero/`: one flat production package
+- `app/src/main/java/dev/steinhorst/backbuttonhero/`: production code in feature packages
+  (`core`, `prefs`, `input`, `actions`, `recents`, `panels`, `pad`, `macro`, `capture`, `overlay`,
+  `settings`); the root keeps only frozen entry points (see `docs/PROJECT-STRUCTURE.md`)
 - `app/src/main/cpp/padhelper.c`: native root input helper, compiled by Gradle
 - `app/src/main/res/`: English/German strings, icons, accessibility config
 - `app/src/test/`: JVM/Robolectric tests and snapshot helpers
@@ -236,7 +240,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 
 Current expected baseline:
 
-- 726 JVM tests in 98 test classes; 0 failed, 0 skipped
+- 880 JVM tests in 137 test classes; 0 failed, 0 skipped
 - lint: 0 new findings; the checked-in baseline contains 20 intentional warnings
 - all per-class JaCoCo ratchets in `app/build.gradle.kts` pass
 - debug and unsigned local release APKs build
@@ -253,7 +257,8 @@ the gate green.
 - Start fake clocks above `0L`; `DoubleTapDetector` uses zero as its sentinel.
 - Robolectric qualifiers must be ordered like `en-night-xxhdpi`.
 - `SettingsActivity` starts the real `UpdateChecker` network thread in Robolectric;
-  failures are swallowed and a timeout can add about five seconds.
+  failures are swallowed and a timeout can add about five seconds. Override
+  `updateCheck()` in a test subclass (see `UpdateFlowTest`) when a test needs control.
 - `windowsOnAllDisplays` is unreliable/unavailable under Robolectric.
 - A local release APK is unsigned unless all release-signing environment variables are
   supplied; install debug for ordinary device testing.

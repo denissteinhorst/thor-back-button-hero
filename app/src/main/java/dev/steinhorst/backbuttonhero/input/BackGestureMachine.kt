@@ -1,0 +1,198 @@
+package dev.steinhorst.backbuttonhero.input
+
+import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.SwitcherService
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+
+/** Replaces SystemClock.uptimeMillis() so tests can control time. */
+interface GestureClock {
+    fun uptimeMillis(): Long
+}
+
+/** Replaces Handler.postDelayed/removeCallbacks/hasCallbacks so tests can control scheduling. */
+interface GestureScheduler {
+    fun postDelayed(runnable: Runnable, delayMs: Long)
+    fun removeCallbacks(runnable: Runnable)
+    fun hasCallbacks(runnable: Runnable): Boolean
+}
+
+/** What one modifier's gestures are bound to and how they are timed: Back's in [Prefs], Home's in [Prefs.homeGestures]. */
+interface GestureSettings {
+    val doubleTapEnabled: Boolean
+    val doubleTapMs: Long
+    val tapHoldEnabled: Boolean
+    val tapHoldMs: Long
+    val holdEnabled: Boolean
+    val holdMs: Long
+}
+
+/** The side effects a completed gesture triggers - implemented by SwitcherService. */
+interface GestureActions {
+    fun swapScreens()
+    fun openTopRecents()
+    fun showSwitcher()
+    fun onSingleTap()
+    /** Delivers the Back an app would have received without Back Button Hero (see [AppException]). */
+    fun nativeBack(longPress: Boolean)
+    /** Tells the user that an app exception keeps this hold from swapping the screens. */
+    fun holdSwapBlocked()
+}
+
+/**
+ * The Back key's tap, double tap, hold and tap-then-hold decisions over one press's DOWN/UP, on an
+ * injectable clock and scheduler so every timing branch runs on the JVM. Effects go to [GestureActions].
+ */
+class BackGestureMachine(
+    private val prefs: GestureSettings,
+    private val clock: GestureClock,
+    private val scheduler: GestureScheduler,
+    private val actions: GestureActions,
+    private val dlog: (String) -> Unit = {},
+    /** The focused app's exception, read once per press; null when the app has none. */
+    private val exception: () -> AppException? = { null },
+    private val nativeLongPressMs: Long = 500L,
+) {
+    /** True while the Back key is physically held - read by the combo routers through SwitcherService. */
+    var backDown = false
+        private set
+
+    /** Set when a Back+shoulder combo ran, so the eventual UP does not also fire tap logic. */
+    var comboFired = false
+        private set
+
+    private var holdFired = false
+    private var tapHoldFired = false
+    private var firstDownAt = 0L
+
+    // Latch at DOWN, independently of whether the single-tap deadline has already elapsed.
+    private var pressFollowsTap = false
+
+    private val holdRunnable = Runnable {
+        holdFired = true
+        dlog("RUNNABLE holdRunnable fired -> swapScreens()")
+        actions.swapScreens()
+    }
+    private val tapHoldRunnable = Runnable {
+        tapHoldFired = true
+        dlog("RUNNABLE tapHoldRunnable fired -> openTopRecents()")
+        actions.openTopRecents()
+    }
+    // An excepted hold is the app's own long press, so it fires at the system long-press timeout.
+    private val nativeHoldRunnable = Runnable {
+        holdFired = true
+        dlog("RUNNABLE nativeHoldRunnable fired -> nativeBack(longPress)")
+        if (prefs.holdEnabled) actions.holdSwapBlocked()
+        actions.nativeBack(longPress = true)
+    }
+    private val nativeNotice = Runnable { actions.holdSwapBlocked() }
+    private var lastTapAt: Long? = null
+    private val singleTap = Runnable { tap() }
+    private var rules: AppException? = null
+
+    private fun allows(control: ExceptionControl) = rules?.allows(control) ?: true
+    private val doubleTapOn get() = prefs.doubleTapEnabled && allows(ExceptionControl.DOUBLE)
+    private val tapHoldOn get() = prefs.tapHoldEnabled && allows(ExceptionControl.TAP_HOLD)
+
+    private fun tap() = if (allows(ExceptionControl.SINGLE)) actions.onSingleTap() else actions.nativeBack(longPress = false)
+
+    fun followsRecentTap(): Boolean = lastTapAt?.let {
+        clock.uptimeMillis() - it <= maxOf(prefs.doubleTapMs,
+            if (tapHoldOn) SwitcherService.TAP_HOLD_GRACE_MS else 0L)
+    } == true
+
+    /** Called through SwitcherService when a Back + button combo fires (ComboRouter,
+     *  DirectionalRouter, StickClickRouter), so Back's release adds no tap. */
+    fun markComboFired() {
+        comboFired = true
+        scheduler.removeCallbacks(holdRunnable)
+        scheduler.removeCallbacks(tapHoldRunnable)
+        scheduler.removeCallbacks(nativeHoldRunnable)
+    }
+
+    /** Discard pending gestures when interception is suspended or the service disconnects. */
+    fun reset() {
+        scheduler.removeCallbacks(holdRunnable)
+        scheduler.removeCallbacks(tapHoldRunnable)
+        scheduler.removeCallbacks(nativeHoldRunnable)
+        scheduler.removeCallbacks(singleTap)
+        scheduler.removeCallbacks(nativeNotice)
+        rules = null
+        backDown = false
+        comboFired = false
+        holdFired = false
+        tapHoldFired = false
+        firstDownAt = 0L
+        lastTapAt = null
+        pressFollowsTap = false
+    }
+
+    /**
+     * Observes fully excepted Back pairs without consuming or injecting any of their input.
+     * [heldDevices] is the caller's authoritative count of Back devices still down after [event],
+     * so mirrored devices share one notice and no second copy of that state can go stale.
+     */
+    fun observeNativeBack(event: KeyEvent, heldDevices: Int) {
+        when {
+            event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> {
+                if (heldDevices == 1) {
+                    scheduler.removeCallbacks(nativeNotice)
+                    if (prefs.holdEnabled) scheduler.postDelayed(nativeNotice, prefs.holdMs)
+                }
+            }
+            event.action == KeyEvent.ACTION_UP -> if (heldDevices == 0) scheduler.removeCallbacks(nativeNotice)
+        }
+    }
+
+    fun handleBack(event: KeyEvent): Boolean {
+        when {
+            event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> {
+                val now = clock.uptimeMillis()
+                val sinceFirstDown = if (firstDownAt == 0L) -1 else now - firstDownAt
+                backDown = true
+                holdFired = false
+                tapHoldFired = false
+                comboFired = false
+                pressFollowsTap = followsRecentTap()
+                if (pressFollowsTap) scheduler.removeCallbacks(singleTap)
+                // Latched only after the previous tap's window was judged under the rules it was made in.
+                rules = exception()
+                val scheduled = when {
+                    pressFollowsTap && tapHoldOn -> { scheduler.postDelayed(tapHoldRunnable, prefs.tapHoldMs); "tapHoldRunnable in ${prefs.tapHoldMs}ms" }
+                    !allows(ExceptionControl.HOLD) -> { scheduler.postDelayed(nativeHoldRunnable, nativeLongPressMs); "nativeHoldRunnable in ${nativeLongPressMs}ms" }
+                    prefs.holdEnabled -> { scheduler.postDelayed(holdRunnable, prefs.holdMs); "holdRunnable in ${prefs.holdMs}ms" }
+                    else -> "nothing (hold disabled)"
+                }
+                dlog("DOWN   t=$now (+${sinceFirstDown}ms since previous DOWN)  afterTap=$pressFollowsTap tapHoldEnabled=$tapHoldOn -> scheduled $scheduled")
+                firstDownAt = now
+            }
+            event.action == KeyEvent.ACTION_UP -> {
+                val now = clock.uptimeMillis()
+                val heldFor = now - event.downTime
+                backDown = false
+                scheduler.removeCallbacks(holdRunnable)
+                scheduler.removeCallbacks(tapHoldRunnable)
+                scheduler.removeCallbacks(nativeHoldRunnable)
+                if (holdFired || tapHoldFired || comboFired) {
+                    dlog("UP     t=$now held=${heldFor}ms  holdFired=$holdFired tapHoldFired=$tapHoldFired comboFired=$comboFired -> consumed, no tap logic")
+                    lastTapAt = null
+                    return true
+                }
+                val previousTap = lastTapAt
+                if (pressFollowsTap && doubleTapOn && previousTap != null &&
+                    now - previousTap <= prefs.doubleTapMs) {
+                    lastTapAt = null
+                    dlog("UP     t=$now -> double tap")
+                    actions.showSwitcher()
+                } else {
+                    dlog("UP     t=$now -> tap (${if (doubleTapOn) "waits ${prefs.doubleTapMs}ms" else "immediate"})")
+                    lastTapAt = now
+                    if (doubleTapOn) scheduler.postDelayed(singleTap, prefs.doubleTapMs)
+                    else tap()
+                }
+            }
+        }
+        return true
+    }
+}

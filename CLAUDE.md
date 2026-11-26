@@ -153,7 +153,7 @@ physical AYN Thor attached via `adb` (device id changes; re-check with `adb devi
 Treat a deviation from these numbers as a regression to investigate, not a new baseline
 to record:
 
-- **726 JVM tests, 0 failures, 0 skipped** across 98 test classes (as of 2026-11-22). Count from
+- **880 JVM tests, 0 failures, 0 skipped** across 137 test classes (as of 2026-11-24). Count from
   `app/build/test-results/testDebugUnitTest/*.xml` after a gate run.
 - **Lint: 0 errors.** `lint-baseline.xml` freezes **20** pre-existing warnings
   (`DataExtractionRules`, `ObsoleteSdkInt`, 5× `IconColors`, 5× `IconLauncherShape`,
@@ -176,10 +176,10 @@ to record:
   | `AccessibilityAppSource` | 0.61 | 0.6250 |
   | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-  A further 69 classes (settings, navigation, app exceptions, Recents routing/state, panels,
+  Further classes (92 ratchets in total, incl. the input routers, the action handlers and the classes extracted by the refactoring) (settings, navigation, app exceptions, Recents routing/state, panels,
   key gate, activation toggle, sticks, macros, gyro, backup, welcome sheet) carry floors of
   0.80–1.00 in a name→minimum map at the end of the rules; see `app/build.gradle.kts`.
-  Total line coverage across all classes is about 67 % (8886/13286).
+  Total line coverage across all classes is about 82 % (11230/13656).
 
   Several minima sit exactly at the measured value, so coverage must not drop at all.
   The ratchet may only ever rise.
@@ -192,7 +192,7 @@ to record:
   `UpdateChecker$Version` is its own entry. Aggregating a class with its nested types
   overstates the figure the rule actually enforces. Measured values come from
   `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
-- **Release APK ~4.19 MB** (`app-release-unsigned.apk`), including the ~18 KB native helper
+- **Release APK ~4.27 MB** (`app-release-unsigned.apk`), including the ~18 KB native helper
   `lib/arm64-v8a/libpadhelper.so`. Debug is much larger because LeakCanary is bundled there.
 - **Release runtime classpath contains exactly two artifacts**: `kotlin-stdlib` and
   transitively `org.jetbrains:annotations`. Verify with:
@@ -208,16 +208,16 @@ before trusting the suite:
 
 **Well protected.** `Prefs` (defaults + the three one-time migrations), `CardTouch`,
 `DoubleTapDetector`, `BackGestureMachine` (all branches), resource DE/EN parity, and the
-settings UI via **deterministic View-tree text snapshots** (89 golden files in
+settings UI via **deterministic View-tree text snapshots** (110 golden files in
 `app/src/test/resources/golden/`) covering all pages across theme, locale and
-compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, and an
+compact/wide layout, every shoulder/D-pad row state, the change-preview dialogs, the service's small overlays (`OverlaySnapshotTest`: notice, recording, focus pictogram, app-control prompt, D-pad and auto-focus windows; `SwitcherSnapshotTest`: the bottom Recents overlay tree and its controller selection; `EditorDialogSnapshotTest`: macro editor and library, gyro setup), and an
 accessibility inventory. A change to the top bar touches 38 of them at once.
 
 **Barely protected — manual device testing is the only real net.**
-`SwitcherOverlay` is at about **36 %** line coverage (132/363), `SwitcherService` about **24 %**
-(413/1717) and `FocusIndicatorOverlay` about **10 %** (9/93); `PanelWindowHost` and
+`SwitcherOverlay` is at about **85 %** line coverage (309/363, mostly through its tree snapshots), `SwitcherService` about **70 %**
+(791/1124) and `FocusIndicatorOverlay` about **86 %** (71/83); `PanelWindowHost` and
 `ScreenRecorder` are at 0 %. The panel host, Recents task
-routing, and top-Recents controller focus are likewise device-only. The entire switcher overlay UI, multi-display targeting, thumbnail capture,
+routing, and top-Recents controller focus are likewise device-only. The switcher overlay's launcher-derived styling and live behavior (its tree is snapshotted), multi-display targeting, thumbnail capture,
 and physical key-event handling are unverified by any automated test. `BackGestureMachine`
 exists precisely because Handler/SystemClock key timing cannot be exercised on the JVM;
 the extraction moved the *decisions* under test but left the Android side effects out.
@@ -425,7 +425,8 @@ versions already in use after a local bump — check the workflow files before m
 
 ## Architecture
 
-Everything lives in one package: `dev.steinhorst.backbuttonhero`. Two
+One module, feature packages below `dev.steinhorst.backbuttonhero` (map in
+`docs/PROJECT-STRUCTURE.md`); the root package keeps only the frozen entry points. Two
 Android entry points declared in the manifest: `SettingsActivity` (launcher
 UI) and `SwitcherService` (the accessibility service doing the real work).
 
@@ -489,10 +490,10 @@ overlay pinned to the bottom screen only. Built entirely with manual
 tap-vs-swipe-up gesture discrimination is hand-rolled in `CardTouch`.
 
 **`Prefs`** wraps `SharedPreferences` and is also where one-time preference
-*migrations* live (see the `init` block: `navigation_flick_defaults_v1`,
+*migrations* run (its `init` calls `Migrations.run`, `prefs/Migrations.kt`: `navigation_flick_defaults_v1`,
 `navigation_flick_directions_v2`, and the removed `@swap_screens` shoulder
 action). When changing a default or renaming a stored key, add a guarded
-migration here rather than silently breaking existing installs — follow the
+migration there rather than silently breaking existing installs — follow the
 existing pattern of a versioned boolean flag guarding a one-time rewrite.
 `shoulder_defaults_v3` is the model for defaults that change for never-touched
 settings: an update pins the old value (L2/R2 stay unassigned), only a fresh install
@@ -555,7 +556,7 @@ surface for a side-loaded single-user app).
   narrative comments describing obvious code.
 - Display-targeting logic always distinguishes `Display.DEFAULT_DISPLAY`
   (top screen) from the dynamically-detected bottom display (see
-  `bottomDisplay()`: the non-default display with the highest ID). Don't
+  `core.Displays.bottom`: the non-default, non-private display with the highest ID). Don't
   hardcode display IDs elsewhere.
 - Every package name passed to a privileged shell command goes through `Shell.isPkg`.
 

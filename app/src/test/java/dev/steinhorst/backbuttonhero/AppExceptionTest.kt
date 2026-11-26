@@ -1,5 +1,15 @@
 package dev.steinhorst.backbuttonhero
 
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.ComboButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickClickButton
+import dev.steinhorst.backbuttonhero.prefs.AppException
+import dev.steinhorst.backbuttonhero.prefs.ExceptionControl
+import dev.steinhorst.backbuttonhero.prefs.ExceptionGroup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

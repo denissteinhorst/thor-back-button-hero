@@ -1,14 +1,25 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.startOnBasic
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.app.AlertDialog
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.TextView
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickClickButton
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.StartSetup
+import dev.steinhorst.backbuttonhero.settings.startSetup
 import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.startOnBasic
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: 0BSD
+# Frozen wire and storage identifiers (refactoring plan 02 §3), one per line: <release|debug><TAB><string>.
+# Presence in the DEX is supporting evidence only; encode/read behavior is tested separately.
+# Manifest-only identifiers (the debug DEVICE_TEST action, permissions) are frozen by A1 instead.
+release	dev.steinhorst.backbuttonhero.IScreenRecorder
+release	dev.steinhorst.backbuttonhero.IScreenshotBridge
+release	dev.steinhorst.backbuttonhero.FOCUS_RECENTS
+release	PServerBinder
+release	back_button_hero
+release	backbuttonhero_recorder
+release	backbuttonhero_screenshot
+release	BBHAutoFocus-
+release	BackButtonHero
+release	Back Button Hero parking
+debug	device_test_snapshot

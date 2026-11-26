@@ -40,14 +40,43 @@ gitignored and therefore absent here.
 
 #### Kotlin sources — `app/src/main/java/dev/steinhorst/backbuttonhero/`
 
-One flat package by design; the app is small enough that package boundaries would add
-ceremony without adding clarity. See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how they
+Packages by feature below `dev.steinhorst.backbuttonhero` (one Gradle module). The file tables
+below are grouped by role, not by package; the package of each file is listed here:
+
+| Package | Contents |
+|---|---|
+| root (frozen) | `SwitcherService`, `SettingsActivity`, `UpdateInstaller`, `UpdateChecker` and the ten root `app_process` entry points. Their names are read by Android, stored settings or root scripts, so they never move ([decision 0001](decisions/0001-frozen-external-contracts.md)). |
+| `core` | `Shell`, `PService`, `RunningApp`, `AccessibilityAppSource` |
+| `prefs` | `Prefs` (schema, migrations, transactions), backups, change plans, app exceptions and groups |
+| `input` | Back gesture machine, double tap, key tracking and interception gate, activation toggle, shoulder/stick/face/Home buttons |
+| `actions` | Action groups, Active App Control, closing apps, last app, power menu, status, controller focus, AYN controls |
+| `recents` | Bottom switcher overlay, Recents styling and state, top Recents navigation, task move and parking policies |
+| `panels` | Bottom-screen panel capture, windows and the connection to the root window host |
+| `pad` | Root pad helper client, D-pad overlay, level control and repeat, gyro |
+| `macro` | Macro model, recorder, editor and widgets |
+| `capture` | Screen recording, screenshots, push-to-talk and the voice chain, recording indicator |
+| `overlay` | Notice and focus-indicator overlays, and their shared top-display window helper |
+| `settings` | Settings navigation, UI kit, bindings overview, choosers, welcome sheet, exception and gyro dialogs |
+
+Tests live in the same package as the class they cover; cross-feature tests and the snapshot
+helpers (`support/`) stay in the root test package.
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how they
 collaborate. Files that run as root `app_process` entry points are marked *(root)*.
 
 **Service, gestures and settings**
 
 | File | Lines | Purpose |
 |---|---|---|
+| `ComboRouter.kt` | 76 | Back + shoulder, Home/Start/Select or face button: runs that button's action and swallows its event; unassigned buttons stay the game's. |
+| `DirectionalRouter.kt` | 117 | Back + D-pad and Back + stick from the helper or the focus overlay: run, arm or leave to the game, and when an armed focus or app switch commits. |
+| `StickClickRouter.kt` | 77 | L3/R3 while Back is held: ours only when the stick has a click action; both mirrored devices' events are consumed as one press. |
+| `HomeAsBack.kt` | 63 | The pad's Home key as Back: the first key down owns the one virtual Back until both are released. |
+| `ActionChooser.kt` | 279 | The hotkey action list with "Not set", A–Z entries and a search that also finds options inside groups and AYN tiles. |
+| `GyroSettingsDialog.kt` | 414 | The gyro hotkey's setup popup with a live ball preview beside every switch and slider. |
+| `WelcomeSheet.kt` | 202 | First-start sheet and `startSetup`, the defaults it applies, and whether settings are already customized. |
+| `StatusSummary.kt` | 19 | The arithmetic behind the battery status notice, apart from the battery service. |
+| `NoticeOverlay.kt` | 124 | The service's short messages as one toast-like window that only changes its text, so background rate limits never drop one. |
 | `SwitcherService.kt` | 1759 | The accessibility service and runtime coordinator. Intercepts Back and the shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, controller focus, task-preserving screen swap, Active App Control, exceptions at runtime), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
 | `BackGestureMachine.kt` | 158 | The Back-press state machine, free of Android side effects: single tap vs. double tap vs. hold vs. tap-then-hold, including blocked gestures from app exceptions. Clock, scheduling and actions enter through small interfaces so the timing logic is unit-testable on the JVM. |
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
@@ -55,10 +84,18 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `ServiceToggleGesture.kt` | 113 | The activation shortcut: observes a configured button pair and toggles interception after the hold time; only Back + Home consumes a paired press and holds back a lone one until release. |
 | `KeyInterceptionGate.kt` | 29 | Keeps each key DOWN/UP pair on its original side of a runtime interception change, so pausing never strands a half-consumed press. |
 | `ShoulderButton.kt` | 106 | The `ComboButton` interface and its key and D-pad enums: the four shoulder buttons, Home/Start/Select (`AndroidButton`) and the face buttons by printed letter (`FaceButton`, mapped through the controller-style switch), each with preference key and Android keycode, plus the four D-pad directions and the four Back gestures. |
-| `Prefs.kt` | 385 | `SharedPreferences` wrapper: schema, defaults, typed accessors, atomic application of change plans, and the one-time **migrations** in its `init` block. The single place where stored-preference changes belong. |
+| `Prefs.kt` | 385 | `SharedPreferences` wrapper: schema, defaults, typed accessors, atomic application of change plans, and the one-time **migrations**, which its `init` runs from `Migrations.kt`. The single place where stored-preference changes belong. |
+| `Action.kt` | 100 | Typed hotkey actions (`Action`) and `ActionCodec`, the only mapping between them and the stored strings; unknown `@` values survive unchanged. Not yet used by callers. |
+| `Migrations.kt` | 190 | The one-time rewrites of stored settings, each behind its versioned flag, in the order `Prefs`' `init` runs them. |
+| `MacroStore.kt` | 45 | The macro library and the hotkeys' references into it; `Prefs` delegates to it and keeps whole-settings transactions. |
 | `AppExceptions.kt` | 58 | `ExceptionControl` columns and `AppException` rules, plus their stored line format. |
 | `SettingsActivity.kt` | 907 | The launcher UI, assembled programmatically. Reads and writes everything through `Prefs`, reports accessibility-service health with a "repair service" flow, triggers the update check, offers the page and whole-app defaults/unbind actions, and hosts the indicator-appearance popup (also opened directly from the focus pictogram). |
 | `SettingsUiKit.kt` | 622 | The hand-built UI toolkit behind the settings screen: `dp()`, service-status helpers (`ServiceStatus`, `currentServiceStatus()`), the `SettingsPage` builder that produces cards, rows, sliders and choosers, and `positionGrid()`, the 3×3 dot picker on a 16:9 outline. |
+| `BindingCard.kt` | 326 | The card of one binding in one layer: its action row, the option rows built on first need and hidden afterwards, and `update()`, which re-reads the binding and changes those views; the choosers stay in the activity behind `BindingCard.Host`. |
+| `BindingDescriber.kt` | 406 | Every text the settings derive from a binding and every list a binding chooses from: action list, search words, option names, screens, modes, targets, qualities, ducks, indicator positions, gyro and macro summaries. |
+| `ChangeDescriber.kt` | 158 | The "label: old → new" lines of the defaults, preset, unbind and restore previews. |
+| `BackupFlow.kt` | 126 | Saving and restoring the settings file: pickers, off-main-thread read and write, refusals and the version hint before the change preview. |
+| `UpdateFlow.kt` | 154 | The manual update check: busy row, result dialogs, the release-only download into Android's installer; `UpdateCheck` is the seam the activity wires to `UpdateChecker` and tests to a fake. |
 | `SettingsNavigation.kt` | 469 | Adaptive nine-page navigation (a non-scrolling icon rail under the app logo from 720 dp, whose icons lay the full panel over the page until a tap or drag on the page closes it; menu dialog below), top bar (a bare page title from 720 dp, floating with the service chip on the Overview), lazy page cache and scroll state. |
 | `BindingsOverview.kt` | 535 | The Overview page: a line drawing of the Thor's lower half, traced from the measured geometry of `thor-base.png`, with a leader line from each assigned control to its labels; tapping a part of the drawing (faintly tinted) opens its page, the labels only read. |
 | `SettingsChanges.kt` | 97 | Immutable settings snapshots and scoped defaults/unbind change plans. |
@@ -90,9 +127,15 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `RecentsTaskLauncher.kt` | 114 | *(root)* Resumes an existing task on the requested screen without relaunching it. |
 | `TaskMovePolicy.kt` | 34 | Rules for task moves: protected tasks and which app stays in front. |
 | `TopRecentsFocus.kt` | 46 | *(root)* Completes AYN's paused Overview handoff so native controller navigation works in the top Recents. |
+| `TopRecentsSession.kt` | 323 | The top Recents controller session: its flags, Quickstep state checks, focus priming, dismissal queue and closing Back, with stale worker results dropped by session token and focus version. |
 | `TopRecentsNavigation.kt` | 45 | Buffers D-pad presses while top Recents initializes, then releases them. |
 | `TopRecentsState.kt` | 48 | The small subset of AYN Launcher3's dump needed to know the Overview state and card geometry. |
 | `TaskRemover.kt` | 57 | *(root)* Removes recent tasks like Recents' "Clear all". |
+| `WindowTracker.kt` | 49 | The service's window-change handling: records both screens and debounces panel refresh, front-app capture and the parked reclaim. |
+| `TaskOps.kt` | 99 | Closing apps with root or the unprivileged fallback, the memory report, and launching existing tasks. |
+| `SwapCoordinator.kt` | 166 | Hold-to-swap and moving the app with controller focus to the other screen. |
+| `BottomSwitcherController.kt` | 150 | The bottom switcher's open state, its task-state poll and task snapshots. |
+| `TopRecentsLauncher.kt` | 150 | The launch phase of native top Recents: baseline, Quickstep poll and selection. |
 
 **Frontends and bottom-screen panels**
 
@@ -110,16 +153,43 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 
 | File | Lines | Purpose |
 |---|---|---|
+| `ActionGroups.kt` | 96 | Single actions the settings show as one entry with a choice; storage keeps the single action. |
+| `AppControlActions.kt` | 141 | Minimize, force-close or restart the app in front, close apps on chosen screens, standby; each may ask first. |
+| `CloseApps.kt` | 28 | The displays a close-apps target covers. |
+| `LastApp.kt` | 37 | Which app was used before the one in front on the controller's screen; pressing again flips back. |
+| `LastAppAction.kt` | 69 | Brings that app back, as an existing task through root or a plain launch without it. |
+| `PowerMenu.kt` | 13 | Finds the system power dialog's first real option so the D-pad is not stuck on its strip. |
+| `SystemActions.kt` | 64 | Media keys, Android settings pages with a fallback, and the battery status notice. |
+| `AynControls.kt` | 331 | AYN's assistant and quick-settings tiles as hotkeys, writing exactly the values the tiles write. |
+| `AutoControllerFocus.kt` | 92 | Auto-lock: the screen touched last gets the controller, through an app-owned touch shield. |
+| `ControllerFocusTouch.kt` | 62 | *(root)* Touches only the app-owned shield, never an underlying app. |
+| `MacroPlayback.kt` | 83 | Which hotkey's macro plays, and the one-press cancel by Back or the same hotkey. |
+| `Gyro.kt` | 309 | Gyro math: bias, tilt, posture and the mapping from turns to stick deflection. |
+| `GyroFusion.kt` | 178 | Rest detection and the device's sensor-pair measurements. |
+| `GyroControl.kt` | 208 | The sole live sensor path; feeds the helper and the settings preview with the same samples. |
+| `GyroActions.kt` | 80 | Gyro on/off, calibration and the hold key, each with a notice. |
+| `ScreenRecording.kt` | 203 | App side of a recording: starts and stops `ScreenRecorder` as root, one recording at a time. |
+| `ScreenRecorder.kt` | 763 | *(root)* Mirrors the chosen screens into an encoder, captures playback and microphone, and writes the MP4. |
+| `RecordingIndicatorOverlay.kt` | 145 | The blinking recording dot that turns into a microphone while push to talk is held. |
+| `PushToTalk.kt` | 31 | Which keys can be the push-to-talk button, and their names. |
+| `EchoTrim.kt` | 313 | Takes what the speaker plays out of the microphone, learnt from the captured playback. |
+| `VoiceBand.kt` | 91 | Keeps the microphone to the speech band. |
+| `VoiceLeveler.kt` | 115 | Brings the microphone up to speech level and limits the mix. |
+| `VoicePolish.kt` | 72 | The last voice step: pauses go down, a few samples ahead of the sound. |
 | `AppControl.kt` | 158 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask" and the optional force-close confirmation. |
 | `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
-| `FocusIndicatorOverlay.kt` | 145 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `FocusIndicatorOverlay.kt` | 133 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `TopOverlayWindow.kt` | 32 | Window context on the top display and the nine-point position grid shared by the notice, the focus pictogram and the recording dot. |
 | `SettingsBackup.kt` | 160 | The backup file: JSON writer, defensive reader (validates and clamps every value, ignores the unknown), file name and version comparison. |
 | `StickButton.kt` | 70 | The two sticks, their eight direction buttons and `StickDetector`, the engage/neutral state machine shared with the overlay fallback. |
 | `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |
 | `LevelRepeater.kt` | 60 | `RepeatCurve` and the repeater that steps a held volume/brightness shortcut faster over time. |
+| `HelperProtocol.kt` | 52 | Every command line the service sends to the root helper, with the direction and stick bit masks it expects. |
 | `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
 | `Macro.kt` | 501 | Pure macro model: steps, buttons and eight-way directions, the checked stored form, the named library entry `SavedMacro`, the editor's list operations `MacroEdits`, the playback timeline for the helper, and `MacroRecorder`, which turns the helper's raw recording into steps. |
-| `MacroEditor.kt` | 1520 | The full-screen macro editor: step cards with live recording, two-column step and pause sheets, the input palette, drag to move or delete, undo, preview, naming and loading; `MacroLibraryDialog` (choose, new, edit, rename, duplicate, delete) and `MacroIconView` for the input glyphs. |
+| `MacroEditor.kt` | 1253 | The full-screen macro editor: step cards with live recording, two-column step and pause sheets, the input palette, drag to move or delete, undo, preview, naming and loading. |
+| `MacroIconView.kt` | 99 | One macro input as a 40 dp glyph: a lettered key, a D-pad with the pressed arm lit, or a stick ring. |
+| `MacroLibraryDialog.kt` | 210 | The saved macros of a hotkey: choose, new, edit, rename, duplicate and delete. |
 | `MacroWidgets.kt` | 320 | The macro editor's shared building blocks: colours, pills, focus rings, the bottom sheet, `StepStrip`, the row that drags steps, and `ScrollIndicator`, the position thumb under it. |
 | `DpadOverlay.kt` | 81 | Fallback without the helper: a focusable 1×1 overlay that exists only while Back is held and catches the D-pad's hat events, at the cost of the foreground app's focus. |
 | `LevelControl.kt` | 69 | The volume and brightness actions for both screens, the top or the bottom one. |
@@ -127,7 +197,10 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `BrightnessControl.kt` | 55 | *(root)* Steps the brightness of one or more displays via `IDisplayManager`. |
 | `SystemScreenshot.kt` | 148 | *(root)* Short-lived entry point and Binder handshake for Android's native, display-targeted screenshot flow. |
 | `ScreenshotSaver.kt` | 40 | Fallback: saves a screenshot of one display to `Pictures/Screenshots` through MediaStore when the native flow is unavailable. |
+| `AudioMixer.kt` | 155 | *(capture/recorder)* The recording's audio mix: game playback plus microphone through the voice chain, the push-to-talk gate, fades, the video duck and the echo-late opening. Pure; frozen bit for bit by `RecorderMixTest`. |
+| `MicRing.kt` | 49 | *(capture/recorder)* The microphone ring between the reader thread and the mix: push-to-talk delay, drift cap, written and pulled sample positions. |
 | `PService.kt` | 120 | Bridge to AYN's root daemon `pservice` (`PServerBinder`), and `runEntryPoint` for root `app_process` entry points. |
+| `Displays.kt` | 20 | The one rule for which display is which screen: top is `DEFAULT_DISPLAY`, bottom is the highest non-default, non-private id. |
 | `Shell.kt` | 15 | Validation and quoting for everything that reaches a root shell. |
 
 #### Native helper — `app/src/main/cpp/`
@@ -155,12 +228,12 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 98 test classes, **726 tests**. Run by the gate. By area:
+The automated safety net. 137 test classes, **880 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
-| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest` |
-| Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest` |
+| Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values), `ActionCodecTest` (typed actions ↔ stored strings, byte exact against the storage and backup fixtures) |
+| Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest`, `InputPipelineCharacterizationTest` (the service's key path through `onKeyEvent`), `ComboRouterTest`, `DirectionalRouterTest`, `StickClickRouterTest` |
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
@@ -208,6 +281,10 @@ first build, so they work right after a clone without a manual step.
 | File | Purpose |
 |---|---|
 | `verify.sh` | **The gate.** Resolves JDK 17 itself (it is not on `PATH` on the author's machine) and runs `./gradlew verify`. Use this rather than a bare Gradle call. |
+| `contract/` | Static contract oracles (`check.sh`): frozen manifest, class names, stored keys, wire strings and fixture hashes, plus the move-only and rename tools used by the refactoring. |
+| `devicetest/` | The on-device suite (`run.py`), visual capture (`visual.py`), resource and lifecycle measurements (`resources.py`) and instrumentation; see [`DEVICE-TEST.md`](DEVICE-TEST.md). |
+| `docs/check-links.py` | Every relative link and anchor in `docs/`, `README.md`, `AGENTS.md` and `CLAUDE.md` resolves. |
+| `docs/check-structure.py` | This file names every tracked production and instrumented source file, and none that is gone. |
 
 ## `docs/`
 
@@ -220,6 +297,8 @@ first build, so they work right after a clone without a manual step.
 | `TESTING.md` | The test concept and every quality gate, plus what is deliberately not automated. |
 | `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
 | `PROJECT-STRUCTURE.md` | This file. |
+| `README.md` | Index of every document with one line each, the decision list and the KDoc conventions. |
+| `decisions/` | Architecture decision records (`0000-template.md` plus numbered records). |
 | `MAINTENANCE.md` | Setup, building, releasing, dependency policy, and recipes for common changes. |
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
 | `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |
@@ -238,3 +317,4 @@ read at build time.
 | `thor-base.png` | Device outline used by the explainer and the animation. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
+

@@ -1,0 +1,282 @@
+# L1
+action <none> | Not set | option= | function=null | overview=Not set
+action @app_ask | Launch app: Ask | option= | function=Launch app: Ask | overview=Choose app
+action @app_favorites | Launch app: Favorites (none starred yet) | option= | function=Launch app: Favorites (none starred yet) | overview=Favorite apps
+action @home | Home | option= | function=Home | overview=Home
+action @back | Regular Back press | option= | function=Regular Back press | overview=Back
+action @swap_apps | Switch both apps | option= | function=Switch both apps | overview=Switch both apps
+action @last_app | Switch to last app | option= | function=Switch to last app | overview=Last app
+action @screenshot | Take screenshot | option= | function=Take screenshot | overview=Screenshot
+action @record_video | Record video | option= | function=Record video | overview=Record video
+action @macro | Macro | option= | function=Macro | overview=Macro
+action @gyro | Gyro on/off (BETA) | option= | function=Gyro on/off (BETA) | overview=Gyro on/off
+action @gyro_calibrate | Calibrate gyro (BETA) | option= | function=Calibrate gyro (BETA) | overview=Calibrate gyro
+action @controller_focus | Set controller focus | option= | function=Set controller focus | overview=Controller focus
+action @switch_active_app | Switch active app | option= | function=Switch active app | overview=Move active app
+action @app_control | Active App Control | option= | function=Active App Control | overview=Active App Control
+action @status_overlay | Status Overlay | option= | function=Status Overlay | overview=Status Overlay
+action @recents | App Switcher (Recents) | option=Top screen | function=App Switcher (Recents) | overview=Recents top
+action @switcher | App Switcher (Recents) | option=Bottom screen | function=App Switcher (Recents) | overview=Recents bottom
+action @volume_up | Volume | option=Up | function=Volume | overview=Volume +
+action @volume_down | Volume | option=Down | function=Volume | overview=Volume −
+action @volume_mute | Volume | option=Toggle mute | function=Volume | overview=Mute
+action @brightness_up | Brightness | option=Up | function=Brightness | overview=Brightness +
+action @brightness_down | Brightness | option=Down | function=Brightness | overview=Brightness −
+action @media_play_pause | Media Control | option=Play / Pause | function=Media Control | overview=Play / Pause
+action @media_next | Media Control | option=Next Track | function=Media Control | overview=Next track
+action @media_previous | Media Control | option=Previous Track | function=Media Control | overview=Previous track
+action @navigation_flick_left | Navigation flick | option=Left | function=Navigation flick | overview=Flick left
+action @navigation_flick_right | Navigation flick | option=Right | function=Navigation flick | overview=Flick right
+action @close_apps | Close Apps | option=Close all apps | function=Close Apps | overview=Close all apps
+action @close_background_apps | Close Apps | option=Keep foreground apps open | function=Close Apps | overview=Close background apps
+action @power_menu | Power | option=Power Menu | function=Power | overview=Power menu
+action @standby | Power | option=Standby | function=Power | overview=Standby
+action @quick_settings | System panels | option=Open Quick Settings | function=System panels | overview=Quick Settings
+action @notifications | System panels | option=Open notifications | function=System panels | overview=Notifications
+action @internet | System settings | option=Wi-Fi and internet controls | function=System settings | overview=Wi-Fi & internet
+action @bluetooth | System settings | option=Bluetooth settings | function=System settings | overview=Bluetooth
+action @night_light | System settings | option=Night Light settings | function=System settings | overview=Night Light
+action @extra_dim | System settings | option=Extra dim settings | function=System settings | overview=Extra dim
+action @display_settings | System settings | option=Display settings | function=System settings | overview=Display
+action @sound_settings | System settings | option=Sound settings | function=System settings | overview=Sound
+action @location_settings | System settings | option=Location settings | function=System settings | overview=Location
+action @cast_settings | System settings | option=Cast settings | function=System settings | overview=Cast
+action @dnd_settings | System settings | option=Do Not Disturb settings | function=System settings | overview=Do Not Disturb
+action @battery_saver | System settings | option=Battery Saver settings | function=System settings | overview=Battery Saver
+action @performance | Performance Mode | option=Ask | function=Performance Mode | overview=Performance Mode
+action @fan | Fan Control | option=Ask | function=Fan Control | overview=Fan Control
+action @handle | Handle Style | option=Ask | function=Handle Style | overview=Handle Style
+action @display | Toggle Display Power | option=Top screen | function=Toggle Display Power | overview=Toggle Display Power
+action @refresh_rate | Refresh Rate | option=Toggle 60/120 Hz | function=Refresh Rate | overview=Refresh Rate
+action @stick_light | Stick Lighting | option=Both Sticks | function=Stick Lighting | overview=Stick Lighting
+action @direct_power | Direct Power Supply | option= | function=Direct Power Supply | overview=Direct Power Supply
+action @vibration | Vibration | option= | function=Vibration | overview=Vibration
+action @force_landscape | Force Landscape | option= | function=Force Landscape | overview=Force Landscape
+action @virtual_mouse | Virtual Mouse | option= | function=Virtual Mouse | overview=Virtual Mouse
+action @do_not_disturb | Do Not Disturb | option= | function=Do Not Disturb | overview=Do Not Disturb
+action @mute_microphone | Mute Microphone | option= | function=Mute Microphone | overview=Mute Microphone
+action dev.steinhorst.backbuttonhero | Launch app: Back Button Hero | option= | function=Launch app: Back Button Hero | overview=Open Back Button Hero
+action com.example.not.installed | Launch app… | option= | function=Launch app… | overview=Launch app…
+favorites set | Launch app: Favorites
+ayn @performance modal | Ask
+ayn @performance standard | Standard Performance
+ayn @performance medium | Medium Performance
+ayn @performance high | High Performance
+ayn @fan modal | Ask
+ayn @fan off | Turned Off
+ayn @fan quiet | Quiet Mode
+ayn @fan smart | Smart Mode
+ayn @fan sports | Sports Mode
+ayn @handle modal | Ask
+ayn @handle standard | Standard Style
+ayn @handle xbox | XBox Style
+ayn @handle ban | Ban On Use
+ayn @display top | Top screen
+ayn @display bottom | Bottom screen
+ayn @refresh_rate toggle | Toggle 60/120 Hz
+ayn @refresh_rate 60 | 60 Hz
+ayn @refresh_rate 120 | 120 Hz
+ayn @stick_light both | Both Sticks
+ayn @stick_light left | Left Stick
+ayn @stick_light right | Right Stick
+appMode minimize | Minimize (simulate swipe up)
+appMode force_close | Instant Exit / Force-Close
+appMode restart | Restart app
+appMode bogus | Minimize (simulate swipe up)
+appScreen top | Top screen
+appScreen bottom | Bottom screen
+appScreen both | Both screens
+appScreen ask | Ask
+appScreen bogus | Ask
+levelTarget top | Top screen
+levelTarget bottom | Bottom screen
+levelTarget both | Both screens
+levelTarget bogus | Both screens
+display top | Top screen
+display bottom | Bottom screen
+display ask | Ask
+display bogus | Ask
+focusTarget top | Top screen
+focusTarget bottom | Bottom screen
+focusTarget toggle | Toggle focus
+focusTarget modal | Ask
+focusTarget bogus | Toggle focus
+quality small | Small (4 Mbit/s)
+quality medium | Medium (10 Mbit/s)
+quality large | Large (20 Mbit/s)
+duck off | Off
+duck video | In the video
+duck device | In the video and on the device
+focusPosition top_left | Top left
+focusPosition top_center | Top center
+focusPosition top_right | Top right
+focusPosition center_left | Center left
+focusPosition center | Center
+focusPosition center_right | Center right
+focusPosition bottom_left | Bottom left
+focusPosition bottom_center | Bottom center
+focusPosition bottom_right | Bottom right
+focusPosition off | Off
+recordPosition top_left | Top left
+recordPosition top_center | Top center
+recordPosition top_right | Top right
+recordPosition center_left | Center left
+recordPosition center | Center
+recordPosition center_right | Center right
+recordPosition bottom_left | Bottom left
+recordPosition bottom_center | Bottom center
+recordPosition bottom_right | Bottom right
+recordPosition off | Off
+# HOME_L1
+action <none> | Not set | option= | function=null | overview=Not set
+action @app_ask | Launch app: Ask | option= | function=Launch app: Ask | overview=Choose app
+action @app_favorites | Launch app: Favorites (none starred yet) | option= | function=Launch app: Favorites (none starred yet) | overview=Favorite apps
+action @home | Home | option= | function=Home | overview=Home
+action @back | Regular Back press | option= | function=Regular Back press | overview=Back
+action @swap_apps | Switch both apps | option= | function=Switch both apps | overview=Switch both apps
+action @last_app | Switch to last app | option= | function=Switch to last app | overview=Last app
+action @screenshot | Take screenshot | option= | function=Take screenshot | overview=Screenshot
+action @record_video | Record video | option= | function=Record video | overview=Record video
+action @macro | Macro | option= | function=Macro | overview=Macro
+action @gyro | Gyro on/off (BETA) | option= | function=Gyro on/off (BETA) | overview=Gyro on/off
+action @gyro_calibrate | Calibrate gyro (BETA) | option= | function=Calibrate gyro (BETA) | overview=Calibrate gyro
+action @controller_focus | Set controller focus | option= | function=Set controller focus | overview=Controller focus
+action @switch_active_app | Switch active app | option= | function=Switch active app | overview=Move active app
+action @app_control | Active App Control | option= | function=Active App Control | overview=Active App Control
+action @status_overlay | Status Overlay | option= | function=Status Overlay | overview=Status Overlay
+action @recents | App Switcher (Recents) | option=Top screen | function=App Switcher (Recents) | overview=Recents top
+action @switcher | App Switcher (Recents) | option=Bottom screen | function=App Switcher (Recents) | overview=Recents bottom
+action @volume_up | Volume | option=Up | function=Volume | overview=Volume +
+action @volume_down | Volume | option=Down | function=Volume | overview=Volume −
+action @volume_mute | Volume | option=Toggle mute | function=Volume | overview=Mute
+action @brightness_up | Brightness | option=Up | function=Brightness | overview=Brightness +
+action @brightness_down | Brightness | option=Down | function=Brightness | overview=Brightness −
+action @media_play_pause | Media Control | option=Play / Pause | function=Media Control | overview=Play / Pause
+action @media_next | Media Control | option=Next Track | function=Media Control | overview=Next track
+action @media_previous | Media Control | option=Previous Track | function=Media Control | overview=Previous track
+action @navigation_flick_left | Navigation flick | option=Left | function=Navigation flick | overview=Flick left
+action @navigation_flick_right | Navigation flick | option=Right | function=Navigation flick | overview=Flick right
+action @close_apps | Close Apps | option=Close all apps | function=Close Apps | overview=Close all apps
+action @close_background_apps | Close Apps | option=Keep foreground apps open | function=Close Apps | overview=Close background apps
+action @power_menu | Power | option=Power Menu | function=Power | overview=Power menu
+action @standby | Power | option=Standby | function=Power | overview=Standby
+action @quick_settings | System panels | option=Open Quick Settings | function=System panels | overview=Quick Settings
+action @notifications | System panels | option=Open notifications | function=System panels | overview=Notifications
+action @internet | System settings | option=Wi-Fi and internet controls | function=System settings | overview=Wi-Fi & internet
+action @bluetooth | System settings | option=Bluetooth settings | function=System settings | overview=Bluetooth
+action @night_light | System settings | option=Night Light settings | function=System settings | overview=Night Light
+action @extra_dim | System settings | option=Extra dim settings | function=System settings | overview=Extra dim
+action @display_settings | System settings | option=Display settings | function=System settings | overview=Display
+action @sound_settings | System settings | option=Sound settings | function=System settings | overview=Sound
+action @location_settings | System settings | option=Location settings | function=System settings | overview=Location
+action @cast_settings | System settings | option=Cast settings | function=System settings | overview=Cast
+action @dnd_settings | System settings | option=Do Not Disturb settings | function=System settings | overview=Do Not Disturb
+action @battery_saver | System settings | option=Battery Saver settings | function=System settings | overview=Battery Saver
+action @performance | Performance Mode | option=Ask | function=Performance Mode | overview=Performance Mode
+action @fan | Fan Control | option=Ask | function=Fan Control | overview=Fan Control
+action @handle | Handle Style | option=Ask | function=Handle Style | overview=Handle Style
+action @display | Toggle Display Power | option=Top screen | function=Toggle Display Power | overview=Toggle Display Power
+action @refresh_rate | Refresh Rate | option=Toggle 60/120 Hz | function=Refresh Rate | overview=Refresh Rate
+action @stick_light | Stick Lighting | option=Both Sticks | function=Stick Lighting | overview=Stick Lighting
+action @direct_power | Direct Power Supply | option= | function=Direct Power Supply | overview=Direct Power Supply
+action @vibration | Vibration | option= | function=Vibration | overview=Vibration
+action @force_landscape | Force Landscape | option= | function=Force Landscape | overview=Force Landscape
+action @virtual_mouse | Virtual Mouse | option= | function=Virtual Mouse | overview=Virtual Mouse
+action @do_not_disturb | Do Not Disturb | option= | function=Do Not Disturb | overview=Do Not Disturb
+action @mute_microphone | Mute Microphone | option= | function=Mute Microphone | overview=Mute Microphone
+action dev.steinhorst.backbuttonhero | Launch app: Back Button Hero | option= | function=Launch app: Back Button Hero | overview=Open Back Button Hero
+action com.example.not.installed | Launch app… | option= | function=Launch app… | overview=Launch app…
+favorites set | Launch app: Favorites
+ayn @performance modal | Ask
+ayn @performance standard | Standard Performance
+ayn @performance medium | Medium Performance
+ayn @performance high | High Performance
+ayn @fan modal | Ask
+ayn @fan off | Turned Off
+ayn @fan quiet | Quiet Mode
+ayn @fan smart | Smart Mode
+ayn @fan sports | Sports Mode
+ayn @handle modal | Ask
+ayn @handle standard | Standard Style
+ayn @handle xbox | XBox Style
+ayn @handle ban | Ban On Use
+ayn @display top | Top screen
+ayn @display bottom | Bottom screen
+ayn @refresh_rate toggle | Toggle 60/120 Hz
+ayn @refresh_rate 60 | 60 Hz
+ayn @refresh_rate 120 | 120 Hz
+ayn @stick_light both | Both Sticks
+ayn @stick_light left | Left Stick
+ayn @stick_light right | Right Stick
+appMode minimize | Minimize (simulate swipe up)
+appMode force_close | Instant Exit / Force-Close
+appMode restart | Restart app
+appMode bogus | Minimize (simulate swipe up)
+appScreen top | Top screen
+appScreen bottom | Bottom screen
+appScreen both | Both screens
+appScreen ask | Ask
+appScreen bogus | Ask
+levelTarget top | Top screen
+levelTarget bottom | Bottom screen
+levelTarget both | Both screens
+levelTarget bogus | Both screens
+display top | Top screen
+display bottom | Bottom screen
+display ask | Ask
+display bogus | Ask
+focusTarget top | Top screen
+focusTarget bottom | Bottom screen
+focusTarget toggle | Toggle focus
+focusTarget modal | Ask
+focusTarget bogus | Toggle focus
+quality small | Small (4 Mbit/s)
+quality medium | Medium (10 Mbit/s)
+quality large | Large (20 Mbit/s)
+duck off | Off
+duck video | In the video
+duck device | In the video and on the device
+focusPosition top_left | Top left
+focusPosition top_center | Top center
+focusPosition top_right | Top right
+focusPosition center_left | Center left
+focusPosition center | Center
+focusPosition center_right | Center right
+focusPosition bottom_left | Bottom left
+focusPosition bottom_center | Bottom center
+focusPosition bottom_right | Bottom right
+focusPosition off | Off
+recordPosition top_left | Top left
+recordPosition top_center | Top center
+recordPosition top_right | Top right
+recordPosition center_left | Center left
+recordPosition center | Center
+recordPosition center_right | Center right
+recordPosition bottom_left | Bottom left
+recordPosition bottom_center | Bottom center
+recordPosition bottom_right | Bottom right
+recordPosition off | Off
+ptt 0 | Not chosen
+ptt 96 | A
+ptt 97 | B
+ptt 99 | X
+ptt 100 | Y
+ptt 102 | L1
+ptt 103 | R1
+ptt 104 | L2
+ptt 105 | R2
+ptt 106 | L3
+ptt 107 | R3
+ptt 108 | Start
+ptt 109 | Select
+ptt 4 | 4
+ptt 24 | 24
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=0, holdPasses=true, sensitivity=100, deadzone=15, minOutput=0, invertX=false, invertY=false) | Right stick, Swing (yaw), 100 %
+gyro GyroSettings(stick=LEFT, axis=ROLL, rate=true, holdKey=0, holdPasses=true, sensitivity=150, deadzone=15, minOutput=0, invertX=false, invertY=false) | Left stick, Steer (roll), turning speed, 150 %
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=103, holdPasses=true, sensitivity=100, deadzone=15, minOutput=0, invertX=false, invertY=false) | Right stick, Swing (yaw), 100 %, hold R1
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=103, holdPasses=true, sensitivity=40, deadzone=15, minOutput=0, invertX=false, invertY=false) | Right stick, Swing (yaw), 40 %, hold R1
+toggle l1_r1 | L1 + R1
+toggle l2_r2 | L2 + R2
+toggle both | L3 + R3
+toggle <none> | Not set
+toggle bogus | L3 + R3

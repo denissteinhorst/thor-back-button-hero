@@ -42,6 +42,8 @@ attached over `adb` (the device id changes — check with `adb devices`).
 ./gradlew installDebug            # build + install on the attached device
 ./gradlew assembleRelease         # release APK (unsigned locally - see below)
 ./gradlew connectedDebugAndroidTest   # the one instrumented test; needs a device
+python3 tools/docs/check-links.py      # every relative link and anchor in the docs resolves
+python3 tools/docs/check-structure.py  # PROJECT-STRUCTURE.md names every production file
 ```
 
 Run `./tools/verify.sh` after every change. Never bypass the hooks with `--no-verify`.
@@ -70,7 +72,7 @@ way, so most maintenance is either additive or mechanical. A few recipes:
 ### Changing a stored preference default or key
 
 Do **not** just change the default — existing installs would silently shift behavior.
-Add a guarded one-time migration in `Prefs`'s `init` block, following the existing
+Add a guarded one-time migration to `Migrations.kt` (run from `Prefs`'s `init`, in order), following the existing
 pattern: a versioned boolean flag that gates a single rewrite.
 
 ```kotlin

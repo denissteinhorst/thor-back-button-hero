@@ -36,13 +36,15 @@ everything keyed by `prefKey` works on it unchanged, and type decisions use `Com
 `HomeAsBack` already gives one key ownership of a press and swallows the other. In dual mode the
 owning Home press is translated to Back like in Home-as-Back mode, but drives a second
 `BackGestureMachine` that reads the Home layer's gestures and timings, and every combo pressed meanwhile
-resolves to its `HomeLayerButton`. An excepted Home gesture delivers Android's Home instead of Back.
+resolves to its `HomeLayerButton` (`ComboRouter` and `DirectionalRouter` receive the layered button; a
+stick click keeps the layer it began in, latched by `StickClickRouter`). An excepted Home gesture delivers Android's Home instead of Back.
 `PadHelper` sends `HOMEBACK 2`, which makes the root helper treat Home as a modifier for D-pad and stick
 captures while keeping the emergency release.
 
 ## Tests
 
-JVM tests cover the storage, seeding, exclusivity, plans, backup and the two-column pages (goldens). The
+JVM tests cover the storage, seeding, exclusivity, plans, backup and the two-column pages (goldens);
+`DualModeServiceTest` and `InputPipelineCharacterizationTest` drive both layers through the service's key path. The
 device suite runs every layer-aware test once per layer on `--full` (and with `--layers home`, or on
 `--changed` when the change touches dual mode), pressing Home instead of Back and binding the `dual_`
 keys, plus the dedicated `dual` area; see `docs/DEVICE-TEST.md`.

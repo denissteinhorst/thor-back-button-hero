@@ -1,6 +1,9 @@
 package dev.steinhorst.backbuttonhero
 
 import android.view.KeyEvent
+import dev.steinhorst.backbuttonhero.core.AppSource
+import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -19,18 +22,18 @@ class TopRecentsBackTest {
         }
         val overlay = SwitcherOverlay(service, source, { true }, {}, { _, _ -> }, {}, { _, _ -> }, {}, {})
         ReflectionHelpers.setField(service, "overlay", overlay)
-        ReflectionHelpers.setField(service, "topRecentsControllerActive", true)
+        ReflectionHelpers.setField(ReflectionHelpers.callInstanceMethod<Any>(service, "getTopSession"), "active", true)
         fun event(action: Int, id: Int) = KeyEvent(100, 180, action, KeyEvent.KEYCODE_BACK, 0, 0, id, 158)
         fun dispatch(event: KeyEvent) = ReflectionHelpers.callInstanceMethod<Boolean>(service, "onKeyEvent",
             ReflectionHelpers.ClassParameter.from(KeyEvent::class.java, event))
         try {
             assertTrue(dispatch(event(KeyEvent.ACTION_DOWN, device)))
-            assertFalse(ReflectionHelpers.getField(service, "topRecentsExitRequested"))
+            assertFalse(ReflectionHelpers.getField(ReflectionHelpers.callInstanceMethod<Any>(service, "getTopSession"), "exitRequested"))
             assertTrue(ReflectionHelpers.getField(service, "switcherBackDown"))
             assertFalse(dispatch(event(KeyEvent.ACTION_UP, device + 1)))
             assertTrue(ReflectionHelpers.getField(service, "switcherBackDown"))
             assertTrue(dispatch(event(KeyEvent.ACTION_UP, device)))
-            assertTrue(ReflectionHelpers.getField(service, "topRecentsExitRequested"))
+            assertTrue(ReflectionHelpers.getField(ReflectionHelpers.callInstanceMethod<Any>(service, "getTopSession"), "exitRequested"))
             assertFalse(ReflectionHelpers.getField(service, "switcherBackDown"))
             assertFalse(dispatch(event(KeyEvent.ACTION_DOWN, -1)))
             assertFalse(dispatch(event(KeyEvent.ACTION_UP, -1)))

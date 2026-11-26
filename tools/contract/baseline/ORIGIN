@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: 0BSD
+# Origin of the contract fixtures in this directory. Refresh only as a reviewed act
+# (python3 tools/contract/contract.py snapshot --out tools/contract/baseline [--only NAME]),
+# never to turn a failing check green.
+source-baseline a032d080db3366fd9cf986d5c6d1764f7e13f313
+release-fixtures built from 9a9d21d (production inputs identical to the baseline, tools/contract/prod-diff.sh)
+release-fixtures cross-checked: manifest, resources, entries and DEX equal the S0 archive of 177b2dc
+release-apk sha256 4e0a782bcd48da680cc8c33544286076384c506f22fdad224670a6121b7d77a9 (S0 archive; Git revision entry normalized)
+debug-fixtures built from 9a9d21d (includes the device-test recovery receiver)
+tests 726 cases in 98 classes; goldens 89; ratchets 77; lint baseline 20 issues
+toolchain JDK 17.0.21, AGP 9.5.1, Kotlin 2.4.21, Gradle 9.9.2, build-tools 34.0.0 aapt2/dexdump

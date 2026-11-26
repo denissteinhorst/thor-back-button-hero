@@ -23,6 +23,13 @@ def _cover(d, display, before):
     return {t for t in set(d.windows(display)) - before if "backbuttonhero" not in t}
 
 
+def _pads_settled(d):
+    """AYN's new pad (hidden behind the helper's unlinked node) and the helper's clone both exist."""
+    kind = d.sh("getprop persist.sys.gamepad.type").strip()
+    name = {"0": "Odin Controller", "1": "Xbox Wireless Controller"}.get(kind)
+    return bool(name) and d.sh("cat /proc/bus/input/devices").count(f'N: Name="{name}"') == 2
+
+
 def _handle(d):
     return (d.setting("flip_button_layout"), d.setting("temp_abxy_layout_mode"),
             d.setting("no_create_gamepad_button_layout"), d.sh("getprop persist.sys.gamepad.type").strip())
@@ -80,17 +87,25 @@ def handle(d):
             if option != "ban":
                 # The helper follows the new pad; printed X must still be X.
                 d.eventually(d.helper_pid, 10, "the helper did not survive the style switch")
+                # AYN destroys and recreates its pad; a press before its pad and the helper's clone are
+                # both back can reach apps twice.
+                d.eventually(lambda: _pads_settled(d), 10, "the pad and the helper's clone did not come back")
                 time.sleep(2.0)
                 expect_media(d, lambda: d.press(Seq().combo(d.face("x"))), ["MEDIA_NEXT"])
     finally:
         if original:
             d.bind("l1", "@handle", ayn_option=original)
-            combo(d, pad.L1)
+            banned = _handle(d) == HANDLES["ban"]
             try:
+                if banned:
+                    # Ban on Use exposes no pad at all, so there is nothing to press the hotkey on.
+                    raise Fail("banned")
+                combo(d, pad.L1)
                 d.eventually(lambda: _handle(d) == HANDLES[original], 5, "")
             except Fail:
                 flip, layout, no_layout, kind = HANDLES[original]
                 d.root(f"settings put system flip_button_layout {flip} && settings put system temp_abxy_layout_mode {layout} "
                        f"&& settings put system no_create_gamepad_button_layout {no_layout} && setprop persist.sys.gamepad.type {kind}")
-                d.warnings.append(f"the hotkey could not switch back from Ban to {original}; restored as root")
+                if not banned:
+                    d.warnings.append(f"the hotkey could not switch back to {original}; restored as root")
             time.sleep(2.0)

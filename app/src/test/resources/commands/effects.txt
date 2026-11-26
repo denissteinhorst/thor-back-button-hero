@@ -1,0 +1,102 @@
+## @app_ask
+prompt [Launch which app?, Back Button Hero, Cancel]
+## @app_control
+prompt [Which screen's app?, Top screen, Bottom screen, Both screens, Cancel]
+## @app_favorites
+Notice: No favorites yet. Star apps in the app list of Launch app.
+## @back
+global 1
+## @battery_saver
+activity action=android.settings.BATTERY_SAVER_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @bluetooth
+activity action=android.settings.BLUETOOTH_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @brightness_down
+## @brightness_up
+## @cast_settings
+activity action=android.settings.CAST_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @close_apps
+Notice: No apps to close on that screen.
+## @close_background_apps
+Notice: No apps to close on that screen.
+## @controller_focus
+## @direct_power
+Notice: Direct Power Supply: On
+## @display
+Notice: Toggle Display Power: Only bottom screen
+## @display_settings
+activity action=android.settings.DISPLAY_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @dnd_settings
+activity action=android.settings.ZEN_MODE_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @do_not_disturb
+Notice: Do Not Disturb: On
+## @extra_dim
+activity action=android.settings.REDUCE_BRIGHT_COLORS_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @fan
+prompt [Fan Control, Turned Off, Quiet Mode, Smart Mode, Sports Mode, Cancel]
+## @force_landscape
+Notice: Force Landscape: On
+## @gyro
+Notice: Gyro control needs a gyroscope and an accelerometer.
+## @gyro_calibrate
+Notice: Gyro control needs a gyroscope and an accelerometer.
+## @handle
+prompt [Handle Style, Standard Style, XBox Style, Ban On Use, Cancel]
+## @home
+activity action=android.intent.action.MAIN component=null data=null categories=[android.intent.category.HOME] flags=0x10000000 extras=null display=0
+## @internet
+activity action=android.settings.panel.action.INTERNET_CONNECTIVITY component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @last_app
+Notice: No previous app on this screen
+## @location_settings
+activity action=android.settings.LOCATION_SOURCE_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @macro
+## @media_next
+media action=0 key=87
+media action=1 key=87
+## @media_play_pause
+media action=0 key=85
+media action=1 key=85
+## @media_previous
+media action=0 key=88
+media action=1 key=88
+## @mute_microphone
+Notice: Mute Microphone: On
+## @navigation_flick_left
+## @navigation_flick_right
+## @night_light
+activity action=android.settings.NIGHT_DISPLAY_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @notifications
+global 4
+## @performance
+prompt [Performance Mode, Standard Performance, Medium Performance, High Performance, Cancel]
+## @power_menu
+global 6
+## @quick_settings
+global 5
+## @recents
+global 3
+## @record_video
+Notice: Recording failed
+## @refresh_rate
+Notice: Refresh Rate: 120 Hz
+## @screenshot
+global 9
+## @sound_settings
+activity action=android.settings.SOUND_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
+## @standby
+global 8
+## @status_overlay
+Notice: Battery -2147483648 %
+## @stick_light
+Notice: Stick Lighting (Both Sticks): On
+## @swap_apps
+## @switch_active_app
+## @switcher
+## @vibration
+Notice: Vibration: On
+## @virtual_mouse
+Notice: Virtual Mouse: On
+## @volume_down
+## @volume_mute
+## @volume_up
+## com.android.settings

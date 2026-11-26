@@ -1,0 +1,21 @@
+app_exceptions	string	com.example.game\t8522825731\tGame\tfalse
+back_gestures_v1	boolean	true
+back_single_package	string	
+dpad_down_package	string	@brightness_down
+dpad_left_package	string	@volume_down
+dpad_right_package	string	@volume_up
+dpad_up_package	string	
+exception_buttons_v1	boolean	true
+exception_sticks_v2	boolean	true
+gyro_calibration_v1	string	device calibration data
+l1_package	string	@navigation_flick_right
+l2_package	string	
+navigation_flick_defaults_v1	boolean	true
+navigation_flick_directions_v2	boolean	true
+r1_package	string	@navigation_flick_left
+r2_package	string	
+shoulder_defaults_v3	boolean	true
+toggle_buttons	string	l2_r2
+toggle_default_v2	boolean	true
+toggle_pairs_v1	boolean	true
+unassigned_defaults_v1	boolean	true

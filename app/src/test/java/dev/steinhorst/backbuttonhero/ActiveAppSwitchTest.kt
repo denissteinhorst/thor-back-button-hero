@@ -1,6 +1,13 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith

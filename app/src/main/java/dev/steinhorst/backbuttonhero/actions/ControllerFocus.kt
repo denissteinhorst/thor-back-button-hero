@@ -1,0 +1,100 @@
+package dev.steinhorst.backbuttonhero.actions
+
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import java.util.concurrent.Executors
+
+/** Routes the Thor's controller buttons to one display through AYN's own pservice sequence. */
+class ControllerFocus(
+    private val context: Context,
+    private val notice: (String) -> Unit,
+    private val onFailed: () -> Unit,
+) {
+    private val worker = Executors.newSingleThreadExecutor()
+    private val main = Handler(Looper.getMainLooper())
+
+    // Main thread only. The setting changes only once the queued root command has run, so a toggle
+    // requested before then must resolve against the last requested value, or two quick presses
+    // would both pick the same display.
+    private var requested: String? = null
+    private var queued = 0
+
+    /** True when [target] resolves to the top display, from the setting AYN's own tool keeps current. */
+    fun targetIsTop(target: String): Boolean = resolveValue(target, requested ?: currentValue()) == TOP_VALUE
+
+    /**
+     * The current route, retained before Recents temporarily takes controller input. AYN's
+     * Auto-lock must survive that round trip: restoring it as a fixed screen would lock the
+     * controller there until the user resets it in AYN's settings.
+     */
+    fun currentTarget(): String = when (requested ?: currentValue()) {
+        TOP_VALUE -> Prefs.DISPLAY_TOP
+        BOTTOM_VALUE -> Prefs.DISPLAY_BOTTOM
+        else -> AUTO_TARGET
+    }
+
+    fun run(target: String, onComplete: ((Boolean) -> Unit)? = null) {
+        if (!PService.cachedAvailable()) {
+            // The indicator is already up by now; it must not confirm a switch that never happens.
+            onFailed()
+            onComplete?.let { main.post { it(false) } }
+            return unavailable()
+        }
+        val value = resolveValue(target, requested ?: currentValue())
+        requested = value
+        queued++
+        worker.execute {
+            // Mirrors AYN's own tool (verified from its pservice log): Shift-right is deliberately
+            // sent WITHOUT -d, so it reaches the currently focused display, where AYN's assistant
+            // window commits the route. Sending it to the target display instead reaches the game
+            // and the switch to top silently fails.
+            val command = "setprop $INPUT_DISPLAY_PROPERTY $value && " +
+                "settings put system $FOCUS_SETTING $value && input keyevent 60 && echo OK"
+            // FocusedDisplayId describes the display owning the active Android window, not AYN's
+            // controller route. It can legitimately remain on the game display after this command.
+            // A successful OEM command sequence is therefore the only synchronous acknowledgement.
+            val ok = commandSucceeded(PService.exec(command))
+            main.post {
+                if (--queued == 0) requested = null
+                if (!ok) failed()
+                onComplete?.invoke(ok)
+            }
+        }
+    }
+
+    private fun currentValue(): String? = Settings.System.getString(context.contentResolver, FOCUS_SETTING)
+
+    private fun failed() {
+        onFailed()
+        unavailable()
+    }
+
+    private fun unavailable() {
+        notice(context.getString(R.string.shoulder_action_unavailable))
+    }
+
+    companion object {
+        const val INPUT_DISPLAY_PROPERTY = "persist.sys.input.dispaly" // Firmware typo is intentional.
+        const val FOCUS_SETTING = "screen_focus_lock"
+        const val TOP_VALUE = "1"
+        const val BOTTOM_VALUE = "2"
+        /** AYN's "Auto-lock": the route follows the screen last touched. */
+        const val AUTO_VALUE = "0"
+        /** Only a restore target; never stored in [Prefs]. */
+        const val AUTO_TARGET = "auto"
+
+        fun commandSucceeded(output: String?): Boolean = output?.trim()?.endsWith("OK") == true
+
+        fun resolveValue(target: String, current: String?): String = when (target) {
+            Prefs.DISPLAY_TOP -> TOP_VALUE
+            Prefs.DISPLAY_BOTTOM -> BOTTOM_VALUE
+            AUTO_TARGET -> AUTO_VALUE
+            else -> if (current == TOP_VALUE) BOTTOM_VALUE else TOP_VALUE
+        }
+    }
+}

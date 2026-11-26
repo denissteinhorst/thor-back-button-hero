@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero
 
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.prefs.Prefs
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith

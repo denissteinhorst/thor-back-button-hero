@@ -1,0 +1,771 @@
+AccessibilityAppSourceTest#appsOnDisplay returns an empty list when nothing was ever recorded
+AccessibilityAppSourceTest#forget leaves other packages' thumbnails untouched
+AccessibilityAppSourceTest#forget on an unknown package does not throw
+AccessibilityAppSourceTest#forget recycles the cached thumbnail for that package
+AccessibilityAppSourceTest#multiple tasks for one app keep its observed history regardless of lock or display
+AccessibilityAppSourceTest#saving a second thumbnail for the same package recycles the first
+AccessibilityAppSourceTest#successful empty snapshot clears history without adding system only apps
+AccessibilityAppSourceTest#system snapshot removes closed apps from both histories and recycles only their thumbnails
+AccessibilityAppSourceTest#topApp returns null when the display has no windows
+AccessibilityInventoryTest#every clickable row reports contentDescription, min height in dp, and focusability
+ActionChooserTest#a search also finds keywords and descriptions, but options skip their group's description
+ActionChooserTest#a search matches every word against group and option names and says when nothing matches
+ActionChooserTest#a search without hits shows a disabled notice
+ActionChooserTest#gaming slang leads to the matching action
+ActionChooserTest#picking a group option from the search stores it and the X brings the full list back
+ActionChooserTest#picking an AYN option from the search stores the tile and its option
+ActionChooserTest#scrolling the results drops the field's focus
+ActionChooserTest#searching lauter finds raising the volume
+ActionChooserTest#the list opens sorted with a disabled rule below Not set and the current action checked
+ActionChooserTest#without a search Not set leads, then a rule, then everything from A to Z
+ActionGroupsTest#an app switcher binding keeps its own stored action
+ActionGroupsTest#entries are never a storable action
+ActionGroupsTest#groups fold only known single actions and never overlap
+ActiveAppSwitchTest#a settings window with the same UID cannot substitute for the focus shield
+ActiveAppSwitchTest#auto route parses the actual focused display without assuming a bottom display id
+ActiveAppSwitchTest#focus follows by default for every hotkey and remains separate from screen targets
+ActiveAppSwitchTest#focus preference round trips through snapshots and scoped presets
+AppControlTest#app control settings default to minimize ask and instant
+AppControlTest#app control settings round trip per button and through snapshots
+AppControlTest#both screens resolve to every foreground app
+AppControlTest#fixed screens resolve to that screens foreground app
+AppControlTest#screens showing only a launcher or no bottom display contribute nothing
+AppExceptionTest#combos need at least one Back gesture while an inactive exception allows everything
+AppExceptionTest#decoding skips malformed lines, unsafe packages and duplicates
+AppExceptionTest#each stick control follows its own column and a native-Back app releases them all
+AppExceptionTest#encoding round-trips and strips separators from labels
+AppExceptionTest#every combo button maps to its own column
+AppExceptionTest#the Android group keeps its Back gestures editable while Back is native
+AppExceptionTest#the button columns sit above every older bit, and a native-Back app releases them too
+AynPrefsTest#an AYN hotkey asks until an option is chosen, and a stale value is ignored
+AynTest#Do Not Disturb and the microphone go through Android's services
+AynTest#commands fit what pservice accepts
+AynTest#flipping a screen never leaves both dark
+AynTest#lookups resolve each kind of action
+AynTest#microphone state is read from the sensor privacy dump
+AynTest#one action per tile, all known to the backup and none an app package
+AynTest#option commands write the values the AYN assistant writes
+AynTest#options are valid per group, the modal only where there is one
+AynTest#refresh rate writes minimum and peak together, as AYN's tile does
+AynTest#refresh toggle flips between the two rates
+AynTest#screen modes write the mode and the matching controller route
+AynTest#stick lights flip one side alone and both together
+AynTest#toggle command writes zero or one
+BackGestureMachineTest#a combo cancels an excepted hold
+BackGestureMachineTest#a globally disabled hold has no native passthrough exception notice
+BackGestureMachineTest#a native Back down after a reset still schedules exactly one notice
+BackGestureMachineTest#an excepted double tap resolves every tap at once and never opens the switcher
+BackGestureMachineTest#an excepted hold explains the blocked swap once while preserving native Back
+BackGestureMachineTest#an excepted hold sends a native long press at the system timeout and swallows its release
+BackGestureMachineTest#an excepted single tap delivers a native Back after the double tap window
+BackGestureMachineTest#an excepted tap and hold falls back to the hold gesture
+BackGestureMachineTest#an inactive exception changes nothing
+BackGestureMachineTest#double tap never runs single tap or minimizes the current app
+BackGestureMachineTest#excepted single and double taps become two native Backs
+BackGestureMachineTest#expired tap window schedules ordinary hold instead of tap hold
+BackGestureMachineTest#fully native Back can explain a hold without injecting or consuming a gesture
+BackGestureMachineTest#holding past holdMs swaps screens and the UP does not also fire tap logic
+BackGestureMachineTest#letting the single-tap delay elapse with no second press fires onSingleTap once
+BackGestureMachineTest#mirrored native Back devices share one notice and release independently
+BackGestureMachineTest#reset cancels pending tap and hold and starts a fresh gesture
+BackGestureMachineTest#second down cancels pending single tap while retaining tap hold recognition
+BackGestureMachineTest#short fully native Back presses and reset cancel the notice
+BackGestureMachineTest#shoulder combo cancels both hold actions
+BackGestureMachineTest#single tap waits only for configured double tap window
+BackGestureMachineTest#tap hold fires at configured timeout while second press is still down and only once
+BackGestureMachineTest#tap hold remains armed after single tap has already fired
+BackGestureMachineTest#tap then hold again opens top recents instead of swapping screens
+BackGestureMachineTest#with double-tap disabled, UP fires onSingleTap immediately and schedules nothing
+BackGestureMachineTest#with hold disabled, nothing is scheduled at DOWN and UP still schedules a single tap
+BackGestureThresholdTest#follows recent tap without tap hold uses only the double tap window
+BackGestureThresholdTest#second tap within, at and just past the double tap window
+BackGestureThresholdTest#tap hold recognition within, at and just past its grace window
+BackGestureThresholdTest#the tap hold grace and the default native long press are unchanged
+BackGestureThresholdTest#timers are posted with exactly the configured delays
+BindingsOverviewTest#a binding changed elsewhere shows up when the overview comes back
+BindingsOverviewTest#a narrow screen lists the labels below the drawing
+BindingsOverviewTest#home shows its shortcut or, in its Back mode, that mode
+BindingsOverviewTest#long stick names take a line per direction while the page has room
+BindingsOverviewTest#on a screen too short for a line per direction the pairs stay and are cut short instead
+BindingsOverviewTest#only assigned controls get a label and nothing assigned shows a hint
+BindingsOverviewTest#the app opens on the overview, the first page under the logo and its rule
+BindingsOverviewTest#the drawing's parts open their pages and say what they do, while the labels only read
+BindingsOverviewTest#with every control assigned the labels stay beside the drawing without overlapping
+BottomPanelsTest#a choice in recents keeps the covering panel parked until its button brings it back
+BottomPanelsTest#a covering panel its owner reopens stays visible while launches keep other panels suppressed
+BottomPanelsTest#a failed hide or show stops without claiming the covering panel moved
+BottomPanelsTest#a panel already parked by a launch is not reopened when recents closes
+BottomPanelsTest#closing the covering card lets its owner close it and recents does not reopen it
+BottomPanelsTest#closing without a covering panel never presses its owner's button
+BottomPanelsTest#drawer launch captures the panel before hiding it and keeps that exact image for the return card
+BottomPanelsTest#losing the display or service releases the panels instead of retaining an unreachable return card
+BottomPanelsTest#opening and cancelling recents only captures the visible panel without suppressing it
+BottomPanelsTest#ordinary displays and failed privileged connections still complete the requested launch
+BottomPanelsTest#overlapping panels are captured in order before each is hidden and remain separate cards
+BottomPanelsTest#recents hides a covering panel to be seen and returns it when closed without a choice
+BottomPanelsTest#recreated panel is suppressed but never inherits the destroyed windows preview
+BottomPanelsTest#swap is blocked for either foreground owner with visible or hidden panels but not unrelated apps
+BottomPanelsTest#the covering flag survives the root channel and older replies default to not covering
+CardTouchTest#ACTION_CANCEL resets drag state without calling done
+CardTouchTest#a plain tap with no movement calls done(false)
+CardTouchTest#a predominantly horizontal drag never starts a vertical close-drag
+CardTouchTest#a vertical swipe that does not pass 30 percent of the threshold snaps back, calls nothing
+CardTouchTest#a vertical swipe up past the threshold calls done(true)
+CloseAppsTest#close apps actions are known grouped screen-target actions that ask by default
+CloseAppsTest#closing all apps takes every known app of the chosen screens once
+CloseAppsTest#keeping foreground apps spares the front app of every screen
+CloseAppsTest#standby asks only when chosen, and the stored mute levels start empty
+CloseAppsTest#targets cover their screens and tolerate a missing bottom display
+CloseAppsTest#the confirmation choice round trips per button and through snapshots
+ControllerFocusRoutingTest#an unreadable route toggles towards the top screen
+ControllerFocusRoutingTest#fixed targets ignore the current route
+ControllerFocusRoutingTest#the retained route keeps fixed screens and auto-lock
+ControllerFocusRoutingTest#toggle goes to the screen that does not have the route
+ControllerFocusTest#OEM command acknowledgement is independent of Android window focus
+ControllerFocusTest#fixed targets resolve to their firmware values
+ControllerFocusTest#the auto-lock restore target resolves to AYN's auto-lock value
+ControllerFocusTest#toggle flips known values and safely defaults to top
+DoubleTapDetectorTest#a fourth press after the reset completes a second double tap
+DoubleTapDetectorTest#a single press never fires
+DoubleTapDetectorTest#after a double tap the state resets, so a third press starts a new window
+DoubleTapDetectorTest#two presses exactly at the window boundary trigger a double tap
+DoubleTapDetectorTest#two presses just past the window do not trigger a double tap
+DoubleTapDetectorTest#two presses within the window trigger a double tap
+DoubleTapDetectorTest#windowMs is read fresh on every press, not captured at construction
+DpadPrefsTest#D-pad directions and shoulder buttons all start unassigned
+DpadPrefsTest#a cleared D-pad direction stays cleared instead of falling back to its default
+DpadPrefsTest#an explicit screenshot target wins, including both screens
+DpadPrefsTest#controller focus target defaults to toggle and round-trips per button
+DpadPrefsTest#focus indicator settings default per button and round-trip
+DpadPrefsTest#hasDpadAction is false by default and follows the assignments
+DpadPrefsTest#hasScreenTarget covers level screenshot and controller focus actions
+DpadPrefsTest#isLevelAction covers exactly the four volume and brightness actions
+DpadPrefsTest#level target defaults to both screens for every button
+DpadPrefsTest#level target round-trips per button
+DpadPrefsTest#listeners hear changes from another Prefs instance until unregistered
+DpadPrefsTest#screenshot defaults to the top screen, which is what it always did
+DpadPrefsTest#unregistering an unknown listener is harmless
+DualModeServiceTest#Back first owns the press, and Home meanwhile is swallowed
+DualModeServiceTest#Home owns its press on its own machine, and Back meanwhile is swallowed
+DualModeServiceTest#Home's gestures run the Home layer and Back's the Back layer
+DualModeServiceTest#a Back tap and a Home tap are never one double tap
+DualModeServiceTest#a button bound only under Back reaches the app while Home is held
+DualModeServiceTest#the helper is told dual mode, keeping its emergency release
+DualModeServiceTest#the same button runs each layer's own binding
+DualModeServiceTest#with dual mode off Home is Android's again and its layer rests
+DualModeSettingsTest#Unbind asks for the layers and clears only those
+DualModeSettingsTest#every binding pair starts on one line, Back + Home alone and blocked
+DualModeSettingsTest#pages in English, light theme
+DualModeSettingsTest#pages in German, light theme
+DualModeSettingsTest#section headings are centred over both columns, and only in dual mode
+DualModeSettingsTest#the overview switches between the layers
+DualModeSettingsTest#the overview's layer tabs are named like the column heads
+DualModeSettingsTest#the switch turns Home as Back off and the pages back to one column
+DualModeSettingsTest#wide pages in English, dark theme
+DualModeTest#Home's gestures read the Home layer
+DualModeTest#Unbind reaches only the chosen layers
+DualModeTest#a Home layer binding is its own key on the same control
+DualModeTest#a backup without dual mode reads as unseeded, one claiming both Home modes keeps dual mode
+DualModeTest#a resting Home layer asks nothing of the helper
+DualModeTest#macros of the Home layer count, and deleting one clears it there too
+DualModeTest#page presets reset the chosen layer's timings, the whole-app reset ends dual mode
+DualModeTest#seeding is a pure copy of the Back layer
+DualModeTest#stick-click timings are per layer
+DualModeTest#the first switch-on copies the Back layer once, Home's single tap stays Home
+DualModeTest#the state survives the preferences and a backup
+DualModeTest#the two Home modes exclude each other
+EchoTrimTest#a microphone that does not hear the speaker is left alone
+EchoTrimTest#a voice louder than the speaker passes, in the speaker's band and below it
+EchoTrimTest#the speaker's sound is found and lowered once it has been heard alone
+EchoTrimTest#while somebody speaks the speaker's band is lowered by half at most
+EchoTrimTest#without anything learned the samples come back unchanged
+EditorDialogSnapshotTest#gyro setup
+EditorDialogSnapshotTest#gyro setup, German
+EditorDialogSnapshotTest#gyro setup, dark
+EditorDialogSnapshotTest#macro editor with three steps
+EditorDialogSnapshotTest#macro editor with three steps, German
+EditorDialogSnapshotTest#macro editor with three steps, dark
+EditorDialogSnapshotTest#macro editor, nothing recorded
+EditorDialogSnapshotTest#macro library
+ExceptionGroupSnapshotTest#a combo modal explains why it is unreachable when Back is native
+ExceptionGroupSnapshotTest#a native Back greys only the Android modal's combos
+ExceptionGroupSnapshotTest#an app row shows the five groups with how much each still handles
+ExceptionGroupSnapshotTest#the Android modal lists the Back gestures and the Home Start Select combos
+ExceptionGroupSnapshotTest#the face modal lists its four buttons by their printed letters
+ExceptionGroupSnapshotTest#the sticks modal lists both sticks with every direction and click
+ExceptionSettingsPageTest#a group all switch clears and restores only that group
+ExceptionSettingsPageTest#already added apps cannot be added twice and cancelling adds nothing
+ExceptionSettingsPageTest#app picker searches names and packages and allowing everything handles every control
+ExceptionSettingsPageTest#blocking everything explains that Back and its combos reach the app untouched
+ExceptionSettingsPageTest#each stick has its own section switch inside the sticks modal
+ExceptionSettingsPageTest#exceptions persist across navigation and recreation and the trash removes them
+ExceptionSettingsPageTest#help has no preset actions and bug report opens the existing GitHub template
+ExceptionSettingsPageTest#remove all previews the apps and clears only exceptions
+ExceptionSettingsPageTest#switching an exception off keeps its switches but disables them
+ExceptionSettingsPageTest#system apps stay hidden until shown or searched for
+ExceptionSettingsPageTest#unchecking the last Back gesture greys the combos and explains why once
+FaceButtonTest#Home Start and Select map to their own buttons
+FaceButtonTest#face buttons follow their printed label in both controller styles
+FaceButtonTest#new buttons start unassigned under keys of their own
+GameBedTest#a game never heard is lowered by the usual step
+GameBedTest#a loud game is brought well under the voice
+GameBedTest#loud sound counts within a few chunks and a short break does not undo it
+GameBedTest#nothing heard changes nothing
+GameBedTest#the depth stays between the usual step and 24 dB
+GyroFusionTest#a movement restarts the full window and does not poison the next calibration
+GyroFusionTest#combined body rotations retrace their path with calibrated noisy samples
+GyroFusionTest#gravity holds a deliberate tilt rather than returning it to the centre
+GyroFusionTest#motion noisy data trends gaps and invalid samples cannot establish rest
+GyroFusionTest#repeated tilts with offsets noise and warming return without growing error before mapping
+GyroFusionTest#rest calibration measures each sensor on a sloping surface across sampling rates
+GyroFusionTest#small rest bias changes are learned only with a quality checked profile
+GyroFusionTest#stale timestamps invalid data and acceleration shocks do not inject fictitious rotation
+GyroFusionTest#synthetic device rates ignore rest correction and acceleration
+GyroFusionTest#versioned profiles roundtrip and reject malformed unsupported or unsafe data
+GyroFusionTest#very slow aiming survives rest tracking and rates remain physical rates
+GyroSettingsTest#calibration is requested from the service and missing service is explained
+GyroSettingsTest#narrower screens stack the columns, and sliders store what is dragged
+GyroSettingsTest#rate preview integrates each actual output sample once and mode switches centre it
+GyroSettingsTest#the gyro hotkey's popup stores every change at once and resets to the defaults
+GyroSettingsTest#the preview displays actual service output and requests recentering on tap
+GyroSettingsTest#the summary names the hold key and the change preview lists the setup
+GyroSettingsTest#without the root helper the gyro cannot be chosen
+GyroTest#a damaged line keeps every field it can read
+GyroTest#a hotkey's setup is stored, defaults as nothing, and any hotkey counts for the helper
+GyroTest#a tilt reads as its angle and returning to the posture reads as zero, whatever the order
+GyroTest#applying a plan writes the setup
+GyroTest#backups keep the setup and read a damaged one field by field
+GyroTest#calibration can be cancelled timed out or retried without overwriting a good profile
+GyroTest#calibration waits for continuous measured rest and is separate from recentering
+GyroTest#device calibration survives defaults and backup restore but never travels in a backup
+GyroTest#device test rates bypass physical acceleration but use the real output path
+GyroTest#hold screen and settings transitions immediately release previous input
+GyroTest#holding needs a usable key
+GyroTest#invalid stale and unrelated sensor input cannot keep a stick held
+GyroTest#inverting flips each axis
+GyroTest#mapped sensor samples reach helper and preview together and stopping releases the stick
+GyroTest#missing sensors cannot start calibration and report failure
+GyroTest#rates are turned into the screen's frame for every rotation
+GyroTest#sensor registration failure cancels calibration and releases listeners
+GyroTest#settings survive their stored line and the defaults read back from nothing
+GyroTest#steering uses the outward axis instead
+GyroTest#swinging left moves the stick left and tipping back moves it up
+GyroTest#the calibrated rest is averaged, stored as a line and subtracted
+GyroTest#the canonical line is null for defaults and complete otherwise
+GyroTest#the fused posture reads the turn from the zero posture in the handheld's own frame
+GyroTest#the minimum deflection lifts slow turns past a game's own deadzone
+GyroTest#tilting maps the angle, with a full deflection at 30 degrees
+GyroTest#tremor inside the deadzone is nothing and fast turns stop at a full deflection
+GyroTest#uncalibrated source is preferred and its vendor bias estimate is not subtracted again
+HomeAsBackServiceTest#Back + Home in either order pauses with nothing else, whether or not Home acts as Back
+HomeAsBackServiceTest#a held-back press that stays alone still reaches Android once
+HomeAsBackServiceTest#paused interception leaves Home to Android
+HomeAsBackServiceTest#paused, Back + Home in either order resumes and nothing reaches Android
+HomeAsBackServiceTest#with the option the pad's Home is Back and a second key is swallowed
+HomeAsBackServiceTest#without the option, or for AYN's own Home, Home stays Home
+HomeAsBackSettingsTest#Back + Home as activation shortcut blocks the row with its own reason, ahead of the Home option
+HomeAsBackSettingsTest#the option blocks the Back + Home row and keeps its binding
+HomeAsBackTest#a press keeps its route when the option changes before its release
+HomeAsBackTest#an unknown action keeps the owner's route
+HomeAsBackTest#back alone stays back
+HomeAsBackTest#back while home owns the virtual back is swallowed
+HomeAsBackTest#disabled leaves both keys alone
+HomeAsBackTest#duplicate devices release the virtual back only after the last up
+HomeAsBackTest#home alone becomes back, repeats included
+HomeAsBackTest#reset forgets held keys
+HomeAsBackTest#the second key is swallowed whole while the first is held
+KeyInterceptionGateTest#clearing service state discards old press ownership
+KeyInterceptionGateTest#consumed press stays consumed through disable and reenable until release
+KeyInterceptionGateTest#disabled keys go straight through without calling interception
+KeyInterceptionGateTest#passthrough press stays untouched if interception is reenabled before release
+KeyInterceptionGateTest#unconsumed game button keeps its release across disable
+LastAppTest#a task already on the screen is chosen
+LastAppTest#a task no screen holds may come back on this one
+LastAppTest#a task that moved to the other screen is never pulled back
+LastAppTest#candidates keep the screen's order without the app in front and our own settings
+LastAppTest#nothing else on the screen means no last app
+LastAppTest#our own settings are never the target
+LastAppTest#switching makes the other one the last app, so presses flip between two
+LastAppTest#the app before the one in front is the last app
+LastAppTest#with only a launcher in front the newest app is the last app
+LastAppTest#with tasks on both screens the one on this screen is chosen
+LaunchAppChooserTest#ask and favorites lead, a star moves an app up the next time and the choice is stored
+LaunchAppChooserTest#favorites without a starred app say so on the row
+LevelRepeaterTest#stop cancels, start never doubles and a restart begins slow again
+LevelRepeaterTest#waits the initial delay, then repeats faster and faster while step allows it
+LevelStepsTest#a value between steps snaps to the nearest step before moving
+LevelStepsTest#brightness moves one equal step up and down
+LevelStepsTest#brightness stops at both ends
+LevelStepsTest#brightness walks the whole range in 15 presses
+LevelStepsTest#hat values map to D-pad directions, rest maps to null
+LevelStepsTest#muting stores the audible level and unmuting brings it back
+LevelStepsTest#out-of-range brightness is clamped first
+LevelStepsTest#volume moves by one and stays within 0 to max
+MacroSettingsTest#Back gestures do not offer macros, combos do
+MacroSettingsTest#Edit in the saved macros list opens that macro and keeps the hotkey's own choice
+MacroSettingsTest#a fresh recording is offered the default name, numbered past names already taken
+MacroSettingsTest#a step sheet changes the hold by steps, presets and typing, and moves, duplicates and deletes the step
+MacroSettingsTest#an empty editor offers saved macros, and clearing and saving unassigns the hotkey
+MacroSettingsTest#backups keep the library and references and drop damaged entries and macros on Back gestures
+MacroSettingsTest#choosing a macro for a hotkey with saved macros offers them first
+MacroSettingsTest#choosing a macro opens the editor, which explains recording until something is recorded
+MacroSettingsTest#closing and loading ask before they drop changes
+MacroSettingsTest#dragging a step moves it, dropping it on the bin deletes it, and undo brings it back
+MacroSettingsTest#hotkeys play library macros and only a bound one needs the helper
+MacroSettingsTest#one library macro serves several hotkeys, and renaming, editing and deleting reach all of them
+MacroSettingsTest#pauses change one at a time or all at once
+MacroSettingsTest#recording adds to the end, shows the steps live and can be undone
+MacroSettingsTest#resets and unbinding keep the library
+MacroSettingsTest#snapshots carry the library and applying a plan writes it and the references
+MacroSettingsTest#steps are added by hand and their buttons changed from the palette
+MacroSettingsTest#the name is changed in the header, and Save as new keeps the original for other hotkeys
+MacroSettingsTest#the preview lights the steps up one after another and can be stopped
+MacroSettingsTest#the saved macros list chooses a macro or starts a new one
+MacroSettingsTest#the saved macros list renames and deletes, asking first and naming how many hotkeys still play it
+MacroSettingsTest#the scroll indicator shows only while the row scrolls, with a thumb for the part in view
+MacroSettingsTest#without the root helper a macro cannot be chosen
+MacroTest#a chord keeps at most eight inputs
+MacroTest#a macro survives its stored form
+MacroTest#a recording in progress tells what is held and how long the pad has rested
+MacroTest#an input pressed again right away gets a pause and releases come first
+MacroTest#damaged or foreign macros are refused as a whole
+MacroTest#directions come from the grid, the wire and the angle of a deflection
+MacroTest#editor changes keep pauses in place and the last step without one
+MacroTest#editor changes respect the limits and chords keep one input per channel
+MacroTest#face buttons follow the controller style, the others keep their codes
+MacroTest#face buttons map the key layout's codes
+MacroTest#garbage lines are ignored
+MacroTest#inputs read back from their wire form and share channels where they must
+MacroTest#playback presses, holds and releases every input in order
+MacroTest#presses still held at stop end there
+MacroTest#presses that overlap or start together are one step
+MacroTest#recordings stop at the step and length limits
+MacroTest#sticks record directions they are really held in
+MacroTest#taps become steps with the pauses in between
+MacroTest#the D-pad records each direction it is held in
+MacroTest#the library keeps names clean and survives its stored form
+MacroTest#the printed button is recorded under the flipped layout
+MacroTest#times round to ten and stay in range
+MacroTest#triggers count by key or by axis with some hysteresis
+OptionGuideTest#a group asks its option, then its screen, and the confirm button takes the preselected answer
+OptionGuideTest#a single option dialog opened on its own confirms with OK
+OptionGuideTest#an option found by the search is not asked again, only the screen follows
+OptionGuideTest#cancelling a step ends the walk and keeps the action
+OverlaySnapshotTest#D-pad focus window
+OverlaySnapshotTest#app-control prompt
+OverlaySnapshotTest#app-control prompt, German
+OverlaySnapshotTest#app-control prompt, dark
+OverlaySnapshotTest#auto controller-focus window
+OverlaySnapshotTest#controller-focus pictogram
+OverlaySnapshotTest#notice overlay
+OverlaySnapshotTest#recording indicator
+PadHelperLifecycleTest#queued old helper direction cannot navigate after service disposal
+PadHelperLifecycleTest#queued stick report cannot act after service disposal
+PadHelperLifecycleTest#setSticks keeps the mask and only resends a change
+PadHelperLifecycleTest#stick reports become presses and releases, and malformed ones are ignored
+PadHelperLifecycleTest#stop shuts down both socket directions before closing to release blocked reader
+PadHelperProtocolTest#pad helper line protocol is unchanged
+PadNavigationModeTest#wire values match the native helper protocol
+PanelCardsTest#a panel scan keeps the empty switcher open until the user closes it
+PanelCardsTest#bottom only close all closes a panel owner even without a separate top activity card
+PanelCardsTest#close all includes panel owners once and closes unrelated apps
+PanelCardsTest#destroying a panel expires only that window without dropping its owners task
+PanelCardsTest#expiring the last panel card still closes the switcher
+PanelCardsTest#panel identity and frozen preview are independent of the owners top activity
+PanelCardsTest#panel without an owner task is never matched to a system task thumbnail
+PanelCardsTest#swiping or controller dismissing a panel preserves its return card and owner
+PanelCardsTest#task expiry preserves the panel and its selected return action
+PanelWindowsTest#AYN's assistant panel is the one system window treated as a panel
+PanelWindowsTest#accessibility ids are joined by client token rather than title package task or order
+PanelWindowsTest#failed accessibility dump is not a successful empty snapshot
+PanelWindowsTest#failed window dump is not a successful empty snapshot
+PanelWindowsTest#hidden window still has identity for restoration but a malformed block cannot claim an owner
+PanelWindowsTest#recognizes full screen presentation private presentation and app overlay on dynamic bottom display
+PanelWindowsTest#system and input windows normal activities and small or offscreen overlays are never panels
+ParkingPolicyTest#a late reclaim is parked again while an immediate one stops parking
+ParkingPolicyTest#only a successful park result yields the moved task
+ParkingPolicyTest#only the same app in front on both screens is a frontend to park
+ParkingPolicyTest#our own settings, abandoned frontends and unsafe names are never parked
+PhysicalKeyTrackerTest#clear starts a fresh press cycle
+PhysicalKeyTrackerTest#duplicate devices trigger one physical press
+PhysicalKeyTrackerTest#release from another device is left alone
+PhysicalKeyTrackerTest#untracked release is left alone
+PowerMenuTest#a focusable container without focusable children is the option itself
+PowerMenuTest#an unfocusable leading branch is skipped
+PowerMenuTest#the first option wins over the focusable strip around it
+PrefsDefaultsTest#a Back gesture round-trips any action, and the legacy switches follow its assignment
+PrefsDefaultsTest#doubleTapEnabled defaults to false
+PrefsDefaultsTest#doubleTapEnabled round-trips false
+PrefsDefaultsTest#doubleTapMs defaults to 300
+PrefsDefaultsTest#doubleTapMs round-trips 450
+PrefsDefaultsTest#favorite apps start empty, are shared by every hotkey and Ask and Favorites launch apps
+PrefsDefaultsTest#holdEnabled defaults to false
+PrefsDefaultsTest#holdEnabled round-trips false
+PrefsDefaultsTest#holdMs defaults to 1000
+PrefsDefaultsTest#holdMs round-trips 1500
+PrefsDefaultsTest#home as back defaults to false and round-trips
+PrefsDefaultsTest#isShoulderApp is false for an at-prefixed sentinel
+PrefsDefaultsTest#isShoulderApp is false for an empty string
+PrefsDefaultsTest#isShoulderApp is true for a bare package name
+PrefsDefaultsTest#setShoulderAction for L2 round-trips a package name
+PrefsDefaultsTest#setShoulderDisplay for R2 round-trips DISPLAY_TOP
+PrefsDefaultsTest#shoulderAction for L2 defaults to unassigned
+PrefsDefaultsTest#shoulderDisplay for R2 defaults to DISPLAY_BOTTOM
+PrefsDefaultsTest#switcher controller navigation defaults to true and round-trips
+PrefsDefaultsTest#switcherShowsAllApps defaults to false and round-trips
+PrefsDefaultsTest#tapHoldEnabled defaults to false
+PrefsDefaultsTest#tapHoldEnabled round-trips false
+PrefsDefaultsTest#tapHoldMs defaults to 1000
+PrefsDefaultsTest#tapHoldMs round-trips 1700
+PrefsDefaultsTest#the Back gestures start unassigned
+PrefsDefaultsTest#toggle starts unassigned and round trips and clamps
+PrefsMigrationTest#a fresh install has nothing to migrate
+PrefsMigrationTest#a fresh install starts with nothing assigned and every migration marked done
+PrefsMigrationTest#an update carries the old Back gesture switches and single choice over unchanged
+PrefsMigrationTest#an update keeps a user's own L2 and R2 choices
+PrefsMigrationTest#an update keeps unassigned L2 and R2 unassigned
+PrefsMigrationTest#an update pins the D-pad shortcuts and the activation pair it was running on
+PrefsMigrationTest#an update with the old defaults, or a custom launcher, ends up on Home and the old gestures
+PrefsMigrationTest#constructing Prefs a second time does not override an explicit user value
+PrefsMigrationTest#existing exceptions keep the new button shortcuts on once
+PrefsMigrationTest#existing exceptions keep their stick shortcuts on once, malformed lines stay as they are
+PrefsMigrationTest#new toggle default applies to an unset selection and preserves explicit pairs
+PrefsMigrationTest#pair migration preserves supported choices and subsequent user selections
+PrefsMigrationTest#retired single-stick toggles migrate to the default pair without changing duration
+PrefsMigrationTest#the Back gesture migration runs once and never overrides a later choice
+PrefsMigrationTest#the factory shoulder defaults are applied only once
+PrefsMigrationTest#the retired at-swap_screens sentinel is cleared on construction
+PrefsMigrationTest#v1 and v2 already applied, a custom value is left untouched
+PrefsMigrationTest#v1 install without v2 gets its flick directions swapped
+PrivilegedCommandContractTest#frontend parking and auto-lock focus send unchanged root commands
+PrivilegedCommandContractTest#root commands of the reachable call sites are unchanged
+PrivilegedCommandContractTest#volume, mute and AYN controls send unchanged root commands
+RecentTaskQueryTest#excluded companion stays in observed history while alive and is pruned when its task actually ends
+RecentTaskQueryTest#native recents keeps its default exclusion while bottom inventory includes opted out tasks for the current user
+RecentTaskQueryTest#plain list firmware responses include excluded tasks too
+RecentTaskQueryTest#unavailable task inventory fails rather than pretending every app has closed
+RecentsBadgesTest#OEM margins survive view scope and only the lock has internal padding
+RecentsCardStyleTest#adaptive normalization preserves drawable bounds shared with the app source
+RecentsCarouselTest#controller selection centers each page and interrupted animation reaches latest page
+RecentsCarouselTest#finger release settles to the nearest centered card
+RecentsCarouselTest#flings advance a page and stop at the edge instead of wrapping
+RecentsDisplayBadgeTest#same card changes its screen indicator after task moves in either direction
+RecentsEmptyViewTest#empty message has matching English and German wording in both themes
+RecentsEmptyViewTest#icon and text form one centered group with original spacing
+RecentsEmptyViewTest#open empty view follows light dark and light again without recreation
+RecentsMemoryTest#kernel available memory is used instead of lower ActivityManager value
+RecentsMemoryTest#released memory is the rise in available memory and never negative
+RecentsMemoryTest#unavailable proc data follows the OEM ActivityManager fallback
+RecentsMemoryTest#zero and malformed totals never divide by zero
+RecentsSelectionTest#ambiguous titles unknown cards and reused task identities never select another application
+RecentsSelectionTest#background selection retains exact task identity
+RecentsSelectionTest#cancellation and ambiguous snapshots never become a selection
+RecentsSelectionTest#foreground bottom card selection requires no new task-to-front event
+RecentsSelectionTest#foreground bottom selection uses exact task-to-front event even when resume times tie
+RecentsSelectionTest#native card label resolves task identity despite stale native order and changed display
+RecentsSelectionTest#new or replaced tasks and invalid identities cannot redirect an unrelated launch
+RecentsSelectionTest#removed tasks cannot be selected even when an old native card remains
+RecentsSelectionTest#same display and already moved selections need no move
+RecentsTaskStateTest#actual task movability is retained separately from package Home capability
+RecentsTaskStateTest#corrupt lock store is rejected rather than interpreted as unlocked
+RecentsTaskStateTest#missing and invalid state never becomes an unlocked snapshot
+RecentsTaskStateTest#native card label stays bound to its task identity across a display move
+RecentsTaskStateTest#native store uses key presence including zero valued entries
+RecentsTaskStateTest#system task display and lock values are retained without assuming bottom id
+RecentsThemeTest#without OEM package both modes retain opaque backgrounds and contrasting labels
+RecentsThumbnailCacheTest#eviction does not recycle a bitmap that a card can still display
+RecentsThumbnailCacheTest#new activity time display and output size cannot reuse an old preview
+RepeatCurveTest#steps start slow, ease in and settle at the fastest pace
+ResourceIntegrityTest#app_name is marked non-translatable and has no DE entry
+ResourceIntegrityTest#every placeholder in a DE string also appears in the EN original
+ResourceIntegrityTest#every translatable string in values has a DE counterpart, and nothing extra exists
+ScreenRecordingTest#files are named by local time and screen in the BBH-Records folder
+ScreenRecordingTest#push to talk takes any button but the app's own, the system's and the D-pad
+ScreenRecordingTest#push-to-talk buttons carry the controller's names, others a fallback
+ScreenRecordingTest#quality maps to the bit rate, medium for anything unknown
+ScreenRecordingTest#record video is a known ungrouped action with a screen choice, both screens until chosen
+ScreenRecordingTest#recording options default to no microphone, medium quality and a dot top right
+ScreenRecordingTest#recording options round trip per button and through snapshots
+ServiceActionCommandTest#every stored action sends unchanged root commands
+ServiceBlockerTest#in the wide layout the full-height menu gets its own scrim while the header stays free
+ServiceBlockerTest#the button opens the accessibility settings
+ServiceBlockerTest#the scrim is gone once the service is on and the old inline button no longer exists
+ServiceBlockerTest#with the service off the scrim covers everything but the header and swallows touches
+ServiceInternalCommandTest#service call sites outside actions send unchanged root commands
+ServiceToggleGestureTest#AYN's own Home and injected Back never count or get swallowed
+ServiceToggleGestureTest#an undeferred first press stays its own and the paired key is consumed whole
+ServiceToggleGestureTest#back then home toggles and swallows only that home press
+ServiceToggleGestureTest#both sticks must overlap for the complete hold duration and fire once
+ServiceToggleGestureTest#changing or removing a pending combination prevents its timer from toggling
+ServiceToggleGestureTest#configured hold duration applies to the selected combination
+ServiceToggleGestureTest#deferred presses are held back and replayed only when they stay alone
+ServiceToggleGestureTest#factory default toggles with L2 and R2 instead of stick clicks
+ServiceToggleGestureTest#labels name the printed buttons of every binding
+ServiceToggleGestureTest#mirrored devices do not restart the timer or release a still held stick
+ServiceToggleGestureTest#mirrored shoulders and repeats do not retrigger until the combination is released
+ServiceToggleGestureTest#not set never arms any former pair including mirrored devices
+ServiceToggleGestureTest#other bindings and other actions never swallow home
+ServiceToggleGestureTest#other keys and stray repeats cannot arm the toggle
+ServiceToggleGestureTest#pairs that only observe never track presses
+ServiceToggleGestureTest#releasing back or home before the deadline cancels
+ServiceToggleGestureTest#releasing either stick before deadline cancels the combination
+ServiceToggleGestureTest#reset cancels a pending hold and discards stale key state
+ServiceToggleGestureTest#shoulder pairs require both selected buttons and cancel when either is released
+ServiceToggleGestureTest#start and select toggle like the other pairs without consuming either
+ServiceToggleSettingsTest#an applied settings change preserves temporary deactivation when a shortcut remains assigned
+ServiceToggleSettingsTest#removing activation shortcut reactivates service and exits helper pass through
+SettingsActionsTest#D-pad focus subtree edits only its own focus target and indicator
+SettingsActionsTest#Home picks its screen from the same top and bottom list as every screen row
+SettingsActionsTest#action list says below each entry what it does
+SettingsActionsTest#choosing a dot saves the position and keeps the popup open
+SettingsActionsTest#focus subtree hides for other actions and is reused when focus is selected again
+SettingsActionsTest#restart joins the app-control modes and asks before it can be assigned
+SettingsActionsTest#screen-like grouped options read as a screen row, other groups keep the option row
+SettingsActionsTest#switch active app offers a persistent follow toggle on shoulder and D-pad hotkeys
+SettingsActionsTest#tapping the pictogram opens the indicator popup for a focus button
+SettingsActionsTest#the display time slider saves in 100 ms steps from 200 to 1000
+SettingsActionsTest#the indicator popup is not opened for a button without the focus action
+SettingsActionsTest#the row reports the chosen position, or Off when the indicator is hidden
+SettingsActionsTest#toggle buttons chooser offers stick, shoulder, Start and Back choices and persists selection
+SettingsActionsTest#toggle duration slider stores the selected hold time
+SettingsActionsTest#with the indicator switched off a dot cannot be chosen
+SettingsActivitySnapshotTest#main page in English, dark theme
+SettingsActivitySnapshotTest#main page in English, light theme
+SettingsActivitySnapshotTest#main page in German, light theme
+SettingsActivitySnapshotTest#wide pages in English, dark theme
+SettingsActivitySnapshotTest#wide pages in English, light theme
+SettingsBackupTest#a backup with nothing in it is the factory state
+SettingsBackupTest#a huge exception list is capped
+SettingsBackupTest#an unknown AYN option in a backup is dropped
+SettingsBackupTest#anything that is not a backup is refused
+SettingsBackupTest#backups made by other versions are told apart
+SettingsBackupTest#button columns round trip on their own field
+SettingsBackupTest#every action the app offers is accepted and a stored package is too
+SettingsBackupTest#everything survives a round trip
+SettingsBackupTest#invalid values are replaced or clamped one by one and never fail the import
+SettingsBackupTest#stick columns round trip, and an older backup keeps the sticks on
+SettingsBackupTest#the factory state round trips too, and writing is stable
+SettingsBackupTest#the file name carries the app version and the date
+SettingsBackupTest#the known actions list covers every shoulder action constant
+SettingsBackupTest#the written file is plain JSON with the format marker, version and date up front
+SettingsBackupTest#unknown fields are ignored and missing ones keep their factory value
+SettingsBackupUiTest#a backup of this version shows every change first and applies it atomically on confirm
+SettingsBackupUiTest#a backup that matches the current settings says so
+SettingsBackupUiTest#a backup without a version warns too
+SettingsBackupUiTest#an older or newer version warns that it may not fit, but does not have to, then continues
+SettingsBackupUiTest#cancelling the preview changes nothing
+SettingsBackupUiTest#files that are no backup are refused without touching anything
+SettingsBackupUiTest#loading opens the file picker
+SettingsBackupUiTest#pages with bindings keep a single Clear bindings and no Load defaults
+SettingsBackupUiTest#saving offers a file named after the version and the date
+SettingsBackupUiTest#the Settings page offers the backup and the defaults instead of the old reset rows
+SettingsBackupUiTest#the restore preview goes stale like every other one
+SettingsChangeDialogTest#a stale defaults preview is made again from the current settings
+SettingsChangeDialogTest#every page unbinds its own buttons and the settings page unbinds every optional button
+SettingsChangeDialogTest#load defaults previews the defaults and applies them in one step
+SettingsChangeDialogTest#selecting not set requires confirmation and hides only the hold duration
+SettingsChangeDialogTest#stale dialog asks again with current values before any write
+SettingsChangeDialogTest#unbind preview names current action and target and cancel changes nothing
+SettingsChangesTest#all page presets change only their own values and restore every auxiliary field
+SettingsChangesTest#all page unbinds preserve timings targets and other pages
+SettingsChangesTest#empty plans cause no writes and stale plans cannot overwrite new choices
+SettingsChangesTest#factory state agrees with fresh installs and can be written back
+SettingsChangesTest#preset clears target overrides and preserves distinct screenshot and level defaults
+SettingsChangesTest#whole app preset is atomic and does not disturb migration markers
+SettingsChangesTest#whole app unbind removes the optional bindings without changing primary gestures
+SettingsDialogSnapshotTest#Back press action chooser dialog
+SettingsDialogSnapshotTest#repair service explanation dialog
+SettingsDialogSnapshotTest#shoulder unbind previews only that page
+SettingsNavigationTest#a rail icon opens the page and lays the full panel over it until the page is touched
+SettingsNavigationTest#active page survives recreation but every menu selection resets content to top
+SettingsNavigationTest#an applied change invalidates both visited and unvisited pages and keeps current destination
+SettingsNavigationTest#cached switches reflect changes made while away without writing them back
+SettingsNavigationTest#compact indicator grid fits the dialog and preserves touch target sizes
+SettingsNavigationTest#compact layout has no logo slot and its menu never collapses
+SettingsNavigationTest#compact menu cancels without navigation and selects all six pages
+SettingsNavigationTest#controller focus moving into the page closes a peek
+SettingsNavigationTest#decorative app icon sits directly before the page title in both layouts
+SettingsNavigationTest#indicator intent opens an unvisited D-pad page and its popup
+SettingsNavigationTest#main and nested chooser chevrons share the same trailing edge
+SettingsNavigationTest#navigation is lazy reuses pages and does not change preferences
+SettingsNavigationTest#range sliders and text share edges before their control at both widths
+SettingsNavigationTest#settings changed while the page stays open show without a pause, so Unbind judges what is shown
+SettingsNavigationTest#the both-screens switch lives on the app switcher action, not on the Settings page
+SettingsNavigationTest#the compact overview keeps its header for the menu button
+SettingsNavigationTest#the keyboard shrinking the window leaves the rail's entries their full height
+SettingsNavigationTest#the tap that closes a peek opens nothing on the page but a scroll still reaches it
+SettingsNavigationTest#the wide overview drops the header and floats its service chip over the page
+SettingsNavigationTest#the wide panel is an icon rail under the logo that fits the Thor without scrolling
+SettingsNavigationTest#wide navigation focus does not select until confirmed and help has no page actions
+SettingsUiKitTest#currentServiceStatus is OFF when the accessibility service is disabled
+SettingsUiKitTest#dp converts dip to pixels at the pinned xxhdpi density of 3
+SettingsUiKitTest#isAccessibilityServiceEnabled is false when no service is enabled
+SettingsUiKitTest#serviceStatusText for OFF includes the app name
+SettingsUiKitTest#serviceStatusText for ON reports the service is on
+SettingsUiKitTest#serviceStatusText for UNRESPONSIVE reports it is enabled but not responding
+SettingsUiKitTest#the top bar pill is short for every status
+ShellTest#acceptsRealPackageNames
+ShellTest#quotesEmbeddedSingleQuotes
+ShellTest#rejectsAnythingAShellCouldInterpret
+ShellTest#rejectsOverlongNames
+ShoulderRowSnapshotTest#D-pad focus action groups its two child options
+ShoulderRowSnapshotTest#L1 assigned to a settings sentinel shows the top-screen toggle
+ShoulderRowSnapshotTest#L2 assigned to a volume action shows the screen row instead of the top-screen toggle
+ShoulderRowSnapshotTest#L2 assigned to launch an app shows the top-screen toggle
+ShoulderRowSnapshotTest#R1 assigned to the screenshot hides the top-screen toggle and shows the screen row, top by default
+ShoulderRowSnapshotTest#R2 assigned to video recording shows the screen row and the recording options
+ShoulderRowSnapshotTest#all D-pad directions unassigned hides the screen rows and the root-service warning
+ShoulderRowSnapshotTest#all four shoulder buttons unassigned
+ShoulderRowSnapshotTest#defaults - L1 and R1 are the navigation-flick sentinels, no toggle shown
+SmokeTest#Prefs can be constructed against a Robolectric application context
+SocketLaunchCommandTest#screen recorder launch script is unchanged
+StatusSummaryTest#remaining minutes follow charge over current, whatever its sign
+StatusSummaryTest#unknown or implausible values give no estimate
+StickClickMachineTest#a double press without a press assigned fires nothing alone
+StickClickMachineTest#a first press alone is never a hold however long it lasts
+StickClickMachineTest#a lone press waits the double window when a double press exists
+StickClickMachineTest#a second press after the double window is a new tap
+StickClickMachineTest#an unmatched release is ignored and reset drops everything pending
+StickClickMachineTest#nothing assigned leaves the press to the game
+StickClickMachineTest#releasing before the hold time is just another tap and cancels the hold
+StickClickMachineTest#tap then press and hold fires tap and hold while still held
+StickClickMachineTest#the tap before a hold fires its press at once without a double press
+StickClickMachineTest#two quick presses fire only the double press
+StickClickMachineTest#with tap and hold assigned the second press may come later than the double window
+StickClickMachineTest#without a double press the press fires at once on release
+StickDetectorTest#a diagonal picks the dominant axis
+StickDetectorTest#a held direction fires once however many frames arrive
+StickDetectorTest#a stick inside the engage threshold fires nothing
+StickDetectorTest#another direction needs the stick to pass neutral first
+StickDetectorTest#each axis direction fires once at the engage threshold - up is negative y
+StickDetectorTest#neutral needs both axes inside the zone
+StickDetectorTest#reset forgets an engaged deflection
+StickMappingTest#click buttons cover each stick with press, double and hold
+StickMappingTest#every stick direction has exactly one button with a unique key
+StickMappingTest#no stick key collides with another control
+StickMappingTest#wire letters map to directions and sticks
+StickPrefsTest#all eight stick directions start unassigned
+StickPrefsTest#click actions are per stick
+StickPrefsTest#hasStickAction is per stick
+StickPrefsTest#stick bindings take part in snapshots, previews and the stick page plans
+StickPrefsTest#stick plans and writes cover click bindings and timings
+StoredDataContractTest#a fresh install stores exactly the frozen entries and a second construction changes nothing
+StoredDataContractTest#a fully populated configuration stores exactly the frozen entries and reads back
+StoredDataContractTest#a stale preview writes nothing and a no-op plan succeeds without writing
+StoredDataContractTest#a store with some migrations done keeps them and runs only the rest
+StoredDataContractTest#a stored value of the wrong type fails exactly as before
+StoredDataContractTest#a synthesized pre-1-1 store migrates to the frozen entries, once
+StoredDataContractTest#backups are byte-identical at a fixed time and read back to the exported settings
+StoredDataContractTest#device calibration and the welcome state never enter a backup and survive every reset
+StoredDataContractTest#direct writes, unknown raw data, both Home modes and macro deletion store exactly the frozen entries
+StoredDataContractTest#every page and whole-app plan stores exactly the frozen entries
+StoredDataContractTest#one accepted plan is one write that every listener sees complete, from another instance too
+StoredDataContractTest#the first dual-mode activation seeds the Home layer into the frozen entries
+SwitcherCloseAllTest#both screens close all also includes observed top apps
+SwitcherCloseAllTest#bottom close all includes locked and unknown-status apps without widening scope
+SwitcherCloseAllTest#close all removes our own task but never kills the process hosting the service
+SwitcherCloseAllTest#closing other apps leaves our own task alone
+SwitcherPreviewTest#a package with a task on each screen previews the task on the switcher's screen
+SwitcherPreviewTest#controller selection and late thumbnail loading never add a preview border
+SwitcherSnapshotTest#apps, a panel and controller selection
+SwitcherSnapshotTest#apps, a panel and controller selection, German
+SwitcherSnapshotTest#apps, a panel and controller selection, dark
+SwitcherSnapshotTest#no apps
+SwitcherSnapshotTest#one app
+SwitcherTaskSyncTest#empty snapshot dismisses last card without closing apps or launching one
+SwitcherTaskSyncTest#native task removal drops stale card while preserving controller selection and both screen scope
+SwitcherTaskSyncTest#pending close all animation retains cards and thumbnails until it completes
+SwitcherTaskSyncTest#removing selected task chooses remaining neighbor without launching closed app
+TaskMovePolicyTest#a protected root task never falls back to a package relaunch
+TaskMovePolicyTest#background move retains the actual foreground rather than a newer background task
+TaskMovePolicyTest#either protected task prevents the whole swap before either move is attempted
+TaskMovePolicyTest#fully blocked partners produce no swap and unrelated background exclusions do not block it
+TaskMovePolicyTest#hold exclusion leaves either partner in place while the other task moves over it
+TaskMovePolicyTest#inactive exceptions and exclusions of other gestures still allow a swap
+TaskMovePolicyTest#last foreground app has no app fallback and uses its display own home
+TaskMovePolicyTest#moving a background app never replaces another foreground app or Home
+TaskMovePolicyTest#moving foreground app restores previous app even when Recents put Home between them
+TaskMovePolicyTest#standard app tasks are movable while Home secondary Home and other task types stay protected
+TaskMovePolicyTest#two ordinary tasks can swap even when both packages also advertise Home
+TaskMovePolicyTest#unknown launcher tasks fail closed while ordinary apps retain their existing unprivileged fallback
+TopRecentsBackTest#physical close waits for matching release before injecting native Back
+TopRecentsBackTest#virtual close consumes its own release before forwarding the injected Back pair
+TopRecentsNavigationTest#closing cancels queued navigation and resets action region
+TopRecentsNavigationTest#dismissal can suspend draining until card focus is restored
+TopRecentsNavigationTest#first left and down are retained until ready exactly once and in order
+TopRecentsNavigationTest#readiness on an actual action focus preserves up as navigation instead of dismissal
+TopRecentsNavigationTest#up leaves actions before it can dismiss a card
+TopRecentsStateTest#cached focused card cannot make an unfocused animation window ready on reopening
+TopRecentsStateTest#compact pservice records do not confuse action focus with a card on the same output line
+TopRecentsStateTest#focused card is distinguished from action focus
+TopRecentsStateTest#missing malformed and degenerate geometry never creates a fallback target
+TopRecentsStateTest#normal launcher state is not overview even if pooled task views remain
+TopRecentsStateTest#offscreen horizontal task coordinates remain valid because only vertical bounds are used
+TopRecentsStateTest#overview and real task geometry are parsed from launcher dump
+TopRecentsStateTest#secondary drawer focus and stopped cached Overview never count as live top Recents
+UnassignedRowTest#an unassigned row shows no sub-options whatever action it had before
+UnassignedRowTest#the on-off shortcut shows its hold time only while a shortcut is chosen
+UpdateCheckerParseTest#a missing or malformed digest leaves the checksum out, the APK stays usable
+UpdateCheckerParseTest#a semver release is newer than a legacy-tagged install of the same line
+UpdateCheckerParseTest#a spent rate limit is named as such and says when to retry
+UpdateCheckerParseTest#accepts a two-part version and a bare version without the v prefix
+UpdateCheckerParseTest#accepts the legacy versionCode tags by padding them out
+UpdateCheckerParseTest#an APK that is not from this repository's release downloads is never offered
+UpdateCheckerParseTest#drops prerelease and build metadata suffixes
+UpdateCheckerParseTest#orders versions by major then minor then patch
+UpdateCheckerParseTest#other statuses are an unexpected answer, not a connection problem
+UpdateCheckerParseTest#parses a well-formed semver release payload
+UpdateCheckerParseTest#rejects versions it cannot order
+UpdateCheckerParseTest#retry-after and a 429 count as rate limits too, with or without a time
+UpdateCheckerParseTest#returns null when the tag is not a version at all
+UpdateCheckerParseTest#the first usable APK wins over unusable assets before it
+UpdateCheckerParseTest#the release APK is found with its size and published checksum
+UpdateCheckerParseTest#throws on malformed JSON, left to the caller's runCatching
+UpdateCheckerParseTest#throws when tag_name is missing
+UpdateInstallerTest#Android's refusal is named by its cause
+UpdateInstallerTest#a download must have the announced length and, when published, the published checksum
+UpdateInstallerTest#a download with the wrong checksum is discarded
+UpdateInstallerTest#a matching download is handed to Android, with progress
+UpdateInstallerTest#a refusal is shown as a message, and a pending action without an intent does nothing
+UpdateInstallerTest#a server error or an unreachable server is a network failure
+UpdateInstallerTest#a stream longer than announced is cut off and then rejected
+UpdateInstallerTest#copying streams the bytes, digests them and reports progress
+UpdateInstallerTest#the install is offered only for a release build that has an APK
+UpdateInstallerTest#the status receiver opens Android's confirmation and stays quiet on success or a cancel
+UpdateInstallerTest#without the install permission nothing is downloaded
+ViewTreeSmokeTest#describe renders class name and text for a simple TextView
+VoiceBandTest#a talk can be told to open later than usual
+VoiceBandTest#a tap shorter than the margins never opens the microphone
+VoiceBandTest#rumble and hiss are cut
+VoiceBandTest#talks follow each other in order
+VoiceBandTest#the gate opens late after a press and closes early before a release
+VoiceBandTest#the speech band passes unchanged
+VoiceLevelerTest#a loud voice is brought down within a few chunks and never boosted
+VoiceLevelerTest#a new talk never starts louder than the start gain
+VoiceLevelerTest#a quiet voice is raised to speech level within a few seconds
+VoiceLevelerTest#background above the gate is never lifted above -30 dBFS
+VoiceLevelerTest#nothing heard changes nothing
+VoiceLevelerTest#pauses at the noise floor keep the gain
+VoiceLevelerTest#sound above the voice's band is neither a voice nor leveled like one
+VoiceLevelerTest#speech over a background comes as close to speech level as the background allows
+VoiceLevelerTest#the gain glides across a chunk instead of jumping
+VoiceLevelerTest#the gain never rises above 40 dB
+VoiceLevelerTest#the limiter passes normal levels and rounds off peaks below full scale
+VoicePolishTest#a pause goes down after the hold and a word opens before it starts
+VoicePolishTest#a voice below the threshold comes back later and louder, otherwise unchanged
+VoicePolishTest#loud passages are lowered and never reach full scale
+VoicePolishTest#nothing heard changes nothing
+VoicePolishTest#sound above the voice's own band does not count as a word
+WelcomeSheetTest#a clean start frees the combinations of an update
+WelcomeSheetTest#a clean start keeps only Back's gestures
+WelcomeSheetTest#a fresh install chooses between the defaults and a clean start only
+WelcomeSheetTest#a start setup resets like the whole-app reset and keeps macros
+WelcomeSheetTest#backing out keeps the welcome for the next start
+WelcomeSheetTest#customized settings can be kept unchanged
+WelcomeSheetTest#only settings that differ from the factory count as customized
+WelcomeSheetTest#start setup choice
+WelcomeSheetTest#the defaults set the earlier shortcuts and the pause pair on top of factory settings
+WelcomeSheetTest#the first start shows the welcome sheet with every top feature
+WelcomeSheetTest#the welcome does not return once a setup was chosen
+WelcomeSheetTest#welcome sheet
+WelcomeSheetTest#welcome sheet in two columns

@@ -1,0 +1,282 @@
+# L1
+action <none> | Nicht belegt | option= | function=null | overview=Nicht belegt
+action @app_ask | App starten: Nachfragen | option= | function=App starten: Nachfragen | overview=App wählen
+action @app_favorites | App starten: Favoriten (noch keine markiert) | option= | function=App starten: Favoriten (noch keine markiert) | overview=Favoriten
+action @home | Home | option= | function=Home | overview=Home
+action @back | Normaler Back-Druck | option= | function=Normaler Back-Druck | overview=Zurück
+action @swap_apps | Beide Apps tauschen | option= | function=Beide Apps tauschen | overview=Beide Apps tauschen
+action @last_app | Zur letzten App wechseln | option= | function=Zur letzten App wechseln | overview=Letzte App
+action @screenshot | Screenshot aufnehmen | option= | function=Screenshot aufnehmen | overview=Screenshot
+action @record_video | Video aufnehmen | option= | function=Video aufnehmen | overview=Video aufnehmen
+action @macro | Macro | option= | function=Macro | overview=Macro
+action @gyro | Gyro an/aus (BETA) | option= | function=Gyro an/aus (BETA) | overview=Gyro an/aus
+action @gyro_calibrate | Gyro kalibrieren (BETA) | option= | function=Gyro kalibrieren (BETA) | overview=Gyro kalibrieren
+action @controller_focus | Fokus setzen | option= | function=Fokus setzen | overview=Controller-Fokus
+action @switch_active_app | Aktive App verschieben | option= | function=Aktive App verschieben | overview=Aktive App verschieben
+action @app_control | Aktive App steuern | option= | function=Aktive App steuern | overview=Aktive App steuern
+action @status_overlay | Status-Einblendung | option= | function=Status-Einblendung | overview=Status-Einblendung
+action @recents | App-Switcher (Recents) | option=Oberer Bildschirm | function=App-Switcher (Recents) | overview=Recents oben
+action @switcher | App-Switcher (Recents) | option=Unterer Bildschirm | function=App-Switcher (Recents) | overview=Recents unten
+action @volume_up | Lautstärke | option=Erhöhen | function=Lautstärke | overview=Lautstärke +
+action @volume_down | Lautstärke | option=Verringern | function=Lautstärke | overview=Lautstärke −
+action @volume_mute | Lautstärke | option=Stumm umschalten | function=Lautstärke | overview=Stumm
+action @brightness_up | Helligkeit | option=Erhöhen | function=Helligkeit | overview=Helligkeit +
+action @brightness_down | Helligkeit | option=Verringern | function=Helligkeit | overview=Helligkeit −
+action @media_play_pause | Mediensteuerung | option=Wiedergabe / Pause | function=Mediensteuerung | overview=Play / Pause
+action @media_next | Mediensteuerung | option=Nächster Titel | function=Mediensteuerung | overview=Nächster Titel
+action @media_previous | Mediensteuerung | option=Vorheriger Titel | function=Mediensteuerung | overview=Vorheriger Titel
+action @navigation_flick_left | Navigation-Flick | option=Links | function=Navigation-Flick | overview=Flick links
+action @navigation_flick_right | Navigation-Flick | option=Rechts | function=Navigation-Flick | overview=Flick rechts
+action @close_apps | Apps beenden | option=Alle Apps schließen | function=Apps beenden | overview=Alle Apps schließen
+action @close_background_apps | Apps beenden | option=Vordergrund-Apps geöffnet lassen | function=Apps beenden | overview=Hintergrund-Apps schließen
+action @power_menu | Ein/Aus | option=Ein/Aus-Menü | function=Ein/Aus | overview=Ein/Aus-Menü
+action @standby | Ein/Aus | option=Standby | function=Ein/Aus | overview=Standby
+action @quick_settings | System-Leisten | option=Schnelleinstellungen öffnen | function=System-Leisten | overview=Schnelleinstellungen
+action @notifications | System-Leisten | option=Benachrichtigungen öffnen | function=System-Leisten | overview=Benachrichtigungen
+action @internet | System-Einstellungen | option=WLAN- und Internet-Steuerung | function=System-Einstellungen | overview=WLAN & Internet
+action @bluetooth | System-Einstellungen | option=Bluetooth-Einstellungen | function=System-Einstellungen | overview=Bluetooth
+action @night_light | System-Einstellungen | option=Nachtlicht-Einstellungen | function=System-Einstellungen | overview=Nachtlicht
+action @extra_dim | System-Einstellungen | option=Extradunkel-Einstellungen | function=System-Einstellungen | overview=Extradunkel
+action @display_settings | System-Einstellungen | option=Display-Einstellungen | function=System-Einstellungen | overview=Display
+action @sound_settings | System-Einstellungen | option=Ton-Einstellungen | function=System-Einstellungen | overview=Ton
+action @location_settings | System-Einstellungen | option=Standort-Einstellungen | function=System-Einstellungen | overview=Standort
+action @cast_settings | System-Einstellungen | option=Streamen-Einstellungen | function=System-Einstellungen | overview=Streamen
+action @dnd_settings | System-Einstellungen | option=Bitte-nicht-stören-Einstellungen | function=System-Einstellungen | overview=Nicht stören
+action @battery_saver | System-Einstellungen | option=Energiesparmodus-Einstellungen | function=System-Einstellungen | overview=Energiesparmodus
+action @performance | Leistungsmodus | option=Nachfragen | function=Leistungsmodus | overview=Leistungsmodus
+action @fan | Lüftersteuerung | option=Nachfragen | function=Lüftersteuerung | overview=Lüftersteuerung
+action @handle | Controller-Stil | option=Nachfragen | function=Controller-Stil | overview=Controller-Stil
+action @display | Display-Power umschalten | option=Oberer Bildschirm | function=Display-Power umschalten | overview=Display-Power umschalten
+action @refresh_rate | Bildwiederholrate | option=60/120 Hz umschalten | function=Bildwiederholrate | overview=Bildwiederholrate
+action @stick_light | Stick-Beleuchtung | option=Beide Sticks | function=Stick-Beleuchtung | overview=Stick-Beleuchtung
+action @direct_power | Direkte Stromversorgung | option= | function=Direkte Stromversorgung | overview=Direkte Stromversorgung
+action @vibration | Vibration | option= | function=Vibration | overview=Vibration
+action @force_landscape | Querformat erzwingen | option= | function=Querformat erzwingen | overview=Querformat erzwingen
+action @virtual_mouse | Virtuelle Maus | option= | function=Virtuelle Maus | overview=Virtuelle Maus
+action @do_not_disturb | Nicht stören | option= | function=Nicht stören | overview=Nicht stören
+action @mute_microphone | Mikrofon stummschalten | option= | function=Mikrofon stummschalten | overview=Mikrofon stummschalten
+action dev.steinhorst.backbuttonhero | App starten: Back Button Hero | option= | function=App starten: Back Button Hero | overview=Back Button Hero öffnen
+action com.example.not.installed | App starten… | option= | function=App starten… | overview=App starten…
+favorites set | App starten: Favoriten
+ayn @performance modal | Nachfragen
+ayn @performance standard | Standard-Leistung
+ayn @performance medium | Mittlere Leistung
+ayn @performance high | Hohe Leistung
+ayn @fan modal | Nachfragen
+ayn @fan off | Aus
+ayn @fan quiet | Leise
+ayn @fan smart | Smart
+ayn @fan sports | Sport
+ayn @handle modal | Nachfragen
+ayn @handle standard | Standard-Stil
+ayn @handle xbox | Xbox-Stil
+ayn @handle ban | Sperren bei Nutzung
+ayn @display top | Oberer Bildschirm
+ayn @display bottom | Unterer Bildschirm
+ayn @refresh_rate toggle | 60/120 Hz umschalten
+ayn @refresh_rate 60 | 60 Hz
+ayn @refresh_rate 120 | 120 Hz
+ayn @stick_light both | Beide Sticks
+ayn @stick_light left | Linker Stick
+ayn @stick_light right | Rechter Stick
+appMode minimize | Minimieren (Wischen nach oben simulieren)
+appMode force_close | Sofort beenden / Force-Close
+appMode restart | App neu starten
+appMode bogus | Minimieren (Wischen nach oben simulieren)
+appScreen top | Oberer Bildschirm
+appScreen bottom | Unterer Bildschirm
+appScreen both | Beide Bildschirme
+appScreen ask | Nachfragen
+appScreen bogus | Nachfragen
+levelTarget top | Oberer Bildschirm
+levelTarget bottom | Unterer Bildschirm
+levelTarget both | Beide Bildschirme
+levelTarget bogus | Beide Bildschirme
+display top | Oberer Bildschirm
+display bottom | Unterer Bildschirm
+display ask | Nachfragen
+display bogus | Nachfragen
+focusTarget top | Oberer Bildschirm
+focusTarget bottom | Unterer Bildschirm
+focusTarget toggle | Fokus umschalten
+focusTarget modal | Nachfragen
+focusTarget bogus | Fokus umschalten
+quality small | Klein (4 Mbit/s)
+quality medium | Mittel (10 Mbit/s)
+quality large | Groß (20 Mbit/s)
+duck off | Aus
+duck video | Im Video
+duck device | Im Video und am Gerät
+focusPosition top_left | Oben links
+focusPosition top_center | Oben mitte
+focusPosition top_right | Oben rechts
+focusPosition center_left | Mitte links
+focusPosition center | Mitte
+focusPosition center_right | Mitte rechts
+focusPosition bottom_left | Unten links
+focusPosition bottom_center | Unten mitte
+focusPosition bottom_right | Unten rechts
+focusPosition off | Aus
+recordPosition top_left | Oben links
+recordPosition top_center | Oben mitte
+recordPosition top_right | Oben rechts
+recordPosition center_left | Mitte links
+recordPosition center | Mitte
+recordPosition center_right | Mitte rechts
+recordPosition bottom_left | Unten links
+recordPosition bottom_center | Unten mitte
+recordPosition bottom_right | Unten rechts
+recordPosition off | Aus
+# HOME_L1
+action <none> | Nicht belegt | option= | function=null | overview=Nicht belegt
+action @app_ask | App starten: Nachfragen | option= | function=App starten: Nachfragen | overview=App wählen
+action @app_favorites | App starten: Favoriten (noch keine markiert) | option= | function=App starten: Favoriten (noch keine markiert) | overview=Favoriten
+action @home | Home | option= | function=Home | overview=Home
+action @back | Normaler Back-Druck | option= | function=Normaler Back-Druck | overview=Zurück
+action @swap_apps | Beide Apps tauschen | option= | function=Beide Apps tauschen | overview=Beide Apps tauschen
+action @last_app | Zur letzten App wechseln | option= | function=Zur letzten App wechseln | overview=Letzte App
+action @screenshot | Screenshot aufnehmen | option= | function=Screenshot aufnehmen | overview=Screenshot
+action @record_video | Video aufnehmen | option= | function=Video aufnehmen | overview=Video aufnehmen
+action @macro | Macro | option= | function=Macro | overview=Macro
+action @gyro | Gyro an/aus (BETA) | option= | function=Gyro an/aus (BETA) | overview=Gyro an/aus
+action @gyro_calibrate | Gyro kalibrieren (BETA) | option= | function=Gyro kalibrieren (BETA) | overview=Gyro kalibrieren
+action @controller_focus | Fokus setzen | option= | function=Fokus setzen | overview=Controller-Fokus
+action @switch_active_app | Aktive App verschieben | option= | function=Aktive App verschieben | overview=Aktive App verschieben
+action @app_control | Aktive App steuern | option= | function=Aktive App steuern | overview=Aktive App steuern
+action @status_overlay | Status-Einblendung | option= | function=Status-Einblendung | overview=Status-Einblendung
+action @recents | App-Switcher (Recents) | option=Oberer Bildschirm | function=App-Switcher (Recents) | overview=Recents oben
+action @switcher | App-Switcher (Recents) | option=Unterer Bildschirm | function=App-Switcher (Recents) | overview=Recents unten
+action @volume_up | Lautstärke | option=Erhöhen | function=Lautstärke | overview=Lautstärke +
+action @volume_down | Lautstärke | option=Verringern | function=Lautstärke | overview=Lautstärke −
+action @volume_mute | Lautstärke | option=Stumm umschalten | function=Lautstärke | overview=Stumm
+action @brightness_up | Helligkeit | option=Erhöhen | function=Helligkeit | overview=Helligkeit +
+action @brightness_down | Helligkeit | option=Verringern | function=Helligkeit | overview=Helligkeit −
+action @media_play_pause | Mediensteuerung | option=Wiedergabe / Pause | function=Mediensteuerung | overview=Play / Pause
+action @media_next | Mediensteuerung | option=Nächster Titel | function=Mediensteuerung | overview=Nächster Titel
+action @media_previous | Mediensteuerung | option=Vorheriger Titel | function=Mediensteuerung | overview=Vorheriger Titel
+action @navigation_flick_left | Navigation-Flick | option=Links | function=Navigation-Flick | overview=Flick links
+action @navigation_flick_right | Navigation-Flick | option=Rechts | function=Navigation-Flick | overview=Flick rechts
+action @close_apps | Apps beenden | option=Alle Apps schließen | function=Apps beenden | overview=Alle Apps schließen
+action @close_background_apps | Apps beenden | option=Vordergrund-Apps geöffnet lassen | function=Apps beenden | overview=Hintergrund-Apps schließen
+action @power_menu | Ein/Aus | option=Ein/Aus-Menü | function=Ein/Aus | overview=Ein/Aus-Menü
+action @standby | Ein/Aus | option=Standby | function=Ein/Aus | overview=Standby
+action @quick_settings | System-Leisten | option=Schnelleinstellungen öffnen | function=System-Leisten | overview=Schnelleinstellungen
+action @notifications | System-Leisten | option=Benachrichtigungen öffnen | function=System-Leisten | overview=Benachrichtigungen
+action @internet | System-Einstellungen | option=WLAN- und Internet-Steuerung | function=System-Einstellungen | overview=WLAN & Internet
+action @bluetooth | System-Einstellungen | option=Bluetooth-Einstellungen | function=System-Einstellungen | overview=Bluetooth
+action @night_light | System-Einstellungen | option=Nachtlicht-Einstellungen | function=System-Einstellungen | overview=Nachtlicht
+action @extra_dim | System-Einstellungen | option=Extradunkel-Einstellungen | function=System-Einstellungen | overview=Extradunkel
+action @display_settings | System-Einstellungen | option=Display-Einstellungen | function=System-Einstellungen | overview=Display
+action @sound_settings | System-Einstellungen | option=Ton-Einstellungen | function=System-Einstellungen | overview=Ton
+action @location_settings | System-Einstellungen | option=Standort-Einstellungen | function=System-Einstellungen | overview=Standort
+action @cast_settings | System-Einstellungen | option=Streamen-Einstellungen | function=System-Einstellungen | overview=Streamen
+action @dnd_settings | System-Einstellungen | option=Bitte-nicht-stören-Einstellungen | function=System-Einstellungen | overview=Nicht stören
+action @battery_saver | System-Einstellungen | option=Energiesparmodus-Einstellungen | function=System-Einstellungen | overview=Energiesparmodus
+action @performance | Leistungsmodus | option=Nachfragen | function=Leistungsmodus | overview=Leistungsmodus
+action @fan | Lüftersteuerung | option=Nachfragen | function=Lüftersteuerung | overview=Lüftersteuerung
+action @handle | Controller-Stil | option=Nachfragen | function=Controller-Stil | overview=Controller-Stil
+action @display | Display-Power umschalten | option=Oberer Bildschirm | function=Display-Power umschalten | overview=Display-Power umschalten
+action @refresh_rate | Bildwiederholrate | option=60/120 Hz umschalten | function=Bildwiederholrate | overview=Bildwiederholrate
+action @stick_light | Stick-Beleuchtung | option=Beide Sticks | function=Stick-Beleuchtung | overview=Stick-Beleuchtung
+action @direct_power | Direkte Stromversorgung | option= | function=Direkte Stromversorgung | overview=Direkte Stromversorgung
+action @vibration | Vibration | option= | function=Vibration | overview=Vibration
+action @force_landscape | Querformat erzwingen | option= | function=Querformat erzwingen | overview=Querformat erzwingen
+action @virtual_mouse | Virtuelle Maus | option= | function=Virtuelle Maus | overview=Virtuelle Maus
+action @do_not_disturb | Nicht stören | option= | function=Nicht stören | overview=Nicht stören
+action @mute_microphone | Mikrofon stummschalten | option= | function=Mikrofon stummschalten | overview=Mikrofon stummschalten
+action dev.steinhorst.backbuttonhero | App starten: Back Button Hero | option= | function=App starten: Back Button Hero | overview=Back Button Hero öffnen
+action com.example.not.installed | App starten… | option= | function=App starten… | overview=App starten…
+favorites set | App starten: Favoriten
+ayn @performance modal | Nachfragen
+ayn @performance standard | Standard-Leistung
+ayn @performance medium | Mittlere Leistung
+ayn @performance high | Hohe Leistung
+ayn @fan modal | Nachfragen
+ayn @fan off | Aus
+ayn @fan quiet | Leise
+ayn @fan smart | Smart
+ayn @fan sports | Sport
+ayn @handle modal | Nachfragen
+ayn @handle standard | Standard-Stil
+ayn @handle xbox | Xbox-Stil
+ayn @handle ban | Sperren bei Nutzung
+ayn @display top | Oberer Bildschirm
+ayn @display bottom | Unterer Bildschirm
+ayn @refresh_rate toggle | 60/120 Hz umschalten
+ayn @refresh_rate 60 | 60 Hz
+ayn @refresh_rate 120 | 120 Hz
+ayn @stick_light both | Beide Sticks
+ayn @stick_light left | Linker Stick
+ayn @stick_light right | Rechter Stick
+appMode minimize | Minimieren (Wischen nach oben simulieren)
+appMode force_close | Sofort beenden / Force-Close
+appMode restart | App neu starten
+appMode bogus | Minimieren (Wischen nach oben simulieren)
+appScreen top | Oberer Bildschirm
+appScreen bottom | Unterer Bildschirm
+appScreen both | Beide Bildschirme
+appScreen ask | Nachfragen
+appScreen bogus | Nachfragen
+levelTarget top | Oberer Bildschirm
+levelTarget bottom | Unterer Bildschirm
+levelTarget both | Beide Bildschirme
+levelTarget bogus | Beide Bildschirme
+display top | Oberer Bildschirm
+display bottom | Unterer Bildschirm
+display ask | Nachfragen
+display bogus | Nachfragen
+focusTarget top | Oberer Bildschirm
+focusTarget bottom | Unterer Bildschirm
+focusTarget toggle | Fokus umschalten
+focusTarget modal | Nachfragen
+focusTarget bogus | Fokus umschalten
+quality small | Klein (4 Mbit/s)
+quality medium | Mittel (10 Mbit/s)
+quality large | Groß (20 Mbit/s)
+duck off | Aus
+duck video | Im Video
+duck device | Im Video und am Gerät
+focusPosition top_left | Oben links
+focusPosition top_center | Oben mitte
+focusPosition top_right | Oben rechts
+focusPosition center_left | Mitte links
+focusPosition center | Mitte
+focusPosition center_right | Mitte rechts
+focusPosition bottom_left | Unten links
+focusPosition bottom_center | Unten mitte
+focusPosition bottom_right | Unten rechts
+focusPosition off | Aus
+recordPosition top_left | Oben links
+recordPosition top_center | Oben mitte
+recordPosition top_right | Oben rechts
+recordPosition center_left | Mitte links
+recordPosition center | Mitte
+recordPosition center_right | Mitte rechts
+recordPosition bottom_left | Unten links
+recordPosition bottom_center | Unten mitte
+recordPosition bottom_right | Unten rechts
+recordPosition off | Aus
+ptt 0 | Nicht gewählt
+ptt 96 | A
+ptt 97 | B
+ptt 99 | X
+ptt 100 | Y
+ptt 102 | L1
+ptt 103 | R1
+ptt 104 | L2
+ptt 105 | R2
+ptt 106 | L3
+ptt 107 | R3
+ptt 108 | Start
+ptt 109 | Select
+ptt 4 | 4
+ptt 24 | 24
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=0, holdPasses=true, sensitivity=100, deadzone=15, minOutput=0, invertX=false, invertY=false) | Rechter Stick, Schwenken (Yaw), 100 %
+gyro GyroSettings(stick=LEFT, axis=ROLL, rate=true, holdKey=0, holdPasses=true, sensitivity=150, deadzone=15, minOutput=0, invertX=false, invertY=false) | Linker Stick, Lenken (Roll), Drehgeschwindigkeit, 150 %
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=103, holdPasses=true, sensitivity=100, deadzone=15, minOutput=0, invertX=false, invertY=false) | Rechter Stick, Schwenken (Yaw), 100 %, R1 halten
+gyro GyroSettings(stick=RIGHT, axis=YAW, rate=false, holdKey=103, holdPasses=true, sensitivity=40, deadzone=15, minOutput=0, invertX=false, invertY=false) | Rechter Stick, Schwenken (Yaw), 40 %, R1 halten
+toggle l1_r1 | L1 + R1
+toggle l2_r2 | L2 + R2
+toggle both | L3 + R3
+toggle <none> | Nicht belegt
+toggle bogus | L3 + R3

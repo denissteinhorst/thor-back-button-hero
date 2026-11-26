@@ -1,0 +1,105 @@
+package dev.steinhorst.backbuttonhero.pad
+
+import android.content.Context
+import android.graphics.PixelFormat
+import android.hardware.display.DisplayManager
+import android.view.Gravity
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.StickDetector
+import dev.steinhorst.backbuttonhero.recents.FrontendParking
+
+/**
+ * Fallback for Back + D-pad and an open switcher when [PadHelper] is not running (no pservice). The
+ * D-pad is a hat axis, which an accessibility service never sees; joystick events only go to the
+ * focused window. An invisible 1x1 focusable overlay therefore takes focus - and with it the D-pad.
+ * The price: the app in front loses window focus for that moment, and many games and emulators pause.
+ * The settings screen warns about it for Back + D-pad shortcuts.
+ */
+class DpadOverlay(
+    private val context: Context,
+    private val onPress: (DpadDirection) -> Unit,
+    private val onRelease: (horizontal: Boolean) -> Unit,
+    private val onStick: (Stick, DpadDirection?) -> Unit = { _, _ -> },
+) {
+    private val detectors = Stick.entries.associateWith { StickDetector() }
+    private val windows = mutableListOf<Pair<WindowManager, View>>()
+    private var lastX = 0f
+    private var lastY = 0f
+
+    val attached: Boolean get() = windows.isNotEmpty()
+
+    fun attach() {
+        if (windows.isNotEmpty()) return
+        lastX = 0f
+        lastY = 0f
+        detectors.values.forEach(StickDetector::reset)
+        for (display in context.getSystemService(DisplayManager::class.java).displays.filterNot(FrontendParking::isParkingDisplay)) {
+            val ctx = context.createDisplayContext(display)
+                .createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+            val wm = ctx.getSystemService(WindowManager::class.java)
+            val view = object : View(ctx) {
+                override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+                    val x = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+                    val y = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
+                    // Only the edge from rest to a direction counts, so one press fires once.
+                    val pressed = DpadDirection.fromHat(true, x).takeIf { DpadDirection.fromHat(true, lastX) == null }
+                        ?: DpadDirection.fromHat(false, y).takeIf { DpadDirection.fromHat(false, lastY) == null }
+                    val releasedX = DpadDirection.fromHat(true, x) == null && DpadDirection.fromHat(true, lastX) != null
+                    val releasedY = DpadDirection.fromHat(false, y) == null && DpadDirection.fromHat(false, lastY) != null
+                    lastX = x
+                    lastY = y
+                    sticks(event)
+                    pressed?.let(onPress)
+                    if (releasedX) onRelease(true)
+                    if (releasedY) onRelease(false)
+                    return true
+                }
+
+                // Android's Xbox layout puts the right stick on Z/RZ; others use RX/RY.
+                private fun sticks(event: MotionEvent) {
+                    fun axis(a: Int, b: Int) = event.getAxisValue(a).takeIf { it != 0f } ?: event.getAxisValue(b)
+                    val values = mapOf(
+                        Stick.LEFT to (event.getAxisValue(MotionEvent.AXIS_X) to event.getAxisValue(MotionEvent.AXIS_Y)),
+                        Stick.RIGHT to (axis(MotionEvent.AXIS_Z, MotionEvent.AXIS_RX) to axis(MotionEvent.AXIS_RZ, MotionEvent.AXIS_RY)),
+                    )
+                    values.forEach { (stick, xy) ->
+                        when (val edge = detectors.getValue(stick).update(xy.first, xy.second)) {
+                            is StickDetector.Edge.Pressed -> onStick(stick, edge.direction)
+                            StickDetector.Edge.Released -> onStick(stick, null)
+                            null -> Unit
+                        }
+                    }
+                }
+
+                // Swallow anything else that lands here while it has focus (it only exists while Back is held).
+                override fun dispatchKeyEvent(event: KeyEvent): Boolean = true
+            }.apply {
+                isFocusable = true
+                isFocusableInTouchMode = true
+            }
+            val params = WindowManager.LayoutParams(
+                1, 1,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
+                PixelFormat.TRANSLUCENT,
+            ).apply { gravity = Gravity.TOP or Gravity.START }
+            runCatching {
+                wm.addView(view, params)
+                windows += wm to view
+                view.requestFocus()
+            }
+        }
+    }
+
+    fun detach() {
+        windows.forEach { (wm, view) -> runCatching { wm.removeView(view) } }
+        windows.clear()
+    }
+}

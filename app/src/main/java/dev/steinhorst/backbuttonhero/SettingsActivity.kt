@@ -4,48 +4,107 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.res.ColorStateList
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
-import android.graphics.Color
-import android.graphics.Rect
-import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.ScrollView
 import android.widget.Toast
+import dev.steinhorst.backbuttonhero.actions.ActionGroups
+import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.capture.PushToTalk
+import dev.steinhorst.backbuttonhero.core.PService
+import dev.steinhorst.backbuttonhero.input.AndroidButton
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.ComboButton
+import dev.steinhorst.backbuttonhero.input.DpadDirection
+import dev.steinhorst.backbuttonhero.input.FaceButton
+import dev.steinhorst.backbuttonhero.input.HomeLayerButton
+import dev.steinhorst.backbuttonhero.input.ServiceToggleGesture
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.input.Stick
+import dev.steinhorst.backbuttonhero.input.StickButton
+import dev.steinhorst.backbuttonhero.input.StickClick
+import dev.steinhorst.backbuttonhero.input.StickClickButton
+import dev.steinhorst.backbuttonhero.input.base
+import dev.steinhorst.backbuttonhero.macro.MacroEditor
+import dev.steinhorst.backbuttonhero.macro.MacroLibraryDialog
+import dev.steinhorst.backbuttonhero.macro.SavedMacro
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.prefs.BindingLayer
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.settings.ActionChooser
+import dev.steinhorst.backbuttonhero.settings.BackupFlow
+import dev.steinhorst.backbuttonhero.settings.BindingCard
+import dev.steinhorst.backbuttonhero.settings.BindingDescriber
+import dev.steinhorst.backbuttonhero.settings.ChangeDescriber
+import dev.steinhorst.backbuttonhero.settings.Choice
+import dev.steinhorst.backbuttonhero.settings.BindingsOverview
+import dev.steinhorst.backbuttonhero.settings.ExceptionSettingsPage
+import dev.steinhorst.backbuttonhero.settings.GyroSettingsDialog
+import dev.steinhorst.backbuttonhero.settings.OverviewControl
+import dev.steinhorst.backbuttonhero.settings.OverviewGroup
+import dev.steinhorst.backbuttonhero.settings.POSITION_GRID_HEIGHT_DP
+import dev.steinhorst.backbuttonhero.settings.POSITION_GRID_WIDTH_DP
+import dev.steinhorst.backbuttonhero.settings.PositionGrid
+import dev.steinhorst.backbuttonhero.settings.ServiceStatus
+import dev.steinhorst.backbuttonhero.settings.SettingsNavigation
+import dev.steinhorst.backbuttonhero.settings.SettingsPage
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.settings.SettingsSurface
+import dev.steinhorst.backbuttonhero.settings.UpdateCheck
+import dev.steinhorst.backbuttonhero.settings.UpdateFlow
+import dev.steinhorst.backbuttonhero.settings.WelcomeSheet
+import dev.steinhorst.backbuttonhero.settings.alignSettingsRange
+import dev.steinhorst.backbuttonhero.settings.currentServiceStatus
+import dev.steinhorst.backbuttonhero.settings.dp
+import dev.steinhorst.backbuttonhero.settings.isAccessibilityServiceEnabled
+import dev.steinhorst.backbuttonhero.settings.positionGrid
+import dev.steinhorst.backbuttonhero.settings.selectTab
+import dev.steinhorst.backbuttonhero.settings.serviceChipText
+import dev.steinhorst.backbuttonhero.settings.serviceStatusText
+import dev.steinhorst.backbuttonhero.settings.settingsSurfaceColor
+import dev.steinhorst.backbuttonhero.settings.tabBar
+import dev.steinhorst.backbuttonhero.settings.themedColor
 
 /** Configuration pages share the same rows and keep their state while navigating. */
-class SettingsActivity : Activity() {
+open class SettingsActivity : Activity() {
 
     private lateinit var prefs: Prefs
     private lateinit var navigation: SettingsNavigation
     private val pages = mutableMapOf<SettingsSection, SettingsPage>()
     private var exceptionsPage: ExceptionSettingsPage? = null
     private lateinit var warnings: LinearLayout
-    private val appLabels = mutableMapOf<String, String>()
+    private val describer by lazy { BindingDescriber(this, prefs) }
+    private val changeDescriber by lazy { ChangeDescriber(this, describer) }
+    private val backup by lazy { BackupFlow(this, prefs, ::appVersionName, ::showChanges) }
     private lateinit var serviceWarning: TextView
     private lateinit var rootWarning: SettingsPage.WarningHandle
     private var toggleButtonsValue: TextView? = null
     /** The hold-time slider below the on/off shortcut; without a shortcut there is nothing to time. */
     private var toggleDurationOptions: View? = null
     private var statusLabel: TextView? = null
-    private val comboRows = mutableMapOf<String, ComboRow>()
+    private val comboRows = mutableMapOf<String, BindingCard>()
     private val stickPages = mutableListOf<SettingsPage>()
     private val stickBoxes = mutableMapOf<Stick, LinearLayout>()
     private var stickTabBar: LinearLayout? = null
@@ -54,7 +113,7 @@ class SettingsActivity : Activity() {
     private var overviewHome = false
     private var repairHandle: SettingsPage.ActionHandle? = null
     private var updateHandle: SettingsPage.ActionHandle? = null
-    private var updateDialog: AlertDialog? = null
+    private val updateFlow by lazy { UpdateFlow(this, updateCheck(), ::openUrl) }
     private var macroEditor: MacroEditor? = null
     private var welcomeSheet: WelcomeSheet? = null
 
@@ -98,7 +157,7 @@ class SettingsActivity : Activity() {
         setContentView(navigation.view)
         openIndicatorFromIntent()
         ensureNotificationPermission()
-        UpdateChecker.checkInBackground(this)
+        updateCheck().run(this, null)
         if (!prefs.welcomeSeen) welcomeSheet = WelcomeSheet(this, prefs, ::invalidatePages).also { it.show() }
     }
 
@@ -140,7 +199,7 @@ class SettingsActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        appLabels.clear()
+        describer.clearAppLabels()
         prefs.registerListener(storedChange)
         if (prefs.dualMode != layoutDual) invalidatePages() else refresh()
         // A service rebind can finish just after the activity resumes.
@@ -178,7 +237,7 @@ class SettingsActivity : Activity() {
 
     override fun onDestroy() {
         navigation.dismiss()
-        updateDialog?.dismiss()
+        updateFlow.dismiss()
         welcomeSheet?.dismiss()
         exceptionsPage?.dispose()
         super.onDestroy()
@@ -284,64 +343,14 @@ class SettingsActivity : Activity() {
         page.live(empty) {}
     }
 
-    /** A short name for the overview's narrow columns; the pages keep the full wording. */
-    private fun overviewLabel(action: String): String {
-        val res = when (action) {
-            Prefs.SHOULDER_BACK -> R.string.overview_action_back
-            Prefs.SHOULDER_RECENTS -> R.string.overview_action_recents_top
-            Prefs.SHOULDER_SWITCHER -> R.string.overview_action_recents_bottom
-            Prefs.SHOULDER_SWITCH_APP -> R.string.overview_action_switch_app
-            Prefs.SHOULDER_LAST_APP -> R.string.overview_action_last_app
-            Prefs.SHOULDER_SCREENSHOT -> R.string.overview_action_screenshot
-            Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.overview_action_controller_focus
-            Prefs.SHOULDER_GYRO -> R.string.overview_action_gyro
-            Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.overview_action_gyro_calibrate
-            Prefs.SHOULDER_QUICK_SETTINGS -> R.string.overview_action_quick_settings
-            Prefs.SHOULDER_NOTIFICATIONS -> R.string.overview_action_notifications
-            Prefs.SHOULDER_INTERNET -> R.string.overview_action_internet
-            Prefs.SHOULDER_BLUETOOTH -> R.string.overview_action_bluetooth
-            Prefs.SHOULDER_NIGHT_LIGHT -> R.string.overview_action_night_light
-            Prefs.SHOULDER_EXTRA_DIM -> R.string.overview_action_extra_dim
-            Prefs.SHOULDER_DISPLAY_SETTINGS -> R.string.overview_action_display
-            Prefs.SHOULDER_SOUND_SETTINGS -> R.string.overview_action_sound
-            Prefs.SHOULDER_LOCATION_SETTINGS -> R.string.overview_action_location
-            Prefs.SHOULDER_CAST_SETTINGS -> R.string.overview_action_cast
-            Prefs.SHOULDER_DND_SETTINGS -> R.string.overview_action_dnd
-            Prefs.SHOULDER_BATTERY_SAVER -> R.string.overview_action_battery_saver
-            Prefs.SHOULDER_VOLUME_UP -> R.string.overview_action_volume_up
-            Prefs.SHOULDER_VOLUME_DOWN -> R.string.overview_action_volume_down
-            Prefs.SHOULDER_VOLUME_MUTE -> R.string.overview_action_mute
-            Prefs.SHOULDER_BRIGHTNESS_UP -> R.string.overview_action_brightness_up
-            Prefs.SHOULDER_BRIGHTNESS_DOWN -> R.string.overview_action_brightness_down
-            Prefs.SHOULDER_FLICK_LEFT -> R.string.overview_action_flick_left
-            Prefs.SHOULDER_FLICK_RIGHT -> R.string.overview_action_flick_right
-            Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> R.string.overview_action_play_pause
-            Prefs.SHOULDER_MEDIA_NEXT -> R.string.overview_action_next
-            Prefs.SHOULDER_MEDIA_PREVIOUS -> R.string.overview_action_previous
-            Prefs.SHOULDER_CLOSE_APPS -> R.string.overview_action_close_all
-            Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> R.string.overview_action_close_background
-            Prefs.SHOULDER_POWER_MENU -> R.string.overview_action_power_menu
-            Prefs.SHOULDER_STANDBY -> R.string.overview_action_standby
-            Prefs.SHOULDER_APP_ASK -> R.string.overview_action_app_ask
-            Prefs.SHOULDER_APP_FAVORITES -> R.string.overview_action_app_favorites
-            else -> null
-        }
-        if (res != null) return getString(res)
-        if (Prefs.isShoulderApp(action)) {
-            return runCatching { getString(R.string.overview_action_open_app, packageManager.getApplicationInfo(action, 0).loadLabel(packageManager)) }
-                .getOrDefault(getString(R.string.shoulder_launch_app))
-        }
-        return describeAction(action)
-    }
-
     /** One group per physical control, holding only the bindings that are assigned; [home] draws dual mode's Home layer. */
     private fun overviewGroups(home: Boolean = false): List<OverviewGroup> {
         fun label(control: ComboButton): String? {
             val button = if (home) HomeLayerButton.of(control) else control
             val action = prefs.shoulderAction(button).ifEmpty { return null }
             // AYN's switches name their chosen value too, like "Performance · Max".
-            val ayn = describeAynOption(button).takeIf { Ayn.groupOf(action) != null && it.isNotEmpty() }
-            return ayn?.let { getString(R.string.overview_grouped_action, describeAction(action), it) } ?: overviewLabel(action)
+            val ayn = describer.describeAynOption(button).takeIf { Ayn.groupOf(action) != null && it.isNotEmpty() }
+            return ayn?.let { getString(R.string.overview_grouped_action, describer.describeAction(action), it) } ?: describer.overviewLabel(action)
         }
         fun group(control: OverviewControl, title: Int, section: SettingsSection, vararg rows: Pair<String, ComboButton>) =
             rows.mapNotNull { (prefix, button) -> label(button)?.let { prefix to it } }
@@ -530,8 +539,8 @@ class SettingsActivity : Activity() {
 
         page.sectionHeader(R.string.backup_section)
         page.card {
-            actionRow(R.string.backup_save, R.string.backup_save_hint) { startBackupSave() }
-            actionRow(R.string.backup_load, R.string.backup_load_hint) { startBackupLoad() }
+            actionRow(R.string.backup_save, R.string.backup_save_hint) { backup.startSave() }
+            actionRow(R.string.backup_load, R.string.backup_load_hint) { backup.startLoad() }
         }
     }
 
@@ -554,16 +563,14 @@ class SettingsActivity : Activity() {
         }
     }
 
-    private fun toggleButtonsLabel(): String = toggleLabel(prefs.toggleButtons)
-
-    private fun toggleLabel(value: String): String = ServiceToggleGesture.label(value) ?: getString(R.string.shoulder_none)
+    private fun toggleButtonsLabel(): String = describer.toggleLabel(prefs.toggleButtons)
 
     private fun chooseToggleButtons() {
         val values = listOf(Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, Prefs.TOGGLE_START_SELECT,
             Prefs.TOGGLE_BACK_HOME, Prefs.TOGGLE_NONE)
         AlertDialog.Builder(this)
             .setTitle(R.string.service_toggle_buttons)
-            .setSingleChoiceItems(values.map(::toggleLabel).toTypedArray(), values.indexOf(prefs.toggleButtons)) { dialog, which ->
+            .setSingleChoiceItems(values.map(describer::toggleLabel).toTypedArray(), values.indexOf(prefs.toggleButtons)) { dialog, which ->
                 dialog.dismiss()
                 if (values[which] == Prefs.TOGGLE_NONE) {
                     showChanges(SettingsChangePlan.create(prefs.snapshot(), SettingsSection.SETTINGS, SettingsChangeAction.UNBIND))
@@ -648,8 +655,6 @@ class SettingsActivity : Activity() {
         warnings.visibility = if (rootWarning.row.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
 
-    private data class Choice(val value: String, val label: String)
-
     /** Every launchable app on the device, shown only after choosing "Launch app". */
     private fun allApps(): List<Choice> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
@@ -658,297 +663,8 @@ class SettingsActivity : Activity() {
         }.distinctBy { it.value }.sortedBy { it.label }
     }
 
-    /** [macro]: whether the list offers macros; Back's own gestures cannot play them. */
-    private fun shoulderActions(macro: Boolean = true): List<Choice> {
-        fun group(g: ActionGroups.Group) = Choice(g.entry, getString(g.titleRes))
-        return listOfNotNull(
-            Choice("", getString(R.string.shoulder_none)),
-            Choice(ACTION_APP, getString(R.string.shoulder_launch_app)),
-            Choice(Prefs.SHOULDER_HOME, getString(R.string.shoulder_home)),
-            Choice(Prefs.SHOULDER_BACK, getString(R.string.shoulder_back)),
-            group(ActionGroups.Group.APP_SWITCHER),
-            Choice(Prefs.SHOULDER_SWAP_APPS, getString(R.string.shoulder_swap_apps)),
-            Choice(Prefs.SHOULDER_LAST_APP, getString(R.string.shoulder_last_app)),
-            Choice(Prefs.SHOULDER_SCREENSHOT, getString(R.string.shoulder_screenshot)),
-            Choice(Prefs.SHOULDER_RECORD_VIDEO, getString(R.string.shoulder_record_video)),
-            Choice(Prefs.SHOULDER_MACRO, getString(R.string.shoulder_macro)).takeIf { macro },
-            Choice(Prefs.SHOULDER_GYRO, getString(R.string.shoulder_gyro)),
-            Choice(Prefs.SHOULDER_GYRO_CALIBRATE, getString(R.string.shoulder_gyro_calibrate)),
-            group(ActionGroups.Group.FLICK),
-            group(ActionGroups.Group.VOLUME),
-            group(ActionGroups.Group.BRIGHTNESS),
-            group(ActionGroups.Group.MEDIA),
-            Choice(Prefs.SHOULDER_CONTROLLER_FOCUS, getString(R.string.shoulder_controller_focus)),
-            Choice(Prefs.SHOULDER_SWITCH_APP, getString(R.string.shoulder_switch_app)),
-            Choice(Prefs.SHOULDER_APP_CONTROL, getString(R.string.shoulder_app_control)),
-            group(ActionGroups.Group.CLOSE_APPS),
-            group(ActionGroups.Group.POWER),
-            Choice(Prefs.SHOULDER_STATUS, getString(R.string.shoulder_status)),
-        ) + aynChoices() + listOf(group(ActionGroups.Group.PANELS), group(ActionGroups.Group.SETTINGS))
-    }
-
-    /** One entry per AYN tile; its options are chosen on the row, like a volume action's screen. */
-    private fun aynChoices(): List<Choice> =
-        Ayn.Group.values().map { Choice(it.action, getString(it.titleRes)) } +
-            Ayn.Toggle.values().map { Choice(it.action, getString(it.titleRes)) }
-
-    /** What an entry of the action list does, shown below its name; "Not set" needs none. */
-    private fun actionDescription(value: String): Int? = when (value) {
-        ACTION_APP -> R.string.action_desc_launch_app
-        Prefs.SHOULDER_HOME -> R.string.action_desc_home
-        Prefs.SHOULDER_BACK -> R.string.action_desc_back
-        ActionGroups.Group.APP_SWITCHER.entry -> R.string.action_desc_app_switcher
-        Prefs.SHOULDER_SWAP_APPS -> R.string.action_desc_swap_apps
-        Prefs.SHOULDER_SCREENSHOT -> R.string.action_desc_screenshot
-        Prefs.SHOULDER_RECORD_VIDEO -> R.string.action_desc_record_video
-        Prefs.SHOULDER_MACRO -> R.string.action_desc_macro
-        Prefs.SHOULDER_GYRO -> R.string.action_desc_gyro
-        Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.action_desc_gyro_calibrate
-        ActionGroups.Group.FLICK.entry -> R.string.action_desc_flick
-        ActionGroups.Group.VOLUME.entry -> R.string.action_desc_volume
-        ActionGroups.Group.BRIGHTNESS.entry -> R.string.action_desc_brightness
-        ActionGroups.Group.MEDIA.entry -> R.string.action_desc_media
-        Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.action_desc_controller_focus
-        Prefs.SHOULDER_SWITCH_APP -> R.string.action_desc_switch_app
-        Prefs.SHOULDER_LAST_APP -> R.string.action_desc_last_app
-        Prefs.SHOULDER_APP_CONTROL -> R.string.action_desc_app_control
-        ActionGroups.Group.CLOSE_APPS.entry -> R.string.action_desc_close_apps
-        ActionGroups.Group.POWER.entry -> R.string.action_desc_power
-        Prefs.SHOULDER_STATUS -> R.string.action_desc_status
-        Ayn.Group.PERFORMANCE.action -> R.string.action_desc_performance
-        Ayn.Group.FAN.action -> R.string.action_desc_fan
-        Ayn.Group.HANDLE.action -> R.string.action_desc_handle
-        Ayn.Group.DISPLAY.action -> R.string.action_desc_display
-        Ayn.Group.REFRESH_RATE.action -> R.string.action_desc_refresh_rate
-        Ayn.Group.STICK_LIGHT.action -> R.string.action_desc_stick_light
-        Ayn.Toggle.DIRECT_POWER.action -> R.string.action_desc_direct_power
-        Ayn.Toggle.VIBRATION.action -> R.string.action_desc_vibration
-        Ayn.Toggle.FORCE_LANDSCAPE.action -> R.string.action_desc_force_landscape
-        Ayn.Toggle.VIRTUAL_MOUSE.action -> R.string.action_desc_virtual_mouse
-        Ayn.Toggle.DO_NOT_DISTURB.action -> R.string.action_desc_do_not_disturb
-        Ayn.Toggle.MUTE_MICROPHONE.action -> R.string.action_desc_mute_microphone
-        ActionGroups.Group.PANELS.entry -> R.string.action_desc_panels
-        ActionGroups.Group.SETTINGS.entry -> R.string.action_desc_settings
-        else -> null
-    }
-
-    /**
-     * Words the action search also finds for an entry, beyond its name and description: what players
-     * actually type. [key] is the action, or "tile action:option" for an option inside an AYN tile,
-     * whose option keys repeat between tiles.
-     */
-    private fun searchKeywords(key: String): String = when (key) {
-        "" -> R.string.search_keywords_none
-        ACTION_APP -> R.string.search_keywords_launch_app
-        Prefs.SHOULDER_HOME -> R.string.search_keywords_home
-        Prefs.SHOULDER_BACK -> R.string.search_keywords_back
-        ActionGroups.Group.APP_SWITCHER.entry -> R.string.search_keywords_app_switcher
-        Prefs.SHOULDER_RECENTS -> R.string.search_keywords_recents
-        Prefs.SHOULDER_SWITCHER -> R.string.search_keywords_switcher
-        Prefs.SHOULDER_SWAP_APPS -> R.string.search_keywords_swap_apps
-        Prefs.SHOULDER_LAST_APP -> R.string.search_keywords_last_app
-        Prefs.SHOULDER_SCREENSHOT -> R.string.search_keywords_screenshot
-        Prefs.SHOULDER_RECORD_VIDEO -> R.string.search_keywords_record_video
-        Prefs.SHOULDER_MACRO -> R.string.search_keywords_macro
-        Prefs.SHOULDER_GYRO -> R.string.search_keywords_gyro
-        Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.search_keywords_gyro_calibrate
-        ActionGroups.Group.FLICK.entry -> R.string.search_keywords_flick
-        Prefs.SHOULDER_FLICK_LEFT -> R.string.search_keywords_flick_left
-        Prefs.SHOULDER_FLICK_RIGHT -> R.string.search_keywords_flick_right
-        ActionGroups.Group.VOLUME.entry -> R.string.search_keywords_volume
-        Prefs.SHOULDER_VOLUME_UP -> R.string.search_keywords_volume_up
-        Prefs.SHOULDER_VOLUME_DOWN -> R.string.search_keywords_volume_down
-        Prefs.SHOULDER_VOLUME_MUTE -> R.string.search_keywords_volume_mute
-        ActionGroups.Group.BRIGHTNESS.entry -> R.string.search_keywords_brightness
-        Prefs.SHOULDER_BRIGHTNESS_UP -> R.string.search_keywords_brightness_up
-        Prefs.SHOULDER_BRIGHTNESS_DOWN -> R.string.search_keywords_brightness_down
-        ActionGroups.Group.MEDIA.entry -> R.string.search_keywords_media
-        Prefs.SHOULDER_MEDIA_PLAY_PAUSE -> R.string.search_keywords_media_play_pause
-        Prefs.SHOULDER_MEDIA_NEXT -> R.string.search_keywords_media_next
-        Prefs.SHOULDER_MEDIA_PREVIOUS -> R.string.search_keywords_media_previous
-        Prefs.SHOULDER_CONTROLLER_FOCUS -> R.string.search_keywords_controller_focus
-        Prefs.SHOULDER_SWITCH_APP -> R.string.search_keywords_switch_app
-        Prefs.SHOULDER_APP_CONTROL -> R.string.search_keywords_app_control
-        ActionGroups.Group.CLOSE_APPS.entry -> R.string.search_keywords_close_apps_group
-        Prefs.SHOULDER_CLOSE_APPS -> R.string.search_keywords_close_apps
-        Prefs.SHOULDER_CLOSE_BACKGROUND_APPS -> R.string.search_keywords_close_background
-        ActionGroups.Group.POWER.entry -> R.string.search_keywords_power
-        Prefs.SHOULDER_POWER_MENU -> R.string.search_keywords_power_menu
-        Prefs.SHOULDER_STANDBY -> R.string.search_keywords_standby
-        Prefs.SHOULDER_STATUS -> R.string.search_keywords_status
-        ActionGroups.Group.PANELS.entry -> R.string.search_keywords_panels
-        Prefs.SHOULDER_QUICK_SETTINGS -> R.string.search_keywords_quick_settings
-        Prefs.SHOULDER_NOTIFICATIONS -> R.string.search_keywords_notifications
-        ActionGroups.Group.SETTINGS.entry -> R.string.search_keywords_settings
-        Prefs.SHOULDER_INTERNET -> R.string.search_keywords_internet
-        Prefs.SHOULDER_BLUETOOTH -> R.string.search_keywords_bluetooth
-        Prefs.SHOULDER_NIGHT_LIGHT -> R.string.search_keywords_night_light
-        Prefs.SHOULDER_EXTRA_DIM -> R.string.search_keywords_extra_dim
-        Prefs.SHOULDER_DISPLAY_SETTINGS -> R.string.search_keywords_display_settings
-        Prefs.SHOULDER_SOUND_SETTINGS -> R.string.search_keywords_sound_settings
-        Prefs.SHOULDER_LOCATION_SETTINGS -> R.string.search_keywords_location_settings
-        Prefs.SHOULDER_CAST_SETTINGS -> R.string.search_keywords_cast_settings
-        Prefs.SHOULDER_DND_SETTINGS -> R.string.search_keywords_dnd_settings
-        Prefs.SHOULDER_BATTERY_SAVER -> R.string.search_keywords_battery_saver
-        Ayn.Group.PERFORMANCE.action -> R.string.search_keywords_performance
-        "${Ayn.Group.PERFORMANCE.action}:standard" -> R.string.search_keywords_performance_standard
-        "${Ayn.Group.PERFORMANCE.action}:medium" -> R.string.search_keywords_performance_medium
-        "${Ayn.Group.PERFORMANCE.action}:high" -> R.string.search_keywords_performance_high
-        Ayn.Group.FAN.action -> R.string.search_keywords_fan
-        "${Ayn.Group.FAN.action}:off" -> R.string.search_keywords_fan_off
-        "${Ayn.Group.FAN.action}:quiet" -> R.string.search_keywords_fan_quiet
-        "${Ayn.Group.FAN.action}:smart" -> R.string.search_keywords_fan_smart
-        "${Ayn.Group.FAN.action}:sports" -> R.string.search_keywords_fan_sports
-        Ayn.Group.HANDLE.action -> R.string.search_keywords_handle
-        "${Ayn.Group.HANDLE.action}:standard" -> R.string.search_keywords_handle_standard
-        "${Ayn.Group.HANDLE.action}:xbox" -> R.string.search_keywords_handle_xbox
-        "${Ayn.Group.HANDLE.action}:ban" -> R.string.search_keywords_handle_ban
-        Ayn.Group.DISPLAY.action -> R.string.search_keywords_display
-        "${Ayn.Group.DISPLAY.action}:top" -> R.string.search_keywords_display_top
-        "${Ayn.Group.DISPLAY.action}:bottom" -> R.string.search_keywords_display_bottom
-        Ayn.Group.REFRESH_RATE.action -> R.string.search_keywords_refresh_rate
-        "${Ayn.Group.REFRESH_RATE.action}:60" -> R.string.search_keywords_refresh_60
-        "${Ayn.Group.REFRESH_RATE.action}:120" -> R.string.search_keywords_refresh_120
-        Ayn.Group.STICK_LIGHT.action -> R.string.search_keywords_stick_light
-        Ayn.Toggle.DIRECT_POWER.action -> R.string.search_keywords_direct_power
-        Ayn.Toggle.VIBRATION.action -> R.string.search_keywords_vibration
-        Ayn.Toggle.FORCE_LANDSCAPE.action -> R.string.search_keywords_force_landscape
-        Ayn.Toggle.VIRTUAL_MOUSE.action -> R.string.search_keywords_virtual_mouse
-        Ayn.Toggle.DO_NOT_DISTURB.action -> R.string.search_keywords_do_not_disturb
-        Ayn.Toggle.MUTE_MICROPHONE.action -> R.string.search_keywords_mute_microphone
-        else -> null
-    }?.let(::getString).orEmpty()
-
-    /**
-     * What the search finds inside groups and AYN tiles: each option as "Group › Option", carrying the
-     * group's description. Picking one sets the group and its option in one go.
-     */
-    private fun actionOptions(choices: List<Choice>): List<ActionChooser.Entry> = choices.flatMap { choice ->
-        val description = actionDescription(choice.value)?.let(::getString)
-        fun entry(option: String, label: String, key: String = option) =
-            ActionChooser.Entry(choice.value, getString(R.string.action_search_option, choice.label, label), description, option, searchKeywords(key))
-        ActionGroups.groupOfEntry(choice.value)?.options?.map { entry(it.action, getString(it.labelRes)) }
-            ?: Ayn.groupOf(choice.value)?.let { group -> aynOptions(group).map { entry(it.value, it.label, "${group.action}:${it.value}") } }
-            ?: emptyList()
-    }
-
-    private fun aynOptions(group: Ayn.Group): List<Choice> =
-        (if (group.hasModal) listOf(Choice(Ayn.MODAL, getString(R.string.ayn_modal))) else emptyList()) +
-            group.options.map { Choice(it.key, getString(it.labelRes)) }
-
-    private fun describeOption(button: ComboButton): String {
-        val action = prefs.shoulderAction(button)
-        ActionGroups.groupOf(action)?.let { group -> return getString(checkNotNull(group.option(action)).labelRes) }
-        return describeAynOption(button)
-    }
-
-    private fun describeAynOption(button: ComboButton): String {
-        val group = Ayn.groupOf(prefs.shoulderAction(button)) ?: return ""
-        val chosen = prefs.aynOption(button, group)
-        return aynOptions(group).first { it.value == chosen }.label
-    }
-
-    private fun describeShoulderAction(button: ComboButton): String = describeAction(prefs.shoulderAction(button))
-
-    private fun describeAction(action: String): String {
-        return when (action) {
-            "" -> getString(R.string.shoulder_none)
-            Prefs.SHOULDER_APP_ASK -> getString(R.string.shoulder_launch_app_named, getString(R.string.ayn_modal))
-            // An empty list would leave the hotkey with nothing to offer, so the row says so.
-            Prefs.SHOULDER_APP_FAVORITES -> if (prefs.favoriteApps.isEmpty()) getString(R.string.shoulder_launch_app_favorites_empty)
-                else getString(R.string.shoulder_launch_app_named, getString(R.string.shoulder_app_favorites))
-            else -> ActionGroups.groupOf(action)?.let { getString(it.titleRes) } ?: shoulderActions().firstOrNull { it.value == action }?.label
-                ?: runCatching {
-                    appLabels.getOrPut(action) {
-                        getString(R.string.shoulder_launch_app_named, packageManager.getApplicationInfo(action, 0).loadLabel(packageManager))
-                    }
-                }.getOrDefault(getString(R.string.shoulder_launch_app))
-        }
-    }
-
-    private fun appModes(): List<Choice> = listOf(
-        Choice(Prefs.APP_MINIMIZE, getString(R.string.app_control_minimize)),
-        Choice(Prefs.APP_FORCE_CLOSE, getString(R.string.app_control_force_close)),
-        Choice(Prefs.APP_RESTART, getString(R.string.app_control_restart)),
-    )
-
-    // The same screens as everywhere else, plus the prompt.
-    private fun appScreens(): List<Choice> = levelTargets() + Choice(Prefs.APP_SCREEN_ASK, getString(R.string.ayn_modal))
-
-    private fun describeAppMode(button: ComboButton): String =
-        (appModes().firstOrNull { it.value == prefs.appMode(button) } ?: appModes().first()).label
-
-    private fun describeAppScreen(button: ComboButton): String =
-        (appScreens().firstOrNull { it.value == prefs.appScreen(button) } ?: appScreens().last()).label
-
-    /** Every screen choice lists top, bottom, then both; special values like the prompt follow. */
-    private fun screenTargets(): List<Choice> = listOf(
-        Choice(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
-        Choice(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
-    )
-
-    private fun levelTargets(): List<Choice> = screenTargets() + Choice(Prefs.TARGET_BOTH, getString(R.string.level_target_both))
-
-    private fun describeLevelTarget(button: ComboButton): String = levelTargets().let { targets ->
-        (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.last()).label
-    }
-
-    // Where an app opens: either screen, or asked when the hotkey is pressed.
-    private fun launchScreens(): List<Choice> = screenTargets() + Choice(Prefs.APP_SCREEN_ASK, getString(R.string.ayn_modal))
-
-    private fun describeShoulderDisplay(button: ComboButton): String = launchScreens().let { targets ->
-        (targets.firstOrNull { it.value == prefs.shoulderDisplay(button) } ?: targets.last()).label
-    }
-
-    private fun focusTargets(): List<Choice> = screenTargets() + listOf(
-        Choice(Prefs.FOCUS_TOGGLE, getString(R.string.focus_target_toggle)),
-        Choice(Prefs.FOCUS_MODAL, getString(R.string.ayn_modal)),
-    )
-
-    private fun describeFocusTarget(button: ComboButton): String = focusTargets().let { targets ->
-        (targets.firstOrNull { it.value == prefs.focusTarget(button) } ?: targets.first { it.value == Prefs.FOCUS_TOGGLE }).label
-    }
-
-    /** Grouped actions whose choice below is really a screen, so the row reads like every other screen row. */
-    private fun isScreenOption(action: String): Boolean =
-        ActionGroups.groupOf(action) == ActionGroups.Group.APP_SWITCHER || Ayn.groupOf(action) == Ayn.Group.DISPLAY
-
-    /** The nine pictogram positions, row by row as the picker lays them out. */
-    private fun focusPositions(): List<Choice> = listOf(
-        Choice(Prefs.FOCUS_POS_TOP_LEFT, getString(R.string.focus_position_top_left)),
-        Choice(Prefs.FOCUS_POS_TOP_CENTER, getString(R.string.focus_position_top_center)),
-        Choice(Prefs.FOCUS_POS_TOP_RIGHT, getString(R.string.focus_position_top_right)),
-        Choice(Prefs.FOCUS_POS_CENTER_LEFT, getString(R.string.focus_position_center_left)),
-        Choice(Prefs.FOCUS_POS_CENTER, getString(R.string.focus_position_center)),
-        Choice(Prefs.FOCUS_POS_CENTER_RIGHT, getString(R.string.focus_position_center_right)),
-        Choice(Prefs.FOCUS_POS_BOTTOM_LEFT, getString(R.string.focus_position_bottom_left)),
-        Choice(Prefs.FOCUS_POS_BOTTOM_CENTER, getString(R.string.focus_position_bottom_center)),
-        Choice(Prefs.FOCUS_POS_BOTTOM_RIGHT, getString(R.string.focus_position_bottom_right)),
-    )
-
-    private fun recordQualities(): List<Choice> = listOf(
-        Choice(Prefs.RECORD_SMALL, getString(R.string.record_quality_small)),
-        Choice(Prefs.RECORD_MEDIUM, getString(R.string.record_quality_medium)),
-        Choice(Prefs.RECORD_LARGE, getString(R.string.record_quality_large)),
-    )
-
-    private fun describeRecordQuality(button: ComboButton): String =
-        recordQualities().first { it.value == prefs.recordQuality(button) }.label
-
-    private fun recordDucks(): List<Choice> = listOf(
-        Choice(Prefs.DUCK_OFF, getString(R.string.record_duck_off)),
-        Choice(Prefs.DUCK_VIDEO, getString(R.string.record_duck_video)),
-        Choice(Prefs.DUCK_DEVICE, getString(R.string.record_duck_device)),
-    )
-
-    private fun describeRecordDuck(button: ComboButton): String =
-        recordDucks().first { it.value == prefs.recordDuck(button) }.label
-
-    private fun describePushToTalkKey(keyCode: Int): String =
-        if (keyCode == 0) getString(R.string.record_ptt_key_none) else PushToTalk.label(keyCode)
-
-    private fun chooseRecordDuck(row: ComboRow) {
-        val choices = recordDucks()
+    private fun chooseRecordDuck(row: BindingCard) {
+        val choices = describer.recordDucks()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.record_duck_title)
             .chooseOne(choices.map { it.label }.toTypedArray(),
@@ -961,7 +677,7 @@ class SettingsActivity : Activity() {
     }
 
     /** Waits for the next button press and takes it as the push-to-talk button. */
-    private fun choosePushToTalkKey(row: ComboRow) = chooseKey(
+    private fun choosePushToTalkKey(row: BindingCard) = chooseKey(
         R.string.record_ptt_key_title, R.string.record_ptt_dialog_message, R.string.record_ptt_dialog_warning,
         R.string.record_ptt_key_rejected,
         onKeep = { updateShoulderRow(row) },
@@ -1009,28 +725,15 @@ class SettingsActivity : Activity() {
         dialog.show()
     }
 
-    /** The gyro setup in a few words: stick, sideways turn, following turns, speed and the hold key. */
-    private fun describeGyro(settings: GyroSettings): String = listOfNotNull(
-        getString(if (settings.stick == Stick.LEFT) R.string.gyro_stick_left else R.string.gyro_stick_right),
-        getString(if (settings.axis == GyroAxis.YAW) R.string.gyro_axis_yaw else R.string.gyro_axis_roll),
-        if (settings.rate) getString(R.string.gyro_summary_rate) else null,
-        getString(R.string.gyro_percent, settings.sensitivity),
-        settings.holdKeyInUse?.let { getString(R.string.gyro_hold_summary, PushToTalk.label(it)) },
-    ).joinToString(", ")
-
-    private fun openGyroSettings(row: ComboRow) {
+    private fun openGyroSettings(row: BindingCard) {
         GyroSettingsDialog(this, row.button.prefKey, prefs.gyro(row.button), { hasKey, onChosen ->
             chooseKey(R.string.gyro_hold_key_title, R.string.gyro_key_dialog_message, R.string.gyro_key_dialog_warning,
                 R.string.gyro_key_rejected, if (hasKey) ({ onChosen(0) }) else null, onChosen = onChosen)
         }) { prefs.setGyro(row.button, it) }.show { updateShoulderRow(row) }
     }
 
-    private fun describeRecordIndicator(button: ComboButton): String =
-        if (!prefs.recordIndicator(button)) getString(R.string.focus_position_off)
-        else focusPositions().first { it.value == prefs.recordPosition(button) }.label
-
-    private fun chooseRecordQuality(row: ComboRow) {
-        val choices = recordQualities()
+    private fun chooseRecordQuality(row: BindingCard) {
+        val choices = describer.recordQualities()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.record_quality_title)
             .chooseOne(choices.map { it.label }.toTypedArray(),
@@ -1042,14 +745,10 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun describeFocusPosition(button: ComboButton): String =
-        if (!prefs.focusIndicator(button)) getString(R.string.focus_position_off)
-        else focusPositions().first { it.value == prefs.focusPosition(button) }.label
-
     /** The indicator dialog of the controller-focus pictogram, or with [record] of the recording dot,
      *  which has no display time. */
-    private fun choosePosition(row: ComboRow, record: Boolean = false) {
-        val positions = focusPositions()
+    private fun choosePosition(row: BindingCard, record: Boolean = false) {
+        val positions = describer.focusPositions()
         lateinit var grid: PositionGrid
         fun position() = if (record) prefs.recordPosition(row.button) else prefs.focusPosition(row.button)
         fun indicator() = if (record) prefs.recordIndicator(row.button) else prefs.focusIndicator(row.button)
@@ -1159,55 +858,15 @@ class SettingsActivity : Activity() {
             }
     }
 
-    /** The views of one button's card that change with its action. */
-    private class ComboRow(
-        val card: SettingsPage.Card,
-        val button: ComboButton,
-        val label: String,
-        val action: SettingsPage.ChooserHandle,
-        val display: SettingsPage.ChooserHandle,
-        val target: SettingsPage.ChooserHandle,
-        val displayOptions: View,
-        val targetOptions: View,
-        /** A timing slider that only means something once the row has an action. */
-        val timingOptions: View? = null,
-    ) {
-        var focusOptions: SettingsPage.FocusOptionsHandle? = null
-        /** The choice below a grouped action, built when first needed so unassigned rows stay as they were. */
-        var option: SettingsPage.ChooserHandle? = null
-        var optionOptions: View? = null
-        /** The "apps of both screens" switch, shown wherever the app switcher is the action. */
-        var switcherOptions: View? = null
-        var switchAppOptions: View? = null
-        var closeAppsOptions: View? = null
-        var standbyOptions: View? = null
-        var recordOptions: RecordOptions? = null
-        var appOptions: SettingsPage.AppControlOptionsHandle? = null
-        var macroOptions: View? = null
-        var macroLibrary: SettingsPage.ChooserHandle? = null
-        var gyroOptions: View? = null
-        var gyroSetup: SettingsPage.ChooserHandle? = null
-        val position: SettingsPage.ChooserHandle get() = checkNotNull(focusOptions).position
-    }
-
-    private class RecordOptions(
-        val group: View,
-        val pushToTalk: SettingsPage.ToggleHandle,
-        val pushToTalkKey: SettingsPage.ChooserHandle,
-        val duck: SettingsPage.ChooserHandle,
-        val quality: SettingsPage.ChooserHandle,
-        val indicator: SettingsPage.ChooserHandle,
-    )
-
-    private fun chooseShoulderAction(row: ComboRow) {
-        val choices = shoulderActions(macro = row.button.base !is BackGestureButton)
+    private fun chooseShoulderAction(row: BindingCard) {
+        val choices = describer.shoulderActions(macro = row.button.base !is BackGestureButton)
         val stored = prefs.shoulderAction(row.button)
         val current = if (Prefs.launchesApp(stored)) ACTION_APP else ActionGroups.groupOf(stored)?.entry ?: stored
         ActionChooser(
             this,
             getString(R.string.shoulder_choose_action_title, row.label),
-            choices.map { ActionChooser.Entry(it.value, it.label, actionDescription(it.value)?.let(::getString), keywords = searchKeywords(it.value)) },
-            actionOptions(choices),
+            choices.map { ActionChooser.Entry(it.value, it.label, describer.actionDescription(it.value)?.let(::getString), keywords = describer.searchKeywords(it.value)) },
+            describer.actionOptions(choices),
             current,
         ) { entry ->
             val action = entry.value
@@ -1258,7 +917,7 @@ class SettingsActivity : Activity() {
      * shows them; options that only appear after an earlier answer join in. Leaving a dialog without an
      * answer ends the walk and keeps everything chosen so far.
      */
-    private class OptionGuide(val row: ComboRow, skip: Set<View>) {
+    private class OptionGuide(val row: BindingCard, skip: Set<View>) {
         val done = skip.toMutableSet()
         var pending = false
         var chosen = false
@@ -1275,7 +934,7 @@ class SettingsActivity : Activity() {
         if (walk.pending && !walk.chosen) guide = null else guideNext()
     }
 
-    private fun startGuide(row: ComboRow, skip: Set<View> = emptySet()) {
+    private fun startGuide(row: BindingCard, skip: Set<View> = emptySet()) {
         guide = OptionGuide(row, skip)
         // The action chooser is still closing; the walk starts when the page has the focus back.
         if (hasWindowFocus()) guideNext()
@@ -1300,16 +959,8 @@ class SettingsActivity : Activity() {
     }
 
     /** Button › function, the path to what a dialog edits; the function stays while the steps change below it. */
-    private fun crumb(row: ComboRow, function: String? = functionName(prefs.shoulderAction(row.button))): String =
+    private fun crumb(row: BindingCard, function: String? = describer.functionName(prefs.shoulderAction(row.button))): String =
         function?.let { getString(R.string.dialog_breadcrumb, row.label, it) } ?: row.label
-
-    /** The action as the action list names it: a group or AYN tile by its own name, not by its option. */
-    private fun functionName(action: String): String? = when {
-        action.isEmpty() -> null
-        else -> ActionGroups.groupOf(action)?.let { getString(it.titleRes) }
-            ?: Ayn.groupOf(action)?.let { getString(it.titleRes) }
-            ?: describeAction(action)
-    }
 
     private fun AlertDialog.Builder.bindingTitle(binding: String, titleRes: Int): AlertDialog.Builder =
         bindingTitle(binding, getString(titleRes))
@@ -1393,7 +1044,7 @@ class SettingsActivity : Activity() {
     }
 
     /** [assign] false edits a library macro from the list: the hotkey keeps playing whatever it played before. */
-    private fun openMacroEditor(row: ComboRow, initial: SavedMacro? = prefs.savedMacro(row.button), assign: Boolean = true) {
+    private fun openMacroEditor(row: BindingCard, initial: SavedMacro? = prefs.savedMacro(row.button), assign: Boolean = true) {
         if (macroEditor != null) return
         val editor = MacroEditor(this, row.label, initial, getString(R.string.macro_default_name, row.label), { prefs.macroLibrary }, {
             Settings.System.getInt(contentResolver, SwitcherService.CONTROLLER_FLIP_SETTING, 0) != 0
@@ -1410,7 +1061,7 @@ class SettingsActivity : Activity() {
         }
     }
 
-    private fun openMacroLibrary(row: ComboRow) {
+    private fun openMacroLibrary(row: BindingCard) {
         MacroLibraryDialog(this, prefs, prefs.savedMacro(row.button)?.id, { saved ->
             if (saved == null) {
                 openMacroEditor(row, null)
@@ -1424,15 +1075,12 @@ class SettingsActivity : Activity() {
         }) { refresh() }.show()
     }
 
-    private fun describeMacro(saved: SavedMacro?): String =
-        saved?.let { MacroEditor.macroLine(this, it) } ?: getString(R.string.macro_not_recorded)
-
     /**
      * The apps a hotkey can open: "Ask" and "Favorites" choose when it is pressed, then the starred
      * apps and every other app. A star marks an app for every hotkey; the order follows the stars only
      * the next time the list opens, so nothing moves under the finger.
      */
-    private fun chooseShoulderApp(row: ComboRow) {
+    private fun chooseShoulderApp(row: BindingCard) {
         val favorites = prefs.favoriteApps
         val apps = allApps().sortedBy { it.value !in favorites }
         val current = prefs.shoulderAction(row.button)
@@ -1504,7 +1152,7 @@ class SettingsActivity : Activity() {
         dialog.show()
     }
 
-    private fun chooseOption(row: ComboRow) {
+    private fun chooseOption(row: BindingCard) {
         val action = prefs.shoulderAction(row.button)
         Ayn.groupOf(action)?.let { return chooseAynOption(row, it) }
         val group = ActionGroups.groupOf(action) ?: return
@@ -1520,8 +1168,8 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseAynOption(row: ComboRow, group: Ayn.Group) {
-        val choices = aynOptions(group)
+    private fun chooseAynOption(row: BindingCard, group: Ayn.Group) {
+        val choices = describer.aynOptions(group)
         val selected = prefs.aynOption(row.button, group)
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), row.option?.title?.text ?: getString(group.titleRes))
@@ -1533,9 +1181,9 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseTarget(row: ComboRow) {
+    private fun chooseTarget(row: BindingCard) {
         val focus = prefs.shoulderAction(row.button) == Prefs.SHOULDER_CONTROLLER_FOCUS
-        val targets = if (focus) focusTargets() else levelTargets()
+        val targets = if (focus) describer.focusTargets() else describer.levelTargets()
         val selected = if (focus) prefs.focusTarget(row.button) else prefs.levelTarget(row.button)
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), if (focus) R.string.focus_target_dialog_title else R.string.level_target_dialog_title)
@@ -1551,9 +1199,9 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseShoulderDisplay(row: ComboRow) {
+    private fun chooseShoulderDisplay(row: BindingCard) {
         // Ask is offered where an app opens; Home goes to a fixed screen.
-        val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) launchScreens() else screenTargets()
+        val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) describer.launchScreens() else describer.screenTargets()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.level_target_dialog_title)
             .chooseOne(
@@ -1567,8 +1215,8 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    private fun chooseAppControl(row: ComboRow, mode: Boolean) {
-        val choices = if (mode) appModes() else appScreens()
+    private fun chooseAppControl(row: BindingCard, mode: Boolean) {
+        val choices = if (mode) describer.appModes() else describer.appScreens()
         val selected = if (mode) prefs.appMode(row.button) else prefs.appScreen(row.button)
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), if (mode) R.string.app_control_mode_dialog_title else R.string.app_control_screen_dialog_title)
@@ -1629,252 +1277,32 @@ class SettingsActivity : Activity() {
         titleRes: Int,
         extra: (SettingsPage.Card.(ComboButton) -> View)?,
     ) {
-        val card = page.card {}
-        lateinit var row: ComboRow
-        val action = card.chooserRow(titleRes, describeShoulderAction(button)) { chooseShoulderAction(row) }
-        val timing = extra?.let { card.it(button) }
-        lateinit var display: SettingsPage.ChooserHandle
-        val displayOptions = card.subOptions {
-            display = chooserRow(R.string.level_target_title, describeShoulderDisplay(button)) { chooseShoulderDisplay(row) }
-        }
-        lateinit var target: SettingsPage.ChooserHandle
-        val targetOptions = card.subOptions {
-            target = chooserRow(R.string.level_target_title, describeLevelTarget(button)) { chooseTarget(row) }
-        }
-        // The Home column's label names its layer, so the dialogs and screen readers say which binding it is.
-        val label = if (button is HomeLayerButton) getString(R.string.settings_home_binding_label, getString(titleRes)) else getString(titleRes)
-        row = ComboRow(card, button, label, action, display, target, displayOptions, targetOptions, timing)
+        val row = BindingCard(page, button, titleRes, extra, this, prefs, describer, cardHost)
         comboRows[button.prefKey] = row
         updateShoulderRow(row)
     }
 
-    private fun updateShoulderRow(row: ComboRow) {
+    private val cardHost = object : BindingCard.Host {
+        override fun chooseAction(card: BindingCard) = chooseShoulderAction(card)
+        override fun chooseDisplay(card: BindingCard) = chooseShoulderDisplay(card)
+        override fun chooseTarget(card: BindingCard) = this@SettingsActivity.chooseTarget(card)
+        override fun chooseOption(card: BindingCard) = this@SettingsActivity.chooseOption(card)
+        override fun choosePosition(card: BindingCard, record: Boolean) = this@SettingsActivity.choosePosition(card, record)
+        override fun choosePushToTalkKey(card: BindingCard) = this@SettingsActivity.choosePushToTalkKey(card)
+        override fun chooseRecordDuck(card: BindingCard) = this@SettingsActivity.chooseRecordDuck(card)
+        override fun chooseRecordQuality(card: BindingCard) = this@SettingsActivity.chooseRecordQuality(card)
+        override fun chooseAppControl(card: BindingCard, mode: Boolean) = this@SettingsActivity.chooseAppControl(card, mode)
+        override fun openMacroLibrary(card: BindingCard) =
+            if (PService.cachedAvailable()) this@SettingsActivity.openMacroLibrary(card) else showMacroUnavailable()
+        override fun openGyroSettings(card: BindingCard) = this@SettingsActivity.openGyroSettings(card)
+        override fun changed(card: BindingCard) = updateShoulderRow(card)
+    }
+
+    private fun updateShoulderRow(row: BindingCard) {
         // A guided dialog that writes its choice updates its row itself; a page-wide refresh says nothing about it.
         guide?.let { if (it.row === row && it.pending && !refreshingRows) it.chosen = true }
-        val action = prefs.shoulderAction(row.button)
-        val described = describeShoulderAction(row.button)
-        // The chosen action stands out from the options under it; "Not set" stays plain.
-        row.action.value.text = if (action.isEmpty()) described else getString(R.string.shoulder_action_selected, described)
-        row.action.value.typeface = if (action.isEmpty()) Typeface.DEFAULT else Typeface.DEFAULT_BOLD
-        row.display.row.visibility = if (Prefs.launchesApp(action) || action == Prefs.SHOULDER_HOME) View.VISIBLE else View.GONE
-        row.display.value.text = describeShoulderDisplay(row.button)
-        row.display.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.display.value.text)
-        val hasOption = Ayn.groupOf(action) != null || ActionGroups.groupOf(action) != null
-        val hasTarget = Prefs.hasScreenTarget(action)
-        val focus = action == Prefs.SHOULDER_CONTROLLER_FOCUS
-        row.target.row.visibility = if (hasTarget && !focus) View.VISIBLE else View.GONE
-        row.displayOptions.visibility = row.display.row.visibility
-        row.timingOptions?.visibility = if (action.isEmpty()) View.GONE else View.VISIBLE
-        val switcher = action == Prefs.SHOULDER_SWITCHER
-        if (switcher && row.switcherOptions == null) {
-            row.switcherOptions = row.card.subOptions {
-                toggleRow(R.string.switcher_all_apps, R.string.switcher_all_apps_hint, prefs.switcherShowsAllApps, readValue = { prefs.switcherShowsAllApps }) {
-                    prefs.switcherShowsAllApps = it
-                }
-            }
-        }
-        row.switcherOptions?.visibility = if (switcher) View.VISIBLE else View.GONE
-        row.targetOptions.visibility = row.target.row.visibility
-        val switchApp = action == Prefs.SHOULDER_SWITCH_APP
-        val appControl = action == Prefs.SHOULDER_APP_CONTROL
-        row.action.row.setPadding(row.action.row.paddingLeft, row.action.row.paddingTop, row.action.row.paddingRight,
-            dp(if (hasTarget || hasOption || appControl || switchApp || row.display.row.visibility == View.VISIBLE) 0 else 10))
-        if (hasOption && row.option == null) {
-            lateinit var created: SettingsPage.ChooserHandle
-            val options = row.card.subOptions {
-                created = chooserRow(R.string.ayn_option_title, describeOption(row.button)) { chooseOption(row) }
-            }
-            // Built last, but it belongs right above the screen row.
-            (options.parent as ViewGroup).let { parent ->
-                parent.removeView(options)
-                parent.addView(options, parent.indexOfChild(row.targetOptions))
-            }
-            row.option = created
-            row.optionOptions = options
-        }
-        row.option?.let { option ->
-            option.row.visibility = if (hasOption) View.VISIBLE else View.GONE
-            row.optionOptions?.visibility = option.row.visibility
-            option.value.text = describeOption(row.button)
-            val screen = isScreenOption(action)
-            option.title.setText(if (screen) R.string.level_target_title else R.string.ayn_option_title)
-            option.row.contentDescription =
-                getString(if (screen) R.string.level_target_accessibility else R.string.ayn_option_accessibility, row.label, option.value.text)
-        }
-        row.target.value.text = describeLevelTarget(row.button)
-        row.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, row.target.value.text)
-        if (focus && row.focusOptions == null) {
-            row.focusOptions = row.card.focusOptions(
-                describeFocusTarget(row.button), describeFocusPosition(row.button),
-                { chooseTarget(row) }, { choosePosition(row) },
-            )
-        }
-        if (switchApp && row.switchAppOptions == null) {
-            row.switchAppOptions = row.card.subOptions {
-                toggleRow(R.string.switch_app_follow_focus, null, prefs.switchAppFollowFocus(row.button),
-                    readValue = { prefs.switchAppFollowFocus(row.button) }) {
-                    prefs.setSwitchAppFollowFocus(row.button, it)
-                }
-            }
-        }
-        row.switchAppOptions?.visibility = if (switchApp) View.VISIBLE else View.GONE
-        val closeApps = Prefs.isCloseApps(action)
-        if (closeApps && row.closeAppsOptions == null) {
-            row.closeAppsOptions = row.card.subOptions {
-                toggleRow(R.string.app_control_confirm_title, null, prefs.closeConfirm(row.button),
-                    readValue = { prefs.closeConfirm(row.button) }) {
-                    prefs.setCloseConfirm(row.button, it)
-                }
-            }
-        }
-        row.closeAppsOptions?.visibility = if (closeApps) View.VISIBLE else View.GONE
-        val standby = action == Prefs.SHOULDER_STANDBY
-        if (standby && row.standbyOptions == null) {
-            row.standbyOptions = row.card.subOptions {
-                toggleRow(R.string.standby_confirm_title, null, prefs.standbyConfirm(row.button),
-                    readValue = { prefs.standbyConfirm(row.button) }) {
-                    prefs.setStandbyConfirm(row.button, it)
-                }
-            }
-        }
-        row.standbyOptions?.visibility = if (standby) View.VISIBLE else View.GONE
-        val record = action == Prefs.SHOULDER_RECORD_VIDEO
-        if (record && row.recordOptions == null) {
-            lateinit var pushToTalk: SettingsPage.ToggleHandle
-            lateinit var pushToTalkKey: SettingsPage.ChooserHandle
-            lateinit var duck: SettingsPage.ChooserHandle
-            lateinit var quality: SettingsPage.ChooserHandle
-            lateinit var indicator: SettingsPage.ChooserHandle
-            val group = row.card.subOptions {
-                toggleRow(R.string.record_mic_title, null, prefs.recordMic(row.button),
-                    readValue = { prefs.recordMic(row.button) }) {
-                    prefs.setRecordMic(row.button, it)
-                    updateShoulderRow(row)
-                }
-                pushToTalk = toggleRow(R.string.record_ptt_title, null, prefs.recordPtt(row.button),
-                    readValue = { prefs.recordPtt(row.button) }) {
-                    prefs.setRecordPtt(row.button, it)
-                    updateShoulderRow(row)
-                }
-                pushToTalkKey = chooserRow(R.string.record_ptt_key_title, describePushToTalkKey(prefs.recordPttKey(row.button))) {
-                    choosePushToTalkKey(row)
-                }
-                duck = chooserRow(R.string.record_duck_title, describeRecordDuck(row.button)) { chooseRecordDuck(row) }
-                quality = chooserRow(R.string.record_quality_title, describeRecordQuality(row.button)) { chooseRecordQuality(row) }
-                indicator = chooserRow(R.string.record_indicator_row, describeRecordIndicator(row.button)) {
-                    choosePosition(row, record = true)
-                }
-            }
-            row.recordOptions = RecordOptions(group, pushToTalk, pushToTalkKey, duck, quality, indicator)
-        }
-        row.recordOptions?.let { options ->
-            options.group.visibility = if (record) View.VISIBLE else View.GONE
-            // Push to talk only exists with the microphone, its button and fade only with push to talk.
-            val mic = prefs.recordMic(row.button)
-            val talk = mic && prefs.recordPtt(row.button)
-            fun show(view: View, visible: Boolean) {
-                val state = if (visible) View.VISIBLE else View.GONE
-                view.visibility = state
-                dividerBefore(view)?.visibility = state
-            }
-            show(options.pushToTalk.row, mic)
-            show(options.pushToTalkKey.row, talk)
-            show(options.duck.row, talk)
-            options.pushToTalkKey.value.text = describePushToTalkKey(prefs.recordPttKey(row.button))
-            options.pushToTalkKey.row.contentDescription =
-                getString(R.string.record_ptt_key_accessibility, row.label, options.pushToTalkKey.value.text)
-            options.duck.value.text = describeRecordDuck(row.button)
-            options.duck.row.contentDescription = getString(R.string.record_duck_accessibility, row.label, options.duck.value.text)
-            options.quality.value.text = describeRecordQuality(row.button)
-            options.quality.row.contentDescription = getString(R.string.record_quality_accessibility, row.label, options.quality.value.text)
-            options.indicator.value.text = describeRecordIndicator(row.button)
-            options.indicator.row.contentDescription =
-                getString(R.string.record_indicator_accessibility, row.label, options.indicator.value.text)
-        }
-        val macroAction = action == Prefs.SHOULDER_MACRO
-        if (macroAction && row.macroOptions == null) {
-            lateinit var library: SettingsPage.ChooserHandle
-            // One row: the list both picks a saved macro and records a new one, and its value names the one this hotkey plays.
-            row.macroOptions = row.card.subOptions {
-                library = chooserRow(R.string.macro_library_title, describeMacro(prefs.savedMacro(row.button))) {
-                    if (PService.cachedAvailable()) openMacroLibrary(row) else showMacroUnavailable()
-                }
-            }
-            row.macroLibrary = library
-        }
-        row.macroOptions?.visibility = if (macroAction) View.VISIBLE else View.GONE
-        row.macroLibrary?.let { library ->
-            library.value.text = describeMacro(prefs.savedMacro(row.button))
-            library.row.contentDescription = getString(R.string.macro_library_accessibility, row.label, library.value.text)
-        }
-        val gyroAction = action == Prefs.SHOULDER_GYRO
-        if (gyroAction && row.gyroOptions == null) {
-            lateinit var setup: SettingsPage.ChooserHandle
-            row.gyroOptions = row.card.subOptions {
-                setup = chooserRow(R.string.gyro_setup_title, describeGyro(prefs.gyro(row.button))) { openGyroSettings(row) }
-            }
-            row.gyroSetup = setup
-        }
-        row.gyroOptions?.visibility = if (gyroAction) View.VISIBLE else View.GONE
-        row.gyroSetup?.let { setup ->
-            setup.value.text = describeGyro(prefs.gyro(row.button))
-            setup.row.contentDescription = getString(R.string.gyro_setup_accessibility, row.label, setup.value.text)
-        }
-        if (appControl && row.appOptions == null) {
-            row.appOptions = row.card.appControlOptions(
-                describeAppMode(row.button), describeAppScreen(row.button), prefs.appConfirm(row.button),
-                { chooseAppControl(row, mode = true) }, { chooseAppControl(row, mode = false) },
-                { prefs.setAppConfirm(row.button, it) },
-            )
-        }
-        row.appOptions?.let { options ->
-            val close = prefs.appMode(row.button) != Prefs.APP_MINIMIZE
-            options.row.visibility = if (appControl) View.VISIBLE else View.GONE
-            options.mode.value.text = describeAppMode(row.button)
-            options.screen.value.text = describeAppScreen(row.button)
-            options.mode.row.contentDescription = getString(R.string.app_control_mode_accessibility, row.label, options.mode.value.text)
-            options.screen.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.screen.value.text)
-            // Ask already is a confirmation; minimizing destroys nothing.
-            fun show(view: View, visible: Boolean) {
-                val state = if (visible) View.VISIBLE else View.GONE
-                view.visibility = state
-                dividerBefore(view)?.visibility = state
-            }
-            show(options.confirm.row, appControl && close && prefs.appScreen(row.button) != Prefs.APP_SCREEN_ASK)
-            show(options.warning.parent as View, appControl && close)
-        }
-        row.focusOptions?.let { options ->
-            options.row.visibility = if (focus) View.VISIBLE else View.GONE
-            options.target.value.text = describeFocusTarget(row.button)
-            options.target.row.contentDescription = getString(R.string.level_target_accessibility, row.label, options.target.value.text)
-            options.position.value.text = describeFocusPosition(row.button)
-            options.position.row.contentDescription = getString(R.string.focus_position_accessibility, row.label, options.position.value.text)
-        }
-        // With Home standing in for Back, or Back + Home as the activation shortcut, Back + Home cannot
-        // run its own shortcut; the binding stays stored.
-        val toggleBlocks = row.button == AndroidButton.HOME && prefs.toggleButtons == Prefs.TOGGLE_BACK_HOME
-        val dualBlocks = row.button == AndroidButton.HOME && prefs.dualMode
-        val blocked = toggleBlocks || dualBlocks || row.button == AndroidButton.HOME && prefs.homeAsBack
-        if (blocked) row.action.value.text = getString(when {
-            toggleBlocks -> R.string.toggle_combo_blocked
-            dualBlocks -> R.string.dual_mode_combo_blocked
-            else -> R.string.home_as_back_combo_blocked
-        })
-        (row.action.row.parent as View).let { card ->
-            card.alpha = if (blocked) 0.5f else 1f
-            setTreeEnabled(card, !blocked)
-        }
-        row.action.row.contentDescription =
-            getString(R.string.shoulder_action_accessibility, row.label, if (blocked) row.action.value.text else described)
+        row.update()
     }
-
-    private fun setTreeEnabled(view: View, enabled: Boolean) {
-        view.isEnabled = enabled
-        if (view is ViewGroup) for (i in 0 until view.childCount) setTreeEnabled(view.getChildAt(i), enabled)
-    }
-
-    private fun dividerBefore(row: View): View? =
-        (row.parent as? ViewGroup)?.let { card -> card.getChildAt(card.indexOfChild(row) - 1) }
 
     private fun explainServiceRepair() {
         AlertDialog.Builder(this)
@@ -1887,99 +1315,15 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    // The file picker is the whole permission model: the user hands over one file, nothing else.
-    private fun startBackupSave() {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("application/json").putExtra(Intent.EXTRA_TITLE, SettingsBackup.fileName(appVersionName()))
-        runCatching { startActivityForResult(intent, REQUEST_BACKUP_SAVE) }
-            .onFailure { Toast.makeText(this, R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
-    }
-
-    private fun startBackupLoad() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
-            .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/plain", "application/octet-stream"))
-        runCatching { startActivityForResult(intent, REQUEST_BACKUP_LOAD) }
-            .onFailure { Toast.makeText(this, R.string.backup_read_failed, Toast.LENGTH_LONG).show() }
-    }
-
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val uri = data?.data?.takeIf { resultCode == RESULT_OK } ?: return
-        when (requestCode) {
-            REQUEST_BACKUP_SAVE -> saveBackup(uri)
-            REQUEST_BACKUP_LOAD -> loadBackup(uri)
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun saveBackup(uri: Uri) {
-        val json = SettingsBackup.write(prefs.snapshot(), appVersionName(),
-            packageManager.getPackageInfo(packageName, 0).let { it.longVersionCode })
-        Thread {
-            val saved = runCatching {
-                contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.toByteArray(Charsets.UTF_8)) }
-            }.isSuccess
-            runOnUiThread { if (!isFinishing && !isDestroyed) Toast.makeText(this, if (saved) R.string.backup_saved else R.string.backup_save_failed, Toast.LENGTH_LONG).show() }
-        }.apply { isDaemon = true }.start()
-    }
-
-    private fun loadBackup(uri: Uri) {
-        Thread {
-            // One byte over the limit is enough to tell a file is too large, without reading all of it.
-            val bytes = runCatching {
-                contentResolver.openInputStream(uri)!!.use { input ->
-                    val out = java.io.ByteArrayOutputStream()
-                    val chunk = ByteArray(8192)
-                    while (out.size() <= SettingsBackup.MAX_BYTES) {
-                        val n = input.read(chunk, 0, minOf(chunk.size, SettingsBackup.MAX_BYTES + 1 - out.size()))
-                        if (n < 0) break
-                        out.write(chunk, 0, n)
-                    }
-                    out.toByteArray()
-                }
-            }.getOrNull()
-            runOnUiThread { if (!isFinishing && !isDestroyed) offerBackup(bytes) }
-        }.apply { isDaemon = true }.start()
+        backup.onResult(requestCode, uri)
     }
 
     /** What a picked file leads to: a refusal, or the version hint and the preview of every change. */
-    internal fun offerBackup(bytes: ByteArray?) {
-        if (bytes == null) { showBackupProblem(R.string.backup_read_failed); return }
-        when (val result = SettingsBackup.read(String(bytes, Charsets.UTF_8))) {
-            is SettingsBackup.Result.Rejected -> showBackupProblem(when (result.reason) {
-                SettingsBackup.Rejection.TOO_LARGE -> R.string.backup_too_large
-                SettingsBackup.Rejection.NOT_JSON -> R.string.backup_not_json
-                SettingsBackup.Rejection.NOT_A_BACKUP -> R.string.backup_not_a_backup
-            })
-            is SettingsBackup.Result.Loaded -> confirmBackup(result)
-        }
-    }
-
-    private fun showBackupProblem(message: Int) {
-        AlertDialog.Builder(this).setTitle(R.string.backup_problem_title).setMessage(message)
-            .setPositiveButton(android.R.string.ok, null).show()
-    }
-
-    /** A backup from another version is allowed, but says so first: it may not fit, and that is all it says. */
-    private fun confirmBackup(loaded: SettingsBackup.Result.Loaded) {
-        val plan = SettingsChangePlan(prefs.snapshot(), loaded.state, null, SettingsChangeAction.RESTORE)
-        val version = appVersionName()
-        val compatibility = SettingsBackup.compatibility(loaded.info, version)
-        if (compatibility == SettingsBackup.Compatibility.SAME) { showChanges(plan); return }
-        val message = when (compatibility) {
-            SettingsBackup.Compatibility.OLDER -> R.string.backup_version_older
-            SettingsBackup.Compatibility.NEWER -> R.string.backup_version_newer
-            else -> R.string.backup_version_unknown
-        }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.backup_version_title)
-            .setMessage(if (compatibility == SettingsBackup.Compatibility.UNKNOWN) getString(message, version)
-                else getString(message, loaded.info.appVersion ?: "?", version))
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.backup_continue) { _, _ -> showChanges(plan) }
-            .show()
-    }
+    internal fun offerBackup(bytes: ByteArray?) = backup.offer(bytes)
 
     /** Dual mode's Unbind asks first which layer it reaches; the answer goes to [then]. */
     private fun chooseLayers(then: (Set<BindingLayer>) -> Unit) {
@@ -2019,7 +1363,7 @@ class SettingsActivity : Activity() {
         }))
         else {
             line(getString(R.string.settings_changes_scope, scope))
-            changeLines(plan).forEach(::line)
+            changeDescriber.lines(plan).forEach(::line)
             if (plan.removesToggle) line(getString(R.string.settings_unbind_reactivates))
         }
         val builder = AlertDialog.Builder(this)
@@ -2050,137 +1394,6 @@ class SettingsActivity : Activity() {
         builder.show()
     }
 
-    private fun changeLines(plan: SettingsChangePlan): List<String> = buildList {
-        fun addChange(label: String, old: String, new: String) {
-            if (old != new) add(getString(R.string.settings_change_line, label, old, new))
-        }
-        fun onOff(value: Boolean) = getString(if (value) R.string.settings_on else R.string.settings_off)
-        fun ms(value: Long) = getString(R.string.focus_duration, value)
-        fun target(value: String) = levelTargets().first { it.value == value }.label
-        fun focus(value: String) = focusTargets().first { it.value == value }.label
-        fun appMode(value: String) = appModes().first { it.value == value }.label
-        fun appScreen(value: String) = appScreens().first { it.value == value }.label
-        fun position(value: String) = focusPositions().first { it.value == value }.label
-        fun quality(value: String) = recordQualities().first { it.value == value }.label
-        fun duck(value: String) = recordDucks().first { it.value == value }.label
-        fun aynOption(value: BindingSettings): String {
-            val group = checkNotNull(Ayn.groupOf(value.action))
-            val chosen = value.aynOption?.takeIf(group::isValid) ?: group.defaultOption
-            return aynOptions(group).first { it.value == chosen }.label
-        }
-        fun launches(value: BindingSettings) = Prefs.launchesApp(value.action) || value.action == Prefs.SHOULDER_HOME
-        fun binding(value: BindingSettings): String {
-            val detail = when {
-                launches(value) -> launchScreens().first { it.value == value.display }.label
-                value.action == Prefs.SHOULDER_SCREENSHOT -> target(value.screenshotTarget())
-                Prefs.isLevelAction(value.action) || value.action == Prefs.SHOULDER_RECORD_VIDEO -> target(value.levelTarget())
-                value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
-                value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
-                Prefs.isCloseApps(value.action) || value.action == Prefs.SHOULDER_VOLUME_MUTE ->
-                    "${getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes)}, ${target(value.levelTarget())}"
-                Ayn.groupOf(value.action) != null -> aynOption(value)
-                ActionGroups.groupOf(value.action) != null -> return getString(
-                    R.string.settings_action_detail, describeAction(value.action),
-                    getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes),
-                )
-                else -> return describeAction(value.action)
-            }
-            return getString(R.string.settings_action_detail, describeAction(value.action), detail)
-        }
-        val a = plan.before
-        val b = plan.after
-        addChange(getString(R.string.settings_double_time), ms(a.doubleMs), ms(b.doubleMs))
-        addChange(getString(R.string.settings_tap_hold_time), ms(a.tapHoldMs), ms(b.tapHoldMs))
-        addChange(getString(R.string.settings_hold_time), ms(a.holdMs), ms(b.holdMs))
-        addChange(getString(R.string.switcher_all_apps), onOff(a.allApps), onOff(b.allApps))
-        addChange(getString(R.string.switcher_controller), onOff(a.controller), onOff(b.controller))
-        addChange(getString(R.string.home_as_back), onOff(a.homeAsBack), onOff(b.homeAsBack))
-        addChange(getString(R.string.dual_mode), onOff(a.dualMode), onOff(b.dualMode))
-        val homeSide = getString(R.string.dual_column_home)
-        fun homeTiming(res: Int, old: Long, new: Long) =
-            addChange(getString(R.string.settings_property_label, homeSide, getString(res)), ms(old), ms(new))
-        homeTiming(R.string.settings_double_time, a.homeDoubleMs, b.homeDoubleMs)
-        homeTiming(R.string.settings_tap_hold_time, a.homeTapHoldMs, b.homeTapHoldMs)
-        homeTiming(R.string.settings_hold_time, a.homeHoldMs, b.homeHoldMs)
-        addChange(getString(R.string.service_toggle_buttons), toggleLabel(a.toggleButtons), toggleLabel(b.toggleButtons))
-        addChange(getString(R.string.settings_toggle_time), ms(a.toggleMs), ms(b.toggleMs))
-        fun apps(value: List<AppException>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.exceptions_none) }
-        addChange(getString(R.string.exceptions_apps_title), apps(a.exceptions), apps(b.exceptions))
-        fun macros(value: List<SavedMacro>) = value.joinToString(", ") { it.name }.ifEmpty { getString(R.string.macro_library_empty) }
-        addChange(getString(R.string.macro_library_title), macros(a.macros), macros(b.macros))
-        val buttons = listOf(
-            BackGestureButton.SINGLE to R.string.back_single_row, BackGestureButton.DOUBLE to R.string.back_double_row,
-            BackGestureButton.TAP_HOLD to R.string.back_tap_hold_row, BackGestureButton.HOLD to R.string.back_hold_row,
-            AndroidButton.HOME to R.string.button_home, AndroidButton.START to R.string.button_start,
-            AndroidButton.SELECT to R.string.button_select,
-            FaceButton.A to R.string.button_a, FaceButton.B to R.string.button_b,
-            FaceButton.X to R.string.button_x, FaceButton.Y to R.string.button_y,
-            ShoulderButton.L1 to R.string.shoulder_l1, ShoulderButton.R1 to R.string.shoulder_r1,
-            ShoulderButton.L2 to R.string.shoulder_l2, ShoulderButton.R2 to R.string.shoulder_r2,
-            DpadDirection.UP to R.string.dpad_up, DpadDirection.DOWN to R.string.dpad_down,
-            DpadDirection.LEFT to R.string.dpad_left, DpadDirection.RIGHT to R.string.dpad_right,
-            StickButton.LEFT_UP to R.string.stick_left_up, StickButton.LEFT_DOWN to R.string.stick_left_down,
-            StickButton.LEFT_LEFT to R.string.stick_left_left, StickButton.LEFT_RIGHT to R.string.stick_left_right,
-            StickButton.RIGHT_UP to R.string.stick_right_up, StickButton.RIGHT_DOWN to R.string.stick_right_down,
-            StickButton.RIGHT_LEFT to R.string.stick_right_left, StickButton.RIGHT_RIGHT to R.string.stick_right_right,
-            StickClickButton.LEFT_PRESS to R.string.stick_left_press, StickClickButton.LEFT_DOUBLE to R.string.stick_left_double,
-            StickClickButton.LEFT_TAP_HOLD to R.string.stick_left_tap_hold, StickClickButton.RIGHT_PRESS to R.string.stick_right_press,
-            StickClickButton.RIGHT_DOUBLE to R.string.stick_right_double, StickClickButton.RIGHT_TAP_HOLD to R.string.stick_right_tap_hold,
-        )
-        Stick.entries.forEach { stick ->
-            val old = a.stickTimings.getValue(stick.prefix)
-            val new = b.stickTimings.getValue(stick.prefix)
-            val side = getString(if (stick == Stick.LEFT) R.string.stick_tab_left else R.string.stick_tab_right)
-            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_double_title)), ms(old.doubleMs), ms(new.doubleMs))
-            addChange(getString(R.string.settings_property_label, side, getString(R.string.stick_tap_hold_title)), ms(old.tapHoldMs), ms(new.tapHoldMs))
-            val oldHome = a.homeStickTimings.getValue(stick.prefix)
-            val newHome = b.homeStickTimings.getValue(stick.prefix)
-            val homeStick = getString(R.string.settings_property_label, homeSide, side)
-            addChange(getString(R.string.settings_property_label, homeStick, getString(R.string.stick_double_title)), ms(oldHome.doubleMs), ms(newHome.doubleMs))
-            addChange(getString(R.string.settings_property_label, homeStick, getString(R.string.stick_tap_hold_title)), ms(oldHome.tapHoldMs), ms(newHome.tapHoldMs))
-        }
-        // The Home layer follows the Back layer, binding by binding.
-        val layers = buttons.map { (button, labelRes) -> Triple(button, labelRes, R.string.settings_binding_label) } +
-            buttons.filter { (button, _) -> button in Prefs.HOME_LAYER_BASES }
-                .map { (button, labelRes) -> Triple(HomeLayerButton.of(button), labelRes, R.string.settings_home_binding_label) }
-        layers.forEach { (button, labelRes, layerRes) ->
-            val old = a.bindings.getValue(button.prefKey)
-            val new = b.bindings.getValue(button.prefKey)
-            val label = getString(layerRes, getString(labelRes))
-            addChange(label, binding(old), binding(new))
-            fun extra(res: Int, from: String, to: String) = addChange(getString(R.string.settings_property_label, label, getString(res)), from, to)
-            if (!(launches(old) && launches(new))) extra(R.string.level_target_title, target(old.display), target(new.display))
-            if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
-                extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
-            fun screenTarget(action: String) =
-                Prefs.isLevelAction(action) || Prefs.isCloseApps(action) || action == Prefs.SHOULDER_VOLUME_MUTE ||
-                    action == Prefs.SHOULDER_RECORD_VIDEO
-            if (!(screenTarget(old.action) && screenTarget(new.action)))
-                extra(R.string.settings_level_screen, target(old.levelTarget()), target(new.levelTarget()))
-            if (!(old.action == Prefs.SHOULDER_CONTROLLER_FOCUS && new.action == old.action))
-                extra(R.string.level_target_title, focus(old.focusTarget), focus(new.focusTarget))
-            extra(R.string.app_control_mode_title, appMode(old.appMode), appMode(new.appMode))
-            extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
-            extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
-            extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
-            extra(R.string.app_control_confirm_title, onOff(old.closeConfirm), onOff(new.closeConfirm))
-            extra(R.string.standby_confirm_title, onOff(old.standbyConfirm), onOff(new.standbyConfirm))
-            extra(R.string.record_mic_title, onOff(old.recordMic), onOff(new.recordMic))
-            extra(R.string.record_ptt_title, onOff(old.recordPtt), onOff(new.recordPtt))
-            extra(R.string.record_ptt_key_title, describePushToTalkKey(old.recordPttKey), describePushToTalkKey(new.recordPttKey))
-            extra(R.string.record_duck_title, duck(old.recordDuck), duck(new.recordDuck))
-            extra(R.string.record_quality_title, quality(old.recordQuality), quality(new.recordQuality))
-            extra(R.string.record_indicator_title, onOff(old.recordIndicator), onOff(new.recordIndicator))
-            extra(R.string.record_indicator_row, position(old.recordPosition), position(new.recordPosition))
-            extra(R.string.gyro_setup_title, describeGyro(GyroSettings.decode(old.gyro)), describeGyro(GyroSettings.decode(new.gyro)))
-            extra(R.string.macro_title, describeMacro(a.macros.firstOrNull { it.id == old.macro }),
-                describeMacro(b.macros.firstOrNull { it.id == new.macro }))
-            extra(R.string.focus_indicator_title, onOff(old.indicator), onOff(new.indicator))
-            extra(R.string.focus_header_duration, ms(old.duration), ms(new.duration))
-            extra(R.string.focus_header_position, position(old.position), position(new.position))
-        }
-    }
-
     private fun invalidatePages() {
         layoutDual = prefs.dualMode
         exceptionsPage?.dispose()
@@ -2200,125 +1413,15 @@ class SettingsActivity : Activity() {
     }
 
     private fun checkForUpdates() {
-        val updateHandle = updateHandle ?: return
-        updateHandle.row.isClickable = false
-        updateHandle.row.alpha = 0.5f
-        updateHandle.title.setText(R.string.checking_for_updates)
-        UpdateChecker.checkInBackground(this) { result ->
-            if (isFinishing || isDestroyed) return@checkInBackground
-            updateHandle.row.isClickable = true
-            updateHandle.row.alpha = 1f
-            updateHandle.title.setText(R.string.check_for_updates)
-            when (result.status) {
-                UpdateChecker.Status.UPDATE_AVAILABLE -> {
-                    val apk = result.apk
-                    val developerBuild = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-                    val offerInstall = UpdateInstaller.canOfferInstall(apk, developerBuild)
-                    val found = getString(R.string.update_found_message, result.tagName.orEmpty())
-                    val builder = AlertDialog.Builder(this)
-                        .setTitle(R.string.update_found_title)
-                        .setMessage(when {
-                            offerInstall -> "$found\n\n${getString(R.string.update_install_hint)}"
-                            apk != null -> "$found\n\n${getString(R.string.update_developer_build_hint)}"
-                            else -> found
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                    if (offerInstall && apk != null) {
-                        builder.setPositiveButton(R.string.update_install_action) { _, _ -> startUpdate(apk) }
-                        builder.setNeutralButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
-                    } else {
-                        builder.setPositiveButton(R.string.open_release) { _, _ -> result.htmlUrl?.let { openUrl(it) } }
-                    }
-                    builder.show()
-                }
-                UpdateChecker.Status.UP_TO_DATE -> AlertDialog.Builder(this)
-                    .setTitle(R.string.no_update_title)
-                    .setMessage(R.string.no_update_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-                UpdateChecker.Status.ERROR -> AlertDialog.Builder(this)
-                    .setTitle(R.string.update_check_failed_title)
-                    .setMessage(updateFailureMessage(result))
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-        }
-    }
-
-    /** Downloads the release into Android's installer; Android then asks for the final confirmation itself. */
-    private fun startUpdate(apk: UpdateChecker.Asset) {
-        val installer = UpdateInstaller(this)
-        if (!installer.canInstall()) return explainInstallPermission()
-        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 100 }
-        val label = TextView(this).apply { textSize = 14f; text = getString(R.string.update_installing_progress, 0) }
-        val content = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(24), dp(16), dp(24), dp(8))
-            addView(bar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(label, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
-        }
-        updateDialog?.dismiss()
-        val progress = AlertDialog.Builder(this)
-            .setTitle(R.string.update_installing_title)
-            .setView(content)
-            .setCancelable(false)
-            .setNegativeButton(android.R.string.cancel) { _, _ -> installer.cancel() }
-            .show()
-        updateDialog = progress
-        installer.install(apk, object : UpdateInstaller.Listener {
-            override fun onProgress(done: Long, total: Long) {
-                val percent = (done * 100 / total).toInt().coerceIn(0, 100)
-                bar.progress = percent
-                label.text = getString(R.string.update_installing_progress, percent)
-            }
-
-            override fun onHandedOver() {
-                progress.dismiss()
-            }
-
-            override fun onFailed(failure: UpdateInstaller.Failure) {
-                progress.dismiss()
-                if (isFinishing || isDestroyed) return
-                if (failure == UpdateInstaller.Failure.NOT_ALLOWED) return explainInstallPermission()
-                AlertDialog.Builder(this@SettingsActivity)
-                    .setTitle(R.string.update_failed_title)
-                    .setMessage(when (failure) {
-                        UpdateInstaller.Failure.NETWORK -> R.string.update_failed_network
-                        UpdateInstaller.Failure.CORRUPT -> R.string.update_failed_corrupt
-                        else -> R.string.update_failed_session
-                    })
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-            }
-        })
-    }
-
-    /** Installing from an app is something Android asks the user to allow per app, once. */
-    private fun explainInstallPermission() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.update_allow_title)
-            .setMessage(R.string.update_allow_message)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.update_allow_open) { _, _ ->
-                runCatching {
-                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-                }
-            }
-            .show()
-    }
-
-    /** Names what actually went wrong; "check your connection" is only true when no answer came at all. */
-    private fun updateFailureMessage(result: UpdateChecker.CheckResult): String = when (result.failure) {
-        UpdateChecker.Failure.RATE_LIMITED -> result.retryMinutes
-            ?.let { resources.getQuantityString(R.plurals.update_rate_limited_minutes, it, it) }
-            ?: getString(R.string.update_rate_limited_message)
-        UpdateChecker.Failure.UNEXPECTED -> getString(R.string.update_check_unexpected_message)
-        else -> getString(R.string.update_check_failed_message)
+        updateHandle?.let(updateFlow::checkNow)
     }
 
     @Suppress("DEPRECATION")
     private fun appVersionName(): String =
         packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+
+    /** Where release checks go; activity tests substitute a local fake so nothing reaches the network. */
+    internal open fun updateCheck(): UpdateCheck = UpdateCheck(UpdateChecker::checkInBackground)
 
     private fun openUrl(url: String) {
         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -2327,9 +1430,7 @@ class SettingsActivity : Activity() {
     companion object {
         const val EXTRA_INDICATOR_BUTTON = "indicator_button"
         private const val REQUEST_NOTIFICATIONS = 1
-        private const val REQUEST_BACKUP_SAVE = 2
-        private const val REQUEST_BACKUP_LOAD = 3
-        private const val ACTION_APP = "@choose_app"
+        private const val ACTION_APP = BindingDescriber.ACTION_APP
         private const val GUIDE_SETTLE_MS = 150L
         private const val CHEVRON_TAG = "settings_chooser_chevron"
         /** The pages dual mode splits into a Home and a Back column. */

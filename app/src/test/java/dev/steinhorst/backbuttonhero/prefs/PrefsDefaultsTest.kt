@@ -1,0 +1,204 @@
+package dev.steinhorst.backbuttonhero.prefs
+
+import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+
+@RunWith(RobolectricTestRunner::class)
+class PrefsDefaultsTest {
+
+    private lateinit var prefs: Prefs
+
+    @Before
+    fun setUp() {
+        prefs = Prefs(ApplicationProvider.getApplicationContext())
+    }
+
+    @Test
+    fun `toggle starts unassigned and round trips and clamps`() {
+        assertEquals(Prefs.TOGGLE_NONE, prefs.toggleButtons)
+        assertEquals(300L, prefs.toggleHoldMs)
+        prefs.toggleButtons = Prefs.TOGGLE_L1_R1
+        prefs.toggleHoldMs = 1700L
+        assertEquals(Prefs.TOGGLE_L1_R1, prefs.toggleButtons)
+        assertEquals(1700L, prefs.toggleHoldMs)
+        prefs.toggleHoldMs = 1L
+        assertEquals(100L, prefs.toggleHoldMs)
+        prefs.toggleHoldMs = 9999L
+        assertEquals(3000L, prefs.toggleHoldMs)
+    }
+
+    @Test
+    fun `favorite apps start empty, are shared by every hotkey and Ask and Favorites launch apps`() {
+        assertEquals(emptySet<String>(), prefs.favoriteApps)
+        prefs.setFavorite("org.example.alpha", true)
+        prefs.setFavorite("org.example.beta", true)
+        prefs.setFavorite("org.example.alpha", false)
+        assertEquals(setOf("org.example.beta"), prefs.favoriteApps)
+        listOf(Prefs.SHOULDER_APP_ASK, Prefs.SHOULDER_APP_FAVORITES, "org.example.beta").forEach { assertTrue(it, Prefs.launchesApp(it)) }
+        listOf("", Prefs.SHOULDER_HOME).forEach { assertFalse(it, Prefs.launchesApp(it)) }
+        assertTrue(Prefs.SHOULDER_APP_ASK in Prefs.KNOWN_ACTIONS && Prefs.SHOULDER_APP_FAVORITES in Prefs.KNOWN_ACTIONS)
+    }
+
+    @Test
+    fun `doubleTapEnabled defaults to false`() {
+        assertFalse(prefs.doubleTapEnabled)
+    }
+
+    @Test
+    fun `doubleTapMs defaults to 300`() {
+        assertEquals(Prefs.DEFAULT_DOUBLE_TAP_MS, prefs.doubleTapMs)
+    }
+
+    @Test
+    fun `holdEnabled defaults to false`() {
+        assertFalse(prefs.holdEnabled)
+    }
+
+    @Test
+    fun `holdMs defaults to 1000`() {
+        assertEquals(Prefs.DEFAULT_HOLD_MS, prefs.holdMs)
+    }
+
+    @Test
+    fun `tapHoldEnabled defaults to false`() {
+        assertFalse(prefs.tapHoldEnabled)
+    }
+
+    @Test
+    fun `tapHoldMs defaults to 1000`() {
+        assertEquals(Prefs.DEFAULT_TAP_HOLD_MS, prefs.tapHoldMs)
+    }
+
+    @Test
+    fun `the Back gestures start unassigned`() {
+        BackGestureButton.entries.forEach { assertEquals("", prefs.shoulderAction(it)) }
+        assertEquals(Prefs.DISPLAY_BOTTOM, prefs.shoulderDisplay(BackGestureButton.SINGLE))
+    }
+
+    @Test
+    fun `doubleTapEnabled round-trips false`() {
+        prefs.doubleTapEnabled = false
+        assertFalse(prefs.doubleTapEnabled)
+    }
+
+    @Test
+    fun `doubleTapMs round-trips 450`() {
+        prefs.doubleTapMs = 450L
+        assertEquals(450L, prefs.doubleTapMs)
+    }
+
+    @Test
+    fun `switcherShowsAllApps defaults to false and round-trips`() {
+        assertFalse(prefs.switcherShowsAllApps)
+        prefs.switcherShowsAllApps = true
+        assertTrue(prefs.switcherShowsAllApps)
+    }
+
+    @Test
+    fun `switcher controller navigation defaults to true and round-trips`() {
+        assertTrue(prefs.switcherControllerEnabled)
+        prefs.switcherControllerEnabled = false
+        assertFalse(prefs.switcherControllerEnabled)
+    }
+
+    @Test
+    fun `home as back defaults to false and round-trips`() {
+        assertFalse(prefs.homeAsBack)
+        prefs.homeAsBack = true
+        assertTrue(prefs.homeAsBack)
+    }
+
+    @Test
+    fun `holdEnabled round-trips false`() {
+        prefs.holdEnabled = false
+        assertFalse(prefs.holdEnabled)
+    }
+
+    @Test
+    fun `holdMs round-trips 1500`() {
+        prefs.holdMs = 1500L
+        assertEquals(1500L, prefs.holdMs)
+    }
+
+    @Test
+    fun `tapHoldEnabled round-trips false`() {
+        prefs.tapHoldEnabled = false
+        assertFalse(prefs.tapHoldEnabled)
+    }
+
+    @Test
+    fun `tapHoldMs round-trips 1700`() {
+        prefs.tapHoldMs = 1700L
+        assertEquals(1700L, prefs.tapHoldMs)
+    }
+
+    @Test
+    fun `a Back gesture round-trips any action, and the legacy switches follow its assignment`() {
+        prefs.setShoulderAction(BackGestureButton.SINGLE, Prefs.SHOULDER_BACK)
+        assertEquals(Prefs.SHOULDER_BACK, prefs.shoulderAction(BackGestureButton.SINGLE))
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, "")
+        assertFalse(prefs.doubleTapEnabled)
+        prefs.setShoulderAction(BackGestureButton.DOUBLE, Prefs.SHOULDER_SCREENSHOT)
+        assertTrue(prefs.doubleTapEnabled)
+        prefs.doubleTapEnabled = false
+        assertEquals("", prefs.shoulderAction(BackGestureButton.DOUBLE))
+        prefs.doubleTapEnabled = true
+        assertEquals(Prefs.SHOULDER_SWITCHER, prefs.shoulderAction(BackGestureButton.DOUBLE))
+        prefs.tapHoldEnabled = false
+        prefs.holdEnabled = false
+        assertEquals("", prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals("", prefs.shoulderAction(BackGestureButton.HOLD))
+        prefs.tapHoldEnabled = true
+        prefs.holdEnabled = true
+        assertEquals(Prefs.SHOULDER_RECENTS, prefs.shoulderAction(BackGestureButton.TAP_HOLD))
+        assertEquals(Prefs.SHOULDER_SWAP_APPS, prefs.shoulderAction(BackGestureButton.HOLD))
+    }
+
+    @Test
+    fun `shoulderAction for L2 defaults to unassigned`() {
+        assertEquals("", prefs.shoulderAction(ShoulderButton.L2))
+    }
+
+    @Test
+    fun `setShoulderAction for L2 round-trips a package name`() {
+        prefs.setShoulderAction(ShoulderButton.L2, "com.example.app")
+        assertEquals("com.example.app", prefs.shoulderAction(ShoulderButton.L2))
+    }
+
+    @Test
+    fun `shoulderDisplay for R2 defaults to DISPLAY_BOTTOM`() {
+        // R2 is deliberately chosen over L1/R1: those get v1 navigation-flick defaults in
+        // Prefs.init, so testing R2 isolates the plain default from any migration effect.
+        assertEquals(Prefs.DISPLAY_BOTTOM, prefs.shoulderDisplay(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `setShoulderDisplay for R2 round-trips DISPLAY_TOP`() {
+        prefs.setShoulderDisplay(ShoulderButton.R2, Prefs.DISPLAY_TOP)
+        assertEquals(Prefs.DISPLAY_TOP, prefs.shoulderDisplay(ShoulderButton.R2))
+    }
+
+    @Test
+    fun `isShoulderApp is false for an empty string`() {
+        assertFalse(Prefs.isShoulderApp(""))
+    }
+
+    @Test
+    fun `isShoulderApp is false for an at-prefixed sentinel`() {
+        assertFalse(Prefs.isShoulderApp("@home"))
+    }
+
+    @Test
+    fun `isShoulderApp is true for a bare package name`() {
+        assertTrue(Prefs.isShoulderApp("com.example.app"))
+    }
+}

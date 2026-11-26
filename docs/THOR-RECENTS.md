@@ -48,6 +48,10 @@ Quickstep's `ActivityManagerWrapper.startActivityFromRecents(TaskKey, ActivityOp
 existing task rather than a package's launcher intent, but it raises the default-display Home even
 for a background move, so `RecentsTaskLauncher` uses `moveTaskToFront` with flags 0 instead.
 
+In the app, the bottom switcher's lifecycle and snapshot loading are `recents/BottomSwitcherController`,
+and the native top Recents launch poll and selection are `recents/TopRecentsLauncher`; see
+[`ARCHITECTURE.md`](ARCHITECTURE.md).
+
 ## Lock semantics
 
 `FrameLayoutWithLockIcon.changeLockState()` toggles `TaskLockStatus.setLockState()`.

@@ -9,10 +9,13 @@ import android.net.LocalSocket
 import android.net.LocalSocketAddress
 import android.os.IBinder
 import android.os.Looper
-import org.json.JSONArray
-import org.json.JSONObject
+import dev.steinhorst.backbuttonhero.panels.BottomPanels
+import dev.steinhorst.backbuttonhero.panels.PanelWindow
+import dev.steinhorst.backbuttonhero.panels.PanelWindows
 import java.io.File
 import java.util.UUID
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** Root-only window lifetime owner. Its independent peer restores panels if this process dies. */
 @SuppressLint("PrivateApi") // IWindow visibility is intentionally not exposed to ordinary apps.

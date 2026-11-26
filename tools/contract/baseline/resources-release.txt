@@ -1,0 +1,2549 @@
+Binary APK
+Package name=dev.steinhorst.backbuttonhero id=7f
+  type color id=01 entryCount=2
+    resource 0x7f010000 color/ic_launcher_background
+      () #ffffffff
+    resource 0x7f010001 color/settings_destructive
+      () #ffb3261e
+      (night) #ffffb4ab
+  type drawable id=02 entryCount=44
+    resource 0x7f020000 drawable/focus_bottom_active
+      (nodpi) (file) res/2n.webp
+    resource 0x7f020001 drawable/focus_top_active
+      (nodpi) (file) res/eQ.webp
+    resource 0x7f020002 drawable/ic_clear_all
+      () (file) res/Tk.xml type=XML
+    resource 0x7f020003 drawable/ic_exc_arrow
+      () (file) res/30.xml type=XML
+    resource 0x7f020004 drawable/ic_exc_back
+      () (file) res/yD.xml type=XML
+    resource 0x7f020005 drawable/ic_exc_double
+      () (file) res/hk.xml type=XML
+    resource 0x7f020006 drawable/ic_exc_hold
+      () (file) res/E5.xml type=XML
+    resource 0x7f020007 drawable/ic_exc_home
+      () (file) res/t3.xml type=XML
+    resource 0x7f020008 drawable/ic_exc_press
+      () (file) res/Qy.xml type=XML
+    resource 0x7f020009 drawable/ic_exc_select
+      () (file) res/eA.xml type=XML
+    resource 0x7f02000a drawable/ic_exc_start
+      () (file) res/Lw.xml type=XML
+    resource 0x7f02000b drawable/ic_exc_tap_hold
+      () (file) res/Xs.xml type=XML
+    resource 0x7f02000c drawable/ic_launcher_foreground
+      (mdpi) (file) res/bB.png type=PNG
+      (hdpi) (file) res/yi.png type=PNG
+      (xhdpi) (file) res/tP.png type=PNG
+      (xxhdpi) (file) res/BM.png type=PNG
+      (xxxhdpi) (file) res/CH.png type=PNG
+    resource 0x7f02000d drawable/ic_macro_add
+      () (file) res/3h.xml type=XML
+    resource 0x7f02000e drawable/ic_macro_close
+      () (file) res/xd.xml type=XML
+    resource 0x7f02000f drawable/ic_macro_delete
+      () (file) res/Dn.xml type=XML
+    resource 0x7f020010 drawable/ic_macro_duplicate
+      () (file) res/G7.xml type=XML
+    resource 0x7f020011 drawable/ic_macro_earlier
+      () (file) res/nw.xml type=XML
+    resource 0x7f020012 drawable/ic_macro_edit
+      () (file) res/Wb.xml type=XML
+    resource 0x7f020013 drawable/ic_macro_later
+      () (file) res/an.xml type=XML
+    resource 0x7f020014 drawable/ic_macro_minus
+      () (file) res/r5.xml type=XML
+    resource 0x7f020015 drawable/ic_macro_more
+      () (file) res/jU.xml type=XML
+    resource 0x7f020016 drawable/ic_macro_move_earlier
+      () (file) res/WZ.xml type=XML
+    resource 0x7f020017 drawable/ic_macro_move_later
+      () (file) res/T5.xml type=XML
+    resource 0x7f020018 drawable/ic_macro_pause_arrow
+      () (file) res/di.xml type=XML
+    resource 0x7f020019 drawable/ic_macro_play
+      () (file) res/kk.xml type=XML
+    resource 0x7f02001a drawable/ic_macro_stop
+      () (file) res/aT.xml type=XML
+    resource 0x7f02001b drawable/ic_macro_undo
+      () (file) res/qM.xml type=XML
+    resource 0x7f02001c drawable/ic_macro_warning
+      () (file) res/n_.xml type=XML
+    resource 0x7f02001d drawable/ic_screenshot
+      () (file) res/dO.xml type=XML
+    resource 0x7f02001e drawable/ic_settings_android
+      () (file) res/p1.xml type=XML
+    resource 0x7f02001f drawable/ic_settings_chevron
+      () (file) res/45.xml type=XML
+    resource 0x7f020020 drawable/ic_settings_dpad
+      () (file) res/_6.xml type=XML
+    resource 0x7f020021 drawable/ic_settings_exceptions
+      () (file) res/QV.xml type=XML
+    resource 0x7f020022 drawable/ic_settings_face
+      () (file) res/Js.xml type=XML
+    resource 0x7f020023 drawable/ic_settings_gear
+      () (file) res/qF.xml type=XML
+    resource 0x7f020024 drawable/ic_settings_help
+      () (file) res/qj.xml type=XML
+    resource 0x7f020025 drawable/ic_settings_menu
+      () (file) res/F3.xml type=XML
+    resource 0x7f020026 drawable/ic_settings_overview
+      () (file) res/hz.xml type=XML
+    resource 0x7f020027 drawable/ic_settings_remove
+      () (file) res/TI.xml type=XML
+    resource 0x7f020028 drawable/ic_settings_shoulders
+      () (file) res/rX.xml type=XML
+    resource 0x7f020029 drawable/ic_settings_stick
+      () (file) res/7x.xml type=XML
+    resource 0x7f02002a drawable/ic_star_filled
+      () (file) res/1T.xml type=XML
+    resource 0x7f02002b drawable/ic_star_outline
+      () (file) res/jE.xml type=XML
+  type mipmap id=03 entryCount=1
+    resource 0x7f030000 mipmap/ic_launcher
+      (mdpi) (file) res/9w.png type=PNG
+      (hdpi) (file) res/yn.png type=PNG
+      (xhdpi) (file) res/FS.png type=PNG
+      (xxhdpi) (file) res/RJ.png type=PNG
+      (xxxhdpi) (file) res/o-.png type=PNG
+      (anydpi) (file) res/BW.xml type=XML
+  type plurals id=04 entryCount=3
+    resource 0x7f040000 plurals/macro_delete_used
+      () (plurals) size=2
+        one="%1$d shortcut still plays this macro. It will do nothing until you choose another one. This can't be undone."
+        other="%1$d shortcuts still play this macro. They will do nothing until you choose another one. This can't be undone."
+      (de) (plurals) size=2
+        one="%1$d Tastenkombination spielt dieses Macro noch. Sie tut nichts mehr, bis du ein anderes auswählst. Das lässt sich nicht rückgängig machen."
+        other="%1$d Tastenkombinationen spielen dieses Macro noch. Sie tun nichts mehr, bis du ein anderes auswählst. Das lässt sich nicht rückgängig machen."
+    resource 0x7f040001 plurals/macro_summary
+      () (plurals) size=2
+        one="%1$d step · %2$s"
+        other="%1$d steps · %2$s"
+      (de) (plurals) size=2
+        one="%1$d Schritt · %2$s"
+        other="%1$d Schritte · %2$s"
+    resource 0x7f040002 plurals/update_rate_limited_minutes
+      () (plurals) size=2
+        one="GitHub limits how often updates can be checked from one network. Please try again in about %d minute."
+        other="GitHub limits how often updates can be checked from one network. Please try again in about %d minutes."
+      (de) (plurals) size=2
+        one="GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es in etwa %d Minute erneut."
+        other="GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es in etwa %d Minuten erneut."
+  type string id=05 entryCount=802
+    resource 0x7f050000 string/action_desc_app_control
+      () "Minimizes, closes or restarts the app you're playing."
+      (de) "Minimiert, beendet oder startet die laufende App neu."
+    resource 0x7f050001 string/action_desc_app_switcher
+      () "Opens your recent apps on the chosen screen."
+      (de) "Öffnet die letzten Apps auf dem gewählten Bildschirm."
+    resource 0x7f050002 string/action_desc_back
+      () "Sends a normal Android Back."
+      (de) "Sendet ein normales Android-Zurück."
+    resource 0x7f050003 string/action_desc_brightness
+      () "Changes screen brightness."
+      (de) "Ändert die Bildschirmhelligkeit."
+    resource 0x7f050004 string/action_desc_close_apps
+      () "Clears running apps in one press."
+      (de) "Schließt laufende Apps mit einem Tastendruck."
+    resource 0x7f050005 string/action_desc_controller_focus
+      () "Moves gamepad input between the screens."
+      (de) "Verschiebt die Gamepad-Eingabe zwischen den Bildschirmen."
+    resource 0x7f050006 string/action_desc_direct_power
+      () "Runs on cable power and spares the battery."
+      (de) "Läuft am Kabel direkt mit Netzstrom und schont den Akku."
+    resource 0x7f050007 string/action_desc_display
+      () "Turns one screen off or on."
+      (de) "Schaltet einen Bildschirm aus oder ein."
+    resource 0x7f050008 string/action_desc_do_not_disturb
+      () "Silences notifications while you play."
+      (de) "Unterdrückt Benachrichtigungen beim Spielen."
+    resource 0x7f050009 string/action_desc_fan
+      () "Switches AYN's fan profile."
+      (de) "Wechselt AYNs Lüfterprofil."
+    resource 0x7f05000a string/action_desc_flick
+      () "Flicks between Android pages."
+      (de) "Blättert zwischen Android-Seiten."
+    resource 0x7f05000b string/action_desc_force_landscape
+      () "Keeps every app in landscape."
+      (de) "Hält jede App im Querformat."
+    resource 0x7f05000c string/action_desc_gyro
+      () "Steers a stick by turning the handheld. Press again to turn it off."
+      (de) "Steuert einen Stick durch Drehen des Geräts. Erneut drücken schaltet es aus."
+    resource 0x7f05000d string/action_desc_gyro_calibrate
+      () "Measures the sensor rest offset on a stable surface. Leave the handheld untouched until success is reported; then set your playing posture by turning the gyro off/on or pressing its hold button."
+      (de) "Misst den Ruheoffset des Sensors auf einer stabilen Unterlage. Lass das Gerät bis zur Erfolgsmeldung unberührt liegen; lege danach deine Spielhaltung durch Aus-/Einschalten des Gyros oder Drücken seiner Haltetaste fest."
+    resource 0x7f05000e string/action_desc_handle
+      () "Switches the controller layout."
+      (de) "Wechselt das Controller-Layout."
+    resource 0x7f05000f string/action_desc_home
+      () "Goes to the home screen."
+      (de) "Wechselt zum Startbildschirm."
+    resource 0x7f050010 string/action_desc_last_app
+      () "Returns to the app you used before on the active screen. Press again to flip between the two."
+      (de) "Kehrt zur zuvor genutzten App auf dem aktiven Bildschirm zurück. Erneut drücken wechselt zwischen beiden."
+    resource 0x7f050011 string/action_desc_launch_app
+      () "Opens any app with one press."
+      (de) "Öffnet eine beliebige App per Tastendruck."
+    resource 0x7f050012 string/action_desc_macro
+      () "Plays a recorded button sequence."
+      (de) "Spielt eine aufgezeichnete Tastenfolge ab."
+    resource 0x7f050013 string/action_desc_media
+      () "Controls music or podcasts without leaving the game."
+      (de) "Steuert Musik oder Podcasts, ohne das Spiel zu verlassen."
+    resource 0x7f050014 string/action_desc_mute_microphone
+      () "Blocks the microphone for every app."
+      (de) "Sperrt das Mikrofon für alle Apps."
+    resource 0x7f050015 string/action_desc_panels
+      () "Pulls down Android's panels."
+      (de) "Zieht Androids Bedienfelder herunter."
+    resource 0x7f050016 string/action_desc_performance
+      () "Switches AYN's performance profile."
+      (de) "Wechselt AYNs Leistungsprofil."
+    resource 0x7f050017 string/action_desc_power
+      () "Opens the power menu or sleeps the device."
+      (de) "Öffnet das Ein/Aus-Menü oder versetzt das Gerät in Standby."
+    resource 0x7f050018 string/action_desc_record_video
+      () "Records the screen, with push-to-talk voice."
+      (de) "Nimmt den Bildschirm auf, mit Push-to-Talk-Stimme."
+    resource 0x7f050019 string/action_desc_refresh_rate
+      () "Trades smoothness for battery life."
+      (de) "Tauscht flüssiges Bild gegen Akkulaufzeit."
+    resource 0x7f05001a string/action_desc_screenshot
+      () "Saves a screenshot."
+      (de) "Speichert einen Screenshot."
+    resource 0x7f05001b string/action_desc_settings
+      () "Jumps straight to a settings page."
+      (de) "Springt direkt zu einer Einstellungsseite."
+    resource 0x7f05001c string/action_desc_status
+      () "Shows battery, time remaining and temperature."
+      (de) "Zeigt Akku, Restlaufzeit und Temperatur."
+    resource 0x7f05001d string/action_desc_stick_light
+      () "Turns the stick LEDs off or on."
+      (de) "Schaltet die Stick-LEDs aus oder ein."
+    resource 0x7f05001e string/action_desc_swap_apps
+      () "Swaps the apps on the top and bottom screen."
+      (de) "Tauscht die Apps auf oberem und unterem Bildschirm."
+    resource 0x7f05001f string/action_desc_switch_app
+      () "Moves the app you're playing to the other screen."
+      (de) "Verschiebt die laufende App auf den anderen Bildschirm."
+    resource 0x7f050020 string/action_desc_vibration
+      () "Turns rumble off or on."
+      (de) "Schaltet die Vibration aus oder ein."
+    resource 0x7f050021 string/action_desc_virtual_mouse
+      () "Turns a stick into a mouse cursor."
+      (de) "Macht einen Stick zum Mauszeiger."
+    resource 0x7f050022 string/action_desc_volume
+      () "Changes or mutes the volume."
+      (de) "Ändert die Lautstärke oder schaltet stumm."
+    resource 0x7f050023 string/action_search_clear
+      () "Clear search"
+      (de) "Suche löschen"
+    resource 0x7f050024 string/action_search_empty
+      () "No matching action"
+      (de) "Keine passende Aktion"
+    resource 0x7f050025 string/action_search_hint
+      () "Search actions"
+      (de) "Aktion suchen"
+    resource 0x7f050026 string/action_search_option
+      () "%1$s › %2$s"
+      (de) "%1$s › %2$s"
+    resource 0x7f050027 string/android_bindings_section
+      () "Android Button Binds"
+      (de) "Android-Tasten-Belegungen"
+    resource 0x7f050028 string/app_control_confirm_title
+      () "Ask before closing"
+      (de) "Vor dem Beenden nachfragen"
+    resource 0x7f050029 string/app_control_force_close
+      () "Instant Exit / Force-Close"
+      (de) "Sofort beenden / Force-Close"
+    resource 0x7f05002a string/app_control_force_close_use
+      () "Use Force-Close"
+      (de) "Force-Close verwenden"
+    resource 0x7f05002b string/app_control_force_close_warning
+      () "Force-Close ends the app immediately and does not save anything for you. Unsaved progress and files can be lost."
+      (de) "Force-Close beendet die App sofort und speichert nichts für dich. Nicht gespeicherter Fortschritt und Dateien können verloren gehen."
+    resource 0x7f05002c string/app_control_minimize
+      () "Minimize (simulate swipe up)"
+      (de) "Minimieren (Wischen nach oben simulieren)"
+    resource 0x7f05002d string/app_control_mode_accessibility
+      () "%1$s control: %2$s. Double-tap to change."
+      (de) "Steuerung für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f05002e string/app_control_mode_dialog_title
+      () "What happens to the app?"
+      (de) "Was passiert mit der App?"
+    resource 0x7f05002f string/app_control_mode_title
+      () "Control"
+      (de) "Steuerung"
+    resource 0x7f050030 string/app_control_no_app
+      () "No app to control on that screen."
+      (de) "Auf diesem Bildschirm gibt es keine App zu steuern."
+    resource 0x7f050031 string/app_control_prompt_cancel
+      () "Cancel"
+      (de) "Abbrechen"
+    resource 0x7f050032 string/app_control_prompt_close_title
+      () "Force-Close %1$s?"
+      (de) "%1$s per Force-Close beenden?"
+    resource 0x7f050033 string/app_control_prompt_close_yes
+      () "Force-Close"
+      (de) "Force-Close"
+    resource 0x7f050034 string/app_control_prompt_restart_title
+      () "Restart %1$s?"
+      (de) "%1$s neu starten?"
+    resource 0x7f050035 string/app_control_prompt_restart_yes
+      () "Restart"
+      (de) "Neu starten"
+    resource 0x7f050036 string/app_control_prompt_title
+      () "Which screen's app?"
+      (de) "App von welchem Bildschirm?"
+    resource 0x7f050037 string/app_control_restart
+      () "Restart app"
+      (de) "App neu starten"
+    resource 0x7f050038 string/app_control_restart_use
+      () "Use Restart"
+      (de) "Neustart verwenden"
+    resource 0x7f050039 string/app_control_screen_dialog_title
+      () "Control the app on which screen?"
+      (de) "App auf welchem Bildschirm steuern?"
+    resource 0x7f05003a string/app_favorite_add
+      () "Star %1$s as a favorite"
+      (de) "%1$s als Favorit markieren"
+    resource 0x7f05003b string/app_favorite_remove
+      () "Remove %1$s from favorites"
+      (de) "%1$s aus den Favoriten entfernen"
+    resource 0x7f05003c string/app_favorites_none
+      () "No favorites yet. Star apps in the app list of Launch app."
+      (de) "Noch keine Favoriten. Markiere Apps in der App-Liste von App starten mit dem Stern."
+    resource 0x7f05003d string/app_name
+      () "Back Button Hero"
+    resource 0x7f05003e string/ayn_direct_power
+      () "Direct Power Supply"
+      (de) "Direkte Stromversorgung"
+    resource 0x7f05003f string/ayn_display
+      () "Toggle Display Power"
+      (de) "Display-Power umschalten"
+    resource 0x7f050040 string/ayn_display_dual
+      () "Dual-screen display"
+      (de) "Beide Bildschirme"
+    resource 0x7f050041 string/ayn_display_only_bottom
+      () "Only bottom screen"
+      (de) "Nur unterer Bildschirm"
+    resource 0x7f050042 string/ayn_display_only_top
+      () "Only top screen"
+      (de) "Nur oberer Bildschirm"
+    resource 0x7f050043 string/ayn_do_not_disturb
+      () "Do Not Disturb"
+      (de) "Nicht stören"
+    resource 0x7f050044 string/ayn_fan
+      () "Fan Control"
+      (de) "Lüftersteuerung"
+    resource 0x7f050045 string/ayn_fan_off
+      () "Turned Off"
+      (de) "Aus"
+    resource 0x7f050046 string/ayn_fan_quiet
+      () "Quiet Mode"
+      (de) "Leise"
+    resource 0x7f050047 string/ayn_fan_smart
+      () "Smart Mode"
+      (de) "Smart"
+    resource 0x7f050048 string/ayn_fan_sports
+      () "Sports Mode"
+      (de) "Sport"
+    resource 0x7f050049 string/ayn_force_landscape
+      () "Force Landscape"
+      (de) "Querformat erzwingen"
+    resource 0x7f05004a string/ayn_handle
+      () "Handle Style"
+      (de) "Controller-Stil"
+    resource 0x7f05004b string/ayn_handle_ban
+      () "Ban On Use"
+      (de) "Sperren bei Nutzung"
+    resource 0x7f05004c string/ayn_handle_standard
+      () "Standard Style"
+      (de) "Standard-Stil"
+    resource 0x7f05004d string/ayn_handle_xbox
+      () "XBox Style"
+      (de) "Xbox-Stil"
+    resource 0x7f05004e string/ayn_modal
+      () "Ask"
+      (de) "Nachfragen"
+    resource 0x7f05004f string/ayn_mute_microphone
+      () "Mute Microphone"
+      (de) "Mikrofon stummschalten"
+    resource 0x7f050050 string/ayn_notice_part
+      () "%1$s (%2$s): %3$s"
+      (de) "%1$s (%2$s): %3$s"
+    resource 0x7f050051 string/ayn_notice_value
+      () "%1$s: %2$s"
+      (de) "%1$s: %2$s"
+    resource 0x7f050052 string/ayn_off
+      () "Off"
+      (de) "Inaktiv"
+    resource 0x7f050053 string/ayn_on
+      () "On"
+      (de) "Aktiv"
+    resource 0x7f050054 string/ayn_option_accessibility
+      () "%1$s option: %2$s. Double-tap to change."
+      (de) "Option für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f050055 string/ayn_option_title
+      () "Option"
+      (de) "Option"
+    resource 0x7f050056 string/ayn_performance
+      () "Performance Mode"
+      (de) "Leistungsmodus"
+    resource 0x7f050057 string/ayn_performance_high
+      () "High Performance"
+      (de) "Hohe Leistung"
+    resource 0x7f050058 string/ayn_performance_medium
+      () "Medium Performance"
+      (de) "Mittlere Leistung"
+    resource 0x7f050059 string/ayn_performance_standard
+      () "Standard Performance"
+      (de) "Standard-Leistung"
+    resource 0x7f05005a string/ayn_refresh_120
+      () "120 Hz"
+      (de) "120 Hz"
+    resource 0x7f05005b string/ayn_refresh_60
+      () "60 Hz"
+      (de) "60 Hz"
+    resource 0x7f05005c string/ayn_refresh_hz
+      () "%1$d Hz"
+      (de) "%1$d Hz"
+    resource 0x7f05005d string/ayn_refresh_rate
+      () "Refresh Rate"
+      (de) "Bildwiederholrate"
+    resource 0x7f05005e string/ayn_refresh_toggle
+      () "Toggle 60/120 Hz"
+      (de) "60/120 Hz umschalten"
+    resource 0x7f05005f string/ayn_stick_light
+      () "Stick Lighting"
+      (de) "Stick-Beleuchtung"
+    resource 0x7f050060 string/ayn_sticks_both
+      () "Both Sticks"
+      (de) "Beide Sticks"
+    resource 0x7f050061 string/ayn_sticks_left
+      () "Left Stick"
+      (de) "Linker Stick"
+    resource 0x7f050062 string/ayn_sticks_right
+      () "Right Stick"
+      (de) "Rechter Stick"
+    resource 0x7f050063 string/ayn_vibration
+      () "Vibration"
+      (de) "Vibration"
+    resource 0x7f050064 string/ayn_virtual_mouse
+      () "Virtual Mouse"
+      (de) "Virtuelle Maus"
+    resource 0x7f050065 string/back_double_row
+      () "Back button double press"
+      (de) "Back-Taste doppelt drücken"
+    resource 0x7f050066 string/back_hold_row
+      () "Back button hold"
+      (de) "Back-Taste halten"
+    resource 0x7f050067 string/back_single_row
+      () "Back button press"
+      (de) "Back-Taste drücken"
+    resource 0x7f050068 string/back_tap_hold_row
+      () "Back button tap and hold"
+      (de) "Back-Taste tippen und halten"
+    resource 0x7f050069 string/backup_continue
+      () "Continue"
+      (de) "Fortfahren"
+    resource 0x7f05006a string/backup_load
+      () "Load backup"
+      (de) "Backup laden"
+    resource 0x7f05006b string/backup_load_hint
+      () "Restores a saved backup. You see every change before it is applied."
+      (de) "Stellt ein gespeichertes Backup wieder her. Vor dem Anwenden siehst du jede Änderung."
+    resource 0x7f05006c string/backup_matches
+      () "The backup matches your current settings."
+      (de) "Das Backup entspricht deinen aktuellen Einstellungen."
+    resource 0x7f05006d string/backup_not_a_backup
+      () "This is not a Back Button Hero backup."
+      (de) "Das ist kein Back-Button-Hero-Backup."
+    resource 0x7f05006e string/backup_not_json
+      () "This file is not valid JSON."
+      (de) "Diese Datei ist kein gültiges JSON."
+    resource 0x7f05006f string/backup_problem_title
+      () "Not a usable backup"
+      (de) "Kein verwendbares Backup"
+    resource 0x7f050070 string/backup_read_failed
+      () "Couldn't read the file."
+      (de) "Die Datei konnte nicht gelesen werden."
+    resource 0x7f050071 string/backup_restore_title
+      () "Restore backup"
+      (de) "Backup wiederherstellen"
+    resource 0x7f050072 string/backup_restored
+      () "Backup restored"
+      (de) "Backup wiederhergestellt"
+    resource 0x7f050073 string/backup_save
+      () "Save backup"
+      (de) "Backup speichern"
+    resource 0x7f050074 string/backup_save_failed
+      () "Couldn't save the backup"
+      (de) "Das Backup konnte nicht gespeichert werden"
+    resource 0x7f050075 string/backup_save_hint
+      () "Saves all bindings, timings, switches and app exceptions as a JSON file."
+      (de) "Speichert alle Belegungen, Zeiten, Schalter und App-Ausnahmen als JSON-Datei."
+    resource 0x7f050076 string/backup_saved
+      () "Backup saved"
+      (de) "Backup gespeichert"
+    resource 0x7f050077 string/backup_section
+      () "Backup"
+      (de) "Sicherung"
+    resource 0x7f050078 string/backup_too_large
+      () "This file is too large to be a backup."
+      (de) "Diese Datei ist zu groß für ein Backup."
+    resource 0x7f050079 string/backup_version_newer
+      () "This backup was made with a newer version (%1$s, installed: %2$s). Settings can change between versions, so it may cause incompatibilities, but it doesn't have to. Anything unknown is ignored and anything missing keeps its default. Nothing changes until you confirm the next step."
+      (de) "Dieses Backup stammt aus einer neueren Version (%1$s, installiert: %2$s). Einstellungen können sich zwischen Versionen ändern, daher kann es zu Unverträglichkeiten kommen, muss aber nicht. Unbekanntes wird ignoriert, Fehlendes behält seinen Standardwert. Erst mit dem nächsten Schritt wird etwas geändert."
+    resource 0x7f05007a string/backup_version_older
+      () "This backup was made with an older version (%1$s, installed: %2$s). Settings can change between versions, so it may cause incompatibilities, but it doesn't have to. Anything unknown is ignored and anything missing keeps its default. Nothing changes until you confirm the next step."
+      (de) "Dieses Backup stammt aus einer älteren Version (%1$s, installiert: %2$s). Einstellungen können sich zwischen Versionen ändern, daher kann es zu Unverträglichkeiten kommen, muss aber nicht. Unbekanntes wird ignoriert, Fehlendes behält seinen Standardwert. Erst mit dem nächsten Schritt wird etwas geändert."
+    resource 0x7f05007b string/backup_version_title
+      () "Backup from another version"
+      (de) "Backup einer anderen Version"
+    resource 0x7f05007c string/backup_version_unknown
+      () "This backup does not say which version made it (installed: %1$s). Settings can change between versions, so it may cause incompatibilities, but it doesn't have to. Anything unknown is ignored and anything missing keeps its default. Nothing changes until you confirm the next step."
+      (de) "Dieses Backup nennt keine Version (installiert: %1$s). Einstellungen können sich zwischen Versionen ändern, daher kann es zu Unverträglichkeiten kommen, muss aber nicht. Unbekanntes wird ignoriert, Fehlendes behält seinen Standardwert. Erst mit dem nächsten Schritt wird etwas geändert."
+    resource 0x7f05007d string/bottom_panel_label
+      () "%1$s – bottom panel"
+      (de) "%1$s – unteres Panel"
+    resource 0x7f05007e string/button_a
+      () "A"
+      (de) "A"
+    resource 0x7f05007f string/button_b
+      () "B"
+      (de) "B"
+    resource 0x7f050080 string/button_home
+      () "Home"
+      (de) "Home"
+    resource 0x7f050081 string/button_select
+      () "Select"
+      (de) "Select"
+    resource 0x7f050082 string/button_start
+      () "Start"
+      (de) "Start"
+    resource 0x7f050083 string/button_x
+      () "X"
+      (de) "X"
+    resource 0x7f050084 string/button_y
+      () "Y"
+      (de) "Y"
+    resource 0x7f050085 string/check_for_updates
+      () "Check for new version"
+      (de) "Nach neuer Version suchen"
+    resource 0x7f050086 string/checking_for_updates
+      () "Checking…"
+      (de) "Suche läuft…"
+    resource 0x7f050087 string/close_all
+      () "Close all"
+      (de) "Alle Apps schließen"
+    resource 0x7f050088 string/close_apps_all
+      () "Close all apps"
+      (de) "Alle Apps schließen"
+    resource 0x7f050089 string/close_apps_background
+      () "Keep foreground apps open"
+      (de) "Vordergrund-Apps geöffnet lassen"
+    resource 0x7f05008a string/close_apps_none
+      () "No apps to close on that screen."
+      (de) "Auf diesem Bildschirm gibt es keine Apps zum Beenden."
+    resource 0x7f05008b string/close_apps_prompt_title
+      () "Close %1$s?"
+      (de) "%1$s beenden?"
+    resource 0x7f05008c string/close_apps_prompt_yes
+      () "Close"
+      (de) "Beenden"
+    resource 0x7f05008d string/dialog_breadcrumb
+      () "%1$s › %2$s"
+      (de) "%1$s › %2$s"
+    resource 0x7f05008e string/double_hint
+      () "Maximum time between two taps. Higher is easier, but a single tap waits this long before it acts when a double press is assigned. Default: 300 ms."
+      (de) "Maximale Zeit zwischen zwei Tipps. Höher ist leichter, aber ein einzelner Tipp wartet so lange, bevor er etwas auslöst, wenn ein Doppeldruck belegt ist. Standard: 300 ms."
+    resource 0x7f05008f string/double_section_title
+      () "Double button press"
+      (de) "Doppelter Tastendruck"
+    resource 0x7f050090 string/double_speed
+      () "Double-tap speed: %d ms"
+      (de) "Doppeltipp-Tempo: %d ms"
+    resource 0x7f050091 string/dpad_bindings_section
+      () "D-Pad Binds"
+      (de) "D-Pad-Belegungen"
+    resource 0x7f050092 string/dpad_down
+      () "D-pad down"
+      (de) "D-Pad runter"
+    resource 0x7f050093 string/dpad_left
+      () "D-pad left"
+      (de) "D-Pad links"
+    resource 0x7f050094 string/dpad_right
+      () "D-pad right"
+      (de) "D-Pad rechts"
+    resource 0x7f050095 string/dpad_root_missing
+      () "AYN's root service is not reachable. Back + D-pad now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable."
+      (de) "AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar."
+    resource 0x7f050096 string/dpad_stick_root_missing
+      () "AYN's root service is not reachable. Back + D-pad and Back + stick now use a fallback in which games may pause, and brightness and bottom-screen volume are unavailable."
+      (de) "AYNs Root-Dienst ist nicht erreichbar. Zurück + D-Pad und Zurück + Stick nutzen jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar."
+    resource 0x7f050097 string/dpad_up
+      () "D-pad up"
+      (de) "D-Pad hoch"
+    resource 0x7f050098 string/dual_column_back
+      () "Back button"
+      (de) "Back-Taste"
+    resource 0x7f050099 string/dual_column_home
+      () "Home button"
+      (de) "Home-Taste"
+    resource 0x7f05009a string/dual_mode
+      () "Dual mode"
+      (de) "Dual-Mode"
+    resource 0x7f05009b string/dual_mode_combo_blocked
+      () "Unavailable in dual mode"
+      (de) "Im Dual-Mode nicht verfügbar"
+    resource 0x7f05009c string/dual_mode_hint
+      () "Home becomes a second hotkey button with its own bindings: Home + button can run something else than Back + button. Whichever of the two you press first counts. Back + Home is unavailable meanwhile."
+      (de) "Home wird eine zweite Hotkey-Taste mit eigenen Belegungen: Home + Taste kann etwas anderes auslösen als Back + Taste. Es zählt die Taste, die du zuerst drückst. Back + Home ist solange nicht verfügbar."
+    resource 0x7f05009d string/enable_service
+      () "Turn on accessibility service"
+      (de) "Bedienungshilfen-Dienst einschalten"
+    resource 0x7f05009e string/exceptions_active
+      () "%1$s: exception active"
+      (de) "%1$s: Ausnahme aktiv"
+    resource 0x7f05009f string/exceptions_add_app
+      () "Add app"
+      (de) "App hinzufügen"
+    resource 0x7f0500a0 string/exceptions_all_column
+      () "All"
+      (de) "Alle"
+    resource 0x7f0500a1 string/exceptions_allow_all
+      () "Allow everything"
+      (de) "Alles zulassen"
+    resource 0x7f0500a2 string/exceptions_apps_title
+      () "App exceptions"
+      (de) "App-Ausnahmen"
+    resource 0x7f0500a3 string/exceptions_block_all
+      () "Block everything"
+      (de) "Alles unterlassen"
+    resource 0x7f0500a4 string/exceptions_chip_accessibility
+      () "%1$s, %2$s. Handled by Back Button Hero: %3$d/%4$d. Double-tap to change."
+      (de) "%1$s, %2$s. Von Back Button Hero behandelt: %3$d/%4$d. Zum Ändern doppeltippen."
+    resource 0x7f0500a5 string/exceptions_count
+      () "%1$d/%2$d"
+      (de) "%1$d/%2$d"
+    resource 0x7f0500a6 string/exceptions_done
+      () "Done"
+      (de) "Fertig"
+    resource 0x7f0500a7 string/exceptions_double_column
+      () "Double"
+      (de) "Doppelt"
+    resource 0x7f0500a8 string/exceptions_empty
+      () "No apps added yet."
+      (de) "Noch keine Apps hinzugefügt."
+    resource 0x7f0500a9 string/exceptions_group_android
+      () "Android buttons"
+      (de) "Android-Tasten"
+    resource 0x7f0500aa string/exceptions_group_dpad
+      () "D-pad"
+      (de) "D-Pad"
+    resource 0x7f0500ab string/exceptions_group_face
+      () "Face buttons"
+      (de) "Fronttasten"
+    resource 0x7f0500ac string/exceptions_group_shoulders
+      () "Shoulder buttons"
+      (de) "Schultertasten"
+    resource 0x7f0500ad string/exceptions_group_sticks
+      () "Analog sticks"
+      (de) "Analog-Sticks"
+    resource 0x7f0500ae string/exceptions_hold_column
+      () "Hold"
+      (de) "Halten"
+    resource 0x7f0500af string/exceptions_load_failed
+      () "Apps could not be loaded. Please try again."
+      (de) "Apps konnten nicht geladen werden. Bitte versuche es erneut."
+    resource 0x7f0500b0 string/exceptions_loading
+      () "Loading apps…"
+      (de) "Apps werden geladen…"
+    resource 0x7f0500b1 string/exceptions_modal_hint
+      () "On: Back Button Hero handles it. Off: the app receives it unchanged, as if Back Button Hero were not installed."
+      (de) "An: Back Button Hero behandelt es. Aus: Die App bekommt es unverändert, als wäre Back Button Hero nicht installiert."
+    resource 0x7f0500b2 string/exceptions_modal_inactive
+      () "This exception is switched off. Switch it on to change these settings."
+      (de) "Diese Ausnahme ist inaktiv. Aktiviere sie, um diese Einstellungen zu ändern."
+    resource 0x7f0500b3 string/exceptions_modal_native
+      () "All four Back gestures are off for this app, so these shortcuts cannot be reached."
+      (de) "Alle vier Back-Gesten sind für diese App aus, deshalb sind diese Shortcuts nicht erreichbar."
+    resource 0x7f0500b4 string/exceptions_native_message
+      () "All four Back gestures are unchecked for %1$s. Back reaches the app unchanged, so Back Button Hero cannot receive any shoulder button or D-pad shortcuts there either."
+      (de) "Für %1$s sind alle vier Back-Gesten abgewählt. Back geht unverändert an die App, deshalb kann Back Button Hero dort auch keine Schultertasten- oder D-Pad-Kombinationen empfangen."
+    resource 0x7f0500b5 string/exceptions_native_title
+      () "Back Button Hero is off in this app"
+      (de) "Back Button Hero ist in dieser App aus"
+    resource 0x7f0500b6 string/exceptions_no_results
+      () "No matching apps."
+      (de) "Keine passenden Apps gefunden."
+    resource 0x7f0500b7 string/exceptions_none
+      () "None"
+      (de) "Keine"
+    resource 0x7f0500b8 string/exceptions_remove_all
+      () "Remove all exceptions"
+      (de) "Alle Ausnahmen entfernen"
+    resource 0x7f0500b9 string/exceptions_remove_app
+      () "Remove %1$s"
+      (de) "%1$s entfernen"
+    resource 0x7f0500ba string/exceptions_remove_confirm
+      () "Remove"
+      (de) "Entfernen"
+    resource 0x7f0500bb string/exceptions_remove_message
+      () "The exception for %1$s will be removed. Back Button Hero then handles every gesture and button in this app again."
+      (de) "Die Ausnahme für %1$s wird entfernt. Back Button Hero übernimmt in dieser App danach wieder alle Gesten und Tasten."
+    resource 0x7f0500bc string/exceptions_remove_title
+      () "Remove exception?"
+      (de) "Ausnahme entfernen?"
+    resource 0x7f0500bd string/exceptions_search
+      () "Search by app name or package name"
+      (de) "Nach App-Name oder Paketname suchen"
+    resource 0x7f0500be string/exceptions_section_android_combos
+      () "Back + Home, Start, Select"
+      (de) "Back + Home, Start, Select"
+    resource 0x7f0500bf string/exceptions_section_back
+      () "Back gestures"
+      (de) "Back-Gesten"
+    resource 0x7f0500c0 string/exceptions_show_system
+      () "Show system apps"
+      (de) "Systemanwendungen anzeigen"
+    resource 0x7f0500c1 string/exceptions_single_column
+      () "Single"
+      (de) "Einfach"
+    resource 0x7f0500c2 string/exceptions_tap_hold_column
+      () "Tap+hold"
+      (de) "Tipp+Halt"
+    resource 0x7f0500c3 string/face_bindings_section
+      () "Face Button Binds"
+      (de) "Fronttasten-Belegungen"
+    resource 0x7f0500c4 string/focus_duration
+      () "%1$d ms"
+      (de) "%1$d ms"
+    resource 0x7f0500c5 string/focus_header_duration
+      () "Display time"
+      (de) "Anzeigedauer"
+    resource 0x7f0500c6 string/focus_header_indicator
+      () "Indicator"
+      (de) "Indikator"
+    resource 0x7f0500c7 string/focus_header_position
+      () "Position"
+      (de) "Position"
+    resource 0x7f0500c8 string/focus_indicator_title
+      () "Show indicator"
+      (de) "Indikator anzeigen"
+    resource 0x7f0500c9 string/focus_overlay_bottom
+      () "Controller focus: Bottom screen"
+      (de) "Controller-Fokus: Unterer Bildschirm"
+    resource 0x7f0500ca string/focus_overlay_top
+      () "Controller focus: Top screen"
+      (de) "Controller-Fokus: Oberer Bildschirm"
+    resource 0x7f0500cb string/focus_position_accessibility
+      () "%1$s indicator appearance: %2$s. Double-tap to change."
+      (de) "Indikator-Darstellung für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f0500cc string/focus_position_bottom_center
+      () "Bottom center"
+      (de) "Unten mitte"
+    resource 0x7f0500cd string/focus_position_bottom_left
+      () "Bottom left"
+      (de) "Unten links"
+    resource 0x7f0500ce string/focus_position_bottom_right
+      () "Bottom right"
+      (de) "Unten rechts"
+    resource 0x7f0500cf string/focus_position_center
+      () "Center"
+      (de) "Mitte"
+    resource 0x7f0500d0 string/focus_position_center_left
+      () "Center left"
+      (de) "Mitte links"
+    resource 0x7f0500d1 string/focus_position_center_right
+      () "Center right"
+      (de) "Mitte rechts"
+    resource 0x7f0500d2 string/focus_position_off
+      () "Off"
+      (de) "Aus"
+    resource 0x7f0500d3 string/focus_position_selected
+      () "%1$s, selected"
+      (de) "%1$s, ausgewählt"
+    resource 0x7f0500d4 string/focus_position_title
+      () "Indicator appearance"
+      (de) "Indikator-Darstellung"
+    resource 0x7f0500d5 string/focus_position_top_center
+      () "Top center"
+      (de) "Oben mitte"
+    resource 0x7f0500d6 string/focus_position_top_left
+      () "Top left"
+      (de) "Oben links"
+    resource 0x7f0500d7 string/focus_position_top_right
+      () "Top right"
+      (de) "Oben rechts"
+    resource 0x7f0500d8 string/focus_target_dialog_title
+      () "Set controller focus"
+      (de) "Controller-Fokus setzen"
+    resource 0x7f0500d9 string/focus_target_toggle
+      () "Toggle focus"
+      (de) "Fokus umschalten"
+    resource 0x7f0500da string/github_repository
+      () "GitHub repository"
+      (de) "GitHub-Repository"
+    resource 0x7f0500db string/group_app_switcher
+      () "App Switcher (Recents)"
+      (de) "App-Switcher (Recents)"
+    resource 0x7f0500dc string/group_brightness
+      () "Brightness"
+      (de) "Helligkeit"
+    resource 0x7f0500dd string/group_down
+      () "Down"
+      (de) "Verringern"
+    resource 0x7f0500de string/group_flick
+      () "Navigation flick"
+      (de) "Navigation-Flick"
+    resource 0x7f0500df string/group_left
+      () "Left"
+      (de) "Links"
+    resource 0x7f0500e0 string/group_media
+      () "Media Control"
+      (de) "Mediensteuerung"
+    resource 0x7f0500e1 string/group_mute
+      () "Toggle mute"
+      (de) "Stumm umschalten"
+    resource 0x7f0500e2 string/group_panels
+      () "System panels"
+      (de) "System-Leisten"
+    resource 0x7f0500e3 string/group_power
+      () "Power"
+      (de) "Ein/Aus"
+    resource 0x7f0500e4 string/group_right
+      () "Right"
+      (de) "Rechts"
+    resource 0x7f0500e5 string/group_settings
+      () "System settings"
+      (de) "System-Einstellungen"
+    resource 0x7f0500e6 string/group_standby
+      () "Standby"
+      (de) "Standby"
+    resource 0x7f0500e7 string/group_up
+      () "Up"
+      (de) "Erhöhen"
+    resource 0x7f0500e8 string/group_volume
+      () "Volume"
+      (de) "Lautstärke"
+    resource 0x7f0500e9 string/guide_next
+      () "Next"
+      (de) "Weiter"
+    resource 0x7f0500ea string/gyro_axis_roll
+      () "Steer (roll)"
+      (de) "Lenken (Roll)"
+    resource 0x7f0500eb string/gyro_axis_yaw
+      () "Swing (yaw)"
+      (de) "Schwenken (Yaw)"
+    resource 0x7f0500ec string/gyro_calibrate
+      () "Calibrate"
+      (de) "Kalibrieren"
+    resource 0x7f0500ed string/gyro_calibrate_hint
+      () "Before first use, place the handheld on a stable surface and tap Calibrate. Leave it untouched for about 4 seconds; it does not need to be level. Movement delays the measurement (up to 20 seconds). Then pick it up and turn the gyro off/on, or press its hold button, to set your playing posture as the middle. Tap the preview to centre again without recalibrating."
+      (de) "Lege das Gerät vor der ersten Verwendung stabil ab und tippe auf Kalibrieren. Lass es etwa 4 Sekunden unberührt liegen; es muss nicht waagerecht sein. Bewegung verlängert die Messung (höchstens 20 Sekunden). Nimm es danach auf und schalte den Gyro aus/ein oder drücke seine Haltetaste, um deine Spielhaltung als Mitte festzulegen. Ein Tippen auf die Vorschau zentriert erneut, ohne neu zu kalibrieren."
+    resource 0x7f0500ee string/gyro_calibrated
+      () "Gyro calibrated"
+      (de) "Gyro kalibriert"
+    resource 0x7f0500ef string/gyro_calibration_failed
+      () "Gyro calibration failed: no reliable rest measurement. Previous calibration kept."
+      (de) "Gyro-Kalibrierung fehlgeschlagen: keine verlässliche Ruhemessung. Bisherige Kalibrierung beibehalten."
+    resource 0x7f0500f0 string/gyro_calibration_started
+      () "Gyro calibration: put the handheld down and leave it still"
+      (de) "Gyro-Kalibrierung: Gerät ablegen und ruhig liegen lassen"
+    resource 0x7f0500f1 string/gyro_degrees
+      () "%1$.1f °/s"
+      (de) "%1$.1f °/s"
+    resource 0x7f0500f2 string/gyro_degrees_tilt
+      () "%1$.1f °"
+      (de) "%1$.1f °"
+    resource 0x7f0500f3 string/gyro_header_activation
+      () "Activation"
+      (de) "Aktivierung"
+    resource 0x7f0500f4 string/gyro_header_axis
+      () "Sideways"
+      (de) "Seitwärts"
+    resource 0x7f0500f5 string/gyro_header_deadzone
+      () "Deadzone"
+      (de) "Totzone"
+    resource 0x7f0500f6 string/gyro_header_invert
+      () "Invert"
+      (de) "Umkehren"
+    resource 0x7f0500f7 string/gyro_header_min_output
+      () "Minimum deflection"
+      (de) "Mindestausschlag"
+    resource 0x7f0500f8 string/gyro_header_mode
+      () "Mode"
+      (de) "Modus"
+    resource 0x7f0500f9 string/gyro_header_preview
+      () "Preview"
+      (de) "Vorschau"
+    resource 0x7f0500fa string/gyro_header_sensitivity
+      () "Sensitivity"
+      (de) "Empfindlichkeit"
+    resource 0x7f0500fb string/gyro_header_stick
+      () "Stick"
+      (de) "Stick"
+    resource 0x7f0500fc string/gyro_helper_missing
+      () "Gyro can't start: the controller helper isn't running."
+      (de) "Gyro kann nicht starten: Der Controller-Helfer läuft nicht."
+    resource 0x7f0500fd string/gyro_hold_hint_key
+      () "The hotkey turns the gyro on and off; while on, it only steers as long as %1$s is held."
+      (de) "Der Hotkey schaltet das Gyro an und aus; eingeschaltet lenkt es nur, solange %1$s gehalten wird."
+    resource 0x7f0500fe string/gyro_hold_hint_none
+      () "Without a button, the hotkey simply turns the gyro on and off."
+      (de) "Ohne Taste schaltet der Hotkey das Gyro einfach an und aus."
+    resource 0x7f0500ff string/gyro_hold_key_accessibility
+      () "Button to hold: %1$s. Double-tap to change."
+      (de) "Taste zum Halten: %1$s. Zum Ändern doppeltippen."
+    resource 0x7f050100 string/gyro_hold_key_title
+      () "Button to hold"
+      (de) "Taste zum Halten"
+    resource 0x7f050101 string/gyro_hold_none
+      () "None"
+      (de) "Keine"
+    resource 0x7f050102 string/gyro_hold_none_button
+      () "No button"
+      (de) "Keine Taste"
+    resource 0x7f050103 string/gyro_hold_passes
+      () "Button still reaches the game"
+      (de) "Taste erreicht weiterhin das Spiel"
+    resource 0x7f050104 string/gyro_hold_summary
+      () "hold %1$s"
+      (de) "%1$s halten"
+    resource 0x7f050105 string/gyro_invert_x
+      () "Invert sideways (X)"
+      (de) "Seitwärts umkehren (X)"
+    resource 0x7f050106 string/gyro_invert_y
+      () "Invert up and down (Y)"
+      (de) "Hoch und runter umkehren (Y)"
+    resource 0x7f050107 string/gyro_key_dialog_message
+      () "Press the button that should switch the gyro on while held."
+      (de) "Drücke die Taste, die das Gyro einschalten soll, solange sie gehalten wird."
+    resource 0x7f050108 string/gyro_key_dialog_warning
+      () "Pick an aim button to aim and steer at once, or turn off Button still reaches the game to keep it for the gyro alone."
+      (de) "Wähle eine Ziel-Taste, um gleichzeitig zu zielen und zu steuern, oder schalte „Taste erreicht weiterhin das Spiel“ aus, damit sie nur dem Gyro gehört."
+    resource 0x7f050109 string/gyro_key_rejected
+      () "%1$s can't be used to hold the gyro. Press another button."
+      (de) "%1$s kann nicht zum Halten des Gyros genutzt werden. Drücke eine andere Taste."
+    resource 0x7f05010a string/gyro_no_sensor
+      () "Gyro control needs a gyroscope and an accelerometer."
+      (de) "Die Gyro-Steuerung benötigt Gyroskop und Beschleunigungssensor."
+    resource 0x7f05010b string/gyro_off
+      () "Gyro off"
+      (de) "Gyro aus"
+    resource 0x7f05010c string/gyro_on
+      () "Gyro on"
+      (de) "Gyro an"
+    resource 0x7f05010d string/gyro_percent
+      () "%1$d %%"
+      (de) "%1$d %%"
+    resource 0x7f05010e string/gyro_preview_calibrating
+      () "Hold still …"
+      (de) "Ruhig halten …"
+    resource 0x7f05010f string/gyro_preview_calibrating_hint
+      () "Leave the handheld untouched"
+      (de) "Gerät unberührt liegen lassen"
+    resource 0x7f050110 string/gyro_preview_description
+      () "Gyro preview: a ball moves the way the stick would. Tap to center it."
+      (de) "Gyro-Vorschau: Eine Kugel bewegt sich so, wie es der Stick täte. Tippen zentriert sie."
+    resource 0x7f050111 string/gyro_preview_inactive
+      () "Gyro inactive"
+      (de) "Gyro inaktiv"
+    resource 0x7f050112 string/gyro_preview_inactive_hint
+      () "Turn it on with the hotkey"
+      (de) "Mit dem Hotkey einschalten"
+    resource 0x7f050113 string/gyro_preview_waiting
+      () "Hold %1$s"
+      (de) "%1$s halten"
+    resource 0x7f050114 string/gyro_preview_waiting_hint
+      () "The gyro steers while %1$s is held"
+      (de) "Das Gyro lenkt, solange %1$s gehalten wird"
+    resource 0x7f050115 string/gyro_rate
+      () "Follow turning speed"
+      (de) "Drehgeschwindigkeit beachten"
+    resource 0x7f050116 string/gyro_rate_hint_off
+      () "The stick follows how far the handheld is tilted from the middle posture, and is back in the middle as soon as the handheld is."
+      (de) "Der Stick folgt, wie weit das Gerät aus der Mittelhaltung geneigt ist, und steht wieder in der Mitte, sobald das Gerät es tut."
+    resource 0x7f050117 string/gyro_rate_hint_on
+      () "The stick follows how fast the handheld turns, like a camera, and rests as soon as the handheld is still."
+      (de) "Der Stick folgt, wie schnell sich das Gerät dreht, wie eine Kamera, und ruht, sobald das Gerät stillhält."
+    resource 0x7f050118 string/gyro_reset
+      () "Defaults"
+      (de) "Standardwerte"
+    resource 0x7f050119 string/gyro_service_needed
+      () "Enable the Back Button Hero accessibility service to calibrate the gyro."
+      (de) "Aktiviere den Bedienungshilfedienst von Back Button Hero, um den Gyro zu kalibrieren."
+    resource 0x7f05011a string/gyro_setup_accessibility
+      () "%1$s gyro settings: %2$s. Double-tap to change."
+      (de) "Gyro-Einstellungen für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f05011b string/gyro_setup_title
+      () "Gyro settings (BETA)"
+      (de) "Gyro-Einstellungen (BETA)"
+    resource 0x7f05011c string/gyro_stick_left
+      () "Left stick"
+      (de) "Linker Stick"
+    resource 0x7f05011d string/gyro_stick_right
+      () "Right stick"
+      (de) "Rechter Stick"
+    resource 0x7f05011e string/gyro_summary_rate
+      () "turning speed"
+      (de) "Drehgeschwindigkeit"
+    resource 0x7f05011f string/gyro_unavailable_body
+      () "AYN's root service is not reachable. Gyro needs it, because only the root helper can add the gyro to the controller's stick."
+      (de) "AYNs Root-Dienst ist nicht erreichbar. Gyro braucht ihn, weil nur der Root-Helfer das Gyro auf den Stick des Controllers legen kann."
+    resource 0x7f050120 string/gyro_unavailable_title
+      () "Gyro needs the root helper"
+      (de) "Gyro braucht den Root-Helfer"
+    resource 0x7f050121 string/hold_hint
+      () "How long Back has to be held. Default: 1000 ms."
+      (de) "Wie lange Back gehalten werden muss. Standard: 1000 ms."
+    resource 0x7f050122 string/hold_section_title
+      () "Hold"
+      (de) "Halten"
+    resource 0x7f050123 string/hold_speed
+      () "Hold time: %d ms"
+      (de) "Haltedauer: %d ms"
+    resource 0x7f050124 string/home_as_back
+      () "Use the Home button as Back"
+      (de) "Home-Button wie Back-Taste verwenden"
+    resource 0x7f050125 string/home_as_back_combo_blocked
+      () "Unavailable while Home acts as Back"
+      (de) "Nicht verfügbar, solange Home als Back dient"
+    resource 0x7f050126 string/home_as_back_hint
+      () "Home then behaves exactly like Back: every Back gesture, every Back + button shortcut and the app exceptions. Back + Home is unavailable meanwhile."
+      (de) "Home verhält sich dann genau wie Back: alle Back-Gesten, alle Back + Taste-Kürzel und die App-Ausnahmen. Back + Home ist solange nicht verfügbar."
+    resource 0x7f050127 string/home_as_back_section
+      () "Home button"
+      (de) "Home-Taste"
+    resource 0x7f050128 string/last_app_gone
+      () "%1$s is no longer running"
+      (de) "%1$s läuft nicht mehr"
+    resource 0x7f050129 string/last_app_none
+      () "No previous app on this screen"
+      (de) "Keine vorherige App auf diesem Bildschirm"
+    resource 0x7f05012a string/launch_screen_prompt_title
+      () "Open on which screen?"
+      (de) "Auf welchem Bildschirm öffnen?"
+    resource 0x7f05012b string/level_target_accessibility
+      () "%1$s screen: %2$s. Double-tap to change."
+      (de) "Bildschirm für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f05012c string/level_target_both
+      () "Both screens"
+      (de) "Beide Bildschirme"
+    resource 0x7f05012d string/level_target_bottom
+      () "Bottom screen"
+      (de) "Unterer Bildschirm"
+    resource 0x7f05012e string/level_target_dialog_title
+      () "Apply to which screen?"
+      (de) "Für welchen Bildschirm?"
+    resource 0x7f05012f string/level_target_title
+      () "Screen"
+      (de) "Bildschirm"
+    resource 0x7f050130 string/level_target_top
+      () "Top screen"
+      (de) "Oberer Bildschirm"
+    resource 0x7f050131 string/macro_add
+      () "Add"
+      (de) "Hinzufügen"
+    resource 0x7f050132 string/macro_add_manual
+      () "Add buttons by hand"
+      (de) "Tasten von Hand hinzufügen"
+    resource 0x7f050133 string/macro_all_pauses
+      () "Set all pauses…"
+      (de) "Alle Pausen setzen…"
+    resource 0x7f050134 string/macro_all_pauses_title
+      () "All pauses"
+      (de) "Alle Pausen"
+    resource 0x7f050135 string/macro_apply
+      () "Apply"
+      (de) "Übernehmen"
+    resource 0x7f050136 string/macro_apply_all
+      () "Use for all pauses"
+      (de) "Für alle Pausen übernehmen"
+    resource 0x7f050137 string/macro_cancel
+      () "Cancel"
+      (de) "Abbrechen"
+    resource 0x7f050138 string/macro_change
+      () "Change buttons"
+      (de) "Tasten ändern"
+    resource 0x7f050139 string/macro_clear_all
+      () "Clear all"
+      (de) "Alles löschen"
+    resource 0x7f05013a string/macro_cleared
+      () "All steps removed"
+      (de) "Alle Schritte entfernt"
+    resource 0x7f05013b string/macro_close
+      () "Close"
+      (de) "Schließen"
+    resource 0x7f05013c string/macro_connecting
+      () "Connecting to the controller…"
+      (de) "Controller wird verbunden …"
+    resource 0x7f05013d string/macro_default_name
+      () "Macro %1$s"
+      (de) "Macro %1$s"
+    resource 0x7f05013e string/macro_delete
+      () "Delete"
+      (de) "Löschen"
+    resource 0x7f05013f string/macro_delete_body
+      () "This can't be undone."
+      (de) "Das lässt sich nicht rückgängig machen."
+    resource 0x7f050140 string/macro_delete_title
+      () "Delete “%1$s”?"
+      (de) "„%1$s“ löschen?"
+    resource 0x7f050141 string/macro_dir_down
+      () "down"
+      (de) "runter"
+    resource 0x7f050142 string/macro_dir_down_left
+      () "down left"
+      (de) "links unten"
+    resource 0x7f050143 string/macro_dir_down_right
+      () "down right"
+      (de) "rechts unten"
+    resource 0x7f050144 string/macro_dir_left
+      () "left"
+      (de) "links"
+    resource 0x7f050145 string/macro_dir_right
+      () "right"
+      (de) "rechts"
+    resource 0x7f050146 string/macro_dir_up
+      () "up"
+      (de) "hoch"
+    resource 0x7f050147 string/macro_dir_up_left
+      () "up left"
+      (de) "links oben"
+    resource 0x7f050148 string/macro_dir_up_right
+      () "up right"
+      (de) "rechts oben"
+    resource 0x7f050149 string/macro_discard
+      () "Discard"
+      (de) "Verwerfen"
+    resource 0x7f05014a string/macro_discard_title
+      () "Discard your changes?"
+      (de) "Änderungen verwerfen?"
+    resource 0x7f05014b string/macro_done
+      () "Done"
+      (de) "Fertig"
+    resource 0x7f05014c string/macro_drop_delete
+      () "Drop here to delete"
+      (de) "Hierher ziehen zum Löschen"
+    resource 0x7f05014d string/macro_duplicate
+      () "Duplicate"
+      (de) "Duplizieren"
+    resource 0x7f05014e string/macro_edit
+      () "Edit"
+      (de) "Bearbeiten"
+    resource 0x7f05014f string/macro_edit_hint
+      () "Tap to change · hold to move"
+      (de) "Antippen zum Ändern · halten zum Verschieben"
+    resource 0x7f050150 string/macro_editor_title
+      () "Macro: %1$s"
+      (de) "Macro: %1$s"
+    resource 0x7f050151 string/macro_empty_body
+      () "Tap Record, then press the buttons you want to save on your controller. Tap Stop when you are done.
+
+      Afterwards you can fine-tune every step and every pause here in the editor. The macro starts once you let go of Back."
+      (de) "Tippe auf Aufnehmen und drücke dann auf dem Controller die Tastenfolge, die du speichern möchtest. Mit Stopp beendest du die Aufnahme.
+
+      Danach kannst du hier im Editor jeden Schritt und jede Pause anpassen. Das Macro startet, sobald du Zurück loslässt."
+    resource 0x7f050152 string/macro_empty_title
+      () "Record a macro"
+      (de) "Macro aufnehmen"
+    resource 0x7f050153 string/macro_exact_accessibility
+      () "%1$s, tap to type a value"
+      (de) "%1$s, antippen zum Eintippen"
+    resource 0x7f050154 string/macro_exact_hint
+      () "Tap the number to type an exact value"
+      (de) "Zahl antippen für einen genauen Wert"
+    resource 0x7f050155 string/macro_gap_accessibility
+      () "Pause of %1$d ms before step %2$d"
+      (de) "Pause von %1$d ms vor Schritt %2$d"
+    resource 0x7f050156 string/macro_gap_label
+      () "Pause in ms (%1$d–%2$d)"
+      (de) "Pause in ms (%1$d–%2$d)"
+    resource 0x7f050157 string/macro_gap_title
+      () "Pause before step %1$d"
+      (de) "Pause vor Schritt %1$d"
+    resource 0x7f050158 string/macro_helper_missing
+      () "The macro can't play: the controller helper isn't running."
+      (de) "Das Macro kann nicht abgespielt werden: Der Controller-Helfer läuft nicht."
+    resource 0x7f050159 string/macro_hold
+      () "Hold"
+      (de) "Halten"
+    resource 0x7f05015a string/macro_hold_label
+      () "Hold time in ms (%1$d–%2$d)"
+      (de) "Haltedauer in ms (%1$d–%2$d)"
+    resource 0x7f05015b string/macro_hold_time
+      () "How long to hold?"
+      (de) "Wie lange gedrückt halten?"
+    resource 0x7f05015c string/macro_input_dpad
+      () "D-pad %1$s"
+      (de) "D-Pad %1$s"
+    resource 0x7f05015d string/macro_input_left_stick
+      () "Left stick %1$s"
+      (de) "Linker Stick %1$s"
+    resource 0x7f05015e string/macro_input_right_stick
+      () "Right stick %1$s"
+      (de) "Rechter Stick %1$s"
+    resource 0x7f05015f string/macro_keep_editing
+      () "Keep editing"
+      (de) "Weiter bearbeiten"
+    resource 0x7f050160 string/macro_library_accessibility
+      () "%1$s, saved macros: %2$s"
+      (de) "%1$s, gespeicherte Macros: %2$s"
+    resource 0x7f050161 string/macro_library_current
+      () "%1$s, %2$s, chosen"
+      (de) "%1$s, %2$s, ausgewählt"
+    resource 0x7f050162 string/macro_library_empty
+      () "No saved macros yet"
+      (de) "Noch keine Macros gespeichert"
+    resource 0x7f050163 string/macro_library_title
+      () "Saved macros"
+      (de) "Gespeicherte Macros"
+    resource 0x7f050164 string/macro_limit_reached
+      () "The maximum length of 60 seconds was reached."
+      (de) "Die maximale Länge von 60 Sekunden ist erreicht."
+    resource 0x7f050165 string/macro_load_title
+      () "Load a saved macro"
+      (de) "Gespeichertes Macro laden"
+    resource 0x7f050166 string/macro_longer
+      () "Longer"
+      (de) "Länger"
+    resource 0x7f050167 string/macro_more
+      () "More"
+      (de) "Mehr"
+    resource 0x7f050168 string/macro_move_earlier
+      () "Earlier"
+      (de) "Nach vorn"
+    resource 0x7f050169 string/macro_move_later
+      () "Later"
+      (de) "Nach hinten"
+    resource 0x7f05016a string/macro_ms
+      () "%1$d ms"
+      (de) "%1$d ms"
+    resource 0x7f05016b string/macro_name_accessibility
+      () "%1$s, %2$s, tap to rename"
+      (de) "%1$s, %2$s, antippen zum Umbenennen"
+    resource 0x7f05016c string/macro_name_label
+      () "Name"
+      (de) "Name"
+    resource 0x7f05016d string/macro_name_title
+      () "Name the macro"
+      (de) "Macro benennen"
+    resource 0x7f05016e string/macro_named_summary
+      () "%1$s · %2$s"
+      (de) "%1$s · %2$s"
+    resource 0x7f05016f string/macro_new
+      () "New macro"
+      (de) "Neues Macro"
+    resource 0x7f050170 string/macro_new_hint
+      () "Record a new sequence"
+      (de) "Eine neue Tastenfolge aufnehmen"
+    resource 0x7f050171 string/macro_not_recorded
+      () "Not recorded yet"
+      (de) "Noch nicht aufgenommen"
+    resource 0x7f050172 string/macro_nothing_recorded
+      () "Nothing was recorded. Tap Record and press a few buttons on your controller."
+      (de) "Es wurde nichts aufgenommen. Tippe auf Aufnehmen und drücke ein paar Tasten auf dem Controller."
+    resource 0x7f050173 string/macro_options
+      () "Options for %1$s"
+      (de) "Optionen für %1$s"
+    resource 0x7f050174 string/macro_palette_add_title
+      () "Add a step"
+      (de) "Schritt hinzufügen"
+    resource 0x7f050175 string/macro_palette_buttons
+      () "Buttons"
+      (de) "Tasten"
+    resource 0x7f050176 string/macro_palette_dpad
+      () "D-pad"
+      (de) "Steuerkreuz"
+    resource 0x7f050177 string/macro_palette_edit_title
+      () "Choose buttons"
+      (de) "Tasten wählen"
+    resource 0x7f050178 string/macro_palette_hint
+      () "Choose one or more. Everything you choose is pressed at the same time."
+      (de) "Wähle eine oder mehrere. Alles, was du wählst, wird gleichzeitig gedrückt."
+    resource 0x7f050179 string/macro_palette_left
+      () "Left stick"
+      (de) "Linker Stick"
+    resource 0x7f05017a string/macro_palette_right
+      () "Right stick"
+      (de) "Rechter Stick"
+    resource 0x7f05017b string/macro_pause_time
+      () "How long to wait?"
+      (de) "Wie lange warten?"
+    resource 0x7f05017c string/macro_preset_label
+      () "%1$s · %2$s"
+      (de) "%1$s · %2$s"
+    resource 0x7f05017d string/macro_preset_long
+      () "Long"
+      (de) "Lang"
+    resource 0x7f05017e string/macro_preset_none
+      () "None"
+      (de) "Keine"
+    resource 0x7f05017f string/macro_preset_short
+      () "Short"
+      (de) "Kurz"
+    resource 0x7f050180 string/macro_preview
+      () "Preview"
+      (de) "Vorschau"
+    resource 0x7f050181 string/macro_preview_stop
+      () "Stop"
+      (de) "Stopp"
+    resource 0x7f050182 string/macro_record
+      () "Record"
+      (de) "Aufnehmen"
+    resource 0x7f050183 string/macro_recording
+      () "Recording · %1$s"
+      (de) "Aufnahme · %1$s"
+    resource 0x7f050184 string/macro_recording_hint
+      () "Your controller only talks to the recorder now. Back and Home keep working."
+      (de) "Der Controller steuert jetzt nur die Aufnahme. Zurück und Home funktionieren weiterhin."
+    resource 0x7f050185 string/macro_rename
+      () "Rename"
+      (de) "Umbenennen"
+    resource 0x7f050186 string/macro_rename_title
+      () "Rename the macro"
+      (de) "Macro umbenennen"
+    resource 0x7f050187 string/macro_save
+      () "Save"
+      (de) "Speichern"
+    resource 0x7f050188 string/macro_save_as_new
+      () "Save as new"
+      (de) "Als neues speichern"
+    resource 0x7f050189 string/macro_seconds
+      () "%1$.1f s"
+      (de) "%1$.1f s"
+    resource 0x7f05018a string/macro_selected
+      () "%1$s, selected"
+      (de) "%1$s, ausgewählt"
+    resource 0x7f05018b string/macro_short_accessibility
+      () "%1$s, may be too short for some games"
+      (de) "%1$s, für manche Spiele eventuell zu kurz"
+    resource 0x7f05018c string/macro_short_gap_hint
+      () "Some games miss very short pauses: two presses of the same button can merge into one. 50 ms or more is safer."
+      (de) "Sehr kurze Pausen erkennen manche Spiele nicht. Gleiche Tasten können dann zu einem Druck verschmelzen. 50 ms oder mehr ist sicherer."
+    resource 0x7f05018d string/macro_short_hold_hint
+      () "Some games miss very short presses. 50 ms or more is safer."
+      (de) "Sehr kurze Tastendrücke erkennen manche Spiele nicht. 50 ms oder mehr ist sicherer."
+    resource 0x7f05018e string/macro_shorter
+      () "Shorter"
+      (de) "Kürzer"
+    resource 0x7f05018f string/macro_step_accessibility
+      () "Step %1$d: %2$s, %3$s"
+      (de) "Schritt %1$d: %2$s, %3$s"
+    resource 0x7f050190 string/macro_step_deleted
+      () "Step deleted"
+      (de) "Schritt gelöscht"
+    resource 0x7f050191 string/macro_step_next
+      () "Next step"
+      (de) "Nächster Schritt"
+    resource 0x7f050192 string/macro_step_previous
+      () "Previous step"
+      (de) "Vorheriger Schritt"
+    resource 0x7f050193 string/macro_step_title
+      () "Step %1$d of %2$d"
+      (de) "Schritt %1$d von %2$d"
+    resource 0x7f050194 string/macro_stop
+      () "Stop"
+      (de) "Stopp"
+    resource 0x7f050195 string/macro_tap
+      () "Tap"
+      (de) "Tippen"
+    resource 0x7f050196 string/macro_title
+      () "Macro"
+      (de) "Macro"
+    resource 0x7f050197 string/macro_unavailable_body
+      () "AYN's root service is not reachable. Recording and playing macros needs it, because only the root helper can read the whole controller and send input to games."
+      (de) "AYNs Root-Dienst ist nicht erreichbar. Macros brauchen ihn zum Aufnehmen und Abspielen, weil nur der Root-Helfer den ganzen Controller lesen und Eingaben an Spiele senden kann."
+    resource 0x7f050198 string/macro_unavailable_title
+      () "Macros need the root helper"
+      (de) "Macros brauchen den Root-Helfer"
+    resource 0x7f050199 string/macro_undo
+      () "Undo"
+      (de) "Rückgängig"
+    resource 0x7f05019a string/media_next
+      () "Next Track"
+      (de) "Nächster Titel"
+    resource 0x7f05019b string/media_play_pause
+      () "Play / Pause"
+      (de) "Wiedergabe / Pause"
+    resource 0x7f05019c string/media_previous
+      () "Previous Track"
+      (de) "Vorheriger Titel"
+    resource 0x7f05019d string/memory_nothing_released
+      () "Nothing to clear in cache"
+      (de) "Nothing to clear in cache"
+    resource 0x7f05019e string/memory_released
+      () "Release %1$s memory, %2$s available now."
+      (de) "Release %1$s memory, %2$s available now."
+    resource 0x7f05019f string/nav_basic
+      () "Android Buttons"
+      (de) "Android-Tasten"
+    resource 0x7f0501a0 string/nav_basic_hint
+      () "Choose what happens when you press, double-press or hold Back, and what holding Back and pressing Home, Start or Select does. Unassigned buttons work as usual."
+      (de) "Lege fest, was kurzes Drücken, Doppeldrücken und Halten der Back-Taste auslösen und was Back zusammen mit Home, Start oder Select tut. Unbelegte Tasten funktionieren wie gewohnt."
+    resource 0x7f0501a1 string/nav_dpad
+      () "D-Pad Binds"
+      (de) "D-Pad"
+    resource 0x7f0501a2 string/nav_dpad_hint
+      () "Hold Back and press a D-pad direction to use its action. Unassigned directions work as usual."
+      (de) "Halte Back und drücke eine D-Pad-Richtung für ihre Aktion. Unbelegte Richtungen funktionieren wie gewohnt."
+    resource 0x7f0501a3 string/nav_exceptions
+      () "Exceptions"
+      (de) "Ausnahmen"
+    resource 0x7f0501a4 string/nav_exceptions_hint
+      () "Normally, the regular setup of Back Button Hero is all you need. Only when a particular app needs a gesture or button for itself can an explicit exception be necessary – that is exactly what this page is for. The app on the screen with controller focus decides; unchecked actions behave there as if Back Button Hero were not installed."
+      (de) "Normalerweise reicht die übliche Einrichtung von Back Button Hero völlig aus. Nur wenn eine bestimmte App eine Geste oder Taste selbst braucht, kann eine ausdrückliche Ausnahme nötig sein – genau dafür ist diese Seite. Maßgeblich ist die App auf dem Bildschirm mit dem Controller-Fokus; ohne Häkchen verhält sich die Aktion dort, als wäre Back Button Hero nicht installiert."
+    resource 0x7f0501a5 string/nav_face
+      () "Face Buttons"
+      (de) "Fronttasten"
+    resource 0x7f0501a6 string/nav_face_hint
+      () "Hold Back and press A, B, X or Y to use its action. The printed letter counts, whichever controller style is set. Unassigned buttons work as usual."
+      (de) "Halte Back und drücke A, B, X oder Y für ihre Aktion. Es zählt der aufgedruckte Buchstabe, egal welcher Controller-Stil eingestellt ist. Unbelegte Tasten funktionieren wie gewohnt."
+    resource 0x7f0501a7 string/nav_help
+      () "Update & Help"
+      (de) "Updates & Hilfe"
+    resource 0x7f0501a8 string/nav_help_hint
+      () "Check the service status, find updates or open the project page."
+      (de) "Prüfe den Dienststatus, suche nach Updates oder öffne die Projektseite."
+    resource 0x7f0501a9 string/nav_overview
+      () "Overview"
+      (de) "Übersicht"
+    resource 0x7f0501aa string/nav_overview_hint
+      () "Combos work while Back is held. Tap a button in the drawing to change it."
+      (de) "Kombinationen gelten, solange Back gehalten wird. Tippe auf eine Taste in der Zeichnung, um sie zu ändern."
+    resource 0x7f0501ab string/nav_settings
+      () "Settings"
+      (de) "Einstellungen"
+    resource 0x7f0501ac string/nav_settings_hint
+      () "Adjust the app switcher, choose a quick on/off shortcut or reset the app."
+      (de) "Passe den App-Switcher an, wähle eine Ein-/Aus-Tastenkombination oder setze die App zurück."
+    resource 0x7f0501ad string/nav_shoulders
+      () "Shoulder Button Binds"
+      (de) "Schultertasten"
+    resource 0x7f0501ae string/nav_shoulders_hint
+      () "Hold Back and press a shoulder button to use its action. Unassigned buttons work as usual."
+      (de) "Halte Back und drücke eine Schultertaste für ihre Aktion. Unbelegte Tasten funktionieren wie gewohnt."
+    resource 0x7f0501af string/nav_sticks
+      () "Analog Stick Binds"
+      (de) "Analog-Sticks"
+    resource 0x7f0501b0 string/nav_sticks_hint
+      () "Hold Back and push a stick in a direction to use its action. Each push runs the action once; return the stick to the center before the next one. Pressing a stick in works too. Volume and brightness repeat while you hold, and get faster the longer you do. A stick without any action works as usual."
+      (de) "Halte Back und drücke einen Stick in eine Richtung für ihre Aktion. Jeder Ausschlag löst die Aktion einmal aus; bring den Stick vor dem nächsten wieder in die Mitte. Auch das Eindrücken eines Sticks ist belegbar. Lautstärke und Helligkeit wiederholen sich beim Halten und werden dabei schneller. Ein Stick ohne jede Belegung funktioniert wie gewohnt."
+    resource 0x7f0501b1 string/no_recent_apps
+      () "No recent items"
+      (de) "Keine kürzlich verwendeten Elemente"
+    resource 0x7f0501b2 string/no_update_message
+      () "You already have the latest version."
+      (de) "Du verwendest bereits die neueste Version."
+    resource 0x7f0501b3 string/no_update_title
+      () "Up to date"
+      (de) "Aktuell"
+    resource 0x7f0501b4 string/open_a11y
+      () "Open accessibility settings"
+      (de) "Bedienungshilfen öffnen"
+    resource 0x7f0501b5 string/open_github_repository
+      () "Open GitHub repository"
+      (de) "GitHub-Repository öffnen"
+    resource 0x7f0501b6 string/open_release
+      () "Open release"
+      (de) "Release öffnen"
+    resource 0x7f0501b7 string/overview_action_app_ask
+      () "Choose app"
+      (de) "App wählen"
+    resource 0x7f0501b8 string/overview_action_app_favorites
+      () "Favorite apps"
+      (de) "Favoriten"
+    resource 0x7f0501b9 string/overview_action_back
+      () "Back"
+      (de) "Zurück"
+    resource 0x7f0501ba string/overview_action_battery_saver
+      () "Battery Saver"
+      (de) "Energiesparmodus"
+    resource 0x7f0501bb string/overview_action_bluetooth
+      () "Bluetooth"
+      (de) "Bluetooth"
+    resource 0x7f0501bc string/overview_action_brightness_down
+      () "Brightness −"
+      (de) "Helligkeit −"
+    resource 0x7f0501bd string/overview_action_brightness_up
+      () "Brightness +"
+      (de) "Helligkeit +"
+    resource 0x7f0501be string/overview_action_cast
+      () "Cast"
+      (de) "Streamen"
+    resource 0x7f0501bf string/overview_action_close_all
+      () "Close all apps"
+      (de) "Alle Apps schließen"
+    resource 0x7f0501c0 string/overview_action_close_background
+      () "Close background apps"
+      (de) "Hintergrund-Apps schließen"
+    resource 0x7f0501c1 string/overview_action_controller_focus
+      () "Controller focus"
+      (de) "Controller-Fokus"
+    resource 0x7f0501c2 string/overview_action_display
+      () "Display"
+      (de) "Display"
+    resource 0x7f0501c3 string/overview_action_dnd
+      () "Do Not Disturb"
+      (de) "Nicht stören"
+    resource 0x7f0501c4 string/overview_action_extra_dim
+      () "Extra dim"
+      (de) "Extradunkel"
+    resource 0x7f0501c5 string/overview_action_flick_left
+      () "Flick left"
+      (de) "Flick links"
+    resource 0x7f0501c6 string/overview_action_flick_right
+      () "Flick right"
+      (de) "Flick rechts"
+    resource 0x7f0501c7 string/overview_action_gyro
+      () "Gyro on/off"
+      (de) "Gyro an/aus"
+    resource 0x7f0501c8 string/overview_action_gyro_calibrate
+      () "Calibrate gyro"
+      (de) "Gyro kalibrieren"
+    resource 0x7f0501c9 string/overview_action_internet
+      () "Wi-Fi & internet"
+      (de) "WLAN & Internet"
+    resource 0x7f0501ca string/overview_action_last_app
+      () "Last app"
+      (de) "Letzte App"
+    resource 0x7f0501cb string/overview_action_location
+      () "Location"
+      (de) "Standort"
+    resource 0x7f0501cc string/overview_action_mute
+      () "Mute"
+      (de) "Stumm"
+    resource 0x7f0501cd string/overview_action_next
+      () "Next track"
+      (de) "Nächster Titel"
+    resource 0x7f0501ce string/overview_action_night_light
+      () "Night Light"
+      (de) "Nachtlicht"
+    resource 0x7f0501cf string/overview_action_notifications
+      () "Notifications"
+      (de) "Benachrichtigungen"
+    resource 0x7f0501d0 string/overview_action_open_app
+      () "Open %1$s"
+      (de) "%1$s öffnen"
+    resource 0x7f0501d1 string/overview_action_play_pause
+      () "Play / Pause"
+      (de) "Play / Pause"
+    resource 0x7f0501d2 string/overview_action_power_menu
+      () "Power menu"
+      (de) "Ein/Aus-Menü"
+    resource 0x7f0501d3 string/overview_action_previous
+      () "Previous track"
+      (de) "Vorheriger Titel"
+    resource 0x7f0501d4 string/overview_action_quick_settings
+      () "Quick Settings"
+      (de) "Schnelleinstellungen"
+    resource 0x7f0501d5 string/overview_action_recents_bottom
+      () "Recents bottom"
+      (de) "Recents unten"
+    resource 0x7f0501d6 string/overview_action_recents_top
+      () "Recents top"
+      (de) "Recents oben"
+    resource 0x7f0501d7 string/overview_action_screenshot
+      () "Screenshot"
+      (de) "Screenshot"
+    resource 0x7f0501d8 string/overview_action_sound
+      () "Sound"
+      (de) "Ton"
+    resource 0x7f0501d9 string/overview_action_standby
+      () "Standby"
+      (de) "Standby"
+    resource 0x7f0501da string/overview_action_switch_app
+      () "Move active app"
+      (de) "Aktive App verschieben"
+    resource 0x7f0501db string/overview_action_volume_down
+      () "Volume −"
+      (de) "Lautstärke −"
+    resource 0x7f0501dc string/overview_action_volume_up
+      () "Volume +"
+      (de) "Lautstärke +"
+    resource 0x7f0501dd string/overview_back
+      () "Back"
+      (de) "Back"
+    resource 0x7f0501de string/overview_click
+      () "Click"
+      (de) "Klick"
+    resource 0x7f0501df string/overview_click_tap_hold
+      () "Tap + hold"
+      (de) "Tippen + Halten"
+    resource 0x7f0501e0 string/overview_double_click
+      () "2× click"
+      (de) "2× Klick"
+    resource 0x7f0501e1 string/overview_double_press
+      () "2× press"
+      (de) "2× Tippen"
+    resource 0x7f0501e2 string/overview_dpad
+      () "D-pad"
+      (de) "D-Pad"
+    resource 0x7f0501e3 string/overview_empty
+      () "Nothing is assigned yet."
+      (de) "Noch ist nichts belegt."
+    resource 0x7f0501e4 string/overview_face
+      () "Face buttons"
+      (de) "Aktionstasten"
+    resource 0x7f0501e5 string/overview_group_description
+      () "%1$s. Double-tap to change."
+      (de) "%1$s. Zum Ändern doppeltippen."
+    resource 0x7f0501e6 string/overview_grouped_action
+      () "%1$s · %2$s"
+      (de) "%1$s · %2$s"
+    resource 0x7f0501e7 string/overview_hold
+      () "Hold"
+      (de) "Halten"
+    resource 0x7f0501e8 string/overview_home_back_mode
+      () "Back button mode"
+      (de) "Back-Button-Modus"
+    resource 0x7f0501e9 string/overview_home_dual_mode
+      () "Dual mode"
+      (de) "Dual-Mode"
+    resource 0x7f0501ea string/overview_press
+      () "Press"
+      (de) "Tippen"
+    resource 0x7f0501eb string/overview_tap_hold
+      () "Tap + hold"
+      (de) "Tippen + Halten"
+    resource 0x7f0501ec string/overview_toggle_hold
+      () "Hold %1$s"
+      (de) "%1$s halten"
+    resource 0x7f0501ed string/panel_swap_unavailable
+      () "This app uses both screens and cannot be swapped externally."
+      (de) "Diese App nutzt beide Bildschirme und kann extern nicht getauscht werden."
+    resource 0x7f0501ee string/recents_memory
+      () "%1$s available | %2$s"
+      (de) "%1$s available | %2$s"
+    resource 0x7f0501ef string/record_duck_accessibility
+      () "%1$s game sound while talking: %2$s. Double-tap to change."
+      (de) "Spielton beim Sprechen für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f0501f0 string/record_duck_device
+      () "In the video and on the device"
+      (de) "Im Video und am Gerät"
+    resource 0x7f0501f1 string/record_duck_off
+      () "Off"
+      (de) "Aus"
+    resource 0x7f0501f2 string/record_duck_title
+      () "Lower game sound while talking"
+      (de) "Spielton beim Sprechen senken"
+    resource 0x7f0501f3 string/record_duck_video
+      () "In the video"
+      (de) "Im Video"
+    resource 0x7f0501f4 string/record_failed
+      () "Recording failed"
+      (de) "Aufnahme fehlgeschlagen"
+    resource 0x7f0501f5 string/record_indicator_accessibility
+      () "%1$s recording indicator: %2$s. Double-tap to change."
+      (de) "Aufnahme-Anzeige für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f0501f6 string/record_indicator_overlay
+      () "Recording"
+      (de) "Aufnahme läuft"
+    resource 0x7f0501f7 string/record_indicator_row
+      () "Recording indicator"
+      (de) "Aufnahme-Anzeige"
+    resource 0x7f0501f8 string/record_indicator_talking
+      () "Recording, microphone on"
+      (de) "Aufnahme läuft, Mikrofon an"
+    resource 0x7f0501f9 string/record_indicator_title
+      () "Show recording indicator"
+      (de) "Aufnahme-Anzeige einblenden"
+    resource 0x7f0501fa string/record_mic_title
+      () "Record microphone"
+      (de) "Mikrofon aufnehmen"
+    resource 0x7f0501fb string/record_needs_root
+      () "Recording needs AYN's root service, which is not reachable."
+      (de) "Für Aufnahmen wird AYNs Root-Dienst benötigt, der nicht erreichbar ist."
+    resource 0x7f0501fc string/record_ptt_dialog_message
+      () "Press the button that should open the microphone while held."
+      (de) "Drücke die Taste, die das Mikrofon öffnen soll, solange sie gehalten wird."
+    resource 0x7f0501fd string/record_ptt_dialog_warning
+      () "While a recording runs, this button no longer reaches the game. Pick one the game does not need."
+      (de) "Während einer Aufnahme erreicht diese Taste das Spiel nicht mehr. Wähle eine, die das Spiel nicht braucht."
+    resource 0x7f0501fe string/record_ptt_key_accessibility
+      () "%1$s push-to-talk button: %2$s. Double-tap to change."
+      (de) "Push-to-talk-Taste für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f0501ff string/record_ptt_key_none
+      () "Not chosen"
+      (de) "Nicht gewählt"
+    resource 0x7f050200 string/record_ptt_key_rejected
+      () "%1$s can't be used for push to talk. Press another button."
+      (de) "%1$s kann nicht für Push-to-talk genutzt werden. Drücke eine andere Taste."
+    resource 0x7f050201 string/record_ptt_key_title
+      () "Push-to-talk button"
+      (de) "Push-to-talk-Taste"
+    resource 0x7f050202 string/record_ptt_title
+      () "Push to talk"
+      (de) "Push-to-talk"
+    resource 0x7f050203 string/record_quality_accessibility
+      () "%1$s recording quality: %2$s. Double-tap to change."
+      (de) "Aufnahmequalität für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f050204 string/record_quality_large
+      () "Large (20 Mbit/s)"
+      (de) "Groß (20 Mbit/s)"
+    resource 0x7f050205 string/record_quality_medium
+      () "Medium (10 Mbit/s)"
+      (de) "Mittel (10 Mbit/s)"
+    resource 0x7f050206 string/record_quality_small
+      () "Small (4 Mbit/s)"
+      (de) "Klein (4 Mbit/s)"
+    resource 0x7f050207 string/record_quality_title
+      () "Quality"
+      (de) "Qualität"
+    resource 0x7f050208 string/record_saved
+      () "Recording saved to Videos/BBH-Records"
+      (de) "Aufnahme in Videos/BBH-Records gespeichert"
+    resource 0x7f050209 string/record_started
+      () "Recording started"
+      (de) "Aufnahme gestartet"
+    resource 0x7f05020a string/record_stopped
+      () "Recording ended"
+      (de) "Aufnahme beendet"
+    resource 0x7f05020b string/repair_service
+      () "Repair service"
+      (de) "Dienst reparieren"
+    resource 0x7f05020c string/repair_service_hint
+      () "If button gestures stop responding, use Repair service and switch Back Button Hero off and on again."
+      (de) "Falls die Tastengesten nicht mehr reagieren, „Dienst reparieren“ wählen und Back Button Hero einmal aus- und wieder einschalten."
+    resource 0x7f05020d string/repair_service_message
+      () "Android does not allow apps to reactivate their own accessibility service. On the next screen, select Back Button Hero, switch it off, then switch it on again. This safely clears a stopped or crashed service without changing your assignments."
+      (de) "Android erlaubt Apps nicht, ihren eigenen Bedienungshilfen-Dienst wieder zu aktivieren. Wähle auf der nächsten Seite Back Button Hero aus, schalte den Dienst aus und anschließend wieder ein. Dadurch wird ein gestoppter oder abgestürzter Dienst sicher zurückgesetzt, ohne deine Belegungen zu ändern."
+    resource 0x7f05020e string/repair_service_title
+      () "Repair accessibility service?"
+      (de) "Bedienungshilfen-Dienst reparieren?"
+    resource 0x7f05020f string/report_bug
+      () "Report a bug"
+      (de) "Fehler melden"
+    resource 0x7f050210 string/report_bug_hint
+      () "Opens the bug report form on GitHub. A GitHub account is required."
+      (de) "Öffnet das Fehlerformular auf GitHub. Dafür wird ein GitHub-Konto benötigt."
+    resource 0x7f050211 string/reset_settings_done
+      () "Settings reset"
+      (de) "Einstellungen zurückgesetzt"
+    resource 0x7f050212 string/screenshot_saved
+      () "Screenshot saved"
+      (de) "Screenshot gespeichert"
+    resource 0x7f050213 string/search_keywords_app_control
+      () "minimize, quit, restart, force close, kill, alt f4, crashed, frozen, freeze, rage quit"
+      (de) "minimieren, beenden, neu starten, Restart, Force Close, Kill, Alt-F4, abgestürzt, hängt, Freeze, Rage Quit"
+    resource 0x7f050214 string/search_keywords_app_switcher
+      () "recents, multitasking, task manager, task switcher, alt tab, overview, open apps"
+      (de) "Recents, Multitasking, Taskmanager, Task-Switcher, Alt-Tab, Übersicht, offene Apps, letzte Apps"
+    resource 0x7f050215 string/search_keywords_back
+      () "escape, ESC, cancel, B button, go back"
+      (de) "Escape, ESC, abbrechen, B-Taste, eine Ebene hoch"
+    resource 0x7f050216 string/search_keywords_battery_saver
+      () "battery, power saving, low power, save battery, runtime"
+      (de) "Akku, Batterie, Energiesparen, Akku sparen, Low Power, Stromsparen, Laufzeit"
+    resource 0x7f050217 string/search_keywords_bluetooth
+      () "BT, headphones, AirPods, earbuds, headset, pairing, connect controller, speaker"
+      (de) "BT, Kopfhörer, AirPods, Headset, Kopplung, Pairing, Controller verbinden, Lautsprecher, Box"
+    resource 0x7f050218 string/search_keywords_brightness
+      () "screen, light, bright, dark"
+      (de) "Bildschirm, Licht, hell, dunkel"
+    resource 0x7f050219 string/search_keywords_brightness_down
+      () "darker, dimmer, dim, less light"
+      (de) "dunkler, dimmen, abdunkeln, weniger Licht"
+    resource 0x7f05021a string/search_keywords_brightness_up
+      () "brighter, lighten, more light"
+      (de) "heller, aufhellen, mehr Licht"
+    resource 0x7f05021b string/search_keywords_cast_settings
+      () "Chromecast, screen mirroring, mirror, TV, projector, screencast"
+      (de) "Chromecast, Screen Mirroring, spiegeln, TV, Fernseher, Beamer, Bildschirm übertragen, Cast"
+    resource 0x7f05021c string/search_keywords_close_apps
+      () "clear all, kill all, close everything, quit"
+      (de) "alles schließen, Clear All, Kill All, beenden"
+    resource 0x7f05021d string/search_keywords_close_apps_group
+      () "quit, close, kill, task kill, clean up, free RAM, clear memory"
+      (de) "beenden, schließen, Kill, Task Kill, aufräumen, RAM freigeben, Speicher freigeben"
+    resource 0x7f05021e string/search_keywords_close_background
+      () "background, quit, kill"
+      (de) "Hintergrund, Background, beenden, Kill"
+    resource 0x7f05021f string/search_keywords_controller_focus
+      () "gamepad, input, switch screen, controller switch, control"
+      (de) "Gamepad, Eingabe, Input, Bildschirm wechseln, Controller umschalten, Steuerung"
+    resource 0x7f050220 string/search_keywords_direct_power
+      () "bypass charging, pass-through, charger, cable, charging, battery health, plugged in"
+      (de) "Bypass Charging, Passthrough, Netzteil, Kabel, Laden, Akku schonen, Ladepause, Strom"
+    resource 0x7f050221 string/search_keywords_display
+      () "screen off, display off, dual screen, single screen, save battery, turn off screen"
+      (de) "Bildschirm aus, Display aus, Screen aus, Dual Screen, Single Screen, Akku sparen, abschalten"
+    resource 0x7f050222 string/search_keywords_display_bottom
+      () "lower, second screen"
+      (de) "unten, Zweitbildschirm"
+    resource 0x7f050223 string/search_keywords_display_settings
+      () "screen, resolution, font size"
+      (de) "Bildschirm, Anzeige, Auflösung, Schriftgröße"
+    resource 0x7f050224 string/search_keywords_display_top
+      () "upper, main screen"
+      (de) "oben, Hauptbildschirm"
+    resource 0x7f050225 string/search_keywords_dnd_settings
+      () "DND, focus mode, quiet, silence"
+      (de) "DND, Ruhe, Fokusmodus, lautlos"
+    resource 0x7f050226 string/search_keywords_do_not_disturb
+      () "DND, focus mode, game mode, no notifications, silence"
+      (de) "DND, Ruhe, Fokusmodus, Gaming-Modus, keine Benachrichtigungen, lautlos"
+    resource 0x7f050227 string/search_keywords_extra_dim
+      () "extra dark, dimmer, at night, in bed"
+      (de) "extra dunkel, abdunkeln, nachts, im Bett"
+    resource 0x7f050228 string/search_keywords_fan
+      () "fan, cooling, fan curve, fan noise, hot, temperature"
+      (de) "Lüfter, Fan, Kühlung, Lüfterkurve, Fan Curve, Lüfterlärm, heiß, Temperatur"
+    resource 0x7f050229 string/search_keywords_fan_off
+      () "fan off, silent"
+      (de) "Lüfter aus, lautlos"
+    resource 0x7f05022a string/search_keywords_fan_quiet
+      () "silent, whisper"
+      (de) "Silent, flüsterleise"
+    resource 0x7f05022b string/search_keywords_fan_smart
+      () "auto, automatic"
+      (de) "automatisch, Auto"
+    resource 0x7f05022c string/search_keywords_fan_sports
+      () "max cooling, turbo, gaming"
+      (de) "volle Kühlung, Max, Turbo, Gaming"
+    resource 0x7f05022d string/search_keywords_flick
+      () "swipe, gesture, page, scroll"
+      (de) "wischen, Swipe, blättern, Geste, Seite"
+    resource 0x7f05022e string/search_keywords_flick_left
+      () "swipe left, previous page"
+      (de) "Swipe links, nach links wischen, vorherige Seite"
+    resource 0x7f05022f string/search_keywords_flick_right
+      () "swipe right, next page"
+      (de) "Swipe rechts, nach rechts wischen, nächste Seite"
+    resource 0x7f050230 string/search_keywords_force_landscape
+      () "landscape, rotate, rotation, orientation, portrait"
+      (de) "Landscape, drehen, Rotation, Ausrichtung, Hochformat"
+    resource 0x7f050231 string/search_keywords_gyro
+      () "gyroscope, motion controls, motion aiming, aim, tilt, sensor"
+      (de) "Gyroskop, Bewegungssteuerung, Motion Controls, Zielen, Aiming, neigen, kippen, Sensor"
+    resource 0x7f050232 string/search_keywords_gyro_calibrate
+      () "gyroscope, drift, recenter, zero, reset, calibration"
+      (de) "Gyroskop, Drift, nullen, zentrieren, Reset, justieren, Kalibrierung"
+    resource 0x7f050233 string/search_keywords_handle
+      () "controller layout, button layout, swap A/B, ABXY, Nintendo, Xbox"
+      (de) "Controller-Layout, Layout, Tastenbelegung, A/B tauschen, ABXY, Nintendo, Xbox"
+    resource 0x7f050234 string/search_keywords_handle_ban
+      () "block, lock, disable"
+      (de) "sperren, blockieren, deaktivieren"
+    resource 0x7f050235 string/search_keywords_handle_standard
+      () "Nintendo, Switch layout, default"
+      (de) "Nintendo, Switch-Layout, Standard"
+    resource 0x7f050236 string/search_keywords_handle_xbox
+      () "Xbox, Microsoft, swap A/B"
+      (de) "Xbox, Microsoft, A/B tauschen"
+    resource 0x7f050237 string/search_keywords_home
+      () "home screen, homescreen, launcher, desktop, main menu"
+      (de) "Startbildschirm, Homescreen, Launcher, Desktop, Hauptmenü"
+    resource 0x7f050238 string/search_keywords_internet
+      () "WiFi, WLAN, network, hotspot, online, connection"
+      (de) "WiFi, WLAN, Netzwerk, Hotspot, online, Netz, Verbindung"
+    resource 0x7f050239 string/search_keywords_last_app
+      () "alt tab, previous app, back and forth, quick switch, flip apps"
+      (de) "Alt-Tab, vorherige App, hin und her, Quick Switch, zurückspringen"
+    resource 0x7f05023a string/search_keywords_launch_app
+      () "open, shortcut, quick launch, start game, game, emulator, RetroArch, frontend"
+      (de) "öffnen, Shortcut, Verknüpfung, Schnellstart, Spiel starten, Game, Emulator, RetroArch, Frontend"
+    resource 0x7f05023b string/search_keywords_location_settings
+      () "GPS, positioning, maps"
+      (de) "GPS, Ortung, Location, Maps"
+    resource 0x7f05023c string/search_keywords_macro
+      () "combo, button sequence, autofire, turbo, rapid fire, script, automation"
+      (de) "Makro, Combo, Kombo, Tastenfolge, Autofire, Turbo, Rapid Fire, Dauerfeuer, Script, automatisieren"
+    resource 0x7f05023d string/search_keywords_media
+      () "music, Spotify, YouTube, podcast, song, player, playlist"
+      (de) "Musik, Spotify, YouTube, Podcast, Song, Player, Playlist"
+    resource 0x7f05023e string/search_keywords_media_next
+      () "next song, skip, forward, music"
+      (de) "nächster Song, Skip, überspringen, vorspulen, Musik"
+    resource 0x7f05023f string/search_keywords_media_play_pause
+      () "play, pause, resume, stop, music"
+      (de) "abspielen, anhalten, fortsetzen, Play, Pause, Stopp, Musik"
+    resource 0x7f050240 string/search_keywords_media_previous
+      () "previous song, rewind, replay, repeat, music"
+      (de) "vorheriger Song, zurückspulen, nochmal, Repeat, Musik"
+    resource 0x7f050241 string/search_keywords_mute_microphone
+      () "mic, mic mute, Discord, voice chat, privacy, mute"
+      (de) "Mikro, Mic, Mikrofon aus, Discord, Voice, Sprachchat, stumm, Privatsphäre"
+    resource 0x7f050242 string/search_keywords_night_light
+      () "blue light filter, night mode, eye comfort, warm"
+      (de) "Blaulichtfilter, Nachtmodus, augenschonend, Warmton, Eye Comfort"
+    resource 0x7f050243 string/search_keywords_none
+      () "empty, nothing, unassigned, unbound, disable, remove, clear"
+      (de) "leer, nichts, unbelegt, frei, deaktivieren, entfernen, löschen"
+    resource 0x7f050244 string/search_keywords_notifications
+      () "messages, alerts, push, notification center"
+      (de) "Mitteilungen, Nachrichten, Push, Notifications, Benachrichtigungscenter"
+    resource 0x7f050245 string/search_keywords_panels
+      () "status bar, shade, pull down, notification shade"
+      (de) "Statusleiste, Notification Shade, herunterziehen, Leiste"
+    resource 0x7f050246 string/search_keywords_performance
+      () "TDP, boost, turbo, FPS, CPU, GPU, power profile, speed"
+      (de) "Performance, TDP, Boost, Turbo, FPS, CPU, GPU, Power-Profil, Speed"
+    resource 0x7f050247 string/search_keywords_performance_high
+      () "max, maximum, full power, turbo, boost, beast mode"
+      (de) "Max, Maximum, volle Leistung, Turbo, Boost, Beast Mode"
+    resource 0x7f050248 string/search_keywords_performance_medium
+      () "middle, mid"
+      (de) "mittel, Mittelweg"
+    resource 0x7f050249 string/search_keywords_performance_standard
+      () "normal, balanced, battery saving"
+      (de) "normal, ausgewogen, Balanced, Akku sparen"
+    resource 0x7f05024a string/search_keywords_power
+      () "power, switch off"
+      (de) "Power, Strom, ausmachen, Energie"
+    resource 0x7f05024b string/search_keywords_power_menu
+      () "restart, reboot, shut down, shutdown, power off, turn off"
+      (de) "Neustart, Reboot, ausschalten, herunterfahren, Restart, Shutdown"
+    resource 0x7f05024c string/search_keywords_quick_settings
+      () "toggles, tiles, quick toggles, control center"
+      (de) "Schnellzugriff, Kacheln, Toggles, Quick Settings, Kontrollzentrum, Control Center"
+    resource 0x7f05024d string/search_keywords_recents
+      () "upper, main screen, recents, multitasking"
+      (de) "oben, Hauptbildschirm, Recents, Multitasking"
+    resource 0x7f05024e string/search_keywords_record_video
+      () "screen recording, clip, gameplay, capture, record, let's play, commentary"
+      (de) "Bildschirmaufnahme, aufzeichnen, Clip, Gameplay, Recording, Let's Play, Capture, Kommentar"
+    resource 0x7f05024f string/search_keywords_refresh_120
+      () "smooth, high refresh"
+      (de) "flüssig, smooth, High Refresh"
+    resource 0x7f050250 string/search_keywords_refresh_60
+      () "battery saving"
+      (de) "Akku sparen, sparsam"
+    resource 0x7f050251 string/search_keywords_refresh_rate
+      () "Hz, hertz, FPS, smooth, frame rate, frames"
+      (de) "Hz, Hertz, FPS, flüssig, smooth, Bildrate, Frames"
+    resource 0x7f050252 string/search_keywords_screenshot
+      () "screen capture, screengrab, snapshot, capture, print screen, picture"
+      (de) "Bildschirmfoto, Screeni, Foto, Snapshot, Capture, Bild speichern, Druck"
+    resource 0x7f050253 string/search_keywords_settings
+      () "options, preferences, config, setup"
+      (de) "Einstellungen, Settings, Optionen, Konfiguration"
+    resource 0x7f050254 string/search_keywords_sound_settings
+      () "audio, ringtone, sound, equalizer, volume"
+      (de) "Ton, Audio, Klingelton, Sound, Equalizer, Lautstärke"
+    resource 0x7f050255 string/search_keywords_standby
+      () "screen off, lock, sleep, suspend, nap"
+      (de) "Bildschirm aus, sperren, Ruhezustand, Schlafmodus, Sleep, Suspend, Lock"
+    resource 0x7f050256 string/search_keywords_status
+      () "battery, temperature, temp, runtime, percent, OSD, overlay, info, stats"
+      (de) "Akku, Batterie, Temperatur, Temp, Laufzeit, Prozent, OSD, Overlay, Info, Stats"
+    resource 0x7f050257 string/search_keywords_stick_light
+      () "RGB, LED, light, lighting, glow, rings"
+      (de) "RGB, LED, Licht, Beleuchtung, Leuchten, Lightshow, Ringe"
+    resource 0x7f050258 string/search_keywords_swap_apps
+      () "swap, flip, exchange, screen swap, swap screens, dual screen"
+      (de) "tauschen, Swap, Screen Swap, Bildschirme tauschen, Dual Screen, umdrehen"
+    resource 0x7f050259 string/search_keywords_switch_app
+      () "move app, other screen, send to screen, move to display"
+      (de) "verschieben, rüberschieben, anderer Bildschirm, Display wechseln, Move"
+    resource 0x7f05025a string/search_keywords_switcher
+      () "lower, second screen, recents, multitasking"
+      (de) "unten, Zweitbildschirm, Recents, Multitasking"
+    resource 0x7f05025b string/search_keywords_vibration
+      () "rumble, haptics, force feedback, vibrate, shake"
+      (de) "Rumble, Haptik, Force Feedback, vibrieren, rütteln, Feedback"
+    resource 0x7f05025c string/search_keywords_virtual_mouse
+      () "mouse, cursor, pointer, touchpad, trackpad, click"
+      (de) "Maus, Cursor, Mauszeiger, Pointer, Touchpad, Trackpad, klicken"
+    resource 0x7f05025d string/search_keywords_volume
+      () "sound, audio, loud, quiet, volume control"
+      (de) "Ton, Sound, Audio, laut, leise, Lautstärkeregler"
+    resource 0x7f05025e string/search_keywords_volume_down
+      () "quieter, softer, turn down, sound down, vol-, volume down"
+      (de) "leiser, runterdrehen, Ton runter, Vol-, Volume Down"
+    resource 0x7f05025f string/search_keywords_volume_mute
+      () "mute, silent, sound off"
+      (de) "Ton aus, lautlos, Mute, still, Ruhe"
+    resource 0x7f050260 string/search_keywords_volume_up
+      () "louder, turn up, sound up, vol+, volume up"
+      (de) "lauter, aufdrehen, Ton hoch, Vol+, Volume Up"
+    resource 0x7f050261 string/service_blocker_hint
+      () "Tap the button, switch on %1$s in the accessibility settings, then come back to this app."
+      (de) "Tippe auf den Button, aktiviere %1$s in den Bedienungshilfen und kehre danach zur App zurück."
+    resource 0x7f050262 string/service_blocker_title
+      () "%1$s needs the accessibility permission to work."
+      (de) "%1$s benötigt die Berechtigung „Bedienungshilfen“, um arbeiten zu können."
+    resource 0x7f050263 string/service_description
+      () "Shows an app switcher on the bottom screen when the Back button is double-tapped."
+      (de) "Zeigt einen App-Switcher auf dem unteren Bildschirm, wenn die Zurück-Taste doppelt gedrückt wird."
+    resource 0x7f050264 string/service_toggle_active
+      () "Back Button Hero: Activated
+      Hold %1$s to deactivate"
+      (de) "Back Button Hero: Aktiviert
+      %1$s halten zum Deaktivieren"
+    resource 0x7f050265 string/service_toggle_buttons
+      () "Hold button(s)"
+      (de) "Taste(n) zum Halten"
+    resource 0x7f050266 string/service_toggle_duration
+      () "Hold time: %d ms"
+      (de) "Haltedauer: %d ms"
+    resource 0x7f050267 string/service_toggle_hint
+      () "Hold to turn all Back gestures and shortcuts off or on. Without Back held, the buttons still reach your game. Back Button Hero starts active after a restart."
+      (de) "Halten schaltet alle Back-Gesten und Tastenkombinationen aus oder ein. Ohne gehaltenes Back gehen die Tasten weiterhin ans Spiel. Nach einem Neustart ist Back Button Hero aktiv."
+    resource 0x7f050268 string/service_toggle_inactive
+      () "Back Button Hero: Deactivated
+      Hold %1$s to activate"
+      (de) "Back Button Hero: Deaktiviert
+      %1$s halten zum Aktivieren"
+    resource 0x7f050269 string/service_toggle_no_shortcut
+      () "Back Button Hero: Activated
+      No on/off shortcut assigned"
+      (de) "Back Button Hero: Aktiviert
+      Keine Ein-/Aus-Tastenkombination belegt"
+    resource 0x7f05026a string/service_toggle_title
+      () "Activate / deactivate"
+      (de) "Aktivieren / deaktivieren"
+    resource 0x7f05026b string/settings_action_detail
+      () "%1$s (%2$s)"
+      (de) "%1$s (%2$s)"
+    resource 0x7f05026c string/settings_already_defaults
+      () "Already using the defaults."
+      (de) "Bereits auf den Defaults."
+    resource 0x7f05026d string/settings_already_preset
+      () "Already using factory settings."
+      (de) "Bereits auf Werkseinstellungen."
+    resource 0x7f05026e string/settings_already_unbound
+      () "No bindings to remove."
+      (de) "Keine Belegungen vorhanden."
+    resource 0x7f05026f string/settings_apply
+      () "Apply"
+      (de) "Übernehmen"
+    resource 0x7f050270 string/settings_binding_label
+      () "Back + %1$s"
+      (de) "Back + %1$s"
+    resource 0x7f050271 string/settings_change_line
+      () "%1$s: %2$s → %3$s"
+      (de) "%1$s: %2$s → %3$s"
+    resource 0x7f050272 string/settings_changes_scope
+      () "The following changes apply to: %1$s."
+      (de) "Diese Änderungen gelten für: %1$s."
+    resource 0x7f050273 string/settings_defaults_loaded
+      () "Defaults loaded"
+      (de) "Defaults geladen"
+    resource 0x7f050274 string/settings_double_time
+      () "Double-press timing"
+      (de) "Doppeltipp-Zeit"
+    resource 0x7f050275 string/settings_entire_app
+      () "Entire app"
+      (de) "Gesamte App"
+    resource 0x7f050276 string/settings_hold_time
+      () "Hold duration"
+      (de) "Haltedauer"
+    resource 0x7f050277 string/settings_home_binding_label
+      () "Home + %1$s"
+      (de) "Home + %1$s"
+    resource 0x7f050278 string/settings_level_screen
+      () "Volume and brightness screens"
+      (de) "Bildschirme für Lautstärke und Helligkeit"
+    resource 0x7f050279 string/settings_load_defaults
+      () "Load defaults"
+      (de) "Defaults laden"
+    resource 0x7f05027a string/settings_menu
+      () "Menu"
+      (de) "Menü"
+    resource 0x7f05027b string/settings_off
+      () "Off"
+      (de) "Aus"
+    resource 0x7f05027c string/settings_on
+      () "On"
+      (de) "Ein"
+    resource 0x7f05027d string/settings_preset_title
+      () "Factory settings: %1$s"
+      (de) "Werkseinstellungen: %1$s"
+    resource 0x7f05027e string/settings_property_label
+      () "%1$s · %2$s"
+      (de) "%1$s · %2$s"
+    resource 0x7f05027f string/settings_screenshot_screen
+      () "Screenshot screen"
+      (de) "Bildschirm für Screenshots"
+    resource 0x7f050280 string/settings_service
+      () "Service"
+      (de) "Dienst"
+    resource 0x7f050281 string/settings_switcher
+      () "App Switcher"
+      (de) "App-Switcher"
+    resource 0x7f050282 string/settings_tap_hold_time
+      () "Tap-and-hold timing"
+      (de) "Tipp-und-Haltezeit"
+    resource 0x7f050283 string/settings_toggle_time
+      () "On/off shortcut hold duration"
+      (de) "Haltedauer zum Aktivieren/Deaktivieren"
+    resource 0x7f050284 string/settings_unbind
+      () "Clear bindings"
+      (de) "Belegungen lösen"
+    resource 0x7f050285 string/settings_unbind_reactivates
+      () "Removing the on/off shortcut also activates Back Button Hero if it is temporarily off."
+      (de) "Das Entfernen der Ein-/Aus-Tastenkombination aktiviert Back Button Hero wieder, falls die App vorübergehend deaktiviert ist."
+    resource 0x7f050286 string/settings_unbind_title
+      () "Remove bindings: %1$s"
+      (de) "Belegungen lösen: %1$s"
+    resource 0x7f050287 string/settings_updates
+      () "Updates & Project"
+      (de) "Updates & Projekt"
+    resource 0x7f050288 string/setup_clean
+      () "Clean start"
+      (de) "Clean Start"
+    resource 0x7f050289 string/setup_clean_detail
+      () "Only the Back button, everything else free"
+      (de) "Nur die Back-Taste, alles andere frei"
+    resource 0x7f05028a string/setup_defaults
+      () "Load defaults"
+      (de) "Defaults laden"
+    resource 0x7f05028b string/setup_defaults_detail
+      () "Useful bindings for every button"
+      (de) "Sinnvolle Belegungen für alle Tasten"
+    resource 0x7f05028c string/setup_keep
+      () "Keep settings"
+      (de) "Einstellungen behalten"
+    resource 0x7f05028d string/setup_keep_detail
+      () "Change nothing"
+      (de) "Nichts ändern"
+    resource 0x7f05028e string/setup_title
+      () "How do you want to start?"
+      (de) "Womit möchtest du starten?"
+    resource 0x7f05028f string/shoulder_action_accessibility
+      () "%1$s action: %2$s. Double-tap to change."
+      (de) "Aktion für %1$s: %2$s. Zum Ändern doppeltippen."
+    resource 0x7f050290 string/shoulder_action_selected
+      () "Selected: %1$s"
+      (de) "Ausgewählt: %1$s"
+    resource 0x7f050291 string/shoulder_action_unavailable
+      () "This system action is not available on this device."
+      (de) "Diese Systemaktion ist auf diesem Gerät nicht verfügbar."
+    resource 0x7f050292 string/shoulder_app_control
+      () "Active App Control"
+      (de) "Aktive App steuern"
+    resource 0x7f050293 string/shoulder_app_favorites
+      () "Favorites"
+      (de) "Favoriten"
+    resource 0x7f050294 string/shoulder_back
+      () "Regular Back press"
+      (de) "Normaler Back-Druck"
+    resource 0x7f050295 string/shoulder_battery_saver
+      () "Battery Saver settings"
+      (de) "Energiesparmodus-Einstellungen"
+    resource 0x7f050296 string/shoulder_bindings_section
+      () "Shoulder Button Binds"
+      (de) "Schultertasten-Belegungen"
+    resource 0x7f050297 string/shoulder_bluetooth
+      () "Bluetooth settings"
+      (de) "Bluetooth-Einstellungen"
+    resource 0x7f050298 string/shoulder_cast_settings
+      () "Cast settings"
+      (de) "Streamen-Einstellungen"
+    resource 0x7f050299 string/shoulder_choose_action_title
+      () "Action for %1$s"
+      (de) "Aktion für %1$s"
+    resource 0x7f05029a string/shoulder_choose_app_title
+      () "Launch which app?"
+      (de) "Welche App starten?"
+    resource 0x7f05029b string/shoulder_close_apps
+      () "Close Apps"
+      (de) "Apps beenden"
+    resource 0x7f05029c string/shoulder_controller_focus
+      () "Set controller focus"
+      (de) "Fokus setzen"
+    resource 0x7f05029d string/shoulder_display_settings
+      () "Display settings"
+      (de) "Display-Einstellungen"
+    resource 0x7f05029e string/shoulder_dnd_settings
+      () "Do Not Disturb settings"
+      (de) "Bitte-nicht-stören-Einstellungen"
+    resource 0x7f05029f string/shoulder_extra_dim
+      () "Extra dim settings"
+      (de) "Extradunkel-Einstellungen"
+    resource 0x7f0502a0 string/shoulder_gyro
+      () "Gyro on/off (BETA)"
+      (de) "Gyro an/aus (BETA)"
+    resource 0x7f0502a1 string/shoulder_gyro_calibrate
+      () "Calibrate gyro (BETA)"
+      (de) "Gyro kalibrieren (BETA)"
+    resource 0x7f0502a2 string/shoulder_home
+      () "Home"
+      (de) "Home"
+    resource 0x7f0502a3 string/shoulder_internet
+      () "Wi-Fi and internet controls"
+      (de) "WLAN- und Internet-Steuerung"
+    resource 0x7f0502a4 string/shoulder_l1
+      () "L1"
+      (de) "L1"
+    resource 0x7f0502a5 string/shoulder_l2
+      () "L2"
+      (de) "L2"
+    resource 0x7f0502a6 string/shoulder_last_app
+      () "Switch to last app"
+      (de) "Zur letzten App wechseln"
+    resource 0x7f0502a7 string/shoulder_launch_app
+      () "Launch app…"
+      (de) "App starten…"
+    resource 0x7f0502a8 string/shoulder_launch_app_favorites_empty
+      () "Launch app: Favorites (none starred yet)"
+      (de) "App starten: Favoriten (noch keine markiert)"
+    resource 0x7f0502a9 string/shoulder_launch_app_named
+      () "Launch app: %1$s"
+      (de) "App starten: %1$s"
+    resource 0x7f0502aa string/shoulder_location_settings
+      () "Location settings"
+      (de) "Standort-Einstellungen"
+    resource 0x7f0502ab string/shoulder_macro
+      () "Macro"
+      (de) "Macro"
+    resource 0x7f0502ac string/shoulder_night_light
+      () "Night Light settings"
+      (de) "Nachtlicht-Einstellungen"
+    resource 0x7f0502ad string/shoulder_none
+      () "Not set"
+      (de) "Nicht belegt"
+    resource 0x7f0502ae string/shoulder_notifications
+      () "Open notifications"
+      (de) "Benachrichtigungen öffnen"
+    resource 0x7f0502af string/shoulder_power_menu
+      () "Power Menu"
+      (de) "Ein/Aus-Menü"
+    resource 0x7f0502b0 string/shoulder_quick_settings
+      () "Open Quick Settings"
+      (de) "Schnelleinstellungen öffnen"
+    resource 0x7f0502b1 string/shoulder_r1
+      () "R1"
+      (de) "R1"
+    resource 0x7f0502b2 string/shoulder_r2
+      () "R2"
+      (de) "R2"
+    resource 0x7f0502b3 string/shoulder_record_video
+      () "Record video"
+      (de) "Video aufnehmen"
+    resource 0x7f0502b4 string/shoulder_screenshot
+      () "Take screenshot"
+      (de) "Screenshot aufnehmen"
+    resource 0x7f0502b5 string/shoulder_sound_settings
+      () "Sound settings"
+      (de) "Ton-Einstellungen"
+    resource 0x7f0502b6 string/shoulder_status
+      () "Status Overlay"
+      (de) "Status-Einblendung"
+    resource 0x7f0502b7 string/shoulder_swap_apps
+      () "Switch both apps"
+      (de) "Beide Apps tauschen"
+    resource 0x7f0502b8 string/shoulder_switch_app
+      () "Switch active app"
+      (de) "Aktive App verschieben"
+    resource 0x7f0502b9 string/single_section_title
+      () "Single button press"
+      (de) "Einfacher Tastendruck"
+    resource 0x7f0502ba string/standby_confirm_title
+      () "Ask before standby"
+      (de) "Vor dem Standby nachfragen"
+    resource 0x7f0502bb string/standby_prompt_title
+      () "Go to standby?"
+      (de) "In den Standby wechseln?"
+    resource 0x7f0502bc string/status_battery
+      () "Battery %1$d %%"
+      (de) "Akku %1$d %%"
+    resource 0x7f0502bd string/status_chip_off
+      () "Service off"
+      (de) "Dienst inaktiv"
+    resource 0x7f0502be string/status_chip_unresponsive
+      () "No response"
+      (de) "Reagiert nicht"
+    resource 0x7f0502bf string/status_full_in
+      () "full in %1$s"
+      (de) "voll in %1$s"
+    resource 0x7f0502c0 string/status_hours_minutes
+      () "%1$d h %2$d min"
+      (de) "%1$d h %2$d min"
+    resource 0x7f0502c1 string/status_left
+      () "about %1$s left"
+      (de) "noch etwa %1$s"
+    resource 0x7f0502c2 string/status_minutes
+      () "%1$d min"
+      (de) "%1$d min"
+    resource 0x7f0502c3 string/status_off
+      () "Accessibility service is off. %1$s needs it to read the Back button and show the switcher."
+      (de) "Bedienungshilfen-Dienst ist inaktiv. %1$s braucht ihn, um die Zurück-Taste zu lesen und den Switcher anzuzeigen."
+    resource 0x7f0502c4 string/status_on
+      () "Accessibility service is on"
+      (de) "Bedienungshilfen-Dienst ist aktiv"
+    resource 0x7f0502c5 string/status_plugged
+      () "plugged in"
+      (de) "angeschlossen"
+    resource 0x7f0502c6 string/status_temperature
+      () "%1$.1f °C"
+      (de) "%1$.1f °C"
+    resource 0x7f0502c7 string/status_unresponsive
+      () "Accessibility service is enabled, but is not responding."
+      (de) "Bedienungshilfen-Dienst ist aktiviert, reagiert aber nicht."
+    resource 0x7f0502c8 string/stick_double_hint
+      () "Maximum time between two presses. Higher is easier, but a single press waits this long before it acts when a double press is assigned. Default: 300 ms."
+      (de) "Maximale Zeit zwischen zwei Drücken. Höher ist leichter, aber ein einzelner Druck wartet so lange, bevor er etwas auslöst, wenn ein Doppeldruck belegt ist. Standard: 300 ms."
+    resource 0x7f0502c9 string/stick_double_speed
+      () "Double-press speed: %d ms"
+      (de) "Doppeldruck-Tempo: %d ms"
+    resource 0x7f0502ca string/stick_double_title
+      () "Double-press speed"
+      (de) "Doppeldruck-Tempo"
+    resource 0x7f0502cb string/stick_left_bindings_section
+      () "Left Stick Binds"
+      (de) "Belegungen linker Stick"
+    resource 0x7f0502cc string/stick_left_double
+      () "Left stick double press"
+      (de) "Linker Stick doppelt drücken"
+    resource 0x7f0502cd string/stick_left_down
+      () "Left stick down"
+      (de) "Linker Stick runter"
+    resource 0x7f0502ce string/stick_left_left
+      () "Left stick left"
+      (de) "Linker Stick links"
+    resource 0x7f0502cf string/stick_left_press
+      () "Left stick press"
+      (de) "Linker Stick drücken"
+    resource 0x7f0502d0 string/stick_left_right
+      () "Left stick right"
+      (de) "Linker Stick rechts"
+    resource 0x7f0502d1 string/stick_left_tap_hold
+      () "Left stick tap and hold"
+      (de) "Linker Stick tippen und halten"
+    resource 0x7f0502d2 string/stick_left_up
+      () "Left stick up"
+      (de) "Linker Stick hoch"
+    resource 0x7f0502d3 string/stick_right_bindings_section
+      () "Right Stick Binds"
+      (de) "Belegungen rechter Stick"
+    resource 0x7f0502d4 string/stick_right_double
+      () "Right stick double press"
+      (de) "Rechter Stick doppelt drücken"
+    resource 0x7f0502d5 string/stick_right_down
+      () "Right stick down"
+      (de) "Rechter Stick runter"
+    resource 0x7f0502d6 string/stick_right_left
+      () "Right stick left"
+      (de) "Rechter Stick links"
+    resource 0x7f0502d7 string/stick_right_press
+      () "Right stick press"
+      (de) "Rechter Stick drücken"
+    resource 0x7f0502d8 string/stick_right_right
+      () "Right stick right"
+      (de) "Rechter Stick rechts"
+    resource 0x7f0502d9 string/stick_right_tap_hold
+      () "Right stick tap and hold"
+      (de) "Rechter Stick tippen und halten"
+    resource 0x7f0502da string/stick_right_up
+      () "Right stick up"
+      (de) "Rechter Stick hoch"
+    resource 0x7f0502db string/stick_root_missing
+      () "AYN's root service is not reachable. Back + stick now uses a fallback in which games may pause, and brightness and bottom-screen volume are unavailable."
+      (de) "AYNs Root-Dienst ist nicht erreichbar. Zurück + Stick nutzt jetzt einen Ersatzweg, bei dem Spiele pausieren können; Helligkeit und die Lautstärke des unteren Bildschirms sind nicht verfügbar."
+    resource 0x7f0502dc string/stick_tab_left
+      () "Left stick"
+      (de) "Linker Stick"
+    resource 0x7f0502dd string/stick_tab_right
+      () "Right stick"
+      (de) "Rechter Stick"
+    resource 0x7f0502de string/stick_tap_hold_hint
+      () "Press the stick once, then press and hold it again. A plain single press waits a bit longer while a double press is assigned. Default: 1000 ms."
+      (de) "Drücke den Stick einmal, dann drücke und halte ihn erneut. Ein einzelner Druck wartet etwas länger, solange ein Doppeldruck belegt ist. Standard: 1000 ms."
+    resource 0x7f0502df string/stick_tap_hold_speed
+      () "Tap-and-hold time: %d ms"
+      (de) "Tipp-und-Haltezeit: %d ms"
+    resource 0x7f0502e0 string/stick_tap_hold_title
+      () "Tap-and-hold time"
+      (de) "Tipp-und-Haltezeit"
+    resource 0x7f0502e1 string/swap_blocked_by_exceptions
+      () "Screen swapping is disabled by app exceptions."
+      (de) "Bildschirmtausch durch App-Ausnahmen deaktiviert."
+    resource 0x7f0502e2 string/swap_unavailable
+      () "These apps cannot be swapped."
+      (de) "Diese Apps können nicht getauscht werden."
+    resource 0x7f0502e3 string/switch_app_follow_focus
+      () "Gamepad focus follows the app"
+      (de) "Gamepad-Fokus folgt der App"
+    resource 0x7f0502e4 string/switcher_all_apps
+      () "Show apps from both screens"
+      (de) "Apps beider Bildschirme anzeigen"
+    resource 0x7f0502e5 string/switcher_all_apps_hint
+      () "Includes apps observed on the top screen. Close all then closes apps from both screens. Apps not seen since the accessibility service started cannot appear."
+      (de) "Schließt Apps ein, die auf dem oberen Bildschirm beobachtet wurden. „Alle Apps schließen“ schließt dann Apps beider Bildschirme. Apps, die der Bedienungshilfen-Dienst seit seinem Start nicht gesehen hat, können nicht erscheinen."
+    resource 0x7f0502e6 string/switcher_controller
+      () "Control Recents with the controller"
+      (de) "Recents mit dem Controller bedienen"
+    resource 0x7f0502e7 string/switcher_controller_hint
+      () "D-pad left/right selects an app. D-pad down moves to Screenshot and Close all; confirm runs the selected action. D-pad up closes the selected app. The confirm button follows the Thor controller style."
+      (de) "D-Pad links/rechts wählt eine App. D-Pad runter führt zu Screenshot und „Alle schließen“; Bestätigen führt die markierte Aktion aus. D-Pad hoch schließt die ausgewählte App. Die Bestätigungstaste folgt dem Thor-Controller-Stil."
+    resource 0x7f0502e8 string/switcher_screenshot
+      () "Screenshot"
+      (de) "Screenshot"
+    resource 0x7f0502e9 string/tap_hold_hint
+      () "Press Back once, then press and hold it again. A plain single tap waits a bit longer while a double press is assigned. Default: 1000 ms."
+      (de) "Back einmal drücken, dann erneut drücken und halten. Ein einfacher Tipp wartet etwas länger, solange ein Doppeldruck belegt ist. Standard: 1000 ms."
+    resource 0x7f0502ea string/tap_hold_section_title
+      () "Tap and hold"
+      (de) "Tippen und halten"
+    resource 0x7f0502eb string/tap_hold_speed
+      () "Tap-and-hold time: %d ms"
+      (de) "Tipp-und-Haltezeit: %d ms"
+    resource 0x7f0502ec string/toggle_combo_blocked
+      () "Unavailable while Back + Home turns Back Button Hero on or off"
+      (de) "Nicht verfügbar, solange Back + Home Back Button Hero ein- und ausschaltet"
+    resource 0x7f0502ed string/unbind_layer_back
+      () "Only Back"
+      (de) "Nur Back"
+    resource 0x7f0502ee string/unbind_layer_both
+      () "Home and Back"
+      (de) "Home und Back"
+    resource 0x7f0502ef string/unbind_layer_home
+      () "Only Home"
+      (de) "Nur Home"
+    resource 0x7f0502f0 string/unbind_layer_title
+      () "Which bindings?"
+      (de) "Welche Belegungen?"
+    resource 0x7f0502f1 string/unbind_optionals_done
+      () "Buttons unbound"
+      (de) "Tasten freigegeben"
+    resource 0x7f0502f2 string/update_allow_message
+      () "To install updates itself, Back Button Hero needs your permission in Android. On the next screen, switch on “Allow from this source”, then come back here and start the update again."
+      (de) "Damit Back Button Hero Updates selbst installieren kann, braucht es deine Erlaubnis in Android. Aktiviere auf der nächsten Seite „Von dieser Quelle zulassen“, kehre danach hierher zurück und starte das Update erneut."
+    resource 0x7f0502f3 string/update_allow_open
+      () "Open settings"
+      (de) "Einstellungen öffnen"
+    resource 0x7f0502f4 string/update_allow_title
+      () "Allow installing updates"
+      (de) "Installation von Updates erlauben"
+    resource 0x7f0502f5 string/update_available_text
+      () "Version %1$s is ready. Tap to open the release."
+      (de) "Version %1$s ist bereit. Tippen, um das Release zu öffnen."
+    resource 0x7f0502f6 string/update_available_title
+      () "%1$s update available"
+      (de) "%1$s-Update verfügbar"
+    resource 0x7f0502f7 string/update_check_failed_message
+      () "Check your internet connection and try again."
+      (de) "Prüfe die Internetverbindung und versuche es erneut."
+    resource 0x7f0502f8 string/update_check_failed_title
+      () "Couldn't check for updates"
+      (de) "Updatesuche fehlgeschlagen"
+    resource 0x7f0502f9 string/update_check_unexpected_message
+      () "GitHub did not return a usable answer. Please try again later."
+      (de) "GitHub hat keine verwertbare Antwort geliefert. Bitte versuche es später erneut."
+    resource 0x7f0502fa string/update_developer_build_hint
+      () "This is a developer build, signed with a different key than the release. Android would refuse the update, so the release page is the way to go."
+      (de) "Dies ist ein Entwickler-Build, der mit einem anderen Schlüssel signiert ist als das Release. Android würde das Update ablehnen, daher bleibt die Release-Seite der Weg."
+    resource 0x7f0502fb string/update_failed_corrupt
+      () "The downloaded file did not match the published release and was discarded. Try again or open the release page."
+      (de) "Die geladene Datei stimmte nicht mit dem veröffentlichten Release überein und wurde verworfen. Versuche es erneut oder öffne die Release-Seite."
+    resource 0x7f0502fc string/update_failed_network
+      () "The download failed. Check your internet connection and try again."
+      (de) "Der Download ist fehlgeschlagen. Prüfe die Internetverbindung und versuche es erneut."
+    resource 0x7f0502fd string/update_failed_session
+      () "Android could not start the installation. You can still get the update from the release page."
+      (de) "Android konnte die Installation nicht starten. Das Update gibt es weiterhin auf der Release-Seite."
+    resource 0x7f0502fe string/update_failed_title
+      () "Update not installed"
+      (de) "Update nicht installiert"
+    resource 0x7f0502ff string/update_found_message
+      () "Version %1$s is available."
+      (de) "Version %1$s ist verfügbar."
+    resource 0x7f050300 string/update_found_title
+      () "New version available"
+      (de) "Neue Version verfügbar"
+    resource 0x7f050301 string/update_install_action
+      () "Download and install"
+      (de) "Herunterladen und installieren"
+    resource 0x7f050302 string/update_install_conflict
+      () "Android refused the update because it is signed with a different key than the installed app (for example a developer build), or it is not newer. Install the release once from the release page."
+      (de) "Android hat das Update abgelehnt, weil es mit einem anderen Schlüssel signiert ist als die installierte App (zum Beispiel ein Entwickler-Build) oder nicht neuer ist. Installiere das Release einmal von der Release-Seite."
+    resource 0x7f050303 string/update_install_failed
+      () "Android could not install the update."
+      (de) "Android konnte das Update nicht installieren."
+    resource 0x7f050304 string/update_install_hint
+      () "Android asks you to confirm the installation. Back Button Hero restarts afterwards."
+      (de) "Android bittet dich, die Installation zu bestätigen. Danach startet Back Button Hero neu."
+    resource 0x7f050305 string/update_install_storage
+      () "There is not enough storage to install the update."
+      (de) "Für die Installation des Updates ist nicht genug Speicher frei."
+    resource 0x7f050306 string/update_installing_progress
+      () "%1$d%%"
+      (de) "%1$d%%"
+    resource 0x7f050307 string/update_installing_title
+      () "Downloading update"
+      (de) "Update wird geladen"
+    resource 0x7f050308 string/update_rate_limited_message
+      () "GitHub limits how often updates can be checked from one network. Please try again later."
+      (de) "GitHub begrenzt, wie oft Updates von einem Netzwerk aus geprüft werden können. Bitte versuche es später erneut."
+    resource 0x7f050309 string/version_label
+      () "Version %1$s"
+      (de) "Version %1$s"
+    resource 0x7f05030a string/welcome_feature_both_screens
+      () "Apps on both screens"
+      (de) "Apps auf beiden Bildschirmen"
+    resource 0x7f05030b string/welcome_feature_both_screens_detail
+      () "Full gamepad support"
+      (de) "Volle Gamepad-Unterstützung"
+    resource 0x7f05030c string/welcome_feature_gyro
+      () "Gyro support"
+      (de) "Gyro-Unterstützung"
+    resource 0x7f05030d string/welcome_feature_gyro_detail
+      () "Mouse mode"
+      (de) "Mausmodus"
+    resource 0x7f05030e string/welcome_feature_launch
+      () "Launch any app"
+      (de) "Jede App starten"
+    resource 0x7f05030f string/welcome_feature_launch_detail
+      () "with any key"
+      (de) "mit jeder Taste"
+    resource 0x7f050310 string/welcome_feature_levels
+      () "Volume & brightness"
+      (de) "Lautstärke & Helligkeit"
+    resource 0x7f050311 string/welcome_feature_levels_detail
+      () "on keybinds"
+      (de) "per Tastenkombination"
+    resource 0x7f050312 string/welcome_feature_pause
+      () "Pause BBH"
+      (de) "BBH pausieren"
+    resource 0x7f050313 string/welcome_feature_pause_detail
+      () "when you need to"
+      (de) "wenn du es brauchst"
+    resource 0x7f050314 string/welcome_feature_recording
+      () "Gameplay recording"
+      (de) "Gameplay aufnehmen"
+    resource 0x7f050315 string/welcome_feature_recording_detail
+      () "Push-to-talk"
+      (de) "Push-to-Talk"
+    resource 0x7f050316 string/welcome_feature_screenshots
+      () "Screenshots"
+      (de) "Screenshots"
+    resource 0x7f050317 string/welcome_feature_screenshots_detail
+      () "Top, bottom or both"
+      (de) "Oben, unten oder beide"
+    resource 0x7f050318 string/welcome_feature_swap
+      () "Swap both screens"
+      (de) "Beide Bildschirme tauschen"
+    resource 0x7f050319 string/welcome_feature_swap_detail
+      () "Back and forth"
+      (de) "Hin und zurück"
+    resource 0x7f05031a string/welcome_feature_switch
+      () "Switch apps"
+      (de) "Apps wechseln"
+    resource 0x7f05031b string/welcome_feature_switch_detail
+      () "with one key"
+      (de) "mit einer Taste"
+    resource 0x7f05031c string/welcome_features_subtitle
+      () "More ways to play."
+      (de) "Mehr Möglichkeiten zu spielen."
+    resource 0x7f05031d string/welcome_features_title
+      () "Top features."
+      (de) "Top-Features."
+    resource 0x7f05031e string/welcome_more
+      () "… and many more features"
+      (de) "… und viele weitere Features"
+    resource 0x7f05031f string/welcome_start
+      () "Let's go"
+      (de) "Los geht's"
+    resource 0x7f050320 string/welcome_subtitle
+      () "Welcome"
+      (de) "Willkommen"
+    resource 0x7f050321 string/welcome_title
+      () "Back Button Hero 2.0"
+  type xml id=06 entryCount=1
+    resource 0x7f060000 xml/accessibility_config
+      () (file) res/az.xml type=XML

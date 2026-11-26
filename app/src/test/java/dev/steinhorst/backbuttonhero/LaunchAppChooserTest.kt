@@ -1,7 +1,5 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.selectSettingsPage
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -14,6 +12,11 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import dev.steinhorst.backbuttonhero.input.ShoulderButton
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.support.selectSettingsPage
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue

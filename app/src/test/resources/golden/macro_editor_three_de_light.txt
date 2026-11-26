@@ -1,0 +1,84 @@
+DecorView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    ViewStub visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[24,12,48,36] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=192 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Schließen"
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[24,12,24,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Combo, Macro: L1, antippen zum Umbenennen"
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Combo" textSizePx=60.0 textColor=#FF191C1E maxLines=1 bold=false
+                ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Macro: L1" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+            TextView visibility=VISIBLE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[0,0,0,0] text="Speichern" textSizePx=45.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=GONE minHeight=0 padding=[72,24,72,24] clickable=false focusable=false margin=[0,0,0,0]
+              TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Macro aufnehmen" textSizePx=66.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              TextView visibility=VISIBLE minHeight=0 padding=[0,42,0,84] clickable=false focusable=false margin=[0,0,0,0] text="Tippe auf Aufnehmen und drücke dann auf dem Controller die Tastenfolge, die du speichern möchtest. Mit Stopp beendest du die Aufnahme.
+
+Danach kannst du hier im Editor jeden Schritt und jede Pause anpassen. Das Macro startet, sobald du Zurück loslässt." textSizePx=45.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[0,0,0,0] text="Tasten von Hand hinzufügen" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                TextView visibility=GONE minHeight=0 padding=[54,0,54,0] clickable=true focusable=true margin=[36,0,0,0] text="Gespeichertes Macro laden" textSizePx=45.0 textColor=#FF00668B maxLines=2147483647 bold=false
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,30,0]
+                  TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=60.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[72,30,72,36] clickable=false focusable=false margin=[0,0,0,0] text="Der Controller steuert jetzt nur die Aufnahme. Zurück und Home funktionieren weiterhin." textSizePx=42.0 textColor=#FF40484D maxLines=2147483647 bold=false
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="3 Schritte · 1,0 s" textSizePx=45.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+                TextView visibility=VISIBLE minHeight=0 padding=[0,12,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Antippen zum Ändern · halten zum Verschieben" textSizePx=39.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                HorizontalScrollView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+                  LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                    StepStrip visibility=VISIBLE minHeight=0 padding=[84,78,84,24] clickable=false focusable=false margin=[0,0,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Schritt 1: A, Tippen 80 ms"
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false margin=[0,0,0,0]
+                          MacroIconView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,30,0,0] clickable=false focusable=false margin=[0,0,0,0] text="80 ms" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[12,30,12,36] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Pause von 120 ms vor Schritt 2"
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="120 ms" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,9,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Schritt 2: B, X, Halten 400 ms"
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false margin=[0,0,0,0]
+                          MacroIconView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          MacroIconView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,12,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,30,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Halten 400 ms" textSizePx=36.0 textColor=#FF00668B maxLines=2147483647 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[12,30,12,36] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Pause von 300 ms vor Schritt 3"
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="300 ms" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                        ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,9,0,0]
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Schritt 3: Y, Tippen 60 ms"
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false margin=[0,0,0,0]
+                          MacroIconView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,30,0,0] clickable=false focusable=false margin=[0,0,0,0] text="60 ms" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true margin=[72,0,0,0] contentDescription="Tasten von Hand hinzufügen"
+                        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                          ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                        TextView visibility=VISIBLE minHeight=0 padding=[0,30,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hinzufügen" textSizePx=36.0 textColor=#FF40484D maxLines=2147483647 bold=false
+                ScrollIndicator visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,54,0,72]
+          FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+            LinearLayout visibility=VISIBLE minHeight=0 padding=[60,18,60,18] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Rückgängig"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Rückgängig" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Aufnehmen"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Aufnehmen" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Vorschau"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Vorschau" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+              View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              LinearLayout visibility=VISIBLE minHeight=0 padding=[18,12,18,12] clickable=true focusable=true margin=[0,0,0,0] contentDescription="Mehr"
+                FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                  ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+                TextView visibility=VISIBLE minHeight=0 padding=[0,24,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Mehr" textSizePx=39.0 textColor=#FF191C1E maxLines=2147483647 bold=false
+            TextView visibility=GONE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Hierher ziehen zum Löschen" textSizePx=48.0 textColor=#FFE53935 maxLines=2147483647 bold=false
+        LinearLayout visibility=GONE minHeight=0 padding=[60,18,24,18] clickable=false focusable=false margin=[0,0,0,306]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="" textSizePx=45.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false
+          TextView visibility=VISIBLE minHeight=0 padding=[48,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Rückgängig" textSizePx=45.0 textColor=#FFF0F0F3 maxLines=2147483647 bold=false

@@ -6,7 +6,7 @@ from dt import pad
 from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
-from .common import expect_closed
+from .common import expect_closed, helper_settled
 
 from .windows import GALLERY, LAUNCHERS, SETTINGS, _clean, _front, _press
 
@@ -17,6 +17,9 @@ GALLERY_PKG = "com.android.gallery3d"
 
 def _app_control(d, mode, screen="top", confirm=False):
     d.bind(KEY, "@app_control", app_mode=mode, app_screen=screen, app_confirm=confirm)
+    # A helper restarting after the previous area would swallow the combo; then Back alone sends the
+    # app away, which looks like a minimize and hides the lost press.
+    helper_settled(d)
 
 
 def _settings_on_top(d):

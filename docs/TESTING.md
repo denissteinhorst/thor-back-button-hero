@@ -30,10 +30,11 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 726 JVM tests pass |
+| `testDebugUnitTest` | All 868 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
+| `hostTests` | The device harness's 111 host tests pass (`tools/devicetest/host_tests.py`: synthetic state, no adb; fails on an empty discovery) |
 
 One command is the acceptance criterion for any change. It runs in three places, all
 identical:
@@ -53,9 +54,40 @@ them with `--no-verify`.
 > `OldTargetApi` while a machine with only `android-34` installed never saw it. CI was red
 > for roughly fifteen commits while the local gate stayed green. Check the actual CI run.
 
+## The contract check
+
+```sh
+tools/contract/check.sh            # after ./tools/verify.sh
+tools/contract/selftest.sh         # proves each check rejects a deliberate fault
+tools/contract/prod-diff.sh        # production inputs identical to the refactoring baseline
+```
+
+`check.sh` first lets Gradle bring the APKs and reports up to date (incrementally, so a clean tree costs
+seconds), then compares them with frozen fixtures in `tools/contract/baseline/`. Run on its own,
+`contract.py check` builds nothing and reports an output older than one of its inputs as BUILD
+REQUIRED (exit 2), never as a pass. Each check prints one PASS/FAIL line:
+
+| Check | Frozen contract |
+|---|---|
+| A0 | Release DEX unchanged; only while production code must not change (`--phase S`, the default) |
+| A1 | Release and debug manifests (components, permissions, flags, filters, versions) |
+| A2 | Release resource table |
+| A3 | Every non-DEX APK entry by CRC, including `libpadhelper.so`; AGP's Git revision entry is normalized |
+| A4 | Frozen component and root entry point classes (`classes.txt`), root ones with `public static main(String[])` |
+| A5 | Wire and storage identifiers in the DEX (`wire-strings.txt`); supporting evidence only |
+| A6 | Every golden snapshot, stored-data and root-command fixture by hash |
+| A7 | Every JVM test case still exists (or is mapped in `renames.txt`) and passed |
+| A8 | No coverage ratchet removed or lowered; every selector matches compiled classes |
+| A9 | Release runtime dependency graph |
+| A10 | `DEBUG_GESTURES` is off |
+| A11 | Lint result identities and the lint baseline file |
+
+Fixtures are refreshed only as a reviewed act (`contract.py snapshot`, see `baseline/ORIGIN`), never
+to turn a failing check green. These tools do not run in `./tools/verify.sh` or CI.
+
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 98 classes, 726 tests
+### Base — JVM tests (Robolectric + JUnit), 131 classes, 868 tests
 
 Everything the gate can verify without hardware.
 
@@ -63,6 +95,8 @@ Everything the gate can verify without hardware.
 |---|---|
 | Preferences: defaults, accessors | `PrefsDefaultsTest` |
 | Preferences: one-time migrations, factory shoulder defaults, update safety, reset | `PrefsMigrationTest` |
+| Stored action sentinels: frozen literal list, Prefs and backup round trip, unknown values | `ActionSentinelContractTest` |
+| Typed actions: the codec maps every stored string both ways, byte exact against the storage and backup fixtures | `ActionCodecTest` |
 | Backup file: round trip, robustness against invalid/unknown/hostile content, file name, version comparison, picker intents and the restore flow | `SettingsBackupTest`, `SettingsBackupUiTest` |
 | Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
@@ -72,19 +106,24 @@ Everything the gate can verify without hardware.
 | Settings actions: the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
 | Volume/brightness steps, hat-to-direction mapping | `LevelStepsTest` |
 | Back-press decisions, all branches | `BackGestureMachineTest` |
+| Service key path through the real `onKeyEvent`: shoulder combos per half, DOWN latch, held-press setting changes, exception of the controller-focused app, no unrequested focus/window change | `InputPipelineCharacterizationTest` |
+| Back + button, D-pad/stick and stick-click decisions in isolation | `ComboRouterTest`, `DirectionalRouterTest`, `StickClickRouterTest` |
 | Press-interval detection | `DoubleTapDetectorTest` |
 | Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
 | Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
 | Active App Control: target resolution, defaults, snapshots | `AppControlTest` |
-| Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest` |
-| Top Recents navigation and state parsing | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
+| Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `SwitcherCardListTest` |
+| Top Recents navigation, state parsing and the controller session (stale worker results by session and focus version, retirement) | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest`, `TopRecentsSessionTest` |
 | Task moves, frontend parking and bottom panels | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper lifecycle, navigation mode | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
 | Shell quoting and package validation | `ShellTest` |
 | Settings navigation and scoped change previews | `SettingsNavigationTest`, `SettingsChangesTest`, `SettingsChangeDialogTest` |
+| One binding card follows its binding: option rows come and go in place, Home layer cards act on their own binding | `BindingCardTest` |
+| Every binding field keeps its name through raw keys, snapshot, apply, backup and import in both layers | `BindingProjectionTest` |
 | Card touch arbitration | `CardTouchTest` |
 | Recent-app bookkeeping, thumbnail cache | `AccessibilityAppSourceTest` |
 | Release parsing, semver ordering, legacy tags, APK asset selection, failure classification | `UpdateCheckerParseTest` |
+| Update check in the settings: one automatic check at startup, each result's dialog, results after the activity ended (local fake, no network) | `UpdateFlowTest` |
 | In-app update: streaming, checksum, installer session against a local server, status receiver | `UpdateInstallerTest` |
 | UI-kit helpers | `SettingsUiKitTest` |
 | EN/DE string parity | `ResourceIntegrityTest` |
@@ -101,7 +140,7 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **89** goldens cover navigation across all pages across locale/theme/window sizes,
+The **110** goldens cover navigation across all pages across locale/theme/window sizes, the accessibility overlays, the bottom Recents overlay, the macro editor/library and the gyro setup,
 button states, change previews and accessibility. The main groups are:
 
 | Golden | Scope |
@@ -121,6 +160,33 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
   UPDATE_GOLDENS=1 ./gradlew :app:testDebugUnitTest --rerun-tasks
 git diff app/src/test/resources/golden/   # must contain only the intended change
 ```
+
+### Stored-data protection — frozen preference and backup fixtures
+
+`StoredDataContractTest` dumps the raw preference map (key, type, value, sorted) and compares
+it with files in `app/src/test/resources/storage/`. It covers a fresh install, synthesized
+older stores going through every migration, a fully populated configuration, every page and
+whole-app preset/unbind/defaults plan, the first dual-mode seeding, and the backup bytes at a
+fixed time. It also checks that one accepted plan is one write that listeners see complete, that
+a stale preview writes nothing, and that device calibration never enters a backup or a reset.
+
+The older stores are synthesized from the migration code, not exported from real installs.
+The fixtures were recorded once on the refactoring baseline. Contract A6 freezes them by hash.
+Like goldens, never re-record one to make a test pass: `UPDATE_STORAGE_FIXTURES=1` is only for
+an explicitly approved stored-data change.
+
+### Root-command protection — frozen privileged commands
+
+`PrivilegedCommandContractTest` installs `support/FakePService`, an in-process stand-in for AYN's
+`PServerBinder`, and records every root command exactly. For a generated `sh <script>` it records the
+script's content too. Cache paths, script numbers and the APK path are replaced by named symbols. The
+expected commands in `app/src/test/resources/commands/` were recorded on the refactoring baseline and
+are frozen by contract A6. `UPDATE_COMMAND_FIXTURES=1` is only for an explicitly approved command change.
+
+`PServiceFailureContractTest` uses the same binder seam for the failure side: a refused or thrown
+transaction is `null`, an empty reply is `""`, a miss is retried only after 10 s and a success stays
+cached, and a swipe-away without the daemon, or after a failed root removal, ends in
+`killBackgroundProcesses`.
 
 ### Tip — instrumented tests
 
@@ -180,7 +246,7 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-A further 69 classes (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+Further classes (92 ratchets in total) (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` and the action handlers `SystemActions`, `AppControlActions`, `LastAppAction`, `MacroPlayback`, `GyroActions` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
@@ -195,19 +261,37 @@ Coverage requires `enableUnitTestCoverage = true` in the debug build type and
 `isIncludeNoLocationClasses = true` for the Robolectric-loaded classes — without the
 latter the report silently shows 0 % for everything while the build stays green.
 
+## Choosing checks for a change
+
+Each oracle family catches a different kind of change; pick by what the change can affect.
+
+| Family | Catches | Run |
+|---|---|---|
+| Static contracts | Renamed entry points, stored keys, wire strings, dependencies, fixture hashes | `tools/contract/check.sh`, always |
+| JVM tests and ratchets | Decisions, text, coverage drops | the gate, always |
+| Stored data and commands | Preference, backup, root-command, helper-protocol and audio-mix changes | the gate (frozen fixtures) |
+| View-tree goldens | Any settings or overlay layout, text or style change | the gate |
+| Device behavior | What a game or the system actually receives | `run.py --changed` for touched device paths |
+| Visual frames | Rendering differences the tree cannot see | `visual.py capture` + `compare` for touched UI |
+| Gesture traces | Changed timing decisions in behavior-neutral work | trace comparison, `DEBUG_GESTURES` builds |
+| Resources and lifecycle | Threads, descriptors, memory, leaks across disable/enable | `resources.py`, for lifecycle or threading changes |
+
+Docs-only or test-only changes need only the gate. Anything under the "barely protected" paths
+below needs the matching device check, scaled by the tiers further down.
+
 ## What is deliberately not automated
 
 Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **36 %** (132/363 lines) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **24 %** (413/1717) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` tests cover the decisions; the side effects are manual |
+| `SwitcherOverlay` — **85 %** (309/363 lines, mostly snapshot-driven construction) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **70 %** (791/1124) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
 | `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
-| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (9/93) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
+| `ControllerFocus` root sequence, `FocusIndicatorOverlay` (71/83, construction only) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
 
 Do **not** restructure production code to close these gaps. The freeze outranks coverage.
@@ -240,6 +324,8 @@ Robolectric activity test genuinely contacts `api.github.com` and may wait out a
 timeout. Failures are swallowed and the tests stay green — leave it alone. Only report it
 if an activity test becomes *flaky* with `UpdateChecker`, `HttpURLConnection` or `Thread`
 in the trace.
+A test that needs control over the check subclasses the activity and overrides
+`updateCheck()` with a local fake, as `UpdateFlowTest` does; nothing then leaves the process.
 
 ## Reference: other environment traps
 

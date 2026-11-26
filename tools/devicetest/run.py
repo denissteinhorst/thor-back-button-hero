@@ -28,8 +28,12 @@ from dt.device import Device  # noqa: E402
 import suites  # noqa: E402,F401 - registers the tests in order
 
 
-def changed_files():
-    base = subprocess.run(["git", "-C", REPO, "merge-base", "HEAD", "main"], capture_output=True, text=True).stdout.strip()
+def changed_files(base_ref="main"):
+    """Production files changed since the merge base with [base_ref], plus unstaged and untracked ones."""
+    result = subprocess.run(["git", "-C", REPO, "merge-base", "HEAD", base_ref], capture_output=True, text=True)
+    base = result.stdout.strip()
+    if result.returncode or not base:
+        raise SystemExit(f"--changed: no merge base with {base_ref!r}")
     names = set()
     for args in (["diff", "--name-only", base], ["diff", "--name-only"], ["ls-files", "--others", "--exclude-standard"]):
         out = subprocess.run(["git", "-C", REPO, *args], capture_output=True, text=True).stdout
@@ -46,6 +50,8 @@ def main():
     mode.add_argument("--list", action="store_true")
     mode.add_argument("--restore", action="store_true")
     parser.add_argument("--serial")
+    parser.add_argument("--base", default="main", help="with --changed: compare against the merge base with this ref "
+                        "(default main)")
     parser.add_argument("--layers", help="back, home or back,home: which layers layered tests run in "
                         "(default: both with --full or when --changed touches dual mode, otherwise back)")
     args = parser.parse_args()
@@ -64,11 +70,17 @@ def main():
 
     selected = None
     if args.only:
-        selected = set(args.only.split(","))
+        try:
+            selected = runner.parse_only(args.only)
+        except ValueError as e:
+            parser.error(str(e))
     elif args.changed:
-        files = changed_files()
+        files = changed_files(args.base)
         selected = runner.areas_for(files)
         print("Changed: " + (", ".join(files) or "nothing"))
+        for path in runner.unmapped(files):
+            print(f"Unmapped, so every area runs: {path}")
+        print("Only app/src/main/ is mapped; debug, test, harness and build changes need --only or --full.")
         if selected is not None and not selected:
             print("No on-device area is affected.")
             return 0
@@ -84,15 +96,17 @@ def main():
         print("Restored." if device.end() else "Nothing to restore.")
         return 0
 
+    expected_ids = runner.expected(selected, layers)
     device.begin()
     try:
-        results, path = runner.run(device, selected, f"report-{time.strftime('%Y%m%d-%H%M%S')}.json", layers)
+        results, path = runner.run(device, selected, f"report-{time.strftime('%Y%m%d-%H%M%S')}.json", layers,
+                                   expected_ids)
     finally:
         device.log("Restoring the owner's settings …")
         device.end()
-    counts = {s: sum(r["status"] == s for r in results) for s in ("PASS", "FAIL", "ERROR", "SKIP")}
-    print(f"\n{counts['PASS']} passed, {counts['FAIL']} failed, {counts['ERROR']} errors, {counts['SKIP']} skipped — {path}")
-    return 0 if counts["FAIL"] == counts["ERROR"] == 0 else 1
+    code, lines = runner.verdict(results, expected_ids)
+    print("\n" + "\n".join(lines) + f"\n{path}")
+    return code
 
 
 if __name__ == "__main__":

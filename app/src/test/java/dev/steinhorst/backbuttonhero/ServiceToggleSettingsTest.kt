@@ -1,7 +1,13 @@
 package dev.steinhorst.backbuttonhero
 
-import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import android.os.Looper
+import dev.steinhorst.backbuttonhero.pad.DpadOverlay
+import dev.steinhorst.backbuttonhero.pad.PadHelper
+import dev.steinhorst.backbuttonhero.prefs.Prefs
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangeAction
+import dev.steinhorst.backbuttonhero.prefs.SettingsChangePlan
+import dev.steinhorst.backbuttonhero.settings.SettingsSection
+import dev.steinhorst.backbuttonhero.support.useEarlierDefaults
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
