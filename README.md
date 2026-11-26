@@ -37,11 +37,11 @@
 
 <div align="center">
 
-[▶ Watch the video (about 45 seconds)][video-url]
+[▶ Watch the 2.0 film (30 seconds)][video-url]
 
 </div>
 
-**Every Back gesture is freely assignable** (single tap, double tap, tap then hold and hold), with the same action list as the shoulder buttons, including *Regular Back press*, *App switcher (bottom screen)* and *Switch both apps*. A gesture's timing is only shown once it has an action. An unassigned gesture does nothing, and Back + button hotkeys keep working. The defaults below are what each gesture does out of the box.
+**Every Back gesture is freely assignable** (single tap, double tap, tap then hold and hold), with the same action list as the shoulder buttons, including *Regular Back press*, *App switcher (bottom screen)* and *Switch both apps*. A gesture's timing is only shown once it has an action. An unassigned gesture does nothing, and Back + button hotkeys keep working. Below is what each gesture does once you assign it.
 
 **Single tap:** Opens the launcher on the bottom screen (or any action you choose).
 
@@ -116,8 +116,8 @@ Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
 
 ## Screenshots of the app's settings
 
-The six most important views of the settings. Everything shown can be changed, and the
-defaults work out of the box. [The website][pages-url] walks through every page, with a video.
+The six most important views of the settings. Everything shown can be changed; a fresh
+install assigns nothing until you choose. [The website][pages-url] walks through every page, with a video.
 
 <table>
 <tr><td width="50%" align="center"><img src="site/assets/screenshots/03-overview.webp" alt="Overview: every binding at a glance on a drawing of the Thor"><br><sub><b>Overview</b> — every binding at a glance on a drawing of the Thor</sub></td><td width="50%" align="center"><img src="site/assets/screenshots/15-dual-dpad.webp" alt="Dual mode: Home + button and Back + button side by side"><br><sub><b>Dual mode</b> — Home + button and Back + button side by side</sub></td></tr>
@@ -456,7 +456,7 @@ unmodified with its notice in `site/model-editor/vendor/`; it is not part of the
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
 [explainer-url]: https://denissteinhorst.github.io/thor-back-button-hero/app-simulation.html
 [pages-url]: https://denissteinhorst.github.io/thor-back-button-hero/
-[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.5.0.mp4
+[video-url]: https://denissteinhorst.github.io/thor-back-button-hero/thor-ad-v2/?autoplay
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [license-url]: https://github.com/denissteinhorst/thor-back-button-hero/blob/main/LICENSE
 [platform-shield]: https://img.shields.io/badge/platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white
