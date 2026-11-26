@@ -87,9 +87,11 @@ already carried the old value.
 
 When a default changes for a setting that existing users may never have touched (so no value is
 stored), pin the old effective value for installs that already ran, and apply the new default only
-to fresh installs. `shoulder_defaults_v3` in `Prefs` does this for L2 and R2: an update keeps them
-unassigned, a fresh install gets the screenshot and controller-focus shortcuts. Test all three
-cases: fresh, update with the old value, update with a custom value.
+to fresh installs. `unassigned_defaults_v1` in `Migrations.kt` is the model: when the defaults
+became "nothing assigned", it pinned the earlier D-pad and on/off-shortcut defaults for every
+install that already existed. A fresh install is marked as migrated by `markFreshInstall`, so add
+the new flag there too. Test all three cases: fresh, update with the old value, update with a
+custom value.
 
 ### Adding or changing a string
 
@@ -100,18 +102,27 @@ only legitimate gap is `app_name`, which is `translatable="false"`.
 Any visible text change will turn settings goldens red. That is the suite working
 correctly; re-record only if the change is intended (see [`TESTING.md`](TESTING.md)).
 
-### Adding a shoulder-button action
+### Adding a button action
 
-Shoulder actions are stored either as a bare package name (launch that app) or as an
-`@`-prefixed sentinel. Add the new sentinel, handle it in `SwitcherService`, add its
-label to both string files, and extend the shoulder-row goldens if the row's appearance
-changes (for example whether the screen toggle shows).
+Actions are stored as raw strings: either a bare package name (launch that app) or an `@`-prefixed
+sentinel. The stored strings are a frozen contract ([ADR 0001](decisions/0001-frozen-external-contracts.md)),
+so a new action adds a sentinel and never renames one. Touch every consumer:
+
+1. `prefs/Action.kt`: the sentinel and its `ActionCodec` mapping (raw string to typed `Action`).
+2. `actions/ActionGroups.kt`: the chooser group it appears in.
+3. `settings/BindingDescriber.kt`: its label, description and option visibility; label strings in
+   both `values/strings.xml` and `values-de/strings.xml`.
+4. `SwitcherService.runComboAction`: the dispatch, or a handler in `actions/` when the action has
+   its own logic or state.
+5. Tests: `BindingTextTableTest` (its frozen text tables grow by the new rows) and the dispatch
+   test of the handler; the settings goldens change only if a row's look changes.
 
 ### Touching gesture or overlay code
 
 `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, `CardTouch` and
-`BackGestureMachine` are where a green gate proves the least — `SwitcherOverlay` is only
-about a third covered. These changes are tier S2 or S3 — always follow up with the
+`BackGestureMachine` are where a green gate proves the least: the overlay's and the service's
+live behavior (a real overlay window, a live accessibility connection, physical keys) is not
+covered at all, only their construction and extracted decisions. These changes are tier S2 or S3 — always follow up with the
 corresponding device procedure in [`MANUAL-TESTING.md`](MANUAL-TESTING.md), and use the
 gesture-trace comparison there if the change is meant to be behavior-neutral.
 
@@ -144,7 +155,7 @@ implication. Judge them on risk:
 **Robolectric stays on 4.17 for now.** 4.18 fails 89 tests on SDK 34 with
 `NoClassDefFoundError: android/companion/virtual/VirtualDeviceManager$VirtualDeviceListener`,
 and running the suite on SDK 35 changes the framework output the goldens freeze. Lint's
-`NewerVersionAvailable` hint for it is therefore listed in `app/lint-baseline.xml` (19 entries
+`NewerVersionAvailable` hint for it is therefore listed in `app/lint-baseline.xml` (20 entries
 now). When a newer Robolectric appears, try it with `sdk=34` and drop that baseline entry along
 with the version bump; never answer it by re-recording goldens.
 
@@ -156,6 +167,9 @@ nothing but the Kotlin stdlib. Verify any time:
 ./gradlew :app:dependencies --configuration releaseRuntimeClasspath | \
   grep -iE "junit|robolectric|espresso|uiautomator|leakcanary|jacoco"   # must print nothing
 ```
+
+Dependabot compares against the default branch, so after a local bump it can propose a version
+already in use; check the build files before merging.
 
 Note that GitHub Actions are restricted to GitHub-owned, verified publishers, plus
 `softprops/action-gh-release`. A new third-party action has to be allowed explicitly.
@@ -203,18 +217,75 @@ If something is wrong and nobody has downloaded the APK yet, delete the release 
 tag, fix, and re-tag — `gh release delete v1.2.0` and
 `git push origin :refs/tags/v1.2.0`.
 
+### Release workflow details
+
+`.github/workflows/release.yml` fires on `v*` tags. It fails fast unless the tag is exactly
+`v<versionName>`, because a mismatch would make every installed app miss the release for good. It
+decodes `RELEASE_KEYSTORE_BASE64`, builds the signed APK from the `RELEASE_KEYSTORE_PATH`,
+`RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` and `RELEASE_KEY_PASSWORD` environment variables,
+publishes `thor-back-button-hero-v<versionName>.apk` and `app-simulation.html` with the text of
+`docs/release-notes/v<versionName>.md`, then deletes the keystore. Signing is environment-only by
+design; no keystore is ever committed (`*.keystore` and `*.jks` are gitignored).
+
+The first two releases were tagged `v1` (1.0.0) and `v2` (1.0.1) under an older
+`v<versionCode>` scheme. `parseVersion` still reads short forms (`v1` is `1.0.0`), but a build
+installed before the switch carries the old integer-only parser and needs one manual update.
+
 ### The signing key
 
-The keystore and its password are the only irreplaceable artifacts in the project. Lose
-them and no future version can ever replace an installed copy — users would have to
-uninstall first and lose their settings. GitHub secrets are write-only and cannot be read
-back.
+Android refuses to update an installed app unless the new APK carries the **same** signature. The
+keystore and its password are therefore the only irreplaceable artifacts in the project: lose them
+and no future version can replace an installed copy; every user would have to uninstall and lose
+their settings. GitHub secrets are write-only and cannot be read back.
 
-Releasing does **not** need the keystore on disk: CI signs from
-`RELEASE_KEYSTORE_BASE64`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` and
-`RELEASE_KEY_PASSWORD`. The backup matters only if those secrets are ever lost. Full
-recovery procedure, including restoring the secrets and verifying a restored key by
-fingerprint, is in `CLAUDE.md` under "The signing key — backup and disaster recovery".
+What must exist in a backup (password manager or encrypted backup, never in the repository or in
+plaintext cloud storage):
+
+| Artifact | Detail |
+|---|---|
+| `release.keystore` | created 2026-10-24, 4374 bytes, format PKCS12 |
+| its password | one password for both store and key (PKCS12) |
+| alias | `thor-back-button-hero` |
+
+A working copy may sit at the repository root (gitignored), but nothing reads it from a fixed path:
+CI takes the key from `RELEASE_KEYSTORE_BASE64`, a local signed build from the environment.
+
+**Releasing does not need the keystore on disk.** As long as the four secrets exist, tagging keeps
+producing signed releases, also on a freshly set-up machine.
+
+**If the secrets are gone** (repository recreated, secrets deleted), restore them from the backup:
+
+```sh
+base64 -i /path/to/backup/release.keystore | gh secret set RELEASE_KEYSTORE_BASE64
+gh secret set RELEASE_KEY_ALIAS -b "thor-back-button-hero"
+gh secret set RELEASE_KEYSTORE_PASSWORD   # prompts; same password for both
+gh secret set RELEASE_KEY_PASSWORD
+gh secret list                            # expect all four
+```
+
+**To build a signed APK locally** (rarely needed):
+
+```sh
+RELEASE_KEYSTORE_PATH=/absolute/path/to/release.keystore \
+RELEASE_KEYSTORE_PASSWORD='…' \
+RELEASE_KEY_ALIAS=thor-back-button-hero \
+RELEASE_KEY_PASSWORD='…' \
+./gradlew assembleRelease --console=plain
+```
+
+Without `RELEASE_KEYSTORE_PATH` the signing config is skipped and the build produces
+`app-release-unsigned.apk`; that is expected.
+
+**To confirm a restored key**, compare certificate fingerprints (`ANDROID_HOME` is not set on the
+owner's machine; the SDK path comes from `local.properties`):
+
+```sh
+/opt/homebrew/share/android-commandlinetools/build-tools/34.0.0/apksigner \
+  verify --print-certs some-release.apk
+```
+
+The SHA-256 digest must equal that of earlier releases. A different digest means the wrong key;
+publishing with it would break updates for everyone.
 
 ### The repo must stay public
 

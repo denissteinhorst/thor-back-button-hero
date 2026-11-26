@@ -18,6 +18,37 @@ visual.
 - JDK 17 at the path `tools/verify.sh` uses, plus the Android SDK build tools. The suite compiles its
   small helpers (`tools/devicetest/java`) into a dex on first use.
 
+### After every install: restore the prerequisites
+
+An install (and especially the uninstall an instrumentation run performs) can drop the
+notification permission and the accessibility service. Restore both before exercising anything,
+always with the fully qualified component (the short form is not accepted reliably on the Thor):
+
+```sh
+adb shell pm grant dev.steinhorst.backbuttonhero android.permission.POST_NOTIFICATIONS
+adb shell settings put secure enabled_accessibility_services \
+  dev.steinhorst.backbuttonhero/dev.steinhorst.backbuttonhero.SwitcherService
+adb shell settings put secure accessibility_enabled 1
+adb shell dumpsys accessibility | grep -i "back button hero"   # must appear under the bound services
+```
+
+`enabled_accessibility_services` replaces the whole list; append to the current value when other
+services (AYN's assistant, a frontend) should stay enabled. An installed APK alone is no evidence that
+the service is bound.
+
+Device facts worth knowing before a run:
+
+- Every install restarts the service and with it the pad helper, so the pad clone reappears under a
+  new device id. A running RetroArch ignores it until its activity is paused and resumed (open the
+  settings over it and return).
+- AYN's assistant permanently covers the bottom screen. Anything that must be seen goes on the top
+  display (logical id 0). Physical ids for `screencap -d`: top `4630946441858561667`, bottom
+  `4630946482288158084`.
+- `am force-stop` cannot kill the app while its service is enabled, so `am start -W` never reports a
+  cold start.
+- Memory and frame measurements only mean something with two or three real apps open, so the switcher
+  holds actual cards and thumbnails.
+
 ## Running
 
 ```sh
@@ -29,8 +60,9 @@ python3 tools/devicetest/run.py --list             # areas and their tests
 python3 tools/devicetest/run.py --restore          # put back what an interrupted run left behind
 ```
 
-The close-action observers and the area selection also have host-only regression checks (not part of
-`./tools/verify.sh`):
+The close-action observers, the recovery logic and the area selection also have host-only regression
+checks. They need no device and run inside `./tools/verify.sh` as the `hostTests` step
+(`tools/devicetest/host_tests.py`, which fails on an empty discovery); to run them alone:
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tools/devicetest python3 -m unittest discover -s tools/devicetest/tests

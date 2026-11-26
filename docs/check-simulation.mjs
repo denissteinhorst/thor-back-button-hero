@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-const html = readFileSync(new URL('./gesture-explainer.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('./app-simulation.html', import.meta.url), 'utf8');
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 scripts.forEach(script => new vm.Script(script));
 const context = vm.createContext({

@@ -3,8 +3,8 @@ name: Pages
 on:
   push:
     branches: [main]
-    # site/gesture-explainer.html is a symlink to the docs copy that releases also ship.
-    paths: [site/**, docs/gesture-explainer.html, .github/workflows/pages.yml]
+    # site/app-simulation.html is a symlink to the docs copy that releases also ship.
+    paths: [site/**, docs/app-simulation.html, .github/workflows/pages.yml]
   workflow_dispatch:
 
 permissions:

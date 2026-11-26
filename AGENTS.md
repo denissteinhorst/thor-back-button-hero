@@ -40,25 +40,10 @@ Ask questions directly in chat with numbered answer choices (1–n), and wait fo
 project owner's reply before continuing work. Do not use follow-up input menus or
 asynchronous question tools; the owner easily overlooks them.
 
-The ongoing work is to implement features and fixes without lowering quality. Consider
-`FEEDBACK.md` relevant context, but do not treat it as a strict queue. When work touches
-a feedback topic, remind the project owner about related open points and identify useful
-same-area synergies. Do not silently expand scope: propose the synergy and let the
-project owner decide whether it belongs in the current change.
-
-### Community feedback sources
-
-The official Reddit release posts are the primary community-feedback sources:
-
-- [v1.4.0](https://www.reddit.com/r/AynThor/comments/1xjw6mi/thor_back_button_hero_v140_out_now/)
-- [v1.3.0](https://www.reddit.com/r/AynThor/comments/1xfj5ew/back_button_hero_130_one_button_many_possibilities/)
-- [Initial release](https://www.reddit.com/r/AynThor/comments/1xf70dc/thor_back_button_hero/)
-
-Keep `FEEDBACK.md` concise: one bug/request per bullet, with the reporter and source.
-Keep open items above a separate implemented/resolved list. Check the current code
-and later reports before marking something resolved; a release announcement alone
-does not establish that a reported setup works. Label questions and unverified reports
-accordingly, and state any limitations of the retrieved Reddit comments.
+The ongoing work is to implement features and fixes without lowering quality. When work
+touches an area with known open points or community reports, remind the project owner of them
+and identify useful same-area synergies. Do not silently expand scope: propose the synergy and
+let the project owner decide whether it belongs in the current change.
 
 ## Development workflow with the project owner
 
@@ -93,23 +78,23 @@ when release preparation starts; do not infer, tag, publish, or push a release e
 
 ## Start here
 
-Before editing, inspect the relevant implementation and its tests. Then use these docs
-as needed:
+Before editing, inspect the relevant implementation and its tests. All technical documentation
+lives in `docs/`; [`docs/README.md`](docs/README.md) is the index and the reading path. The most
+used entries:
 
-- `docs/README.md`: index of every document, architecture decisions (`docs/decisions/`)
-  and the KDoc conventions
-- `CLAUDE.md`: detailed operational knowledge, toolchain traps, coverage baselines,
-  release signing/recovery, and component notes
-- `docs/ARCHITECTURE.md`: runtime flows and component collaboration
+- `docs/ARCHITECTURE.md`: components, runtime flows, external contracts
 - `docs/PROJECT-STRUCTURE.md`: file-by-file map
-- `docs/TESTING.md`: automated test strategy and exact commands
+- `docs/TESTING.md`: gates, expected numbers, ratchets and environment traps
 - `docs/MANUAL-TESTING.md`: risk tiers and device procedures
+- `docs/DEVICE-TEST-SUITE.md`: the on-device suite and post-install prerequisites
 - `docs/HELPER.md`: mandatory reading before changing the D-pad/root-helper path
-- `docs/MAINTENANCE.md`: dependencies, releases, and repository maintenance
+- `docs/BUILD-AND-RELEASE.md`: setup, change recipes, dependencies, releases, signing key
 - `README.md`: user-visible product contract
+- `CLAUDE.md`: Claude-specific operational notes
 
-Prefer executable configuration and current source over prose when they disagree. Do
-not casually rewrite unrelated documentation while implementing a focused change.
+Prefer executable configuration and current source over prose when they disagree. Keep the
+documentation current: a change that alters what a document states updates that document in the
+same commit. New documentation goes into `docs/` only.
 
 ## Repository map
 
@@ -228,8 +213,9 @@ Use the wrapper, never a system Gradle. The canonical post-change gate is:
 ```
 
 It resolves the local JDK 17 installation and runs lint, JVM tests, JaCoCo verification,
-debug/release builds, and androidTest compilation. It does not run device tests. Do not
-substitute a bare Gradle task for this final gate, and do not bypass git hooks.
+debug/release builds, androidTest compilation and the device harness's host tests. It does
+not run device tests. Do not substitute a bare Gradle task for this final gate, and do not
+bypass git hooks.
 
 For targeted investigation before the final gate, set JDK 17 explicitly on this machine:
 
@@ -238,13 +224,8 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
   ./gradlew <task> --console=plain
 ```
 
-Current expected baseline:
-
-- 880 JVM tests in 137 test classes; 0 failed, 0 skipped
-- lint: 0 new findings; the checked-in baseline contains 20 intentional warnings
-- all per-class JaCoCo ratchets in `app/build.gradle.kts` pass
-- debug and unsigned local release APKs build
-- debug androidTest APK compiles
+The expected results (test counts, lint baseline, coverage, APK size, release classpath) are
+listed in `docs/TESTING.md` under "Expected results".
 
 Treat a baseline deviation as something to investigate, not something to normalize.
 Never lower a coverage ratchet, weaken lint, or expand the lint baseline merely to make

@@ -34,7 +34,7 @@ data class SettingsState(
     val homeAsBack: Boolean = Prefs.DEFAULT_HOME_AS_BACK,
     /** The macro library; resets and unbinding leave it alone, only hotkeys lose their macro. */
     val macros: List<SavedMacro> = emptyList(),
-    /** Dual mode (docs/DUAL-MODE.md): the Home layer's bindings live in [bindings] under [HomeLayerButton.PREFIX]. */
+    /** Dual mode (docs/HOME-DUAL-MODE.md): the Home layer's bindings live in [bindings] under [HomeLayerButton.PREFIX]. */
     val dualMode: Boolean = Prefs.DEFAULT_DUAL_MODE,
     /** Whether the Home layer already got its one-time copy of the Back layer. */
     val dualSeeded: Boolean = false,

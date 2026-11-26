@@ -79,7 +79,7 @@ def snapshot_count(reply):
     m = re.fullmatch(r"OK (\d+)", reply)
     if not m:
         raise RecoveryError(f"the app did not take a fresh copy of the settings: {reply!r}"
-                            + (" (an earlier copy exists; run with --restore or see docs/DEVICE-TEST.md)"
+                            + (" (an earlier copy exists; run with --restore or see docs/DEVICE-TEST-SUITE.md)"
                                if reply.startswith("KEPT") else ""))
     return int(m.group(1))
 
@@ -95,7 +95,7 @@ def restore_count(reply):
     return int(m.group(1))
 
 
-# Keys the Home layer of dual mode stores under its own "dual_" prefix (docs/DUAL-MODE.md). Back + Home
+# Keys the Home layer of dual mode stores under its own "dual_" prefix (docs/HOME-DUAL-MODE.md). Back + Home
 # ("home") has no Home layer counterpart.
 LAYERED_TIMINGS = {"double_ms", "tap_hold_ms", "hold_ms", "lstick_double_ms", "lstick_tap_hold_ms",
                    "rstick_double_ms", "rstick_tap_hold_ms"}

@@ -9,7 +9,7 @@ from .adb import WORK
 from .device import Fail
 
 TESTS = []
-# Dual mode's two binding layers; a layered test runs once per selected layer (docs/DUAL-MODE.md).
+# Dual mode's two binding layers; a layered test runs once per selected layer (docs/HOME-DUAL-MODE.md).
 LAYERS = ("back", "home")
 
 

@@ -113,7 +113,7 @@ The pad helper ends with the disabled service and exactly one comes back; no thr
 kind is left over or grows. LeakCanary watched all five destroyed services and completed its heap
 analysis every time with one application leak of a single signature (`bd017897…`):
 `AccessibilityService$IAccessibilityServiceClientWrapper.mContext` holding the destroyed
-`SwitcherService`, the binder-stub effect described in `MAINTENANCE.md`. It is recorded as the
+`SwitcherService`, the binder-stub effect described in `BUILD-AND-RELEASE.md`. It is recorded as the
 accepted baseline path; a candidate may add no other path.
 
 **Limitations:** debug build only (release differs by LeakCanary); one device, room temperature, on
@@ -125,7 +125,7 @@ may be the focus pictogram rather than the switcher when both draw.
 - **Do not use `uiautomator dump`** or any other `UiAutomation` client. Android 13 then
   unbinds and rebinds the accessibility service, which restarts `SwitcherService` and the
   pad helper and distorts every number. See the LeakCanary note in
-  [`MAINTENANCE.md`](MAINTENANCE.md).
+  [`BUILD-AND-RELEASE.md`](BUILD-AND-RELEASE.md).
 - `adb shell input keyevent 4` does not trigger the Back gestures. To inject a physical
   Back press, write to the pad clone's evdev node, which is world-writable. Look up its
   node with `adb shell getevent -pl`; it was `/dev/input/event11` here, but the number

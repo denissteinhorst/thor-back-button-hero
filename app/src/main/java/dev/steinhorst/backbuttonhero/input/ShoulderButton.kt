@@ -15,7 +15,7 @@ interface ComboButton {
 }
 
 /**
- * The Home layer's copy of [base] in dual mode (see docs/DUAL-MODE.md): the same control with its own
+ * The Home layer's copy of [base] in dual mode (see docs/HOME-DUAL-MODE.md): the same control with its own
  * binding stored under [PREFIX], so everything keyed by [prefKey] works on it unchanged.
  */
 class HomeLayerButton private constructor(val base: ComboButton) : ComboButton {

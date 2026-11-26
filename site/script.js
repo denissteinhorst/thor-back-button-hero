@@ -191,7 +191,7 @@ async function renderRoute(route){
   title.focus();
   if(route==='film'||route==='simulation'){
     const frame=element('iframe','media-frame');frame.title=route==='film'?'Back Button Hero 2.0 — film':'Interactive app simulation';
-    frame.src=route==='film'?'thor-ad-v2/embed.html':'gesture-explainer.html?theme=light&v=direct-1';frame.allow='fullscreen';frame.allowFullscreen=true;
+    frame.src=route==='film'?'thor-ad-v2/embed.html':'app-simulation.html?theme=light&v=direct-1';frame.allow='fullscreen';frame.allowFullscreen=true;
     body.replaceChildren(frame);return;
   }
   try{

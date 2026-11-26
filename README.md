@@ -243,7 +243,9 @@ This isn't on the Play Store. Grab the latest APK from
 4. On Android 13 and later, allow notifications if you want update alerts.
 
 The app checks GitHub Releases for updates and notifies you when a newer one
-is available — no auto-install, it just links to the release page.
+is available. Nothing installs on its own: **Check for new version** downloads the
+release inside the app, and Android asks you to confirm every installation. On the
+first in-app update, Android asks you once to allow installs from Back Button Hero.
 
 ### Verify your download
 
@@ -318,8 +320,10 @@ running. The app does not send this information to its developer.
 <summary>What network connections does the app make?</summary>
 
 The app makes an HTTPS request to the GitHub Releases API to check for the
-latest version. It retrieves the release version and link, then opens the
-release page if you choose to update. The request does not include your app
+latest version. It retrieves the release version, link and APK checksum. If you
+choose to update, the APK is downloaded from that GitHub release, checked against
+the published checksum and handed to Android's installer, which accepts only an
+APK signed with the same key as the installed app. The request does not include your app
 settings, app list, or screenshots. GitHub receives the usual connection
 metadata for an HTTPS request, such as your IP address. Back Button Hero has
 no analytics or telemetry.
@@ -334,7 +338,10 @@ no analytics or telemetry.
 - **Background process management:** lets the switcher's close actions ask
   Android to stop an app's background process. Android controls what can
   actually be stopped.
-- **Internet:** used for the GitHub update check described above.
+- **Internet:** used for the GitHub update check and download described above.
+- **Install apps:** lets the in-app update hand the downloaded APK to Android's
+  installer. Android asks you to grant it once, and asks for confirmation on
+  every update.
 - **Notifications:** used to alert you when an update is available. On Android
   13 and later, notification permission can be declined; update checks remain
   available from the settings screen.
@@ -367,10 +374,13 @@ request.
 ## Building from source
 
 ```sh
-./gradlew assembleDebug
+./gradlew assembleDebug   # debug APK
+./tools/verify.sh         # the full quality gate
 ```
 
-Requires JDK 17. `minSdk` is 30 (Android 11).
+Requires JDK 17, the Android SDK (platform 34) and NDK `29.0.14206865` for the
+small native input helper. `minSdk` is 30 (Android 11). Machine setup, the gate
+and release steps are in the [build and release guide](docs/BUILD-AND-RELEASE.md).
 
 ## Project documentation
 
@@ -384,11 +394,11 @@ detail for people who want to understand or work on it. The
   the D-pad shortcuts need it.
 - [Performance](docs/PERFORMANCE.md) — measured runtime cost of the hot paths, and
   the optimizations that were tried and not kept.
-- [Thor system Recents reference](docs/THOR-RECENTS.md) — what the AYN launcher's
+- [Thor system Recents reference](docs/THOR-SYSTEM-RECENTS.md) — what the AYN launcher's
   Recents does, and how the bottom Recents copies it.
 - [App-Simulation][explainer-url] — a clickable device diagram
-  showing what each Back-button gesture does. Self-contained; open the
-  downloaded file in any browser.
+  showing what each function does. Self-contained; every release also ships it
+  as a single file that works offline.
 - [Architecture](docs/ARCHITECTURE.md) — the main components, how a gesture
   flows through the app, and how it targets the two displays.
 - [Testing and quality gates](docs/TESTING.md) — the automated verification
@@ -399,9 +409,11 @@ detail for people who want to understand or work on it. The
   switcher, shoulder buttons, D-pad shortcuts, and releases.
 - [Project structure](docs/PROJECT-STRUCTURE.md) — a file-by-file guide to
   the source tree, resources, tests, and automation.
-- [Build and maintenance guide](docs/MAINTENANCE.md) — developer setup,
+- [Build and release guide](docs/BUILD-AND-RELEASE.md) — developer setup,
   everyday commands, safe change recipes, dependency updates, and release
   procedures.
+- [Website](docs/WEBSITE.md) — the GitHub Pages site, the App-Simulation, the
+  2.0 film and the 3D model it is built on.
 
 ## About this project
 
@@ -422,14 +434,16 @@ The app itself ships with zero runtime dependencies beyond the Kotlin standard l
 `app/src/test` and `app/src/androidTest` depends on JUnit (EPL-1.0), Robolectric (MIT),
 AndroidX Test / Espresso / UiAutomator (Apache-2.0), and JaCoCo (EPL-2.0) — none of these
 are included in the release APK. You can verify that mechanically — the release runtime
-classpath resolves to nothing but the Kotlin standard library:
+classpath resolves to nothing but the Kotlin standard library and its annotations
+artifact:
 
 ```sh
 ./gradlew :app:dependencies --configuration releaseRuntimeClasspath
 ```
 
 LeakCanary (Apache-2.0) is `debugImplementation`-only and ships in debug builds alone,
-never in release.
+never in release. The website's 3D model editor and film use Three.js (MIT), kept
+unmodified with its notice in `site/model-editor/vendor/`; it is not part of the app.
 
 ## License
 
@@ -440,7 +454,7 @@ never in release.
 [ci-url]: https://github.com/denissteinhorst/thor-back-button-hero/actions/workflows/ci.yml
 [release-shield]: https://img.shields.io/github/v/release/denissteinhorst/thor-back-button-hero?style=for-the-badge
 [release-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest
-[explainer-url]: https://github.com/denissteinhorst/thor-back-button-hero/releases/latest/download/gesture-explainer.html
+[explainer-url]: https://denissteinhorst.github.io/thor-back-button-hero/app-simulation.html
 [pages-url]: https://denissteinhorst.github.io/thor-back-button-hero/
 [video-url]: https://denissteinhorst.github.io/thor-back-button-hero/assets/back-button-hero-1.5.0.mp4
 [license-shield]: https://img.shields.io/github/license/denissteinhorst/thor-back-button-hero?style=for-the-badge

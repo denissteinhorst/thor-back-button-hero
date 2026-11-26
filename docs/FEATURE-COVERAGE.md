@@ -2,7 +2,7 @@
 
 What the app does, and which check would notice if that changed. Each row is one observable
 behavior, linked to the JVM tests, golden snapshots, on-device checks
-([DEVICE-TEST.md](DEVICE-TEST.md)) and manual procedures ([MANUAL-TESTING.md](MANUAL-TESTING.md))
+([DEVICE-TEST-SUITE.md](DEVICE-TEST-SUITE.md)) and manual procedures ([MANUAL-TESTING.md](MANUAL-TESTING.md))
 that cover it. Rows without automated coverage name the gap, its risk and the latest point by which
 it must be protected.
 
@@ -274,7 +274,7 @@ which it needs one or an accepted manual procedure.
 
 ## Known baseline limitations (LIM)
 
-Recorded from FEEDBACK.md and from the S6/S7 device checks as current behavior. They are not refactoring targets; fixing one is
+Recorded from community reports and from the S6/S7 device checks as current behavior. They are not refactoring targets; fixing one is
 separate scope with its own owner decision.
 
 | ID | Limitation |

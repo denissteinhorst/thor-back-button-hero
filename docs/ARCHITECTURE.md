@@ -54,6 +54,12 @@ panels and frontend parking. Android follows an unbind with a destroy, so every 
 to run twice. Only the destroy then drops the main handler's pending work and the switcher and
 focus windows.
 
+The settings screen reaches the running service through static bridges on its companion
+(`isConnected`, the focus and recording previews, the macro recorder, the gyro status listener).
+Android can connect a replacement service before it unbinds the old one, so each instance marks
+its registrations with its own token and clears a bridge only while it still owns it; the old
+instance's teardown never resets what the replacement registered (`ServiceBridgeOwnerTest`).
+
 Background work deliberately keeps its own lanes and is not merged into one executor:
 `PService` serializes its own transactions, `PanelConnection` has an ordered scheduled worker,
 `ControllerFocus`, `AynControls`, `LevelControl` and `FrontendParking` each own a single-thread
@@ -303,16 +309,17 @@ A/B flip setting) accepts it and the other face button cancels. It is dismissed 
 ### `Prefs` — storage and migrations
 
 Wraps `SharedPreferences` and owns the schema, the defaults, and the one-time
-**migrations**, which its `init` runs from `Migrations.kt` in their fixed order. Factory shortcuts (L2 screenshot, R2 controller focus) are
-written once on a fresh install; an update pins L2 and R2 to their existing values, unassigned
-included, so changed defaults never reach an existing install (`shoulder_defaults_v3`). Shoulder actions are stored either as a bare package
+**migrations**, which its `init` runs from `Migrations.kt` in their fixed order. A fresh install
+starts with nothing assigned and is marked as having been through every migration; the
+migrations only rewrite installs that already hold settings, pinning what they were running on so
+a changed default never reaches them (`unassigned_defaults_v1`, `shoulder_defaults_v3`, …). Shoulder actions are stored either as a bare package
 name (launch that app) or as an `@`-prefixed sentinel (`SHOULDER_HOME`,
 `SHOULDER_FLICK_LEFT`, …); `isShoulderApp()` distinguishes the two.
 
 When changing a default or renaming a stored key, add a guarded migration here rather
 than silently changing behavior for existing installs — follow the established pattern of
 a versioned boolean flag guarding a one-time rewrite. See
-[`MAINTENANCE.md`](MAINTENANCE.md) for the recipe.
+[`BUILD-AND-RELEASE.md`](BUILD-AND-RELEASE.md) for the recipe.
 
 ### Back + D-pad: `PadHelper`, `DpadOverlay`, `LevelControl`
 
@@ -375,7 +382,7 @@ on release instead. Back + Home cannot be pressed meanwhile, so its row is shown
 its Home + Back emergency release off.
 
 **Dual mode** (`Prefs.dualMode`, Settings page, off by default, exclusive with Home as Back) makes the pad's Home a
-second modifier with its own complete binding set; `docs/DUAL-MODE.md` is the spec. Home-layer bindings are the
+second modifier with its own complete binding set; `docs/HOME-DUAL-MODE.md` is the spec. Home-layer bindings are the
 same `ComboButton`s wrapped in `HomeLayerButton`, whose `prefKey` carries a `dual_` prefix, so every prefKey-based
 read, write, snapshot and backup handles them unchanged; `ComboButton.base` gets the wrapped button back for type
 checks and exceptions, which both layers share. The service reuses the Home-as-Back route (the first modifier owns
@@ -667,6 +674,15 @@ bottom window instead:
   that press through, and AYN closes its panel itself; Recents closing afterwards does not reopen it.
 - Refreshes never re-hide it after a launch: AYN only shows a new panel when the user opens it.
 
+**Rejected: raising our windows above the assistant.** On the inspected firmware the assistant
+sits at `TYPE_BOOT_PROGRESS` (layer 341000), above `TYPE_ACCESSIBILITY_OVERLAY` (311000), and no
+ordinary window can cross that. An attempt in October 2026 used a root `app_process` worker with
+`DisplayAreaOrganizer` to raise whole bottom display areas over it. The automated gate passed, but
+the owner rejected the real-world result and it was fully reverted. Do not retry without first
+investigating why: it raised an entire display area rather than one window, depended on internal
+surface names, and detected the drawer by package instead of visibility. Hiding the assistant as
+a captured panel (above) is the accepted approach.
+
 ### Parked frontend activities
 
 Some frontends (Cocoon) draw their bottom screen as an ordinary activity rather than a
@@ -707,7 +723,7 @@ freezes the failure side (`null` vs `""`, the 10 s retry, the unprivileged kill 
 
 Everything that needs a real accessibility connection, a second display, or a real
 window remains outside automated reach: `SwitcherOverlay` is only partly covered (its tree is snapshotted; live behavior is not) and `SwitcherService` only
-through its extracted decisions (about 70 % of its lines, no live connection). Robolectric cannot provide
+through its extracted decisions (about 72 % of its lines, no live connection). Robolectric cannot provide
 `windowsOnAllDisplays`, and there is no emulator image for a dual-screen device. Manual
 testing on the AYN Thor is the only net under those paths — see
 [`MANUAL-TESTING.md`](MANUAL-TESTING.md) for the procedures and

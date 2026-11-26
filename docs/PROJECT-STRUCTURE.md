@@ -10,13 +10,10 @@ gitignored and therefore absent here.
 |---|---|
 | `README.md` | The user-facing page: what the app does, gestures, shortcuts, defaults, install steps, permissions and privacy, troubleshooting. |
 | `AGENTS.md` | The shared, owner-maintained instructions for every coding agent: invariants, working agreement and pointers into `docs/`. |
-| `CLAUDE.md` | Working instructions for Claude Code — gate command, expected results, toolchain traps, release and signing-key procedures. |
-| `FEEDBACK.md` | Concise feedback from the three Reddit release posts, with reporters, sources and open/resolved status. Context, not a queue. |
-| `IMPROVMENTS.md` | Audit notes on memory, performance, code quality and docs. Context, not a queue. |
-| `WIP_BOTTOMSCREEN_OVERWRITES.md` | Investigation note on a rejected and reverted attempt to raise the app's windows above AYN's assistant. Read before retrying. |
+| `CLAUDE.md` | Claude-specific additions: talking to the owner, the owner's machine, the device workflow and handoff format, commit rules. Technical detail lives in `docs/`. |
 | `art/settings-icons/` | SVG sources of the settings navigation icons that became the `ic_settings_*` vector drawables. |
-| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `guide.html` is the shared content source and script-free fallback; `hotkey-layers.js` renders the homepage’s Back/Home layers. See `site/README.md`. `site/gesture-explainer.html` is a symlink to the docs copy. `site/thor-ad-v2/` contains the final 2.0 clip; `site/model-editor/` contains the standalone 3D editor and shared model/renderer. |
-| `LICENSE` | 0BSD. Chosen deliberately: the release APK ships no third-party code beyond the Kotlin stdlib (see [`MAINTENANCE.md`](MAINTENANCE.md)). |
+| `site/` | The landing page (`index.html`, `style.css`, `script.js`, `assets/`), published through GitHub Pages. `guide.html` is the shared content source and script-free fallback; `hotkey-layers.js` renders the homepage’s Back/Home layers. See [`WEBSITE.md`](WEBSITE.md). `site/app-simulation.html` is a symlink to the docs copy. `site/thor-ad-v2/` contains the final 2.0 clip; `site/model-editor/` contains the standalone 3D editor and shared model/renderer. |
+| `LICENSE` | 0BSD. Chosen deliberately: the release APK ships no third-party code beyond the Kotlin stdlib (see [`BUILD-AND-RELEASE.md`](BUILD-AND-RELEASE.md)). |
 | `.gitignore` | Excludes build output, IDE files, `local.properties`, and — importantly — `*.keystore`/`*.jks` so a signing key can never be committed. |
 | `settings.gradle.kts` | Gradle settings: declares the single `:app` module and the plugin/dependency repositories. |
 | `build.gradle.kts` | Root build file. Declares the AGP/Kotlin plugin versions, the **`verify`** aggregate task (the one quality gate), and the `installGitHooks` task. |
@@ -282,28 +279,35 @@ first build, so they work right after a clone without a manual step.
 |---|---|
 | `verify.sh` | **The gate.** Resolves JDK 17 itself (it is not on `PATH` on the author's machine) and runs `./gradlew verify`. Use this rather than a bare Gradle call. |
 | `contract/` | Static contract oracles (`check.sh`): frozen manifest, class names, stored keys, wire strings and fixture hashes, plus the move-only and rename tools used by the refactoring. |
-| `devicetest/` | The on-device suite (`run.py`), visual capture (`visual.py`), resource and lifecycle measurements (`resources.py`) and instrumentation; see [`DEVICE-TEST.md`](DEVICE-TEST.md). |
+| `devicetest/` | The on-device suite (`run.py`), visual capture (`visual.py`), resource and lifecycle measurements (`resources.py`) and instrumentation; see [`DEVICE-TEST-SUITE.md`](DEVICE-TEST-SUITE.md). |
 | `docs/check-links.py` | Every relative link and anchor in `docs/`, `README.md`, `AGENTS.md` and `CLAUDE.md` resolves. |
 | `docs/check-structure.py` | This file names every tracked production and instrumented source file, and none that is gone. |
 
 ## `docs/`
 
+All documentation lives here; [`README.md`](README.md) is the index and reading path.
+
 | File | Purpose |
 |---|---|
-| `FAQ.md` | Reader-facing answers: device compatibility beyond the tested Thor, how the update check behaves, and the privacy and trust questions an accessibility service invites. Linked from the README's Compatibility section. |
-| `ARCHITECTURE.md` | Components, their responsibilities, how a gesture flows through them, the display-targeting model, bottom panels, frontend parking and Recents routing. |
-| `HELPER.md` | The root input helper: why the D-pad needs it, what it touches, how the pad is always restored. Mandatory reading before changing that path. |
-| `THOR-RECENTS.md` | Reference for the AYN launcher's system Recents and how the bottom Recents copies its look, memory readout and previews. |
-| `TESTING.md` | The test concept and every quality gate, plus what is deliberately not automated. |
-| `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
+| `README.md` | Index of every document, the reading path for newcomers, the decision list and the KDoc conventions. |
+| `ARCHITECTURE.md` | Components, their responsibilities, how a gesture flows through them, the display-targeting model, bottom panels, frontend parking, Recents routing and rejected approaches. |
 | `PROJECT-STRUCTURE.md` | This file. |
-| `README.md` | Index of every document with one line each, the decision list and the KDoc conventions. |
-| `decisions/` | Architecture decision records (`0000-template.md` plus numbered records). |
-| `MAINTENANCE.md` | Setup, building, releasing, dependency policy, and recipes for common changes. |
+| `HELPER.md` | The root input helper: why the D-pad needs it, what it touches, how the pad is always restored. Mandatory reading before changing that path. |
+| `HOME-DUAL-MODE.md` | Home as a second modifier with its own bindings: the owner's decisions, storage and runtime. |
+| `THOR-SYSTEM-RECENTS.md` | Reference for the AYN launcher's system Recents and how the bottom Recents copies its look, memory readout and previews. |
+| `TESTING.md` | The test concept, every quality gate, the expected results, and what is deliberately not automated. |
+| `FEATURE-COVERAGE.md` | Every observable behavior mapped to the check that notices a change. |
+| `MANUAL-TESTING.md` | Severity tiers S0–S4 and the step-by-step device procedures each one requires before pushing. |
+| `DEVICE-TEST-SUITE.md` | The on-device suite in `tools/devicetest`, post-install prerequisites and device facts. |
 | `PERFORMANCE.md` | Measured hot-path costs, the optimizations tried and why they were not kept, and how to measure on the device. |
-| `release-notes/` | The release text per version (`v1.4.0.md`); the landing page renders its headings, bullets and bold text. |
-| `hardening/` | The historical, German-language pre-release hardening plan: its 38 step files, reports and checklists. Frozen record, not current instructions. |
-| `gesture-explainer.html` | The App-Simulation: opens directly on every function to try out on a device diagram. The intro remains available for recording mode. Fully self-contained: `thor-base.png` and the app icon are embedded as base64 data URIs so the single file can be downloaded and opened anywhere, offline. The master image stays in `assets/` — re-embed it there if it ever changes. `?autoplay` is the recording mode (light theme, no Skip button). |
+| `BUILD-AND-RELEASE.md` | Setup, building, change recipes, dependency policy, releasing, the signing key and repository protection. |
+| `WEBSITE.md` | The GitHub Pages site, the App-Simulation, the 2.0 film and the 3D model editor. |
+| `FAQ.md` | Reader-facing answers: device compatibility beyond the tested Thor, how the update check behaves, and the privacy and trust questions an accessibility service invites. Linked from the README's Compatibility section. |
+| `REFACTORING-VERIFICATION.md` | The final verification of the 2026-11 structural refactoring against the pre-refactoring baseline. Historical record. |
+| `decisions/` | Architecture decision records (`0000-template.md` plus numbered records). |
+| `release-notes/` | The release text per version (`v2.0.0.md`); the release workflow uses it as the release body and the landing page renders its headings, bullets and bold text. |
+| `app-simulation.html` | The App-Simulation: a self-contained device diagram for trying every function, also shipped with each release. See [`WEBSITE.md`](WEBSITE.md#the-app-simulation). |
+| `check-simulation.mjs` | Node check of the App-Simulation's contract. |
 
 ### `docs/assets/`
 
@@ -313,8 +317,7 @@ read at build time.
 
 | File | Purpose |
 |---|---|
-| `site/assets/back-button-hero-1.5.0.mp4` | The 1.5.0 video (60 fps, 1200×1500, about 45 seconds), still linked by the README. The current 2.0 film and player live in `site/thor-ad-v2/`. |
-| `thor-base.png` | Device outline used by the explainer and the animation. |
+| `thor-base.png` | Device outline used by the App-Simulation and the settings overview drawing. |
 | `launcher-icon.png` | The working export the density variants in `res/` were produced from. |
 | `launcher-icon-original.png` | The unscaled icon master. |
 

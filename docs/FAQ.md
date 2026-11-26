@@ -160,7 +160,7 @@ Yes, and the result is functionally identical:
 
 JDK 17 is required. Note that your build is signed with your own debug key, so it cannot
 be installed as an update over a release-signed copy — uninstall first, or just keep
-using the releases. [`MAINTENANCE.md`](MAINTENANCE.md) covers the full setup.
+using the releases. [`BUILD-AND-RELEASE.md`](BUILD-AND-RELEASE.md) covers the full setup.
 
 ### Will my settings survive an update?
 

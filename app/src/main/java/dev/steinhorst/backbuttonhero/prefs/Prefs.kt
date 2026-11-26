@@ -74,7 +74,7 @@ class Prefs(context: Context) : GestureSettings {
         }
 
     /**
-     * Whether the pad's Home key is a second modifier with its own bindings (docs/DUAL-MODE.md). Excludes
+     * Whether the pad's Home key is a second modifier with its own bindings (docs/HOME-DUAL-MODE.md). Excludes
      * [homeAsBack]. The first switch-on copies the Back layer once; later ones find the stored Home layer.
      */
     var dualMode: Boolean

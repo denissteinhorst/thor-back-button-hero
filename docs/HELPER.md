@@ -115,7 +115,7 @@ only the swing up to the threshold, and the stick is its own again until it retu
 With an empty mask the behaviour is unchanged. The mask is resent when the helper takes over a new pad.
 
 `HOMEBACK 1` (the app's *Use the Home button as Back* option) makes the pad's Home key count as a held
-Back for every capture above; `HOMEBACK 2` (dual mode, `docs/DUAL-MODE.md`) does the same for Home as the
+Back for every capture above; `HOMEBACK 2` (dual mode, `docs/HOME-DUAL-MODE.md`) does the same for Home as the
 second modifier; `HOMEBACK 0` restores Back alone. It is resent on every takeover.
 
 ### Macros

@@ -1,6 +1,6 @@
 """Back's own gestures: single, double, tap-and-hold and hold, with their timing. Layered tests press
 d.modifier, so they also prove dual mode's Home layer; the dual tests at the end check how the two
-layers live side by side (docs/DUAL-MODE.md)."""
+layers live side by side (docs/HOME-DUAL-MODE.md)."""
 
 import time
 

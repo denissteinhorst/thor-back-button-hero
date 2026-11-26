@@ -374,7 +374,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         BackGestureMachine(prefs, gestureClock, gestureScheduler, this, ::dlog,
             { backException }, ViewConfiguration.getLongPressTimeout().toLong())
     }
-    // Dual mode (docs/DUAL-MODE.md): the Home key's own gestures, bound and timed by the Home layer.
+    // Dual mode (docs/HOME-DUAL-MODE.md): the Home key's own gestures, bound and timed by the Home layer.
     private val homeGesture by lazy {
         BackGestureMachine(prefs.homeGestures, gestureClock, gestureScheduler, HomeGestureActions(), ::dlog,
             { backException }, ViewConfiguration.getLongPressTimeout().toLong())

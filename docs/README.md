@@ -1,46 +1,69 @@
 # Documentation index
 
-Every maintained document in this folder, with one line on what it is for. Start with
-[ARCHITECTURE.md](ARCHITECTURE.md) to understand the code and [TESTING.md](TESTING.md) before
-changing it. Agent and owner rules live in the repository root (`AGENTS.md`, `CLAUDE.md`).
+All project documentation lives in this folder. The repository root keeps only `README.md` (the
+user-facing product page), `AGENTS.md` (rules for every coding agent) and `CLAUDE.md` (additions
+for Claude Code).
 
 ## Contents
 
+- [Reading path for newcomers](#reading-path-for-newcomers)
 - [Understanding the app](#understanding-the-app)
 - [Changing and verifying it](#changing-and-verifying-it)
+- [Building, releasing and the website](#building-releasing-and-the-website)
 - [Reference and history](#reference-and-history)
 - [Architecture decisions](#architecture-decisions)
 - [KDoc and comment conventions](#kdoc-and-comment-conventions)
+
+## Reading path for newcomers
+
+1. [`../README.md`](../README.md): what the app does for its users. Features, wording and look are
+   final; the code exists to keep them exactly as described there.
+2. [`../AGENTS.md`](../AGENTS.md): the working rules and invariants that apply to every change.
+3. [ARCHITECTURE.md](ARCHITECTURE.md): the two entry points, the packages, how a Back press
+   travels through the code, and the external contracts that must never change.
+4. [PROJECT-STRUCTURE.md](PROJECT-STRUCTURE.md): find the file for a concern.
+5. [BUILD-AND-RELEASE.md](BUILD-AND-RELEASE.md): set up a machine and run the gate.
+6. [TESTING.md](TESTING.md): what the gate proves, what green looks like, and where only the device
+   can tell.
+7. Before touching a device-only area, its deep dive: [HELPER.md](HELPER.md) (D-pad),
+   [THOR-SYSTEM-RECENTS.md](THOR-SYSTEM-RECENTS.md) (bottom Recents),
+   [HOME-DUAL-MODE.md](HOME-DUAL-MODE.md) (Home layer).
 
 ## Understanding the app
 
 | Document | Purpose |
 |---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Components, how a gesture travels through them, display targeting, panels and Recents routing. |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Components, how a gesture travels through them, display targeting, panels, Recents routing, rejected approaches. |
 | [PROJECT-STRUCTURE.md](PROJECT-STRUCTURE.md) | File-by-file map of the repository. |
 | [HELPER.md](HELPER.md) | The root input helper behind Back + D-pad; mandatory reading before touching that path. |
-| [DUAL-MODE.md](DUAL-MODE.md) | Home as a second modifier with its own bindings, and the owner's decisions behind it. |
-| [THOR-RECENTS.md](THOR-RECENTS.md) | The AYN launcher's system Recents and how the bottom Recents copies it. |
+| [HOME-DUAL-MODE.md](HOME-DUAL-MODE.md) | Home as a second modifier with its own bindings, and the owner's decisions behind it. |
+| [THOR-SYSTEM-RECENTS.md](THOR-SYSTEM-RECENTS.md) | The AYN launcher's system Recents and how the bottom Recents copies it. |
 | [FAQ.md](FAQ.md) | Reader-facing answers: compatibility, updates, privacy and trust. |
 
 ## Changing and verifying it
 
 | Document | Purpose |
 |---|---|
-| [TESTING.md](TESTING.md) | Test concept, every automated gate, and what is deliberately not automated. |
-| [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) | Every observable behavior mapped to the check that would notice a change, with open gaps and their due steps. |
+| [TESTING.md](TESTING.md) | Test concept, every automated gate, expected results, and what is deliberately not automated. |
+| [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) | Every observable behavior mapped to the check that would notice a change. |
 | [MANUAL-TESTING.md](MANUAL-TESTING.md) | Risk tiers and step-by-step device procedures. |
-| [DEVICE-TEST.md](DEVICE-TEST.md) | The on-device suite in `tools/devicetest`: selection, recovery, traces, measurements. |
+| [DEVICE-TEST-SUITE.md](DEVICE-TEST-SUITE.md) | The on-device suite in `tools/devicetest`, post-install prerequisites, traces, measurements. |
 | [PERFORMANCE.md](PERFORMANCE.md) | Measured hot-path costs, rejected optimizations, resource budgets and how to measure. |
-| [MAINTENANCE.md](MAINTENANCE.md) | Setup, building, dependencies, releases and recipes for common changes. |
+
+## Building, releasing and the website
+
+| Document | Purpose |
+|---|---|
+| [BUILD-AND-RELEASE.md](BUILD-AND-RELEASE.md) | Setup, everyday commands, change recipes, dependencies, releases, the signing key, repository protection, troubleshooting. |
+| [WEBSITE.md](WEBSITE.md) | The GitHub Pages site, the App-Simulation, the 2.0 film and the 3D model editor. |
+| [release-notes/](release-notes/) | Release text per version; the release workflow and the landing page read it. |
 
 ## Reference and history
 
 | Item | Purpose |
 |---|---|
-| [REFACTORING-VERIFICATION.md](REFACTORING-VERIFICATION.md) | Final verification of the structural refactoring against the pre-refactoring baseline. |
-| [release-notes/](release-notes/) | Release text per version; the landing page and release workflow read it. |
-| [gesture-explainer.html](gesture-explainer.html) | The self-contained App-Simulation (clickable device diagram). |
+| [REFACTORING-VERIFICATION.md](REFACTORING-VERIFICATION.md) | Final verification of the 2026-11 structural refactoring against the pre-refactoring baseline. |
+| [app-simulation.html](app-simulation.html) | The self-contained App-Simulation (clickable device diagram). |
 | [check-simulation.mjs](check-simulation.mjs) | Consistency check for the App-Simulation. |
 | [assets/](assets/) | Image masters for the docs and the app identity. |
 

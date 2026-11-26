@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 868 JVM tests pass |
+| `testDebugUnitTest` | All 880 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -87,7 +87,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 131 classes, 868 tests
+### Base — JVM tests (Robolectric + JUnit), 137 classes, 880 tests
 
 Everything the gate can verify without hardware.
 
@@ -146,7 +146,7 @@ button states, change previews and accessibility. The main groups are:
 | Golden | Scope |
 |---|---|
 | `settings_main_en_light`, `settings_main_en_dark`, `settings_main_de_light` | The whole settings page across theme and locale |
-| `shoulder_all_unassigned`, `shoulder_defaults_flick_no_toggle`, `shoulder_l1_sentinel_with_toggle`, `shoulder_l2_app_with_toggle`, `shoulder_l2_volume_with_target`, `shoulder_r1_screenshot_no_toggle`, `dpad_all_unassigned` | Every shoulder-row state, including whether the screen toggle shows. All but `shoulder_defaults_flick_no_toggle` start from L2/R2 unassigned, the state before the factory shortcuts existed; that one shows the real fresh-install defaults |
+| `shoulder_all_unassigned`, `shoulder_defaults_flick_no_toggle`, `shoulder_l1_sentinel_with_toggle`, `shoulder_l2_app_with_toggle`, `shoulder_l2_volume_with_target`, `shoulder_r1_screenshot_no_toggle`, `dpad_all_unassigned` | Every shoulder-row state, including whether the screen toggle shows. All but `shoulder_defaults_flick_no_toggle` start from L2/R2 explicitly unassigned; that one constructs `Prefs` on empty storage, the real fresh-install state |
 | `dialog_single_action_chooser`, `dialog_reset_settings_confirm`, `dialog_repair_service` | Three dialog flows |
 | `a11y_inventory` | Accessibility properties of every clickable row |
 
@@ -206,7 +206,29 @@ the device: settings, apps and windows per screen, processes, files, media keys,
 stand-in game receives. Run `python3 tools/devicetest/run.py --changed` after a change to the areas
 it can affect, and `--full` only on request. It needs the attached Thor and the debug build, and it
 is **not** part of the gate. Usage, the areas and the restore guarantees are in
-[`DEVICE-TEST.md`](DEVICE-TEST.md).
+[`DEVICE-TEST-SUITE.md`](DEVICE-TEST-SUITE.md).
+
+## Expected results — what green looks like
+
+Measured on 2026-11-24 (commit `845dd5a`). Treat a deviation as a regression to investigate, not
+a new baseline to record. Update these figures in the same change that legitimately moves them.
+
+| Check | Expected |
+|---|---|
+| JVM tests | 880 in 137 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
+| Host tests | 111, 0 failures |
+| Lint | 0 errors; exactly the 20 baselined warnings |
+| Coverage | All 98 ratchets pass; about 83 % total line coverage (11376/13727, from `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`) |
+| Release APK | About 4.28 MB (`app-release-unsigned.apk`), including the ~18 KB `lib/arm64-v8a/libpadhelper.so` |
+| Release classpath | Exactly `kotlin-stdlib` and, transitively, `org.jetbrains:annotations` |
+| Golden files | 110 in `app/src/test/resources/golden/` |
+
+Check the release classpath with:
+
+```sh
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath | \
+  grep -iE "junit|robolectric|espresso|uiautomator|leakcanary|jacoco"   # must print nothing
+```
 
 ## Quality ratchets
 
@@ -246,12 +268,16 @@ measures instructions instead, which is not what these numbers mean.
 | `AccessibilityAppSource` | 0.61 | 0.6250 |
 | `UpdateChecker` | 0.46 | 0.46–0.71 (network-dependent) |
 
-Further classes (92 ratchets in total) (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` and the action handlers `SystemActions`, `AppControlActions`, `LastAppAction`, `MacroPlayback`, `GyroActions` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
+Further classes (98 ratchets in total) (including the input routers `ComboRouter`, `DirectionalRouter`, `StickClickRouter` and the action handlers `SystemActions`, `AppControlActions`, `LastAppAction`, `MacroPlayback`, `GyroActions` at 1.00) (settings, navigation, app exceptions, Recents routing/state, panels, key gate,
 activation toggle, sticks, macros, gyro, backup, welcome sheet) are ratcheted at 0.80–1.00 through a name→minimum map at the end of
 the rules in `app/build.gradle.kts`.
 
 Raise a minimum when tests grow; never lower one. Several sit exactly at the measured
 value, so coverage must not drop at all.
+
+`UpdateChecker`'s measured value is not stable: activity tests that do not replace the check start
+its real network thread, so coverage swings with how far that thread gets. The 0.46 floor is the
+deterministic part; never raise it on one lucky run.
 
 Read these per JaCoCo **class**, which counts nested classes separately: `UpdateChecker`
 is measured on its own while `UpdateChecker$Version` is its own entry. Aggregating a class with its
@@ -285,11 +311,11 @@ Known and accepted, because the alternatives are worse than the gap.
 
 | Not covered | Why | Substitute |
 |---|---|---|
-| `SwitcherOverlay` — **85 %** (309/363 lines, mostly snapshot-driven construction) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
-| `SwitcherService` — **70 %** (791/1124) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
+| `SwitcherOverlay` — **85 %** (298/351 lines, mostly snapshot-driven construction) | Needs a real `TYPE_ACCESSIBILITY_OVERLAY` window on a second display | Manual device testing |
+| `SwitcherService` — **72 %** (687/957) | Needs a live accessibility connection and real hardware key events | `BackGestureMachine` and the input routers cover the decisions, `InputPipelineCharacterizationTest` the key path through `onKeyEvent`; Recents, windows and most side effects are manual |
 | `windowsOnAllDisplays` paths | Unavailable under Robolectric — may return empty, null, or throw | Partial `AccessibilityAppSourceTest` coverage |
 | Dual-screen behavior as a whole | No emulator image exists for it | Manual device testing |
-| `UpdateChecker` network, threading, notification | Would require restructuring production code the freeze protects | `parseVersion`/`parseRelease` are tested; the rest is manual |
+| `UpdateChecker` network and notification, `UpdateInstaller` | Real network access; the installer only runs in a signed release build | `parseVersion`/`parseRelease` are tested; `UpdateFlowTest` drives the settings flow through a fake `updateCheck()`; installation is the owner's release check |
 | Service state `ON` in tests | `SwitcherService.isConnected` has a `private set` | Manual verification |
 | `ControllerFocus` root sequence, `FocusIndicatorOverlay` (71/83, construction only) | Need pservice and a window on the top display; only target resolution and the settings around them are tested | MANUAL-TESTING C23–C29 |
 | Root input helper, `PadHelper`, `DpadOverlay`, `LevelControl`, `BrightnessControl` | Need pservice, `/dev/input` and real displays | `LevelSteps`, `DpadDirection` and `Prefs` are tested; the rest is MANUAL-TESTING C17a–C17h |
@@ -310,7 +336,7 @@ file-to-tier mapping and the step-by-step procedures live in
 | S3 | `SwitcherService`, `SwitcherOverlay`, `AccessibilityAppSource`, manifest, or a Kotlin/AGP/Gradle bump | + overlay and shoulder pass, ~30 min |
 | S4 | Publishing a release | + acceptance on the signed artifact, ~40 min |
 
-Run `tools/devicetest/run.py --changed` first ([`DEVICE-TEST.md`](DEVICE-TEST.md)): it covers the
+Run `tools/devicetest/run.py --changed` first ([`DEVICE-TEST-SUITE.md`](DEVICE-TEST-SUITE.md)): it covers the
 functional checks automatically, so the manual pass can focus on what only a person can judge
 (visuals, feel, timing). Run the applicable tier **before pushing**. For changes that are meant to be
 behavior-neutral, use the gesture-trace comparison described there instead of relying on

@@ -11,7 +11,7 @@ is not re-argued per change, and so a pass is reproducible rather than a vague
 "seemed fine".
 
 Most functional checks below now run unattended through the on-device suite
-(`python3 tools/devicetest/run.py --changed`, see [DEVICE-TEST.md](DEVICE-TEST.md)). Run it first;
+(`python3 tools/devicetest/run.py --changed`, see [DEVICE-TEST-SUITE.md](DEVICE-TEST-SUITE.md)). Run it first;
 the manual steps remain for what it cannot judge: how things look, feel and time.
 
 Run the applicable procedure **before pushing**, not after. The `pre-push` hook enforces
@@ -307,7 +307,7 @@ Use S3 for changes to the toggle or the helper's pass-through mode.
 ### Controller focus and the indicator
 
 Needs a game running on the top screen and the root helper active (a D-pad direction
-assigned). R2 is the focus button at the factory defaults.
+assigned). Nothing is assigned on a fresh install; assign the focus action as in C23 first.
 
 | # | Step | Expected |
 |---|---|---|
@@ -370,7 +370,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
 | D2 | Install the signed APK **over** the previous version | Succeeds **without** asking to uninstall first |
 | D3 | `adb shell dumpsys package dev.steinhorst.backbuttonhero \| grep -E "versionName\|firstInstallTime\|lastUpdateTime"` | New `versionName`; `firstInstallTime` **unchanged**, `lastUpdateTime` new — this is the proof it was a true in-place update |
 | D4 | Check the service and your settings | Service still enabled, settings preserved |
-| D4a | On a device where L2 and R2 were left unassigned, update from the previous release | They stay unassigned; the factory shortcuts of C23 only appear on a fresh install or after a reset |
+| D4a | On a device where L2 and R2 were left unassigned, update from the previous release | They stay unassigned; an update never assigns anything the user had not chosen |
 | D5 | Count launcher icons | Exactly **one** — no "Leaks" icon in a release build |
 | D6 | Run procedures A, B and C on this build | All pass |
 | D7 | Tap "Check for new version" | Reports up to date |

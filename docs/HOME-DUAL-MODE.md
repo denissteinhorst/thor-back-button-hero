@@ -47,4 +47,4 @@ JVM tests cover the storage, seeding, exclusivity, plans, backup and the two-col
 `DualModeServiceTest` and `InputPipelineCharacterizationTest` drive both layers through the service's key path. The
 device suite runs every layer-aware test once per layer on `--full` (and with `--layers home`, or on
 `--changed` when the change touches dual mode), pressing Home instead of Back and binding the `dual_`
-keys, plus the dedicated `dual` area; see `docs/DEVICE-TEST.md`.
+keys, plus the dedicated `dual` area; see `docs/DEVICE-TEST-SUITE.md`.

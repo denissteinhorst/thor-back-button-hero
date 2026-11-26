@@ -12,7 +12,7 @@
 Needs the debug build installed (its test receiver configures the app), USB debugging and AYN's
 pservice (SELinux permissive, the Thor's default). The owner's app settings and every system value
 the tests touch are saved first and restored afterwards, also when a test fails. See
-docs/DEVICE-TEST.md.
+docs/DEVICE-TEST-SUITE.md.
 """
 
 import argparse
