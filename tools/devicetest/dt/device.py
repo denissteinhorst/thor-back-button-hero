@@ -530,7 +530,11 @@ class Device:
     def clone_node(self):
         """The input node of the pad apps see: the helper's clone, or AYN's pad without the helper."""
         devices = self.sh("cat /proc/bus/input/devices")
-        nodes = re.findall(r'N: Name="Xbox Wireless Controller"[^\n]*\n(?:[^\n]+\n)*?H: Handlers=[^\n]*?(event\d+)', devices)
+        # AYN names its pad by the controller style: "Odin Controller" in Standard, the Xbox name in Xbox Style.
+        nodes = re.findall(r'N: Name="(?:Odin Controller|Xbox Wireless Controller)"[^\n]*\n(?:[^\n]+\n)*?'
+                           r'H: Handlers=[^\n]*?(event\d+)', devices)
+        if not nodes:
+            raise Fail("no pad in /proc/bus/input/devices")
         return f"/dev/input/{nodes[-1]}"
 
     def press_observing(self, seq: Seq, check, interval=0.15):

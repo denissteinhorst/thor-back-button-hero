@@ -41,6 +41,8 @@ Device facts worth knowing before a run:
 - Every install restarts the service and with it the pad helper, so the pad clone reappears under a
   new device id. A running RetroArch ignores it until its activity is paused and resumed (open the
   settings over it and return).
+- AYN names its pad (and so the helper's clone) by the controller style: `Odin Controller` in Standard
+  Style, `Xbox Wireless Controller` in Xbox Style. Anything that looks the pad up by name accepts both.
 - AYN's assistant permanently covers the bottom screen. Anything that must be seen goes on the top
   display (logical id 0). Physical ids for `screencap -d`: top `4630946441858561667`, bottom
   `4630946482288158084`.
@@ -186,7 +188,7 @@ The order keeps related checks together and the most disruptive ones last.
 | `gyro` | Gyro on/off and its notices; a gyro deflection reaches the game's right stick only while on, and with a hold button only while it is held ; tilting holds the stick until calibration starts, then a real stable sensor window must succeed (aiming rates are replaced, since a test cannot turn the device; calibration always uses physical readings) |
 | `panels` | Quick settings, notifications, all ten settings shortcuts, power menu, standby with and without prompt, the first hotkey after waking |
 | `confirm` | In Standard and in Xbox Style (switched with the style hotkey, the original style restored afterwards): the favorites list launches with the confirm button, force-close (ask) closes the chosen app, the bottom switcher opens the selected app and top Recents opens the selected card; in each, the cancel button first closes without confirming |
-| `frontends` | A real frontend's bottom panel (NeoStation's Presentation; the app must be installed): hidden for a bottom launch and restored from its own switcher card, never hidden by cancelling the switcher, restored on service restart and when its root host is killed, still hidden but restorable after pause and standby, and hold-to-swap refused while it is shown or hidden. Parked frontend activities (Cocoon) stay manual (C8-series) |
+| `frontends` | A real frontend's bottom panel (NeoStation's Presentation; the app must be installed): hidden for a bottom launch and restored from its own switcher card, never hidden by cancelling the switcher, restored on service restart and when its root host is killed, still hidden but restorable after pause and standby, and hold-to-swap refused while it is shown or hidden. The area's last test ends the panel with one root kill, because NeoStation's enabled accessibility service keeps its process, and the panel, alive through `am force-stop`; `windows` ends such a leftover panel too before its switcher checks. Android restarts the service on its own; the suite waits until it is bound again before anything force-stops NeoStation, since a force-stop during Android's restart back-off removes it from the enabled accessibility services (if that list changed anyway, it is written back exactly as found, with a warning). Parked frontend activities (Cocoon) stay manual (C8-series) |
 | `exceptions` | An app exception blocks only its combos; with all Back gestures excluded, Back reaches the app natively; hold-to-swap leaves an app whose Hold is unchecked in place and moves only the other one |
 | `service` | After the service is switched off and on, or the app process is killed, the helper restarts and hotkeys work; Home + Back held 5 s releases the pad (clone gone, native input reaches the game, Back + D-pad via the overlay) until the next restart |
 

@@ -1,5 +1,7 @@
 """Shared set-up for the suites."""
 
+import re
+import shlex
 import time
 
 from dt.device import Fail
@@ -78,3 +80,47 @@ def expect_closed(d, pkg, previous_pid, timeout=6):
             if held]
         raise Fail(f"{pkg} kept its original {', '.join(kept) or 'state only briefly'} "
                    f"(pids {previous} -> {d.pid(pkg) or 'none'}, tasks {d.task_ids(pkg)}, front {d.resumed()})")
+
+
+# The frontend whose bottom panel the frontends area uses as its fixture.
+NEO = "com.neogamelab.neostation"
+
+
+def frontend_panel(d):
+    """NeoStation's bottom Presentation window: its view visibility, or None when there is none."""
+    for block in re.split(r"\n  Window #", d.sh("dumpsys window windows")):
+        if block.split("\n", 1)[0].endswith(NEO + "}:") and "ty=PRESENTATION" in block:
+            m = re.search(r"mViewVisibility=(\S+)", block)
+            return m.group(1) if m else None
+    return None
+
+
+def end_frontend_panel(d):
+    """Ends a NeoStation panel left on the bottom screen. `am force-stop` cannot end NeoStation while its
+    accessibility service is enabled, and its panel then stays: the bottom switcher lists it as a card of its
+    own and confirm restores it instead of opening an app. A root kill ends the panel; Android restarts the
+    accessibility service on its own, so the owner's setting is untouched."""
+    if frontend_panel(d) is None:
+        return
+    enabled = d.sh("settings get secure enabled_accessibility_services")
+    bound = _neo_service_bound(d)
+    pid = d.pid(NEO)
+    if pid:
+        d.root(f"kill -9 {pid}")
+    d.eventually(lambda: frontend_panel(d) is None, 6, f"NeoStation's bottom panel outlived its process ({pid})")
+    # A force-stop while Android waits to restart the service drops it from the owner's enabled services, so
+    # nothing may stop NeoStation before the service is bound again. A first kill rebinds at once; repeated
+    # kills meet Android's growing restart back-off.
+    if bound:
+        try:
+            d.eventually(lambda: _neo_service_bound(d), 20, "")
+        except Fail:
+            d.warnings.append("NeoStation's accessibility service was not bound again within 20 s after its panel ended")
+    if d.sh("settings get secure enabled_accessibility_services") != enabled:
+        d.sh(f"settings put secure enabled_accessibility_services {shlex.quote(enabled)}")
+        d.warnings.append("NeoStation's kill changed the enabled accessibility services; put back as found")
+
+
+def _neo_service_bound(d):
+    bound = d.sh("dumpsys accessibility").partition("Bound services:")[2].partition("Enabled services:")[0]
+    return "Service[label=NeoStation," in bound

@@ -98,7 +98,7 @@ object PService {
     /**
      * Runs this APK's [className] (an object with a `main`) in a bare app_process VM as root and
      * returns its "OK ..." / "ERR ..." line. pservice hands back only the first output line and drops
-     * long commands (~300+ chars), so the real command goes into a small script and pservice runs
+     * commands of 256 characters and more, so the real command goes into a small script and pservice runs
      * `sh <script>`; one script per call so concurrent callers can't overwrite each other.
      */
     fun runEntryPoint(context: Context, className: String, vararg args: String): String? {

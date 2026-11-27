@@ -135,7 +135,7 @@ def process_death(d):
 
 def _pad_nodes(d):
     """Input devices named like AYN's pad: the real one, plus the helper's clone while it holds the pad."""
-    return d.sh("grep -c '^N: Name=\"Xbox Wireless Controller\"' /proc/bus/input/devices") or "0"
+    return d.sh("grep -cE '^N: Name=\"(Odin Controller|Xbox Wireless Controller)\"' /proc/bus/input/devices") or "0"
 
 
 @test("service", "Home + Back held 5 s hands the pad back; Back + D-pad then works through the overlay")

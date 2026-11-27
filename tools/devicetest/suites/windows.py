@@ -10,7 +10,7 @@ from dt import pad
 from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
-from .common import expect_closed
+from .common import end_frontend_panel, expect_closed
 
 SETTINGS = "com.android.settings/.Settings"
 GALLERY = "com.android.gallery3d/.app.GalleryActivity"
@@ -26,6 +26,9 @@ def _press(d):
 def _clean(d):
     for comp in (SETTINGS, GALLERY):
         d.stop_app(comp.split("/")[0])
+    # A frontend panel left on the bottom screen (by the frontends area or the owner's own use) would be the
+    # bottom switcher's card instead of the stand-in apps.
+    end_frontend_panel(d)
 
 
 def _front(d, display, pkg, timeout=6):

@@ -3,7 +3,6 @@ an owner-installed app; these checks start it and stop it again, and bring the l
 the front. Parked frontend activities (Cocoon) stay a manual check: whether Cocoon opens its bottom
 activity at all depends on its own task history, so it cannot serve as a repeatable fixture."""
 
-import re
 import time
 
 from dt import pad
@@ -11,7 +10,8 @@ from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
 
-NEO = "com.neogamelab.neostation"
+from .common import NEO, end_frontend_panel, frontend_panel, helper_settled
+
 KEY = "face_y"
 HIDDEN, SHOWN = "0x8", "0x0"
 
@@ -22,13 +22,7 @@ def _launchers(d):
     time.sleep(1.0)
 
 
-def _panel(d):
-    """NeoStation's bottom Presentation window: its view visibility, or None when there is none."""
-    for block in re.split(r"\n  Window #", d.sh("dumpsys window windows")):
-        if block.split("\n", 1)[0].endswith(NEO + "}:") and "ty=PRESENTATION" in block:
-            m = re.search(r"mViewVisibility=(\S+)", block)
-            return m.group(1) if m else None
-    return None
+_panel = frontend_panel
 
 
 def _expect_panel(d, state, timeout, what):
@@ -44,6 +38,9 @@ def _start_neo(d):
 
 def _hide_by_home(d):
     d.bind(KEY, "@home", display="bottom")
+    # After a service restart, a pad change or a fresh start of the frontend the helper may still swap the
+    # pad, and a press made meanwhile is lost.
+    helper_settled(d)
     d.press(Seq().combo(d.face("y")))
     d.eventually(lambda: d.resumed().get(d.bottom, "").startswith("com.android.launcher3"), 6,
                  f"Home did not open on the bottom screen: {d.resumed().get(d.bottom)}")
@@ -52,16 +49,22 @@ def _hide_by_home(d):
 
 def _open_switcher(d):
     d.bind(KEY, "@switcher")
+    helper_settled(d)
     d.press(Seq().combo(d.face("y")))
     d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
     time.sleep(0.8)
 
 
-def _end_neo(d):
+def _end_neo(d, last=False):
     if d.own_windows(d.bottom):
         d.press(Seq().tap(pad.BACK))
     _launchers(d)
     d.stop_app(NEO)
+    # The force-stop leaves the panel while NeoStation's accessibility service is enabled; later areas'
+    # bottom switchers would list it. Only the area's last test ends it: every kill lengthens Android's
+    # restart back-off of that service, and the next test's force-stop restarts NeoStation anyway.
+    if last:
+        end_frontend_panel(d)
 
 
 @test("frontends", "A bottom panel hides for a bottom launch and comes back from its own switcher card")
@@ -164,4 +167,5 @@ def panel_blocks_swap(d):
             if d.sh(f"dumpsys activity recents | grep -c 'A=[0-9]*:{NEO}'").strip() != tasks:
                 raise Fail(f"panel {state}: the frontend's tasks changed")
     finally:
-        _end_neo(d)
+        # The last test of the area (see _end_neo).
+        _end_neo(d, last=True)

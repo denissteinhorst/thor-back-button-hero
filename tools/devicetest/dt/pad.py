@@ -39,7 +39,7 @@ if [ -n "$p" ]; then
 fi
 if [ -z "$f" ]; then
   # The first handler field reads "Handlers=eventN", so match the event name anywhere in a field.
-  n=$(awk '/^N: Name="Xbox Wireless Controller"/{x=1} x&&/^H: Handlers=/{for(i=2;i<=NF;i++) if(match($i, /event[0-9]+/)){print substr($i, RSTART, RLENGTH); exit}}' /proc/bus/input/devices)
+  n=$(awk '/^N: Name="(Odin Controller|Xbox Wireless Controller)"/{x=1} x&&/^H: Handlers=/{for(i=2;i<=NF;i++) if(match($i, /event[0-9]+/)){print substr($i, RSTART, RLENGTH); exit}}' /proc/bus/input/devices)
   [ -n "$n" ] && f=/dev/input/$n
 fi
 [ -c "$f" ] || { echo "ERR no pad"; exit 1; }
