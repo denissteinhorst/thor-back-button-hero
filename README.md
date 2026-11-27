@@ -66,7 +66,7 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 - **Back** sends a normal Android Back.
 - **Recents**: the system Recents on the top screen, the app switcher on the bottom screen, or whichever of the two belongs to the focused screen
 - **Switch both apps** swaps the apps on the top and the bottom screen.
-- **Switch to last app** returns to the app you used before on the screen the controller is on; press again to flip between the two. If that app has been closed, a message says so.
+- **Switch to last app** returns to the app you used before on the screen the controller is on (in AYN's Auto mode, the screen you touched last); press again to flip between the two. If that app has been closed, a message says so.
 - **Screenshot** of the top screen, the bottom screen, both, or the focused screen (the one the controller drives when you press the hotkey). Every image uses Android's native screenshot actions; "both" creates one image with the smaller bottom screen centered below the top screen.
 - **Record video** of the top screen, the bottom screen, both, or the focused screen, with optional microphone and push-to-talk voice. Press again to stop; videos are saved under Videos/BBH-Records. A recording also ends when the screens go off.
 - **Macro** plays a recorded button sequence through the controller, as if you pressed it yourself. Record it with the red button in the macro editor or add buttons by hand, then tap a step to change it, hold and drag it to move it or drop it on the bin, and undo anything; a preview shows the timing without sending input; inputs pressed together form one step, and sticks are recorded in eight directions. Saved macros get a name and can be picked for any other hotkey, edited from the list, renamed or deleted; an edit reaches every hotkey that plays it. The macro starts once you let go of Back, and pressing the same hotkey again stops it. Up to 60 seconds and 200 steps. Not available for Back's own gestures, and only while AYN's root service is reachable.
@@ -92,6 +92,8 @@ Hold Back and press another button to run a shortcut. The shoulder buttons **L1,
 - **Quick Settings** and **notifications**
 - **System settings pages:** Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb, Battery Saver
 - **Not set**
+
+In every prompt, the bottom app switcher and top Recents, **A confirms and B cancels**, as everywhere in Android, whichever controller style is set. A small legend shows the matching button.
 
 ## Your default Settings and Binds
 

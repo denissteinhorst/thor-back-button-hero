@@ -9,11 +9,12 @@
             <h4>Apps and navigation</h4>
             <ul>
               <li><strong>Back and Home.</strong> Go back or return Home.</li>
-              <li><strong>Launch an app.</strong> Launch a favorite on either screen.</li>
-              <li><strong>App switcher.</strong> Open top Recents or the bottom switcher, with apps from one or both screens.</li>
+              <li><strong>Focused screen.</strong> <span class="ver new">New in 2.1</span> Point Home, app launch, your app list and favorites, Active App Control, screenshots, brightness and video recording at the screen your controller is driving.</li>
+              <li><strong>Launch an app.</strong> Launch a favorite on either screen or the focused one.</li>
+              <li><strong>App switcher.</strong> Open top Recents or the bottom switcher, with apps from one or both screens, or whichever belongs to the focused screen. A confirms, B cancels, with the matching button shown on screen.</li>
               <li><strong>Previous or next app.</strong> Jump between recent apps.</li>
               <li><strong>Active App Control.</strong> Minimize or force-close on one or both screens, with an optional screen prompt. <strong>Restart</strong> is new in 2.0. Force-closing or restarting can lose unsaved progress.</li>
-              <li><strong>Switch to last app.</strong> <span class="ver new">New in 2.0</span> Flip between the last two apps on the controller’s screen. Each screen keeps its own pair.</li>
+              <li><strong>Switch to last app.</strong> <span class="ver new">New in 2.0</span> Flip between the last two apps on the controller’s screen. Each screen keeps its own pair. In AYN’s Auto mode it follows the screen you touched last.</li>
               <li><strong>Close Apps.</strong> <span class="ver new">New in 2.0</span> Close all apps on the selected screens, or keep the apps in front and close only background apps. Confirmation is optional.</li>
             </ul>
           </div>
@@ -22,7 +23,7 @@
             <ul>
               <li><strong>Switch both apps.</strong> Swap what’s open on the top and bottom screens.</li>
               <li><strong>Switch active app.</strong> Move one app to the other screen. The controller can follow.</li>
-              <li><strong>Controller focus.</strong> Pick a screen, toggle between screens or show a prompt.</li>
+              <li><strong>Controller focus.</strong> Pick a screen, toggle between screens or show a prompt. <span class="ver new">New in 2.1</span> Hand the controller back to AYN’s Auto mode.</li>
               <li><strong>Screenshot.</strong> Capture the top, bottom, or both screens in a single image.</li>
               <li><strong>Display power.</strong> Toggle either display, use both, or use just the top or bottom screen.</li>
             </ul>
@@ -44,6 +45,7 @@
               <li><strong>Quick Settings and notifications.</strong> Open either panel from a shortcut.</li>
               <li><strong>Power Menu and Standby.</strong> <span class="ver new">New in 2.0</span> Open Android’s power dialog or put the Thor into standby, optionally after confirmation.</li>
               <li><strong>Do Not Disturb and Mute Microphone.</strong> <span class="ver new">New in 2.0</span> Toggle priority mode or block the microphone for all apps.</li>
+              <li><strong>Hide all pop-ups.</strong> <span class="ver new">New in 2.1</span> With “Try to hide all pop-ups” (on by default), Do Not Disturb also hides toasts, notification banners and this app’s own messages until you turn it off.</li>
               <li><strong>System settings.</strong> Jump to Wi-Fi and internet, Bluetooth, Night Light, Extra Dim, Display, Sound, Location, Cast, Do Not Disturb or Battery Saver.</li>
             </ul>
           </div>
@@ -60,7 +62,8 @@
             <ul>
               <li><strong>Macro library and editor.</strong> Record or add controller inputs, edit steps and pauses, reorder, undo and preview timing. Reuse named macros across hotkeys. Release the modifier to play; use the hotkey again to stop.</li>
               <li><strong>Gyro on/off and calibration · Beta.</strong> Steer either stick with the handheld’s tilt or turning speed. Adjust sensitivity, deadzone and axes, with a live preview and an optional hold button.</li>
-              <li>Macros and gyro need AYN’s built-in root service; they do not require rooting your Thor.</li>
+              <li><strong>Press a controller button.</strong> <span class="ver new">New in 2.1</span> Press A/B/X/Y, a shoulder, L3/R3, Start, Select, Home or a D-pad direction for as long as you hold the shortcut.</li>
+              <li>Macros, button presses and gyro need AYN’s built-in root service; they do not require rooting your Thor.</li>
             </ul>
           </div>
         </div>
@@ -280,21 +283,24 @@
       <h2>Changelog</h2>
     </div>
     <div class="changelog">
-      <article class="release" id="release-2-0-0">
-        <h3>v2.0.0 <time datetime="2026-11-21">Nov 21, 2026</time></h3>
-        <p>Thanks for all your feedback and Thor setups! 2.0 gives you more shortcuts and new ways to capture and control your games.</p>
+      <article class="release" id="release-2-1-0">
+        <h3>v2.1.0 <time datetime="2026-11-27">Nov 27, 2026</time></h3>
+        <p>Thanks for your feedback since 2.0! 2.1 makes shortcuts follow the screen you’re using and adds a few long-requested controls.</p>
         <ul>
-          <li><strong>More shortcuts, with either hand.</strong> Assign actions to A/B/X/Y, Home, Start and Select too. Use Home like Back, or give it a separate set of shortcuts in Dual mode.</li>
-          <li><strong>Record your gameplay.</strong> Capture either screen or both, with game sound where supported. Add microphone commentary and optional push-to-talk.</li>
-          <li><strong>Replay button sequences.</strong> Save macros, edit their button presses and pauses, then replay them with a button combination.</li>
-          <li><strong>Aim by moving your Thor · Beta.</strong> Use tilt or turning motion to control either stick, with adjustable sensitivity and calibration.</li>
-          <li><strong>Find and configure shortcuts faster.</strong> See your bindings on a drawing of the Thor, search for actions, and set their options as you choose them. A new welcome setup helps you get started.</li>
-          <li><strong>Do more without leaving your game.</strong> Jump to your last app, close background apps, control music, mute sound or put your Thor to sleep—all from a shortcut.</li>
+          <li><strong>Shortcuts that follow your focus.</strong> Choose “Focused screen” as the target, and Home, app launch, your app list and favorites, Active App Control, screenshots, brightness, video recording and a new App Switcher option all act on the screen your controller is driving.</li>
+          <li><strong>Controller focus: Auto.</strong> Hand the controller back to AYN’s Auto mode from a shortcut or the Ask prompt. In Auto, switching to your last app and Back act on the screen you last touched.</li>
+          <li><strong>Confirm and cancel like Android.</strong> A confirms and B cancels in every prompt, the bottom switcher and top Recents, in Standard and Xbox style. Each one now shows its button on screen.</li>
+          <li><strong>Press a pad button from a shortcut.</strong> Map any of the Thor’s own buttons, from A/B/X/Y and the shoulders to Start, Select, Home and the D-pad, to a combo. It stays held for as long as you hold the shortcut.</li>
+          <li><strong>Do Not Disturb hides pop-ups too.</strong> With “Try to hide all pop-ups” (on by default), Do Not Disturb also hides toasts, notification banners and this app’s own messages. Turning Do Not Disturb off brings them all back.</li>
         </ul>
-        <p>Last-app switching keeps each screen’s apps separate. Closing apps now shows how much memory was freed.</p>
+        <p>Cancel now closes top Recents reliably, even right after moving between cards.</p>
         <p><strong>Updating keeps your customized bindings.</strong></p>
       </article>
       <div id="releases">
+        <article class="release">
+          <h3>v2.0.0 <time datetime="2026-11-21">Nov 21, 2026</time></h3>
+          <p>Hotkeys on A/B/X/Y, Home, Start and Select, Home as Back or its own Dual-mode layer, video recording with optional push-to-talk, editable macros and beta gyro aiming. A bindings overview, action search and a welcome setup make configuration easier, and new shortcuts jump to your last app, close background apps, control music, mute sound or put your Thor to sleep.</p>
+        </article>
         <article class="release">
           <h3>v1.5.0 <time datetime="2026-11-14">Nov 14, 2026</time></h3>
           <p>Both analog sticks are fully customizable, all four Back gestures start blank and take any action, and there are more actions for your Thor: screens on or off, performance and fan modes, vibration and more. Future updates install right from the app, and Settings → Backup saves and loads your setup.</p>

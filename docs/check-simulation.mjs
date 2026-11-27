@@ -18,11 +18,13 @@ const features = thor.FUNCS;
 assert.equal(thor.SLOTS.length, 33);
 assert.equal(new Set(features.map(f => f.id)).size, features.length);
 assert.equal(new Set(thor.SLOTS.map(s => s.id)).size, 33);
-for (const id of ['last', 'closeapps', 'record', 'macro', 'gyro', 'calibrate', 'media', 'power', 'standby', 'status', 'refresh', 'lights', 'mouse', 'dnd', 'mic', 'home-mode', 'inputs', 'pause', 'exceptions', 'overview', 'backup', 'welcome', 'updates', 'access', 'privacy']) {
+for (const id of ['last', 'closeapps', 'record', 'macro', 'gyro', 'calibrate', 'media', 'power', 'standby', 'status', 'refresh', 'lights', 'mouse', 'dnd', 'mic', 'home-mode', 'inputs', 'pause', 'exceptions', 'overview', 'backup', 'welcome', 'updates', 'access', 'privacy', 'press', 'confirm']) {
   assert.ok(thor.FN[id], `Missing feature: ${id}`);
 }
 assert.ok(thor.FN.appctl.opts.includes('Restart'));
 assert.ok(thor.FN.volume.opts.includes('Toggle mute'));
+assert.ok(thor.FN.focus.opts.includes('Auto'));
+for (const id of ['launch', 'shot', 'record']) assert.ok(thor.FN[id].opts.includes('Focused screen'), `${id} offers the focused screen`);
 assert.ok(thor.FN.macro.comboOnly);
 assert.ok(features.filter(f => f.cat === 'setup').every(f => f.fx === 'message'));
 const hits = query => search.rows(features, query);
