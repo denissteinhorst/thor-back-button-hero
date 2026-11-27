@@ -211,6 +211,29 @@ class SettingsActionsTest {
     }
 
     @Test
+    fun `Do Not Disturb offers a persistent hide-pop-ups toggle that is on by default`() {
+        val activity = open().get()
+        val prefs = Prefs(context)
+        selectSettingsPage(activity, SettingsSection.SHOULDERS)
+        chooseAction(activity, "L1", R.string.ayn_do_not_disturb)
+        assertEquals(Ayn.Toggle.DO_NOT_DISTURB.action, prefs.shoulderAction(ShoulderButton.L1))
+        val root = activity.findViewById<View>(android.R.id.content)
+        val label = find(root) { it is TextView && it.text.toString() == activity.getString(R.string.dnd_hide_popups_title) }!!
+        var row: View = label
+        while (!row.isClickable) row = row.parent as View
+        val toggle = find(row) { it is Switch } as Switch
+        assertTrue(toggle.isChecked)
+        row.performClick()
+        assertFalse(prefs.dndHidePopups(ShoulderButton.L1))
+        val group = row.parent.parent as View
+        chooseAction(activity, "L1", R.string.shoulder_screenshot)
+        assertEquals(View.GONE, group.visibility)
+        chooseAction(activity, "L1", R.string.ayn_do_not_disturb)
+        assertEquals(View.VISIBLE, group.visibility)
+        assertFalse(toggle.isChecked)
+    }
+
+    @Test
     fun `switch active app offers a persistent follow toggle on shoulder and D-pad hotkeys`() {
         val activity = open().get()
         val prefs = Prefs(context)

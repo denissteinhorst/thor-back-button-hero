@@ -1,0 +1,11 @@
+## read
+echo $(settings get global heads_up_notifications_enabled) $(appops get com.android.systemui TOAST_WINDOW)
+## apply
+settings put global heads_up_notifications_enabled 0 && appops set com.android.systemui TOAST_WINDOW ignore && echo OK
+## restore 1 allow
+h=heads_up_notifications_enabled; o='com.android.systemui TOAST_WINDOW'; [ "$(settings get global $h)" = 0 ] && settings put global $h 1; appops get $o | grep -q 'TOAST_WINDOW: ignore' && appops set $o allow; echo OK
+## restore null default
+h=heads_up_notifications_enabled; o='com.android.systemui TOAST_WINDOW'; [ "$(settings get global $h)" = 0 ] && settings delete global $h; appops get $o | grep -q 'TOAST_WINDOW: ignore' && appops set $o default; echo OK
+## guard launch
+CLASSPATH='<apk>' setsid app_process /system/bin dev.steinhorst.backbuttonhero.PopupGuard 'dev.steinhorst.backbuttonhero.popups.<uuid>' 10123 'null' 'foreground' >/dev/null 2>&1 &
+sleep 1

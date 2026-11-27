@@ -341,6 +341,9 @@ never one with unsaved work: Force-Close saves nothing.
 | C39 | Repeat from a launcher/empty screen, with a blocked hotkey exception, and with a frontend/bottom panel present | No launcher or protected panel moves; a blocked hotkey passes through; normal frontend parking/panel preparation still works. Hold exclusions alone do not block the explicit hotkey |
 | C40 | After switching, test controller buttons/stick/D-pad, Back gestures, both Recents, existing focus hotkeys, then pause/resume interception | No stray touch/button, lingering shield, stuck key, or changed legacy routing; normal controls and service toggling work |
 
+| C41 | Assign Do Not Disturb to a shoulder and switch on "Try to hide all pop-ups"; press it, trigger a toast (e.g. copy text) and a heads-up notification (e.g. a chat message), press another hotkey with a message, then press Do Not Disturb again | "Do Not Disturb: On" shows first; afterwards no toast, no banner and no app message appear while the notification still lands in the shade; "Do Not Disturb: Off" confirms off and toasts and banners are back. With the option off, Do Not Disturb leaves toasts alone |
+| C42 | Turn Do Not Disturb with "Try to hide all pop-ups" on, then pause the service, or reboot, or force-stop the app in Android's app info | Every path brings toasts and banners back without a further press (after a reboot once the service is running again) |
+
 C28 opens on the top screen on purpose: AYN's assistant permanently covers the bottom
 screen, so an activity started there would be invisible.
 

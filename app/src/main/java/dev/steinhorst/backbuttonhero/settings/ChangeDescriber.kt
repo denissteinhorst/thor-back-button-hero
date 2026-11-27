@@ -143,6 +143,7 @@ internal class ChangeDescriber(private val context: Context, private val describ
             extra(R.string.app_control_mode_title, appMode(old.appMode), appMode(new.appMode))
             extra(R.string.level_target_title, appScreen(old.appScreen), appScreen(new.appScreen))
             extra(R.string.switch_app_follow_focus, onOff(old.switchAppFollow), onOff(new.switchAppFollow))
+            extra(R.string.dnd_hide_popups_title, onOff(old.dndHidePopups), onOff(new.dndHidePopups))
             extra(R.string.app_control_confirm_title, onOff(old.appConfirm), onOff(new.appConfirm))
             extra(R.string.app_control_confirm_title, onOff(old.closeConfirm), onOff(new.closeConfirm))
             extra(R.string.standby_confirm_title, onOff(old.standbyConfirm), onOff(new.standbyConfirm))

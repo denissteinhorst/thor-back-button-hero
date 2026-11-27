@@ -419,3 +419,19 @@ class RestoreSystemPassesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PopupValuesTest(unittest.TestCase):
+    def test_the_package_mode_wins_over_the_uid_mode(self):
+        reply = "Uid mode: TOAST_WINDOW: allow\nTOAST_WINDOW: ignore; time=+1m ago"
+        self.assertEqual(dev.toast_mode(reply), "ignore")
+
+    def test_an_op_without_a_mode_of_its_own_is_default(self):
+        self.assertEqual(dev.toast_mode("No operations."), "default")
+        self.assertEqual(dev.toast_mode("Uid mode: TOAST_WINDOW: allow"), "default")
+
+    def test_a_state_without_popup_values_still_compares(self):
+        d = FakeDevice()
+        saved = dict(SYSTEM)
+        d.system = dict(SYSTEM, popups={"heads_up": "1", "toast": "default"})
+        self.assertEqual(Device.system_differences(d, saved), [])

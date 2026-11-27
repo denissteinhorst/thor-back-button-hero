@@ -80,6 +80,7 @@ object SettingsBackup {
                 .put("appScreen", value.appScreen)
                 .put("appConfirm", value.appConfirm)
                 .put("switchAppFollow", value.switchAppFollow)
+                .put("dndHidePopups", value.dndHidePopups)
                 .put("closeConfirm", value.closeConfirm)
                 .put("standbyConfirm", value.standbyConfirm)
                 .put("recordMic", value.recordMic)
@@ -210,6 +211,7 @@ object SettingsBackup {
                 appScreen = entry.stringOrNull("appScreen")?.takeIf { it in APP_SCREENS } ?: default.appScreen,
                 appConfirm = entry.booleanOrNull("appConfirm") ?: default.appConfirm,
                 switchAppFollow = entry.booleanOrNull("switchAppFollow") ?: default.switchAppFollow,
+                dndHidePopups = entry.booleanOrNull("dndHidePopups") ?: default.dndHidePopups,
                 closeConfirm = entry.booleanOrNull("closeConfirm") ?: default.closeConfirm,
                 standbyConfirm = entry.booleanOrNull("standbyConfirm") ?: default.standbyConfirm,
                 recordMic = entry.booleanOrNull("recordMic") ?: default.recordMic,

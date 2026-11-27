@@ -171,7 +171,7 @@
     <string name="search_keywords_vibration">Rumble, Haptik, Force Feedback, vibrieren, rütteln, Feedback</string>
     <string name="search_keywords_force_landscape">Landscape, drehen, Rotation, Ausrichtung, Hochformat</string>
     <string name="search_keywords_virtual_mouse">Maus, Cursor, Mauszeiger, Pointer, Touchpad, Trackpad, klicken</string>
-    <string name="search_keywords_do_not_disturb">DND, Ruhe, Fokusmodus, Gaming-Modus, keine Benachrichtigungen, lautlos</string>
+    <string name="search_keywords_do_not_disturb">DND, Ruhe, Fokusmodus, Gaming-Modus, keine Benachrichtigungen, lautlos, Pop-ups, Toasts, Einblendungen, Streaming</string>
     <string name="search_keywords_mute_microphone">Mikro, Mic, Mikrofon aus, Discord, Voice, Sprachchat, stumm, Privatsphäre</string>
     <string name="shoulder_choose_app_title">Welche App starten?</string>
     <string name="shoulder_action_accessibility">Aktion für %1$s: %2$s. Zum Ändern doppeltippen.</string>
@@ -677,6 +677,8 @@
     <string name="media_next">Nächster Titel</string>
     <string name="media_previous">Vorheriger Titel</string>
     <string name="shoulder_status">Status-Einblendung</string>
+    <string name="dnd_hide_popups_title">Versuchen, alle Pop-ups auszublenden</string>
+    <string name="dnd_hide_popups_summary">Versucht bei aktivem „Bitte nicht stören“, Toasts, Heads-up-Benachrichtigungen und die eigenen Meldungen dieser App auszublenden. Meldungen, die eine App in ihrem eigenen Fenster zeigt, lassen sich technisch bedingt eventuell nicht ausblenden.</string>
     <string name="status_battery">Akku %1$d %%</string>
     <string name="status_left">noch etwa %1$s</string>
     <string name="status_full_in">voll in %1$s</string>
@@ -742,6 +744,7 @@
     <string name="action_desc_gyro">Steuert einen Stick durch Drehen des Geräts. Erneut drücken schaltet es aus.</string>
     <string name="gyro_on">Gyro an</string>
     <string name="gyro_off">Gyro aus</string>
+    <string name="hide_popups_partial">System-Pop-ups ließen sich nicht ausblenden, nur die eigenen Meldungen dieser App.</string>
     <string name="gyro_no_sensor">Die Gyro-Steuerung benötigt Gyroskop und Beschleunigungssensor.</string>
     <string name="gyro_helper_missing">Gyro kann nicht starten: Der Controller-Helfer läuft nicht.</string>
     <string name="gyro_unavailable_title">Gyro braucht den Root-Helfer</string>

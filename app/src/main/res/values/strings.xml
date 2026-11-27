@@ -172,7 +172,7 @@
     <string name="search_keywords_vibration">rumble, haptics, force feedback, vibrate, shake</string>
     <string name="search_keywords_force_landscape">landscape, rotate, rotation, orientation, portrait</string>
     <string name="search_keywords_virtual_mouse">mouse, cursor, pointer, touchpad, trackpad, click</string>
-    <string name="search_keywords_do_not_disturb">DND, focus mode, game mode, no notifications, silence</string>
+    <string name="search_keywords_do_not_disturb">DND, focus mode, game mode, no notifications, silence, pop-ups, toasts, heads-up, streaming</string>
     <string name="search_keywords_mute_microphone">mic, mic mute, Discord, voice chat, privacy, mute</string>
     <string name="shoulder_choose_app_title">Launch which app?</string>
     <string name="shoulder_action_accessibility">%1$s action: %2$s. Double-tap to change.</string>
@@ -679,6 +679,8 @@
     <string name="media_next">Next Track</string>
     <string name="media_previous">Previous Track</string>
     <string name="shoulder_status">Status Overlay</string>
+    <string name="dnd_hide_popups_title">Try to hide all pop-ups</string>
+    <string name="dnd_hide_popups_summary">While Do Not Disturb is on, tries to hide toasts, heads-up notifications and this app\'s own messages. Messages an app shows inside its own window may not be hidden for technical reasons.</string>
     <string name="status_battery">Battery %1$d %%</string>
     <string name="status_left">about %1$s left</string>
     <string name="status_full_in">full in %1$s</string>
@@ -744,6 +746,7 @@
     <string name="action_desc_gyro">Steers a stick by turning the handheld. Press again to turn it off.</string>
     <string name="gyro_on">Gyro on</string>
     <string name="gyro_off">Gyro off</string>
+    <string name="hide_popups_partial">System pop-ups could not be hidden, only this app\'s own messages.</string>
     <string name="gyro_no_sensor">Gyro control needs a gyroscope and an accelerometer.</string>
     <string name="gyro_helper_missing">Gyro can\'t start: the controller helper isn\'t running.</string>
     <string name="gyro_unavailable_title">Gyro needs the root helper</string>

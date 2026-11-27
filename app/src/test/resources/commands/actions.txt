@@ -22,6 +22,7 @@ code=0 args=[0] settings put system dual_screen_display_mode 2 && settings put s
 ## @display_settings
 ## @dnd_settings
 ## @do_not_disturb
+code=0 args=[0] echo $(settings get global heads_up_notifications_enabled) $(appops get com.android.systemui TOAST_WINDOW)
 code=0 args=[0] cmd notification set_dnd priority && echo OK
 ## @extra_dim
 ## @fan

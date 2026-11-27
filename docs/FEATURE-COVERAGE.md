@@ -96,7 +96,7 @@ pending".
 
 ## Actions (ACT)
 
-Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (55 values, see
+Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (56 values, see
 [Inventories](#inventories)).
 
 | ID | Behavior | Where | JVM · Golden | Device | Manual | V/T | Groups | Risk | Status → due |
@@ -124,6 +124,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-ACT-21 | `@status_overlay` shows battery, time left/until full, temperature | T | StatusSummary | media: status overlay | — | S5/— | R5, R7 | L | JVM+DEV |
 | F-ACT-22 | The 12 AYN controls apply their setting with a notice; prompt variants offer a choice | T | Ayn, AynPrefs | ayn: ×13 | — | S5/— | R5 | M | JVM+DEV |
 | F-ACT-23 | Quick settings / notifications open the shade; 10 settings shortcuts open their page or fall back | T | ActionGroups | panels: shade; settings shortcuts | C16 | —/— | R5 | L | DEV |
+| F-ACT-25 | Do Not Disturb's "Try to hide all pop-ups" option (`_dnd_hide_popups`) hides text toasts, heads-up banners and the app's own notices while Do Not Disturb is on; Do Not Disturb off, pause, service end, process death (root guard) and the next start restore the saved values | T | HidePopups, ServiceHidePopups, BindingProjection, StoredDataContract | popups: ×5 | C41, C42 | —/— | R5 | M | JVM+DEV |
 | F-ACT-24 | "Not set" stores an empty binding that does nothing | — | UnassignedRow | gestures: unassigned | C17o | —/— | R2 | M | JVM+DEV |
 | F-ACT-25 | The focused screen (`focused`, `@recents_focused`) acts on the screen the controller drives: fixed route, or Android's input display in Auto-lock, top when unreadable; for Home, app launch/list/favorites, Active App Control, screenshot, brightness, record video and the App Switcher | TB | FocusedScreen, ServiceFocusedScreenTest, BindingTextTable | windows: Home/launch/App Switcher focused; appcontrol: minimize focused; capture: screenshot focused | — | —/S6 | R5 | H | JVM+DEV |
 | F-ACT-26 | `@pad_*` (Press button) holds a pad button through the clone while the trigger is held, taps it for Back's own gestures, releases it on every exit; the pressed key reaches the game and never runs a combo; needs pservice | — | PadPressTest, ServicePadPressTest, PadHelperProtocolTest, ComboRouter/DirectionalRouter/StickClickRouterTest | press: ×4 | C17pb1–C17pb3, C17h | —/— | R5, R11 | H | JVM+DEV+MAN |
@@ -311,18 +312,18 @@ captured from the window manager as added (`support/OverlayTree.kt`: window para
 
 ## Inventories
 
-**Stored actions (55).** `Prefs.KNOWN_ACTIONS` lists 43 values; `Ayn.ACTIONS` adds 12:
+**Stored actions (56).** `Prefs.KNOWN_ACTIONS` lists 44 values; `Ayn.ACTIONS` adds 12:
 `@performance`, `@fan`, `@handle`, `@display`, `@refresh_rate`, `@stick_light`, `@direct_power`,
 `@vibration`, `@force_landscape`, `@virtual_mouse`, `@do_not_disturb`, `@mute_microphone`. A bare
 package name is an app launch. Source literals add `@choose_app` (settings-only chooser entry, never
 stored) and `@swap_screens` (read only by its removal migration); `@group_*` entries are list-only
-values from `ActionGroups`. Total `"@…"` literals in production source: 57 = 55 + 2.
+values from `ActionGroups`. Total `"@…"` literals in production source: 58 = 56 + 2.
 
 **Hotkeys.** Back's four gestures; L1, L2, R1, R2; A, B, X, Y; Home, Start, Select; four D-pad
 directions; four directions per stick; three click gestures per stick; mirrored in dual mode's Home
 layer for every binding except Back + Home (`Prefs.HOME_LAYER_BASES`).
 
-**Device checks.** 76 registered checks in 16 areas, 84 runs with the Home layer
+**Device checks.** 96 registered checks in 19 areas, 104 runs with the Home layer
 (`python3 tools/devicetest/run.py --list`).
 
 ## Gap summary

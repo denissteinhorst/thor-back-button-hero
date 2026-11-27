@@ -1,9 +1,11 @@
 package dev.steinhorst.backbuttonhero.prefs
 
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.actions.PopupRestore
 import dev.steinhorst.backbuttonhero.input.AndroidButton
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.ComboButton
@@ -184,6 +186,12 @@ class Prefs(context: Context) : GestureSettings {
         aynOptionRaw(button)?.takeIf(group::isValid) ?: group.defaultOption
     fun setAynOption(button: ComboButton, option: String) { sp.edit().putString("${button.prefKey}_ayn_option", option).apply() }
 
+    /** Whether Do Not Disturb on this hotkey also tries to hide every pop-up, see [HidePopups]. On by default. */
+    fun dndHidePopups(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_dnd_hide_popups", true)
+    fun setDndHidePopups(button: ComboButton, hide: Boolean) {
+        sp.edit().putBoolean("${button.prefKey}_dnd_hide_popups", hide).apply()
+    }
+
     /** Whether switching the active app also sends controller input to its destination. */
     fun switchAppFollowFocus(button: ComboButton): Boolean = sp.getBoolean("${button.prefKey}_switch_app_follow", true)
     fun setSwitchAppFollowFocus(button: ComboButton, follow: Boolean) {
@@ -291,6 +299,21 @@ class Prefs(context: Context) : GestureSettings {
         get() = sp.getInt("bottom_volume_before_mute", 0)
         set(v) = sp.edit().putInt("bottom_volume_before_mute", v).apply()
 
+    /**
+     * What [dndHidePopups] changed system-wide and must put back; null while nothing is applied. Device
+     * state, not a setting: backups and resets leave it alone. Written with commit, because it is saved right
+     * before the system values change and a crash after that must still find it at the next start.
+     */
+    var hiddenPopups: PopupRestore?
+        get() = PopupRestore.of(sp.getString(HIDDEN_HEADS_UP, null) ?: return null, sp.getString(HIDDEN_TOAST, null) ?: return null)
+        @SuppressLint("ApplySharedPref")
+        set(v) {
+            val edit = sp.edit()
+            if (v == null) edit.remove(HIDDEN_HEADS_UP).remove(HIDDEN_TOAST)
+            else edit.putString(HIDDEN_HEADS_UP, v.headsUp).putString(HIDDEN_TOAST, v.toastMode)
+            edit.commit()
+        }
+
     /** [FOCUS_TOGGLE], [DISPLAY_TOP], [DISPLAY_BOTTOM], [FOCUS_AUTO] or [FOCUS_MODAL] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
@@ -384,6 +407,7 @@ class Prefs(context: Context) : GestureSettings {
                 appConfirm = appConfirm(button),
                 aynOption = aynOptionRaw(button),
                 switchAppFollow = switchAppFollowFocus(button),
+                dndHidePopups = dndHidePopups(button),
                 closeConfirm = closeConfirm(button),
                 standbyConfirm = standbyConfirm(button),
                 recordMic = recordMic(button),
@@ -455,6 +479,7 @@ class Prefs(context: Context) : GestureSettings {
             boolean("${key}_app_confirm", old.appConfirm, value.appConfirm)
             string("${key}_ayn_option", old.aynOption, value.aynOption)
             boolean("${key}_switch_app_follow", old.switchAppFollow, value.switchAppFollow)
+            boolean("${key}_dnd_hide_popups", old.dndHidePopups, value.dndHidePopups)
             boolean("${key}_close_confirm", old.closeConfirm, value.closeConfirm)
             boolean("${key}_standby_confirm", old.standbyConfirm, value.standbyConfirm)
             boolean("${key}_record_mic", old.recordMic, value.recordMic)
@@ -498,6 +523,8 @@ class Prefs(context: Context) : GestureSettings {
     }
 
     companion object {
+        private const val HIDDEN_HEADS_UP = "hide_popups_heads_up"
+        private const val HIDDEN_TOAST = "hide_popups_toast"
         const val TOGGLE_NONE = ""
         const val TOGGLE_BOTH = "both"
         const val TOGGLE_L1_R1 = "l1_r1"
@@ -587,6 +614,7 @@ class Prefs(context: Context) : GestureSettings {
         const val SHOULDER_STATUS = "@status_overlay"
         const val SHOULDER_GYRO = "@gyro"
         const val SHOULDER_GYRO_CALIBRATE = "@gyro_calibrate"
+        /** Turns toasts, heads-up notifications and the app's own notices off and on again ([hiddenPopups]). */
         // Presses one of the pad's own buttons through the helper's clone; see [PAD_ACTIONS].
         const val SHOULDER_PAD_A = "@pad_a"
         const val SHOULDER_PAD_B = "@pad_b"

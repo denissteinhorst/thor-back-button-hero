@@ -306,6 +306,31 @@ push-to-talk gate and lowers the video's game sound while a talk is open. The de
 lowered separately and always restored; the voice itself is never altered beyond the chain.
 `RecorderMixTest` freezes the mix bit for bit; encoder, muxer and compositor are device-only.
 
+### Hide pop-ups — `HidePopups` and the root `PopupGuard`
+
+Do Not Disturb's per-hotkey option "Try to hide all pop-ups" (`<button>_dnd_hide_popups`, on by
+default). `SwitcherService.runAynAction` hands `AynControls.toggle` a callback that sets
+`HidePopups` to the state Do Not Disturb is switched to (hidden only with the option on; switching Do
+Not Disturb off always shows pop-ups again, also if the option was turned off meanwhile). The callback
+runs before Do Not Disturb's notice when turning off and after it when turning on, so that notice is
+the confirmation and is never muted. On, `HidePopups` mutes `NoticeOverlay` (messages are only logged;
+a `force` notice such as "could not be hidden" still appears; prompts and indicators are separate windows and unaffected) and,
+through `PService`, sets `settings put global heads_up_notifications_enabled 0` and `appops set
+com.android.systemui TOAST_WINDOW ignore`. Android 11+ draws every text toast in SystemUI, so that one
+app-op hides all of them. Both values survive a reboot, so before changing anything `HidePopups` reads
+the current ones and saves them in `Prefs.hiddenPopups` (a synchronous commit; device state, never
+backed up or reset), then starts the root `PopupGuard` through `PopupGuardLink`: a bare `app_process`
+VM that connects to a random abstract socket of the app, both sides check the peer uid, and the guard
+restores on EOF unless the app sent `RESTORED` first. App crash, kill, force-stop and uninstall therefore
+restore within a moment. Do Not Disturb off, a pause and the service's end restore through the app; the next
+service start restores leftovers (retried for three minutes, since pservice can come up after the
+service at boot). A restore only writes back a value that still holds what the toggle set, so a change
+the user made meanwhile stays. Do Not Disturb itself is not tied to it: turned off elsewhere (the
+system tile), the next hotkey press turns it on again and keeps pop-ups hidden. Root work runs in order on one worker thread; the command strings are
+frozen in `commands/popups.txt`. Without root only the app's own notices are muted, and a forced notice
+says so. Limits: a legacy custom-view toast of an old target SDK is drawn by its own app and stays, as do
+messages an app draws inside its own window.
+
 ### Small indicators — `NoticeOverlay`, `FocusIndicatorOverlay`, `RecordingIndicatorOverlay`
 
 All three draw on the top screen, because AYN's assistant covers the bottom one, and never take

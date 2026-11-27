@@ -73,7 +73,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `GyroSettingsDialog.kt` | 414 | The gyro hotkey's setup popup with a live ball preview beside every switch and slider. |
 | `WelcomeSheet.kt` | 202 | First-start sheet and `startSetup`, the defaults it applies, and whether settings are already customized. |
 | `StatusSummary.kt` | 19 | The arithmetic behind the battery status notice, apart from the battery service. |
-| `NoticeOverlay.kt` | 124 | The service's short messages as one toast-like window that only changes its text, so background rate limits never drop one. |
+| `NoticeOverlay.kt` | 131 | The service's short messages as one toast-like window that only changes its text, so background rate limits never drop one; muted while Do Not Disturb hides pop-ups. |
 | `SwitcherService.kt` | 1759 | The accessibility service and runtime coordinator. Intercepts Back and the shoulder keycodes, receives Back + D-pad from `PadHelper`/`DpadOverlay`, owns the Android side effects (global actions, display-aware launches, screenshots, controller focus, task-preserving screen swap, Active App Control, exceptions at runtime), captures switcher thumbnails, and creates `SwitcherOverlay`. Delegates Back-key *decisions* to `BackGestureMachine`. |
 | `BackGestureMachine.kt` | 158 | The Back-press state machine, free of Android side effects: single tap vs. double tap vs. hold vs. tap-then-hold, including blocked gestures from app exceptions. Clock, scheduling and actions enter through small interfaces so the timing logic is unit-testable on the JVM. |
 | `DoubleTapDetector.kt` | 18 | Standalone press-interval tracker. Fires when two presses fall inside the configured window. Uses `0L` as a "no previous press" sentinel — relevant when writing tests. |
@@ -166,6 +166,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `GyroFusion.kt` | 178 | Rest detection and the device's sensor-pair measurements. |
 | `GyroControl.kt` | 208 | The sole live sensor path; feeds the helper and the settings preview with the same samples. |
 | `GyroActions.kt` | 80 | Gyro on/off, calibration and the hold key, each with a notice. |
+| `HidePopups.kt` | 197 | Do Not Disturb's "Try to hide all pop-ups": mutes the app's notices and, through root, toasts and heads-up; saves the found values and restores them on every exit path. |
+| `PopupGuardLink.kt` | 109 | Starts `PopupGuard` through `PService` and holds the authenticated socket whose end makes it restore. |
+| `PopupGuard.kt` | 45 | *(root)* Restores the heads-up setting and the toast app-op when the app's socket ends without `RESTORED`. |
 | `ScreenRecording.kt` | 203 | App side of a recording: starts and stops `ScreenRecorder` as root, one recording at a time. |
 | `ScreenRecorder.kt` | 763 | *(root)* Mirrors the chosen screens into an encoder, captures playback and microphone, and writes the MP4. |
 | `RecordingIndicatorOverlay.kt` | 145 | The blinking recording dot that turns into a microphone while push to talk is held. |

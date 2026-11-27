@@ -4,6 +4,7 @@ back_double_app_mode	string	restart
 back_double_app_screen	string	top
 back_double_close_confirm	boolean	false
 back_double_display	string	top
+back_double_dnd_hide_popups	boolean	false
 back_double_focus_duration_ms	long	700
 back_double_focus_indicator	boolean	false
 back_double_focus_position	string	top_left
@@ -25,6 +26,7 @@ back_hold_app_mode	string	restart
 back_hold_app_screen	string	top
 back_hold_close_confirm	boolean	false
 back_hold_display	string	top
+back_hold_dnd_hide_popups	boolean	false
 back_hold_focus_duration_ms	long	700
 back_hold_focus_indicator	boolean	false
 back_hold_focus_position	string	top_left
@@ -45,6 +47,7 @@ back_single_app_mode	string	restart
 back_single_app_screen	string	top
 back_single_close_confirm	boolean	false
 back_single_display	string	top
+back_single_dnd_hide_popups	boolean	false
 back_single_focus_duration_ms	long	700
 back_single_focus_indicator	boolean	false
 back_single_focus_position	string	top_left
@@ -65,6 +68,7 @@ back_tap_hold_app_mode	string	restart
 back_tap_hold_app_screen	string	top
 back_tap_hold_close_confirm	boolean	false
 back_tap_hold_display	string	top
+back_tap_hold_dnd_hide_popups	boolean	false
 back_tap_hold_focus_duration_ms	long	700
 back_tap_hold_focus_indicator	boolean	false
 back_tap_hold_focus_position	string	top_left
@@ -86,6 +90,7 @@ dpad_down_app_mode	string	restart
 dpad_down_app_screen	string	top
 dpad_down_close_confirm	boolean	false
 dpad_down_display	string	top
+dpad_down_dnd_hide_popups	boolean	false
 dpad_down_focus_duration_ms	long	700
 dpad_down_focus_indicator	boolean	false
 dpad_down_focus_position	string	top_left
@@ -106,6 +111,7 @@ dpad_left_app_mode	string	restart
 dpad_left_app_screen	string	top
 dpad_left_close_confirm	boolean	false
 dpad_left_display	string	top
+dpad_left_dnd_hide_popups	boolean	false
 dpad_left_focus_duration_ms	long	700
 dpad_left_focus_indicator	boolean	false
 dpad_left_focus_position	string	top_left
@@ -126,6 +132,7 @@ dpad_right_app_mode	string	restart
 dpad_right_app_screen	string	top
 dpad_right_close_confirm	boolean	false
 dpad_right_display	string	top
+dpad_right_dnd_hide_popups	boolean	false
 dpad_right_focus_duration_ms	long	700
 dpad_right_focus_indicator	boolean	false
 dpad_right_focus_position	string	top_left
@@ -146,6 +153,7 @@ dpad_up_app_mode	string	restart
 dpad_up_app_screen	string	top
 dpad_up_close_confirm	boolean	false
 dpad_up_display	string	top
+dpad_up_dnd_hide_popups	boolean	false
 dpad_up_focus_duration_ms	long	700
 dpad_up_focus_indicator	boolean	false
 dpad_up_focus_position	string	top_left
@@ -166,6 +174,7 @@ dual_back_double_app_mode	string	restart
 dual_back_double_app_screen	string	top
 dual_back_double_close_confirm	boolean	false
 dual_back_double_display	string	top
+dual_back_double_dnd_hide_popups	boolean	false
 dual_back_double_focus_duration_ms	long	700
 dual_back_double_focus_indicator	boolean	false
 dual_back_double_focus_position	string	top_left
@@ -186,6 +195,7 @@ dual_back_hold_app_mode	string	restart
 dual_back_hold_app_screen	string	top
 dual_back_hold_close_confirm	boolean	false
 dual_back_hold_display	string	top
+dual_back_hold_dnd_hide_popups	boolean	false
 dual_back_hold_focus_duration_ms	long	700
 dual_back_hold_focus_indicator	boolean	false
 dual_back_hold_focus_position	string	top_left
@@ -206,6 +216,7 @@ dual_back_single_app_mode	string	minimize
 dual_back_single_app_screen	string	ask
 dual_back_single_close_confirm	boolean	true
 dual_back_single_display	string	top
+dual_back_single_dnd_hide_popups	boolean	true
 dual_back_single_focus_duration_ms	long	500
 dual_back_single_focus_indicator	boolean	true
 dual_back_single_focus_position	string	center_right
@@ -225,6 +236,7 @@ dual_back_tap_hold_app_mode	string	restart
 dual_back_tap_hold_app_screen	string	top
 dual_back_tap_hold_close_confirm	boolean	false
 dual_back_tap_hold_display	string	top
+dual_back_tap_hold_dnd_hide_popups	boolean	false
 dual_back_tap_hold_focus_duration_ms	long	700
 dual_back_tap_hold_focus_indicator	boolean	false
 dual_back_tap_hold_focus_position	string	top_left
@@ -246,6 +258,7 @@ dual_dpad_down_app_mode	string	restart
 dual_dpad_down_app_screen	string	top
 dual_dpad_down_close_confirm	boolean	false
 dual_dpad_down_display	string	top
+dual_dpad_down_dnd_hide_popups	boolean	false
 dual_dpad_down_focus_duration_ms	long	700
 dual_dpad_down_focus_indicator	boolean	false
 dual_dpad_down_focus_position	string	top_left
@@ -266,6 +279,7 @@ dual_dpad_left_app_mode	string	restart
 dual_dpad_left_app_screen	string	top
 dual_dpad_left_close_confirm	boolean	false
 dual_dpad_left_display	string	top
+dual_dpad_left_dnd_hide_popups	boolean	false
 dual_dpad_left_focus_duration_ms	long	700
 dual_dpad_left_focus_indicator	boolean	false
 dual_dpad_left_focus_position	string	top_left
@@ -286,6 +300,7 @@ dual_dpad_right_app_mode	string	restart
 dual_dpad_right_app_screen	string	top
 dual_dpad_right_close_confirm	boolean	false
 dual_dpad_right_display	string	top
+dual_dpad_right_dnd_hide_popups	boolean	false
 dual_dpad_right_focus_duration_ms	long	700
 dual_dpad_right_focus_indicator	boolean	false
 dual_dpad_right_focus_position	string	top_left
@@ -306,6 +321,7 @@ dual_dpad_up_app_mode	string	restart
 dual_dpad_up_app_screen	string	top
 dual_dpad_up_close_confirm	boolean	false
 dual_dpad_up_display	string	top
+dual_dpad_up_dnd_hide_popups	boolean	false
 dual_dpad_up_focus_duration_ms	long	700
 dual_dpad_up_focus_indicator	boolean	false
 dual_dpad_up_focus_position	string	top_left
@@ -326,6 +342,7 @@ dual_face_a_app_mode	string	restart
 dual_face_a_app_screen	string	top
 dual_face_a_close_confirm	boolean	false
 dual_face_a_display	string	top
+dual_face_a_dnd_hide_popups	boolean	false
 dual_face_a_focus_duration_ms	long	700
 dual_face_a_focus_indicator	boolean	false
 dual_face_a_focus_position	string	top_left
@@ -346,6 +363,7 @@ dual_face_b_app_mode	string	restart
 dual_face_b_app_screen	string	top
 dual_face_b_close_confirm	boolean	false
 dual_face_b_display	string	top
+dual_face_b_dnd_hide_popups	boolean	false
 dual_face_b_focus_duration_ms	long	700
 dual_face_b_focus_indicator	boolean	false
 dual_face_b_focus_position	string	top_left
@@ -366,6 +384,7 @@ dual_face_x_app_mode	string	restart
 dual_face_x_app_screen	string	top
 dual_face_x_close_confirm	boolean	false
 dual_face_x_display	string	top
+dual_face_x_dnd_hide_popups	boolean	false
 dual_face_x_focus_duration_ms	long	700
 dual_face_x_focus_indicator	boolean	false
 dual_face_x_focus_position	string	top_left
@@ -386,6 +405,7 @@ dual_face_y_app_mode	string	restart
 dual_face_y_app_screen	string	top
 dual_face_y_close_confirm	boolean	false
 dual_face_y_display	string	top
+dual_face_y_dnd_hide_popups	boolean	false
 dual_face_y_focus_duration_ms	long	700
 dual_face_y_focus_indicator	boolean	false
 dual_face_y_focus_position	string	top_left
@@ -407,6 +427,7 @@ dual_l1_app_mode	string	restart
 dual_l1_app_screen	string	top
 dual_l1_close_confirm	boolean	false
 dual_l1_display	string	top
+dual_l1_dnd_hide_popups	boolean	false
 dual_l1_focus_duration_ms	long	700
 dual_l1_focus_indicator	boolean	false
 dual_l1_focus_position	string	top_left
@@ -427,6 +448,7 @@ dual_l2_app_mode	string	restart
 dual_l2_app_screen	string	top
 dual_l2_close_confirm	boolean	false
 dual_l2_display	string	top
+dual_l2_dnd_hide_popups	boolean	false
 dual_l2_focus_duration_ms	long	700
 dual_l2_focus_indicator	boolean	false
 dual_l2_focus_position	string	top_left
@@ -447,6 +469,7 @@ dual_lstick_double_app_mode	string	restart
 dual_lstick_double_app_screen	string	top
 dual_lstick_double_close_confirm	boolean	false
 dual_lstick_double_display	string	top
+dual_lstick_double_dnd_hide_popups	boolean	false
 dual_lstick_double_focus_duration_ms	long	700
 dual_lstick_double_focus_indicator	boolean	false
 dual_lstick_double_focus_position	string	top_left
@@ -468,6 +491,7 @@ dual_lstick_down_app_mode	string	restart
 dual_lstick_down_app_screen	string	top
 dual_lstick_down_close_confirm	boolean	false
 dual_lstick_down_display	string	top
+dual_lstick_down_dnd_hide_popups	boolean	false
 dual_lstick_down_focus_duration_ms	long	700
 dual_lstick_down_focus_indicator	boolean	false
 dual_lstick_down_focus_position	string	top_left
@@ -488,6 +512,7 @@ dual_lstick_left_app_mode	string	restart
 dual_lstick_left_app_screen	string	top
 dual_lstick_left_close_confirm	boolean	false
 dual_lstick_left_display	string	top
+dual_lstick_left_dnd_hide_popups	boolean	false
 dual_lstick_left_focus_duration_ms	long	700
 dual_lstick_left_focus_indicator	boolean	false
 dual_lstick_left_focus_position	string	top_left
@@ -508,6 +533,7 @@ dual_lstick_press_app_mode	string	restart
 dual_lstick_press_app_screen	string	top
 dual_lstick_press_close_confirm	boolean	false
 dual_lstick_press_display	string	top
+dual_lstick_press_dnd_hide_popups	boolean	false
 dual_lstick_press_focus_duration_ms	long	700
 dual_lstick_press_focus_indicator	boolean	false
 dual_lstick_press_focus_position	string	top_left
@@ -528,6 +554,7 @@ dual_lstick_right_app_mode	string	restart
 dual_lstick_right_app_screen	string	top
 dual_lstick_right_close_confirm	boolean	false
 dual_lstick_right_display	string	top
+dual_lstick_right_dnd_hide_popups	boolean	false
 dual_lstick_right_focus_duration_ms	long	700
 dual_lstick_right_focus_indicator	boolean	false
 dual_lstick_right_focus_position	string	top_left
@@ -548,6 +575,7 @@ dual_lstick_tap_hold_app_mode	string	restart
 dual_lstick_tap_hold_app_screen	string	top
 dual_lstick_tap_hold_close_confirm	boolean	false
 dual_lstick_tap_hold_display	string	top
+dual_lstick_tap_hold_dnd_hide_popups	boolean	false
 dual_lstick_tap_hold_focus_duration_ms	long	700
 dual_lstick_tap_hold_focus_indicator	boolean	false
 dual_lstick_tap_hold_focus_position	string	top_left
@@ -569,6 +597,7 @@ dual_lstick_up_app_mode	string	restart
 dual_lstick_up_app_screen	string	top
 dual_lstick_up_close_confirm	boolean	false
 dual_lstick_up_display	string	top
+dual_lstick_up_dnd_hide_popups	boolean	false
 dual_lstick_up_focus_duration_ms	long	700
 dual_lstick_up_focus_indicator	boolean	false
 dual_lstick_up_focus_position	string	top_left
@@ -590,6 +619,7 @@ dual_r1_app_mode	string	restart
 dual_r1_app_screen	string	top
 dual_r1_close_confirm	boolean	false
 dual_r1_display	string	top
+dual_r1_dnd_hide_popups	boolean	false
 dual_r1_focus_duration_ms	long	700
 dual_r1_focus_indicator	boolean	false
 dual_r1_focus_position	string	top_left
@@ -610,6 +640,7 @@ dual_r2_app_mode	string	restart
 dual_r2_app_screen	string	top
 dual_r2_close_confirm	boolean	false
 dual_r2_display	string	top
+dual_r2_dnd_hide_popups	boolean	false
 dual_r2_focus_duration_ms	long	700
 dual_r2_focus_indicator	boolean	false
 dual_r2_focus_position	string	top_left
@@ -630,6 +661,7 @@ dual_rstick_double_app_mode	string	restart
 dual_rstick_double_app_screen	string	top
 dual_rstick_double_close_confirm	boolean	false
 dual_rstick_double_display	string	top
+dual_rstick_double_dnd_hide_popups	boolean	false
 dual_rstick_double_focus_duration_ms	long	700
 dual_rstick_double_focus_indicator	boolean	false
 dual_rstick_double_focus_position	string	top_left
@@ -651,6 +683,7 @@ dual_rstick_down_app_mode	string	restart
 dual_rstick_down_app_screen	string	top
 dual_rstick_down_close_confirm	boolean	false
 dual_rstick_down_display	string	top
+dual_rstick_down_dnd_hide_popups	boolean	false
 dual_rstick_down_focus_duration_ms	long	700
 dual_rstick_down_focus_indicator	boolean	false
 dual_rstick_down_focus_position	string	top_left
@@ -671,6 +704,7 @@ dual_rstick_left_app_mode	string	restart
 dual_rstick_left_app_screen	string	top
 dual_rstick_left_close_confirm	boolean	false
 dual_rstick_left_display	string	top
+dual_rstick_left_dnd_hide_popups	boolean	false
 dual_rstick_left_focus_duration_ms	long	700
 dual_rstick_left_focus_indicator	boolean	false
 dual_rstick_left_focus_position	string	top_left
@@ -691,6 +725,7 @@ dual_rstick_press_app_mode	string	restart
 dual_rstick_press_app_screen	string	top
 dual_rstick_press_close_confirm	boolean	false
 dual_rstick_press_display	string	top
+dual_rstick_press_dnd_hide_popups	boolean	false
 dual_rstick_press_focus_duration_ms	long	700
 dual_rstick_press_focus_indicator	boolean	false
 dual_rstick_press_focus_position	string	top_left
@@ -711,6 +746,7 @@ dual_rstick_right_app_mode	string	restart
 dual_rstick_right_app_screen	string	top
 dual_rstick_right_close_confirm	boolean	false
 dual_rstick_right_display	string	top
+dual_rstick_right_dnd_hide_popups	boolean	false
 dual_rstick_right_focus_duration_ms	long	700
 dual_rstick_right_focus_indicator	boolean	false
 dual_rstick_right_focus_position	string	top_left
@@ -731,6 +767,7 @@ dual_rstick_tap_hold_app_mode	string	restart
 dual_rstick_tap_hold_app_screen	string	top
 dual_rstick_tap_hold_close_confirm	boolean	false
 dual_rstick_tap_hold_display	string	top
+dual_rstick_tap_hold_dnd_hide_popups	boolean	false
 dual_rstick_tap_hold_focus_duration_ms	long	700
 dual_rstick_tap_hold_focus_indicator	boolean	false
 dual_rstick_tap_hold_focus_position	string	top_left
@@ -752,6 +789,7 @@ dual_rstick_up_app_mode	string	restart
 dual_rstick_up_app_screen	string	top
 dual_rstick_up_close_confirm	boolean	false
 dual_rstick_up_display	string	top
+dual_rstick_up_dnd_hide_popups	boolean	false
 dual_rstick_up_focus_duration_ms	long	700
 dual_rstick_up_focus_indicator	boolean	false
 dual_rstick_up_focus_position	string	top_left
@@ -773,6 +811,7 @@ dual_select_app_mode	string	restart
 dual_select_app_screen	string	top
 dual_select_close_confirm	boolean	false
 dual_select_display	string	top
+dual_select_dnd_hide_popups	boolean	false
 dual_select_focus_duration_ms	long	700
 dual_select_focus_indicator	boolean	false
 dual_select_focus_position	string	top_left
@@ -793,6 +832,7 @@ dual_start_app_mode	string	restart
 dual_start_app_screen	string	top
 dual_start_close_confirm	boolean	false
 dual_start_display	string	top
+dual_start_dnd_hide_popups	boolean	false
 dual_start_focus_duration_ms	long	700
 dual_start_focus_indicator	boolean	false
 dual_start_focus_position	string	top_left
@@ -816,6 +856,7 @@ face_a_app_mode	string	restart
 face_a_app_screen	string	top
 face_a_close_confirm	boolean	false
 face_a_display	string	top
+face_a_dnd_hide_popups	boolean	false
 face_a_focus_duration_ms	long	700
 face_a_focus_indicator	boolean	false
 face_a_focus_position	string	top_left
@@ -836,6 +877,7 @@ face_b_app_mode	string	restart
 face_b_app_screen	string	top
 face_b_close_confirm	boolean	false
 face_b_display	string	top
+face_b_dnd_hide_popups	boolean	false
 face_b_focus_duration_ms	long	700
 face_b_focus_indicator	boolean	false
 face_b_focus_position	string	top_left
@@ -856,6 +898,7 @@ face_x_app_mode	string	restart
 face_x_app_screen	string	top
 face_x_close_confirm	boolean	false
 face_x_display	string	top
+face_x_dnd_hide_popups	boolean	false
 face_x_focus_duration_ms	long	700
 face_x_focus_indicator	boolean	false
 face_x_focus_position	string	top_left
@@ -876,6 +919,7 @@ face_y_app_mode	string	restart
 face_y_app_screen	string	top
 face_y_close_confirm	boolean	false
 face_y_display	string	top
+face_y_dnd_hide_popups	boolean	false
 face_y_focus_duration_ms	long	700
 face_y_focus_indicator	boolean	false
 face_y_focus_position	string	top_left
@@ -897,6 +941,7 @@ home_app_mode	string	restart
 home_app_screen	string	top
 home_close_confirm	boolean	false
 home_display	string	top
+home_dnd_hide_popups	boolean	false
 home_focus_duration_ms	long	700
 home_focus_indicator	boolean	false
 home_focus_position	string	top_left
@@ -917,6 +962,7 @@ l1_app_mode	string	restart
 l1_app_screen	string	top
 l1_close_confirm	boolean	false
 l1_display	string	top
+l1_dnd_hide_popups	boolean	false
 l1_focus_duration_ms	long	700
 l1_focus_indicator	boolean	false
 l1_focus_position	string	top_left
@@ -937,6 +983,7 @@ l2_app_mode	string	restart
 l2_app_screen	string	top
 l2_close_confirm	boolean	false
 l2_display	string	top
+l2_dnd_hide_popups	boolean	false
 l2_focus_duration_ms	long	700
 l2_focus_indicator	boolean	false
 l2_focus_position	string	top_left
@@ -957,6 +1004,7 @@ lstick_double_app_mode	string	restart
 lstick_double_app_screen	string	top
 lstick_double_close_confirm	boolean	false
 lstick_double_display	string	top
+lstick_double_dnd_hide_popups	boolean	false
 lstick_double_focus_duration_ms	long	700
 lstick_double_focus_indicator	boolean	false
 lstick_double_focus_position	string	top_left
@@ -978,6 +1026,7 @@ lstick_down_app_mode	string	restart
 lstick_down_app_screen	string	top
 lstick_down_close_confirm	boolean	false
 lstick_down_display	string	top
+lstick_down_dnd_hide_popups	boolean	false
 lstick_down_focus_duration_ms	long	700
 lstick_down_focus_indicator	boolean	false
 lstick_down_focus_position	string	top_left
@@ -998,6 +1047,7 @@ lstick_left_app_mode	string	restart
 lstick_left_app_screen	string	top
 lstick_left_close_confirm	boolean	false
 lstick_left_display	string	top
+lstick_left_dnd_hide_popups	boolean	false
 lstick_left_focus_duration_ms	long	700
 lstick_left_focus_indicator	boolean	false
 lstick_left_focus_position	string	top_left
@@ -1018,6 +1068,7 @@ lstick_press_app_mode	string	restart
 lstick_press_app_screen	string	top
 lstick_press_close_confirm	boolean	false
 lstick_press_display	string	top
+lstick_press_dnd_hide_popups	boolean	false
 lstick_press_focus_duration_ms	long	700
 lstick_press_focus_indicator	boolean	false
 lstick_press_focus_position	string	top_left
@@ -1038,6 +1089,7 @@ lstick_right_app_mode	string	restart
 lstick_right_app_screen	string	top
 lstick_right_close_confirm	boolean	false
 lstick_right_display	string	top
+lstick_right_dnd_hide_popups	boolean	false
 lstick_right_focus_duration_ms	long	700
 lstick_right_focus_indicator	boolean	false
 lstick_right_focus_position	string	top_left
@@ -1058,6 +1110,7 @@ lstick_tap_hold_app_mode	string	restart
 lstick_tap_hold_app_screen	string	top
 lstick_tap_hold_close_confirm	boolean	false
 lstick_tap_hold_display	string	top
+lstick_tap_hold_dnd_hide_popups	boolean	false
 lstick_tap_hold_focus_duration_ms	long	700
 lstick_tap_hold_focus_indicator	boolean	false
 lstick_tap_hold_focus_position	string	top_left
@@ -1079,6 +1132,7 @@ lstick_up_app_mode	string	restart
 lstick_up_app_screen	string	top
 lstick_up_close_confirm	boolean	false
 lstick_up_display	string	top
+lstick_up_dnd_hide_popups	boolean	false
 lstick_up_focus_duration_ms	long	700
 lstick_up_focus_indicator	boolean	false
 lstick_up_focus_position	string	top_left
@@ -1102,6 +1156,7 @@ r1_app_mode	string	restart
 r1_app_screen	string	top
 r1_close_confirm	boolean	false
 r1_display	string	top
+r1_dnd_hide_popups	boolean	false
 r1_focus_duration_ms	long	700
 r1_focus_indicator	boolean	false
 r1_focus_position	string	top_left
@@ -1122,6 +1177,7 @@ r2_app_mode	string	restart
 r2_app_screen	string	top
 r2_close_confirm	boolean	false
 r2_display	string	top
+r2_dnd_hide_popups	boolean	false
 r2_focus_duration_ms	long	700
 r2_focus_indicator	boolean	false
 r2_focus_position	string	top_left
@@ -1142,6 +1198,7 @@ rstick_double_app_mode	string	restart
 rstick_double_app_screen	string	top
 rstick_double_close_confirm	boolean	false
 rstick_double_display	string	top
+rstick_double_dnd_hide_popups	boolean	false
 rstick_double_focus_duration_ms	long	700
 rstick_double_focus_indicator	boolean	false
 rstick_double_focus_position	string	top_left
@@ -1163,6 +1220,7 @@ rstick_down_app_mode	string	restart
 rstick_down_app_screen	string	top
 rstick_down_close_confirm	boolean	false
 rstick_down_display	string	top
+rstick_down_dnd_hide_popups	boolean	false
 rstick_down_focus_duration_ms	long	700
 rstick_down_focus_indicator	boolean	false
 rstick_down_focus_position	string	top_left
@@ -1183,6 +1241,7 @@ rstick_left_app_mode	string	restart
 rstick_left_app_screen	string	top
 rstick_left_close_confirm	boolean	false
 rstick_left_display	string	top
+rstick_left_dnd_hide_popups	boolean	false
 rstick_left_focus_duration_ms	long	700
 rstick_left_focus_indicator	boolean	false
 rstick_left_focus_position	string	top_left
@@ -1203,6 +1262,7 @@ rstick_press_app_mode	string	restart
 rstick_press_app_screen	string	top
 rstick_press_close_confirm	boolean	false
 rstick_press_display	string	top
+rstick_press_dnd_hide_popups	boolean	false
 rstick_press_focus_duration_ms	long	700
 rstick_press_focus_indicator	boolean	false
 rstick_press_focus_position	string	top_left
@@ -1223,6 +1283,7 @@ rstick_right_app_mode	string	restart
 rstick_right_app_screen	string	top
 rstick_right_close_confirm	boolean	false
 rstick_right_display	string	top
+rstick_right_dnd_hide_popups	boolean	false
 rstick_right_focus_duration_ms	long	700
 rstick_right_focus_indicator	boolean	false
 rstick_right_focus_position	string	top_left
@@ -1243,6 +1304,7 @@ rstick_tap_hold_app_mode	string	restart
 rstick_tap_hold_app_screen	string	top
 rstick_tap_hold_close_confirm	boolean	false
 rstick_tap_hold_display	string	top
+rstick_tap_hold_dnd_hide_popups	boolean	false
 rstick_tap_hold_focus_duration_ms	long	700
 rstick_tap_hold_focus_indicator	boolean	false
 rstick_tap_hold_focus_position	string	top_left
@@ -1264,6 +1326,7 @@ rstick_up_app_mode	string	restart
 rstick_up_app_screen	string	top
 rstick_up_close_confirm	boolean	false
 rstick_up_display	string	top
+rstick_up_dnd_hide_popups	boolean	false
 rstick_up_focus_duration_ms	long	700
 rstick_up_focus_indicator	boolean	false
 rstick_up_focus_position	string	top_left
@@ -1284,6 +1347,7 @@ select_app_mode	string	restart
 select_app_screen	string	top
 select_close_confirm	boolean	false
 select_display	string	top
+select_dnd_hide_popups	boolean	false
 select_focus_duration_ms	long	700
 select_focus_indicator	boolean	false
 select_focus_position	string	top_left
@@ -1305,6 +1369,7 @@ start_app_mode	string	restart
 start_app_screen	string	top
 start_close_confirm	boolean	false
 start_display	string	top
+start_dnd_hide_popups	boolean	false
 start_focus_duration_ms	long	700
 start_focus_indicator	boolean	false
 start_focus_position	string	top_left

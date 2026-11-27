@@ -89,6 +89,7 @@ internal class BindingCard(
     private var switcherOptions: View? = null
     private var switchAppOptions: View? = null
     private var closeAppsOptions: View? = null
+    private var dndOptions: View? = null
     private var standbyOptions: View? = null
     private var recordOptions: RecordOptions? = null
     private var appOptions: SettingsPage.AppControlOptionsHandle? = null
@@ -176,6 +177,16 @@ internal class BindingCard(
             }
         }
         closeAppsOptions?.visibility = if (closeApps) View.VISIBLE else View.GONE
+        val dnd = action == Ayn.Toggle.DO_NOT_DISTURB.action
+        if (dnd && dndOptions == null) {
+            dndOptions = card.subOptions {
+                toggleRow(R.string.dnd_hide_popups_title, R.string.dnd_hide_popups_summary, prefs.dndHidePopups(button),
+                    readValue = { prefs.dndHidePopups(button) }) {
+                    prefs.setDndHidePopups(button, it)
+                }
+            }
+        }
+        dndOptions?.visibility = if (dnd) View.VISIBLE else View.GONE
         val standby = action == Prefs.SHOULDER_STANDBY
         if (standby && standbyOptions == null) {
             standbyOptions = card.subOptions {

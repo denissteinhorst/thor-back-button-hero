@@ -90,6 +90,7 @@ data class BindingSettings(
     /** The choice of an [Ayn] hotkey; null until made. */
     val aynOption: String? = null,
     val switchAppFollow: Boolean = true,
+    val dndHidePopups: Boolean = true,
     val closeConfirm: Boolean = true,
     val standbyConfirm: Boolean = false,
     val recordMic: Boolean = false,

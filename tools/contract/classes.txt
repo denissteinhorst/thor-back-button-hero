@@ -15,5 +15,6 @@ root ScreenRecorder
 root RecentsStateReader
 root ControllerFocusTouch
 root TaskRemover
+root PopupGuard
 debug DeviceTestReceiver
 debug DeviceTestKeyActivity

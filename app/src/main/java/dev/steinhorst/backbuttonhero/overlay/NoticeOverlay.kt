@@ -28,9 +28,16 @@ class NoticeOverlay(private val context: Context) {
 
     private var shown: Shown? = null
 
-    fun show(text: CharSequence, long: Boolean = false) {
+    /** While "Hide pop-ups" is on, messages are only logged; [show] with `force` still appears. */
+    @Volatile var muted = false
+
+    fun show(text: CharSequence, long: Boolean = false, force: Boolean = false) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
-            handler.post { show(text, long) }
+            handler.post { show(text, long, force) }
+            return
+        }
+        if (muted && !force) {
+            Log.i(TAG, "Notice muted: " + text.toString().replace("\n", "\\n"))
             return
         }
         // One log line per message, so a two-line notice stays one entry for the on-device suite.
@@ -44,7 +51,7 @@ class NoticeOverlay(private val context: Context) {
         handler.postDelayed(::hide, if (long) LONG_MS else SHORT_MS)
     }
 
-    fun show(textRes: Int, long: Boolean = false) = show(context.getString(textRes), long)
+    fun show(textRes: Int, long: Boolean = false, force: Boolean = false) = show(context.getString(textRes), long, force)
 
     private fun add(): Shown? {
         val windowContext = TopOverlayWindow.context(context) ?: return null

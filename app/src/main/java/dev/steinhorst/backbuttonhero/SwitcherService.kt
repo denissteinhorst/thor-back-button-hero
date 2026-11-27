@@ -33,6 +33,7 @@ import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.actions.AynControls
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
 import dev.steinhorst.backbuttonhero.actions.FocusedScreen
+import dev.steinhorst.backbuttonhero.actions.HidePopups
 import dev.steinhorst.backbuttonhero.actions.LastAppAction
 import dev.steinhorst.backbuttonhero.actions.PowerMenu
 import dev.steinhorst.backbuttonhero.actions.SystemActions
@@ -128,6 +129,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var levels: LevelControl
     private lateinit var controllerFocus: ControllerFocus
     private lateinit var aynControls: AynControls
+    private lateinit var hidePopups: HidePopups
     private lateinit var focusIndicator: FocusIndicatorOverlay
     /** Confirm and Cancel beside native top Recents while the controller drives it. */
     private val topRecentsHint by lazy { ButtonHintOverlay(this) }
@@ -483,6 +485,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         focusIndicator = FocusIndicatorOverlay(this)
         controllerFocus = ControllerFocus(this, { notice.show(it) }, onFailed = focusIndicator::dismiss, inputScreen = ::readInputScreen)
         aynControls = AynControls(this) { notice.show(it) }
+        if (::hidePopups.isInitialized) hidePopups.close()
+        hidePopups = HidePopups(prefs, notice, HidePopups.rootHost(this))
+        // A crash, kill or reboot while pop-ups were hidden left the system values changed.
+        hidePopups.restoreLeftover()
         padHelper = PadHelper(
             this,
             ::handleDpad,
@@ -666,6 +672,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
             focusIndicator.dismiss()
             topRecentsHint.dismiss()
             cancelActiveAppSwitch()
+            // Paused, no hotkey could show pop-ups again; the pause message below is shown as usual.
+            if (::hidePopups.isInitialized) hidePopups.release()
             // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
         }
@@ -1118,7 +1126,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** The AYN tiles as hotkeys: a toggle flips, an option applies at once, "modal" asks first. */
     private fun runAynAction(button: ComboButton, action: String) {
-        Ayn.toggleOf(action)?.let { return aynControls.toggle(it) }
+        Ayn.toggleOf(action)?.let { toggle ->
+            // Turning Do Not Disturb off always shows pop-ups again, also if the option was switched off meanwhile.
+            if (toggle != Ayn.Toggle.DO_NOT_DISTURB) return aynControls.toggle(toggle)
+            return aynControls.toggle(toggle) { on -> hidePopups.set(on && prefs.dndHidePopups(button)) }
+        }
         val group = Ayn.groupOf(action) ?: return
         val chosen = prefs.aynOption(button, group)
         fun apply(key: String) {
@@ -1487,6 +1499,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (::appControlPrompt.isInitialized) appControlPrompt.dismiss()
         if (::panels.isInitialized) panels.close()
         if (::parking.isInitialized) parking.close()
+        // Restores in the background; if the process ends first, the root guard restores instead.
+        if (::hidePopups.isInitialized) hidePopups.close()
     }
 
     /** Hands the pad back to Android; the helper must not outlive the service it reports to. */

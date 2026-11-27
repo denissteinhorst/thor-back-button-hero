@@ -101,6 +101,7 @@ class StoredDataContractTest {
                 appScreen = Prefs.DISPLAY_TOP,
                 appConfirm = true,
                 switchAppFollow = false,
+                dndHidePopups = false,
                 closeConfirm = false,
                 standbyConfirm = true,
                 recordMic = true,

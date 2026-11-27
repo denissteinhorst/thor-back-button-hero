@@ -29,6 +29,7 @@ activity action=android.settings.DISPLAY_SETTINGS component=null data=null categ
 activity action=android.settings.ZEN_MODE_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
 ## @do_not_disturb
 Notice: Do Not Disturb: On
+Notice: System pop-ups could not be hidden, only this app's own messages.
 ## @extra_dim
 activity action=android.settings.REDUCE_BRIGHT_COLORS_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
 ## @fan

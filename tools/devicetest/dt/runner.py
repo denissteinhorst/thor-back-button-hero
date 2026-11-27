@@ -48,7 +48,7 @@ def _in_layer(fn, layer):
 
 # Which areas a changed source file can affect: used by --changed.
 FILE_AREAS = {
-    "AynControls.kt": ["ayn"],
+    "AynControls.kt": ["ayn", "popups"],
     "LevelControl.kt": ["levels"], "LevelRepeater.kt": ["levels"], "LevelSteps.kt": ["levels"], "BrightnessControl.kt": ["levels"],
     "StatusSummary.kt": ["media"],
     "BackGestureMachine.kt": ["gestures", "toggle", "dual"], "DoubleTapDetector.kt": ["gestures"],
@@ -65,12 +65,13 @@ FILE_AREAS = {
     "ButtonHints.kt": ["appcontrol", "windows", "confirm"], "SwitcherOverlay.kt": ["confirm"], "CloseApps.kt": ["appcontrol"], "TaskRemover.kt": ["appcontrol"],
     "ScreenRecorder.kt": ["capture"], "ScreenRecording.kt": ["capture"], "SystemScreenshot.kt": ["capture"],
     "ScreenshotSaver.kt": ["capture"], "PushToTalk.kt": ["capture"],
-    "PowerMenu.kt": ["panels"], "LastApp.kt": ["windows"], "NoticeOverlay.kt": ["ayn", "toggle", "media"], "CardTouch.kt": ["windows"], "ControllerFocusTouch.kt": ["windows"],
+    "PowerMenu.kt": ["panels"], "LastApp.kt": ["windows"], "NoticeOverlay.kt": ["ayn", "toggle", "media", "popups"], "CardTouch.kt": ["windows"], "ControllerFocusTouch.kt": ["windows"],
     "AccessibilityAppSource.kt": ["windows", "appcontrol", "exceptions"], "RunningApp.kt": ["windows", "appcontrol"],
     "RecordingIndicatorOverlay.kt": ["capture"], "EchoTrim.kt": ["capture"], "VoiceBand.kt": ["capture"],
     "VoiceLeveler.kt": ["capture"], "VoicePolish.kt": ["capture"],
     "SettingsActivity.kt": ["settings"], "SettingsNavigation.kt": ["settings"], "BindingCard.kt": ["settings"],
     "UpdateFlow.kt": ["settings"], "UpdateChecker.kt": ["settings"],
+    "HidePopups.kt": ["popups"], "PopupGuardLink.kt": ["popups"], "PopupGuard.kt": ["popups"],
 }
 # Changes here can break anything the service does.
 EVERYTHING = {"SwitcherService.kt", "Prefs.kt", "PService.kt", "AndroidManifest.xml", "accessibility_config.xml", "Shell.kt"}

@@ -30,11 +30,11 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 896 JVM tests pass |
+| `testDebugUnitTest` | All 977 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
-| `hostTests` | The device harness's 111 host tests pass (`tools/devicetest/host_tests.py`: synthetic state, no adb; fails on an empty discovery) |
+| `hostTests` | The device harness's 114 host tests pass (`tools/devicetest/host_tests.py`: synthetic state, no adb; fails on an empty discovery) |
 
 One command is the acceptance criterion for any change. It runs in three places, all
 identical:
@@ -87,7 +87,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 139 classes, 899 tests
+### Base — JVM tests (Robolectric + JUnit), 146 classes, 977 tests
 
 Everything the gate can verify without hardware.
 
@@ -218,8 +218,8 @@ a new baseline to record. Update these figures in the same change that legitimat
 
 | Check | Expected |
 |---|---|
-| JVM tests | 911 in 139 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
-| Host tests | 118, 0 failures |
+| JVM tests | 977 in 146 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
+| Host tests | 125, 0 failures |
 | Lint | 0 errors; exactly the 20 baselined warnings |
 | Coverage | All 98 ratchets pass; about 83 % total line coverage (11520/13887, from `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`) |
 | Release APK | About 4.30 MB (`app-release-unsigned.apk`), including the ~18 KB `lib/arm64-v8a/libpadhelper.so` |

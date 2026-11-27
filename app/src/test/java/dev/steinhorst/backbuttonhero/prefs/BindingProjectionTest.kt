@@ -50,6 +50,7 @@ class BindingProjectionTest {
         Field("indicator", "focus_indicator", false) { it.copy(indicator = false) },
         Field("appConfirm", "app_confirm", true) { it.copy(appConfirm = true) },
         Field("switchAppFollow", "switch_app_follow", false) { it.copy(switchAppFollow = false) },
+        Field("dndHidePopups", "dnd_hide_popups", false) { it.copy(dndHidePopups = false) },
         Field("closeConfirm", "close_confirm", false) { it.copy(closeConfirm = false) },
         Field("standbyConfirm", "standby_confirm", true) { it.copy(standbyConfirm = true) },
         Field("recordMic", "record_mic", true) { it.copy(recordMic = true) },

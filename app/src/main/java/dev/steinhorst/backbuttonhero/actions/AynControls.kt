@@ -269,14 +269,20 @@ class AynControls(private val context: Context, private val show: (String) -> Un
         }
     }
 
-    fun toggle(toggle: Ayn.Toggle) {
+    /**
+     * Flips [toggle]. [changing] learns the requested state: before the notice when turning off and
+     * after it when turning on, so muting notices along with the state never swallows this one.
+     */
+    fun toggle(toggle: Ayn.Toggle, changing: (Boolean) -> Unit = {}) {
         if (toggle == Ayn.Toggle.MUTE_MICROPHONE) return toggleMicrophone()
         val on = !(requested[toggle] ?: currentlyOn(toggle))
         requested[toggle] = on
         queued[toggle] = (queued[toggle] ?: 0) + 1
         val title = context.getString(toggle.titleRes)
+        if (!on) changing(false)
         // The state is shown at once: it is what this press asked for, and a failure corrects it below.
         notice(context.getString(R.string.ayn_notice_value, title, context.getString(if (on) R.string.ayn_on else R.string.ayn_off)))
+        if (on) changing(true)
         run(Ayn.toggleCommand(toggle, on)) { _ ->
             val left = (queued[toggle] ?: 1) - 1
             if (left == 0) { queued.remove(toggle); requested.remove(toggle) } else queued[toggle] = left

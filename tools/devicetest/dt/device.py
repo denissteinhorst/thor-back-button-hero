@@ -29,6 +29,16 @@ SYSTEM_KEYS = [
 PROPS = ["persist.sys.input.dispaly", "persist.sys.gamepad.type"]
 EMPTY = '""'
 ZEN_TO_DND = {"0": "off", "1": "priority", "2": "none", "3": "alarms"}
+# What "Hide pop-ups" changes: the global heads-up setting and SystemUI's toast app-op.
+HEADS_UP = "heads_up_notifications_enabled"
+TOAST_OP = "com.android.systemui TOAST_WINDOW"
+TOAST_MODE = re.compile(r"(?<!Uid mode: )TOAST_WINDOW: (\w+)")
+
+
+def toast_mode(reply):
+    """The package mode in `appops get`'s reply; an op without a mode of its own is "default"."""
+    m = TOAST_MODE.search(reply or "")
+    return m.group(1) if m else "default"
 
 
 def getevent_events(text, timed=False):
@@ -274,11 +284,19 @@ class Device:
         m = re.search(r"sensor=1\s+toggles=\{\s+toggle_type=1\s+state_type=(\d)", dump)
         return bool(m) and m.group(1) == "1"
 
+    def toast_mode(self):
+        return toast_mode(self.sh(f"appops get {TOAST_OP}"))
+
+    def popups(self):
+        """The two system values "Hide pop-ups" changes, as the app reads them."""
+        return {"heads_up": self.setting(HEADS_UP, "global"), "toast": self.toast_mode()}
+
     def snapshot_system(self):
         state = {
             "system": {k: self.setting(k) for k in SYSTEM_KEYS},
             "props": {p: self.sh(f"getprop {p}") for p in PROPS},
             "zen": self.setting("zen_mode", "global"),
+            "popups": self.popups(),
             "mic": self.microphone_blocked(),
             "volume": self.volume()[0],
             "brightness": self.brightness(),
@@ -306,6 +324,13 @@ class Device:
                 lines.append(f"setprop {prop} {shlex.quote(value) if value else EMPTY}")
         if self.setting("zen_mode", "global") != state["zen"]:
             lines.append(f"cmd notification set_dnd {ZEN_TO_DND.get(state['zen'], 'off')}")
+        # A state saved by an older harness has no pop-up values; there is nothing to put back then.
+        popups = state.get("popups")
+        if popups and self.setting(HEADS_UP, "global") != popups["heads_up"]:
+            lines.append(f"settings delete global {HEADS_UP}" if popups["heads_up"] == "null"
+                         else f"settings put global {HEADS_UP} {shlex.quote(popups['heads_up'])}")
+        if popups and self.toast_mode() != popups["toast"]:
+            lines.append(f"appops set {TOAST_OP} {shlex.quote(popups['toast'])}")
         if self.microphone_blocked() != state["mic"]:
             lines.append(f"cmd sensor_privacy {'enable' if state['mic'] else 'disable'} 0 microphone")
         if lines:
@@ -467,8 +492,8 @@ class Device:
 
     def system_differences(self, saved):
         now = self.snapshot_system()
-        out = [f"{k}: saved {saved[k]!r} now {now[k]!r}" for k in ("system", "props", "zen", "mic", "volume")
-               if saved[k] != now[k]]
+        out = [f"{k}: saved {saved[k]!r} now {now[k]!r}" for k in ("system", "props", "zen", "popups", "mic", "volume")
+               if k in saved and saved[k] != now[k]]
         if any(abs(a - b) > 0.005 for a, b in zip(saved["brightness"], now["brightness"])):
             out.append(f"brightness: saved {saved['brightness']} now {now['brightness']}")
         return out
