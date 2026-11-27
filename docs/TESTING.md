@@ -40,6 +40,12 @@ only fail here, so a change is not done before this gate is green. The script re
 | `assembleRelease` | The release variant builds (unsigned locally) |
 | `hostTests` | The device harness's 114 host tests pass (`tools/devicetest/host_tests.py`: synthetic state, no adb; fails on an empty discovery) |
 
+The JVM tests run in parallel test JVMs, half the machine's cores (`maxParallelForks` in
+`app/build.gradle.kts`, 2 GB heap each), and `gradle.properties` turns on parallel builds and the
+local build cache. On the owner's M3 Max the whole gate takes about 3 minutes from a clean build
+(9.5 minutes with a single test JVM); never run two Gradle builds in the same checkout at once, since
+they share `app/build/test-results`.
+
 One command is the acceptance criterion for any change. It runs in three places, all
 identical:
 

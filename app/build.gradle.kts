@@ -136,6 +136,11 @@ jacoco {
 }
 
 tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    // Robolectric classes are independent and each starts its own sandbox, so they spread over
+    // several test JVMs: half the cores (8 on the owner's M3 Max, 2 on a 4-core CI runner). Each
+    // fork appends to the same JaCoCo exec file, which the agent supports.
+    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+    maxHeapSize = "2g"
     extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
