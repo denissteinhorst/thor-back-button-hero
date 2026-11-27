@@ -26,6 +26,8 @@ class AppControlActions(
         fun forget(packageName: String)
         /** Shows the choice prompt where the controller is. */
         fun prompt(title: String, options: List<AppControlPrompt.Option>, onChoice: (String) -> Unit)
+        /** Runs [then] with the screen the controller drives, [Prefs.DISPLAY_TOP] or [Prefs.DISPLAY_BOTTOM]. */
+        fun focusedScreen(then: (String) -> Unit)
         fun kill(packages: List<String>, displays: Set<Int>, reportMemory: Boolean, afterwards: (() -> Unit)?)
         fun launchOn(packageName: String, displayId: Int)
         fun goHome(displayId: Int)
@@ -38,8 +40,12 @@ class AppControlActions(
      * window state shifts while the user decides.
      */
     fun runAppControl(button: ComboButton) {
-        val mode = prefs.appMode(button)
         val screen = prefs.appScreen(button)
+        if (screen == Prefs.TARGET_FOCUSED) host.focusedScreen { runAppControl(button, it) } else runAppControl(button, screen)
+    }
+
+    private fun runAppControl(button: ComboButton, screen: String) {
+        val mode = prefs.appMode(button)
         val bottomId = host.bottomDisplayId()
         fun resolve(chosen: String) = AppControl.targets(chosen, Display.DEFAULT_DISPLAY, bottomId, host::topApp)
         if (screen == Prefs.APP_SCREEN_ASK) {

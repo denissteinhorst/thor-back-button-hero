@@ -42,6 +42,12 @@ class RecoveryError(AdbError):
 PREF_TYPES = {"string", "int", "long", "boolean", "float", "set"}
 
 
+def focused_input_display(output):
+    """The display id of a `dumpsys input` FocusedDisplayId line, or None (the app's own parse)."""
+    m = re.search(r"(?m)^\s*FocusedDisplayId: (\d+)\s*$", output or "")
+    return int(m.group(1)) if m else None
+
+
 def parse_prefs(text):
     """The typed content of a SharedPreferences XML file: name -> (type, value). Raises ValueError for
     anything that is not such a file, so a failed read can never pass for an empty settings map."""
@@ -611,9 +617,19 @@ class Device:
                   "&& input keyevent 60 && echo OK")
         self.eventually(lambda: self.route() == display, 4, f"the controller route did not move to display {display}")
 
+    def auto_route(self):
+        """Hands the controller to AYN's Auto-lock (value 0) the way AYN's own tool does (restored by end())."""
+        self.root("setprop persist.sys.input.dispaly 0 && settings put system screen_focus_lock 0 "
+                  "&& input keyevent 60 && echo OK")
+        self.eventually(lambda: self.setting("screen_focus_lock") == "0", 4, "the controller route did not become Auto-lock")
+
     def route(self):
         """The display AYN routes the controller to. Not Android's focused display, which follows touch and launches."""
         return {"1": self.top, "2": self.bottom}.get(self.setting("screen_focus_lock"))
+
+    def input_display(self):
+        """Android's focused input display, which the app reads in Auto-lock as the screen the controller drives."""
+        return focused_input_display(self.sh("dumpsys input | grep -m1 'FocusedDisplayId:'"))
 
     def focused_display(self):
         """The display whose window gets controller input: the top focused one."""

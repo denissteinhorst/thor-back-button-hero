@@ -116,7 +116,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-ACT-13 | Volume up/down/mute on both, top or bottom; mute restores | TB | LevelSteps | levels: volume, mute | C17c | S5/— | R5, R11 | M | JVM+DEV |
 | F-ACT-14 | Brightness up/down on both, top or bottom | TB | LevelSteps | levels: brightness | C17b | —/— | R5, R11 | M | JVM+DEV |
 | F-ACT-15 | Media play/pause, next, previous reach the playing session | — | SystemActionsTest | media: media control | — | —/— | R5 | M | JVM+DEV |
-| F-ACT-16 | `@controller_focus` toggles or fixes the route; the pictogram appears on DOWN on the top screen at the configured position/time | T | ControllerFocus, g:dpad_focus_options | windows: focus switches; pictogram while down | C23–C28 | S5/S6 | R5, R7 | H | JVM+DEV |
+| F-ACT-16 | `@controller_focus` toggles, fixes or hands the route to Auto-lock (toggle out of Auto-lock locks the non-driven screen); the pictogram appears on DOWN on the top screen at the configured position/time (Auto: both screens, AUTO label) | T | ControllerFocus, ControllerFocusAuto, g:dpad_focus_options, g:overlay_focus_auto | windows: focus switches; pictogram while down; Auto; toggle from Auto | C23–C28 | S5/S6 | R5, R7 | H | JVM+DEV |
 | F-ACT-17 | `@switch_active_app` moves the input screen's foreground app to the other screen; focus follows by default | TB | ActiveAppSwitch | windows: switch active app | C37–C40 | —/S6 | R5, R6 | H | JVM+DEV |
 | F-ACT-18 | `@app_control` minimizes, force-closes or restarts on a screen or asks; optional confirmation | TB | AppControl, ServiceAppControlTest | appcontrol: ×5 | C30–C36 | S5/S6 | R5, R7 | H | JVM+DEV |
 | F-ACT-19 | `@close_apps` / `@close_background_apps` end apps on chosen screens, asking first by default | TB | CloseApps, ServiceAppControlTest | appcontrol: close all/background/asks | — | S5/— | R5 | H | JVM+DEV |
@@ -125,6 +125,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-ACT-22 | The 12 AYN controls apply their setting with a notice; prompt variants offer a choice | T | Ayn, AynPrefs | ayn: ×13 | — | S5/— | R5 | M | JVM+DEV |
 | F-ACT-23 | Quick settings / notifications open the shade; 10 settings shortcuts open their page or fall back | T | ActionGroups | panels: shade; settings shortcuts | C16 | —/— | R5 | L | DEV |
 | F-ACT-24 | "Not set" stores an empty binding that does nothing | — | UnassignedRow | gestures: unassigned | C17o | —/— | R2 | M | JVM+DEV |
+| F-ACT-25 | The focused screen (`focused`, `@recents_focused`) acts on the screen the controller drives: fixed route, or Android's input display in Auto-lock, top when unreadable; for Home, app launch/list/favorites, Active App Control, screenshot, brightness, record video and the App Switcher | TB | FocusedScreen, ServiceFocusedScreenTest, BindingTextTable | windows: Home/launch/App Switcher focused; appcontrol: minimize focused; capture: screenshot focused | — | —/S6 | R5 | H | JVM+DEV |
 
 ## Bottom switcher (SWI)
 

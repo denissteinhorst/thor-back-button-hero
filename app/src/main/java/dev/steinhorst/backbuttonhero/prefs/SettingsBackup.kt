@@ -173,8 +173,8 @@ object SettingsBackup {
     private val TOGGLE_VALUES = setOf(Prefs.TOGGLE_NONE, Prefs.TOGGLE_L1_R1, Prefs.TOGGLE_L2_R2, Prefs.TOGGLE_BOTH, "l3_r3",
         Prefs.TOGGLE_START_SELECT, Prefs.TOGGLE_BACK_HOME)
     private val SCREENS = setOf(Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM)
-    private val TARGETS = SCREENS + Prefs.TARGET_BOTH
-    private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_MODAL
+    private val TARGETS = SCREENS + Prefs.TARGET_BOTH + Prefs.TARGET_FOCUSED
+    private val FOCUS_TARGETS = SCREENS + Prefs.FOCUS_TOGGLE + Prefs.FOCUS_AUTO + Prefs.FOCUS_MODAL
     private val APP_MODES = setOf(Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE, Prefs.APP_RESTART)
     private val APP_SCREENS = TARGETS + Prefs.APP_SCREEN_ASK
     private val RECORD_QUALITIES = setOf(Prefs.RECORD_SMALL, Prefs.RECORD_MEDIUM, Prefs.RECORD_LARGE)
@@ -200,7 +200,7 @@ object SettingsBackup {
                 ?.takeIf { it != Prefs.SHOULDER_MACRO || Prefs.ALL_MACRO_BUTTONS.any { button -> button.prefKey == key } }
             default.copy(
                 action = action ?: default.action,
-                display = entry.stringOrNull("display")?.takeIf { it in SCREENS || it == Prefs.APP_SCREEN_ASK } ?: default.display,
+                display = entry.stringOrNull("display")?.takeIf { it in SCREENS || it == Prefs.TARGET_FOCUSED || it == Prefs.APP_SCREEN_ASK } ?: default.display,
                 targetOverride = entry.stringOrNull("target")?.takeIf { it in TARGETS },
                 focusTarget = entry.stringOrNull("focusTarget")?.takeIf { it in FOCUS_TARGETS } ?: default.focusTarget,
                 indicator = entry.booleanOrNull("focusIndicator") ?: default.indicator,

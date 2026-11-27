@@ -1,20 +1,24 @@
 ## no history
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 Notice: No previous app on this screen
 history [com.example.front]
 ## without root
 activity action=android.intent.action.MAIN categories=[android.intent.category.LAUNCHER] package=com.example.previous display=0
 history [com.example.front, com.example.previous, com.example.oldest]
 ## launched
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 history [com.example.front, com.example.previous, com.example.oldest]
 ## previous moved to the other screen
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.oldest' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 history [com.example.front, com.example.previous, com.example.oldest]
 ## every candidate moved
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
@@ -22,11 +26,13 @@ root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
 Notice: No previous app on this screen
 history [com.example.front, com.example.previous, com.example.oldest]
 ## task gone
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 Notice: com.example.previous is no longer running
 history [com.example.front, com.example.oldest]
 ## launch refused
+root code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 root code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 Notice: These apps cannot be swapped.

@@ -19,7 +19,8 @@ class LastAppAction(
     private val host: Host,
 ) {
     interface Host {
-        fun controllerDisplayId(): Int
+        /** Runs [then] on the main thread with the display the controller drives. */
+        fun controllerDisplay(then: (Int) -> Unit)
         fun appsOnDisplay(displayId: Int): List<String>
         fun topApp(displayId: Int): String?
         fun forget(packageName: String)
@@ -27,8 +28,9 @@ class LastAppAction(
         fun unavailable()
     }
 
-    fun run() {
-        val display = host.controllerDisplayId()
+    fun run() = host.controllerDisplay(::runOn)
+
+    private fun runOn(display: Int) {
         val candidates = LastApp.candidates(host.appsOnDisplay(display), host.topApp(display), context.packageName)
         if (candidates.isEmpty()) return notice.show(R.string.last_app_none)
         if (!PService.cachedAvailable()) {

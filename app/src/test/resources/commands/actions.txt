@@ -14,7 +14,7 @@ code=0 args=[0] sh '<cache>/pservice_<n>.sh'
 ## @close_apps
 ## @close_background_apps
 ## @controller_focus
-code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+code=0 args=[0] setprop persist.sys.input.dispaly 2 && settings put system screen_focus_lock 2 && input keyevent 60 && echo OK
 ## @direct_power
 code=0 args=[0] settings put system is_charging_separation 1 && echo OK
 ## @display
@@ -33,6 +33,7 @@ code=0 args=[0] settings put system force_landscape 1 && echo OK
 ## @home
 ## @internet
 ## @last_app
+code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 ## @location_settings
 ## @macro
 ## @media_next
@@ -49,6 +50,12 @@ code=0 args=[0] cmd sensor_privacy enable $(am get-current-user) microphone && e
 ## @power_menu
 ## @quick_settings
 ## @recents
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK
+code=0 args=[0] dumpsys activity com.android.launcher3 | awk '/ACTIVITY /{a=/QuickstepLauncher/} a&&(/mState:|mResumed=|mHasWindowFocus=/||(/TaskView\{/&&(!t++||/ \.F/))||(/ \.F/&&/app:id\/(action_screenshot|clear_all_button)/)){printf "%s|",$0}'
+code=0 args=[0] setprop persist.sys.input.dispaly 0 && settings put system screen_focus_lock 0 && input keyevent 60 && echo OK
+## @recents_focused
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader  2>&1 | grep -m1 -E '^(OK|ERR)'
 code=0 args=[0] setprop persist.sys.input.dispaly 1 && settings put system screen_focus_lock 1 && input keyevent 60 && echo OK

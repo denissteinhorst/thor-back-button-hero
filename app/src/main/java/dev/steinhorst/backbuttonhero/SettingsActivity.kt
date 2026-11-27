@@ -763,6 +763,7 @@ open class SettingsActivity : Activity() {
                 prefs.focusTarget(row.button) != Prefs.DISPLAY_BOTTOM,
                 prefs.focusPosition(row.button).takeIf { on },
                 prefs.focusDuration(row.button),
+                prefs.focusTarget(row.button) == Prefs.FOCUS_AUTO,
             )
         }
         grid = positionGrid(positions.map { it.value to it.label }, { getString(R.string.focus_position_selected, it) }) {
@@ -1183,7 +1184,7 @@ open class SettingsActivity : Activity() {
 
     private fun chooseTarget(row: BindingCard) {
         val focus = prefs.shoulderAction(row.button) == Prefs.SHOULDER_CONTROLLER_FOCUS
-        val targets = if (focus) describer.focusTargets() else describer.levelTargets()
+        val targets = if (focus) describer.focusTargets() else describer.levelTargets(prefs.shoulderAction(row.button))
         val selected = if (focus) prefs.focusTarget(row.button) else prefs.levelTarget(row.button)
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), if (focus) R.string.focus_target_dialog_title else R.string.level_target_dialog_title)
@@ -1200,8 +1201,8 @@ open class SettingsActivity : Activity() {
     }
 
     private fun chooseShoulderDisplay(row: BindingCard) {
-        // Ask is offered where an app opens; Home goes to a fixed screen.
-        val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) describer.launchScreens() else describer.screenTargets()
+        // Ask is offered where an app opens; Home goes to a fixed screen or the focused one.
+        val targets = if (Prefs.launchesApp(prefs.shoulderAction(row.button))) describer.launchScreens() else describer.homeScreens()
         AlertDialog.Builder(this)
             .bindingTitle(crumb(row), R.string.level_target_dialog_title)
             .chooseOne(

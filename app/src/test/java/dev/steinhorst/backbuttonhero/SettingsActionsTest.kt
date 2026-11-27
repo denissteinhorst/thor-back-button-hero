@@ -248,10 +248,15 @@ class SettingsActionsTest {
         val screen = find(root) { it.isShown && it.contentDescription?.toString() == "L1 screen: Bottom screen. Double-tap to change." }!!
         screen.performClick()
         val dialog = ShadowAlertDialog.getLatestAlertDialog()
-        assertEquals(listOf("Top screen", "Bottom screen"), (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString() })
+        // The focused screen follows the fixed ones; Home has no Ask.
+        assertEquals(listOf("Top screen", "Bottom screen", "Focused screen"), (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString() })
         dialog.listView.performItemClick(null, 0, 0L)
         assertEquals(Prefs.DISPLAY_TOP, prefs.shoulderDisplay(ShoulderButton.L1))
         assertEquals("L1 screen: Top screen. Double-tap to change.", screen.contentDescription.toString())
+        screen.performClick()
+        ShadowAlertDialog.getLatestAlertDialog().listView.performItemClick(null, 2, 2L)
+        assertEquals(Prefs.TARGET_FOCUSED, prefs.shoulderDisplay(ShoulderButton.L1))
+        assertEquals("L1 screen: Focused screen. Double-tap to change.", screen.contentDescription.toString())
     }
 
     @Test

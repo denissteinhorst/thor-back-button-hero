@@ -98,6 +98,7 @@
     <string name="search_keywords_app_switcher">Recents, Multitasking, Taskmanager, Task-Switcher, Alt-Tab, Übersicht, offene Apps, letzte Apps</string>
     <string name="search_keywords_recents">oben, Hauptbildschirm, Recents, Multitasking</string>
     <string name="search_keywords_switcher">unten, Zweitbildschirm, Recents, Multitasking</string>
+    <string name="search_keywords_recents_focused">fokussiert, aktiver Bildschirm, Controller, Recents, Multitasking</string>
     <string name="search_keywords_swap_apps">tauschen, Swap, Screen Swap, Bildschirme tauschen, Dual Screen, umdrehen</string>
     <string name="search_keywords_last_app">Alt-Tab, vorherige App, hin und her, Quick Switch, zurückspringen</string>
     <string name="search_keywords_screenshot">Bildschirmfoto, Screeni, Foto, Snapshot, Capture, Bild speichern, Druck</string>
@@ -241,12 +242,15 @@
     <string name="level_target_both">Beide Bildschirme</string>
     <string name="level_target_top">Oberer Bildschirm</string>
     <string name="level_target_bottom">Unterer Bildschirm</string>
+    <string name="target_focused">Fokussierter Bildschirm</string>
     <string name="level_target_dialog_title">Für welchen Bildschirm?</string>
     <string name="level_target_accessibility">Bildschirm für %1$s: %2$s. Zum Ändern doppeltippen.</string>
     <string name="focus_target_toggle">Fokus umschalten</string>
+    <string name="focus_target_auto">Auto (folgt Berührung)</string>
     <string name="focus_target_dialog_title">Controller-Fokus setzen</string>
     <string name="focus_overlay_top">Controller-Fokus: Oberer Bildschirm</string>
     <string name="focus_overlay_bottom">Controller-Fokus: Unterer Bildschirm</string>
+    <string name="focus_overlay_auto">Controller-Fokus: Auto</string>
     <string name="focus_indicator_title">Indikator anzeigen</string>
     <string name="focus_position_title">Indikator-Darstellung</string>
     <string name="focus_position_center">Mitte</string>
@@ -346,6 +350,7 @@
     <string name="overview_action_switch_app">Aktive App verschieben</string>
     <string name="overview_action_recents_bottom">Recents unten</string>
     <string name="overview_action_recents_top">Recents oben</string>
+    <string name="overview_action_recents_focused">Recents fokussiert</string>
     <string name="overview_action_back">Zurück</string>
     <string name="nav_basic">Android-Tasten</string>
     <string name="nav_face">Fronttasten</string>

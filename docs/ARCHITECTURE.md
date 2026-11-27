@@ -243,6 +243,31 @@ steps AYN's own tool runs through `PService`: set `persist.sys.input.dispaly`, w
 the focused display where AYN's assistant window commits the route. The current route is read
 from `Settings.System`, which keeps "toggle" instant and free of a root round trip.
 
+The stored focus target `auto` (`Prefs.FOCUS_AUTO`, also offered in the Ask prompt) runs the same
+sequence with value `0`, handing the controller to AYN's Auto-lock. A toggle while no screen is
+locked (Auto-lock or the setting unset) cannot read the driven screen from the setting, so
+`ControllerFocus.run` first reads it on its worker through the `inputScreen` callback (the service's
+`FocusedScreen` read, below) and then locks the **other** screen; presses arriving during that read
+wait in order, so the requested/queued race guard still sees one sequence. The pictogram for a toggle
+out of Auto-lock appears once that screen is known. Auto has a third pictogram, both screens lit with
+a small AUTO label drawn in code (`focus_both_active` plus a `TextView`), inside the same square bounds
+as the single-screen ones so all nine positions work unchanged.
+
+`FocusedScreen` resolves the "focused" target (`Prefs.TARGET_FOCUSED`, the screen the controller
+drives when the hotkey is pressed): `screen_focus_lock` `1` is the top screen, `2` the bottom screen,
+anything else (Auto-lock or unset) Android's `FocusedDisplayId` from `dumpsys input`, read through
+`PService` off the main thread as Switch active app does; an unreadable answer means the top screen.
+`SwitcherService.withFocusedScreen` runs it for Home and app launch (`_display`), the launch list and
+favorites (read before the list takes input focus), Active App Control (`_app_screen`), screenshot,
+brightness and record video (`_target`, offered only where `Prefs.offersFocusedTarget`; volume, mute
+and Close Apps keep their own screens), and `@recents_focused`, which opens top Recents or the bottom
+switcher. A held brightness hotkey reads the screen once when the repeat starts.
+`controllerDisplayId()` (Switch to last app, native Back, `promptDisplay()`, `currentException()`)
+must decide on the main thread, so `FocusedScreen.displayId` resolves Auto-lock without root: the
+display holding the accessibility window that is *active*. Every display has a focused window, but
+only the top-focused display's window is active, and touching a screen moves it there, exactly as
+AYN's Auto-lock moves the route (device-verified against `FocusedDisplayId`).
+
 `FocusIndicatorOverlay` shows the confirming pictogram on the top screen (the bottom one is
 permanently covered by AYN's assistant). It appears when the shoulder button goes **down**, before
 the root command has run, and disappears again if the command fails. Position (a 3×3 grid,

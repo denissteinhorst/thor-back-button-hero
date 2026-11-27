@@ -8,7 +8,7 @@ from dt.pad import Seq
 from dt.runner import test
 from .common import expect_closed, helper_settled
 
-from .windows import GALLERY, LAUNCHERS, SETTINGS, _clean, _front, _press
+from .windows import GALLERY, LAUNCHERS, SETTINGS, _app_on, _apps_on_both, _clean, _drive, _front, _press, _routes, _where
 
 KEY = "face_y"
 SETTINGS_PKG = "com.android.settings"
@@ -59,6 +59,27 @@ def minimize(d):
             raise Fail("minimize ended or restarted Settings")
     finally:
         _clean(d)
+
+
+@test("appcontrol", "Minimize on the focused screen sends away only the controller screen's app: fixed top, fixed bottom and Auto-lock")
+def minimize_focused(d):
+    try:
+        _app_control(d, "minimize", screen="focused")
+        for mode, display in _routes(d):
+            where = _where(d, mode, display)
+            other = d.bottom if display == d.top else d.top
+            _apps_on_both(d)
+            _drive(d, mode, display, _app_on(d, display))
+            time.sleep(1.0)
+            _press(d)
+            d.eventually(lambda: d.resumed().get(display, "").startswith(LAUNCHERS), 5,
+                         f"{where}: {d.resumed().get(display)} stayed in front")
+            kept = _app_on(d, other).split("/")[0]
+            if not d.resumed().get(other, "").startswith(kept):
+                raise Fail(f"{where}: the other screen's app went away too: {d.resumed().get(other)}")
+    finally:
+        _clean(d)
+        d.focus(d.top)
 
 
 @test("appcontrol", "Force-close ends the top app")

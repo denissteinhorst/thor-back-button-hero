@@ -17,6 +17,7 @@ action @app_control | Active App Control | option= | function=Active App Control
 action @status_overlay | Status Overlay | option= | function=Status Overlay | overview=Status Overlay
 action @recents | App Switcher (Recents) | option=Top screen | function=App Switcher (Recents) | overview=Recents top
 action @switcher | App Switcher (Recents) | option=Bottom screen | function=App Switcher (Recents) | overview=Recents bottom
+action @recents_focused | App Switcher (Recents) | option=Focused screen | function=App Switcher (Recents) | overview=Recents focused
 action @volume_up | Volume | option=Up | function=Volume | overview=Volume +
 action @volume_down | Volume | option=Down | function=Volume | overview=Volume −
 action @volume_mute | Volume | option=Toggle mute | function=Volume | overview=Mute
@@ -86,19 +87,27 @@ appMode bogus | Minimize (simulate swipe up)
 appScreen top | Top screen
 appScreen bottom | Bottom screen
 appScreen both | Both screens
+appScreen focused | Focused screen
 appScreen ask | Ask
 appScreen bogus | Ask
 levelTarget top | Top screen
 levelTarget bottom | Bottom screen
 levelTarget both | Both screens
+levelTarget focused | Both screens
 levelTarget bogus | Both screens
+levelTarget @screenshot both | Both screens
+levelTarget @screenshot focused | Focused screen
+levelTarget @volume_up both | Both screens
+levelTarget @volume_up focused | Both screens
 display top | Top screen
 display bottom | Bottom screen
+display focused | Focused screen
 display ask | Ask
 display bogus | Ask
 focusTarget top | Top screen
 focusTarget bottom | Bottom screen
 focusTarget toggle | Toggle focus
+focusTarget auto | Auto (follow touch)
 focusTarget modal | Ask
 focusTarget bogus | Toggle focus
 quality small | Small (4 Mbit/s)
@@ -146,6 +155,7 @@ action @app_control | Active App Control | option= | function=Active App Control
 action @status_overlay | Status Overlay | option= | function=Status Overlay | overview=Status Overlay
 action @recents | App Switcher (Recents) | option=Top screen | function=App Switcher (Recents) | overview=Recents top
 action @switcher | App Switcher (Recents) | option=Bottom screen | function=App Switcher (Recents) | overview=Recents bottom
+action @recents_focused | App Switcher (Recents) | option=Focused screen | function=App Switcher (Recents) | overview=Recents focused
 action @volume_up | Volume | option=Up | function=Volume | overview=Volume +
 action @volume_down | Volume | option=Down | function=Volume | overview=Volume −
 action @volume_mute | Volume | option=Toggle mute | function=Volume | overview=Mute
@@ -215,19 +225,27 @@ appMode bogus | Minimize (simulate swipe up)
 appScreen top | Top screen
 appScreen bottom | Bottom screen
 appScreen both | Both screens
+appScreen focused | Focused screen
 appScreen ask | Ask
 appScreen bogus | Ask
 levelTarget top | Top screen
 levelTarget bottom | Bottom screen
 levelTarget both | Both screens
+levelTarget focused | Both screens
 levelTarget bogus | Both screens
+levelTarget @screenshot both | Both screens
+levelTarget @screenshot focused | Focused screen
+levelTarget @volume_up both | Both screens
+levelTarget @volume_up focused | Both screens
 display top | Top screen
 display bottom | Bottom screen
+display focused | Focused screen
 display ask | Ask
 display bogus | Ask
 focusTarget top | Top screen
 focusTarget bottom | Bottom screen
 focusTarget toggle | Toggle focus
+focusTarget auto | Auto (follow touch)
 focusTarget modal | Ask
 focusTarget bogus | Toggle focus
 quality small | Small (4 Mbit/s)

@@ -93,13 +93,18 @@ class BindingTextTableTest {
             values("appMode", { prefs.setAppMode(button, it) }, "describeAppMode",
                 Prefs.APP_MINIMIZE, Prefs.APP_FORCE_CLOSE, Prefs.APP_RESTART, "bogus")
             values("appScreen", { prefs.setAppScreen(button, it) }, "describeAppScreen",
-                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH, Prefs.APP_SCREEN_ASK, "bogus")
+                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH, Prefs.TARGET_FOCUSED, Prefs.APP_SCREEN_ASK, "bogus")
             values("levelTarget", { prefs.setLevelTarget(button, it) }, "describeLevelTarget",
-                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH, "bogus")
+                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_BOTH, Prefs.TARGET_FOCUSED, "bogus")
+            for (action in listOf(Prefs.SHOULDER_SCREENSHOT, Prefs.SHOULDER_VOLUME_UP)) {
+                prefs.setShoulderAction(button, action)
+                values("levelTarget $action", { prefs.setLevelTarget(button, it) }, "describeLevelTarget",
+                    Prefs.TARGET_BOTH, Prefs.TARGET_FOCUSED)
+            }
             values("display", { prefs.setShoulderDisplay(button, it) }, "describeShoulderDisplay",
-                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.APP_SCREEN_ASK, "bogus")
+                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.TARGET_FOCUSED, Prefs.APP_SCREEN_ASK, "bogus")
             values("focusTarget", { prefs.setFocusTarget(button, it) }, "describeFocusTarget",
-                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.FOCUS_TOGGLE, Prefs.FOCUS_MODAL, "bogus")
+                Prefs.DISPLAY_TOP, Prefs.DISPLAY_BOTTOM, Prefs.FOCUS_TOGGLE, Prefs.FOCUS_AUTO, Prefs.FOCUS_MODAL, "bogus")
             values("quality", { prefs.setRecordQuality(button, it) }, "describeRecordQuality",
                 Prefs.RECORD_SMALL, Prefs.RECORD_MEDIUM, Prefs.RECORD_LARGE)
             values("duck", { prefs.setRecordDuck(button, it) }, "describeRecordDuck",

@@ -35,6 +35,7 @@ class ActionCodecTest {
         Action.Builtin.MEDIA_PREVIOUS to "@media_previous", Action.Builtin.STATUS_OVERLAY to "@status_overlay",
         Action.Builtin.GYRO to "@gyro", Action.Builtin.GYRO_CALIBRATE to "@gyro_calibrate",
         Action.Builtin.APP_ASK to "@app_ask", Action.Builtin.APP_FAVORITES to "@app_favorites",
+        Action.Builtin.RECENTS_FOCUSED to "@recents_focused",
         Action.AynChoice(Ayn.Group.PERFORMANCE) to "@performance", Action.AynChoice(Ayn.Group.FAN) to "@fan",
         Action.AynChoice(Ayn.Group.HANDLE) to "@handle", Action.AynChoice(Ayn.Group.DISPLAY) to "@display",
         Action.AynChoice(Ayn.Group.REFRESH_RATE) to "@refresh_rate", Action.AynChoice(Ayn.Group.STICK_LIGHT) to "@stick_light",

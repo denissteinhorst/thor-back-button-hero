@@ -17,6 +17,7 @@ action @app_control | Aktive App steuern | option= | function=Aktive App steuern
 action @status_overlay | Status-Einblendung | option= | function=Status-Einblendung | overview=Status-Einblendung
 action @recents | App-Switcher (Recents) | option=Oberer Bildschirm | function=App-Switcher (Recents) | overview=Recents oben
 action @switcher | App-Switcher (Recents) | option=Unterer Bildschirm | function=App-Switcher (Recents) | overview=Recents unten
+action @recents_focused | App-Switcher (Recents) | option=Fokussierter Bildschirm | function=App-Switcher (Recents) | overview=Recents fokussiert
 action @volume_up | Lautstärke | option=Erhöhen | function=Lautstärke | overview=Lautstärke +
 action @volume_down | Lautstärke | option=Verringern | function=Lautstärke | overview=Lautstärke −
 action @volume_mute | Lautstärke | option=Stumm umschalten | function=Lautstärke | overview=Stumm
@@ -86,19 +87,27 @@ appMode bogus | Minimieren (Wischen nach oben simulieren)
 appScreen top | Oberer Bildschirm
 appScreen bottom | Unterer Bildschirm
 appScreen both | Beide Bildschirme
+appScreen focused | Fokussierter Bildschirm
 appScreen ask | Nachfragen
 appScreen bogus | Nachfragen
 levelTarget top | Oberer Bildschirm
 levelTarget bottom | Unterer Bildschirm
 levelTarget both | Beide Bildschirme
+levelTarget focused | Beide Bildschirme
 levelTarget bogus | Beide Bildschirme
+levelTarget @screenshot both | Beide Bildschirme
+levelTarget @screenshot focused | Fokussierter Bildschirm
+levelTarget @volume_up both | Beide Bildschirme
+levelTarget @volume_up focused | Beide Bildschirme
 display top | Oberer Bildschirm
 display bottom | Unterer Bildschirm
+display focused | Fokussierter Bildschirm
 display ask | Nachfragen
 display bogus | Nachfragen
 focusTarget top | Oberer Bildschirm
 focusTarget bottom | Unterer Bildschirm
 focusTarget toggle | Fokus umschalten
+focusTarget auto | Auto (folgt Berührung)
 focusTarget modal | Nachfragen
 focusTarget bogus | Fokus umschalten
 quality small | Klein (4 Mbit/s)
@@ -146,6 +155,7 @@ action @app_control | Aktive App steuern | option= | function=Aktive App steuern
 action @status_overlay | Status-Einblendung | option= | function=Status-Einblendung | overview=Status-Einblendung
 action @recents | App-Switcher (Recents) | option=Oberer Bildschirm | function=App-Switcher (Recents) | overview=Recents oben
 action @switcher | App-Switcher (Recents) | option=Unterer Bildschirm | function=App-Switcher (Recents) | overview=Recents unten
+action @recents_focused | App-Switcher (Recents) | option=Fokussierter Bildschirm | function=App-Switcher (Recents) | overview=Recents fokussiert
 action @volume_up | Lautstärke | option=Erhöhen | function=Lautstärke | overview=Lautstärke +
 action @volume_down | Lautstärke | option=Verringern | function=Lautstärke | overview=Lautstärke −
 action @volume_mute | Lautstärke | option=Stumm umschalten | function=Lautstärke | overview=Stumm
@@ -215,19 +225,27 @@ appMode bogus | Minimieren (Wischen nach oben simulieren)
 appScreen top | Oberer Bildschirm
 appScreen bottom | Unterer Bildschirm
 appScreen both | Beide Bildschirme
+appScreen focused | Fokussierter Bildschirm
 appScreen ask | Nachfragen
 appScreen bogus | Nachfragen
 levelTarget top | Oberer Bildschirm
 levelTarget bottom | Unterer Bildschirm
 levelTarget both | Beide Bildschirme
+levelTarget focused | Beide Bildschirme
 levelTarget bogus | Beide Bildschirme
+levelTarget @screenshot both | Beide Bildschirme
+levelTarget @screenshot focused | Fokussierter Bildschirm
+levelTarget @volume_up both | Beide Bildschirme
+levelTarget @volume_up focused | Beide Bildschirme
 display top | Oberer Bildschirm
 display bottom | Unterer Bildschirm
+display focused | Fokussierter Bildschirm
 display ask | Nachfragen
 display bogus | Nachfragen
 focusTarget top | Oberer Bildschirm
 focusTarget bottom | Unterer Bildschirm
 focusTarget toggle | Fokus umschalten
+focusTarget auto | Auto (folgt Berührung)
 focusTarget modal | Nachfragen
 focusTarget bogus | Fokus umschalten
 quality small | Klein (4 Mbit/s)

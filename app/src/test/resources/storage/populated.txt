@@ -819,7 +819,7 @@ face_a_focus_duration_ms	long	700
 face_a_focus_indicator	boolean	false
 face_a_focus_position	string	top_left
 face_a_focus_target	string	modal
-face_a_package	string	@record_video
+face_a_package	string	@recents_focused
 face_a_record_duck	string	device
 face_a_record_indicator	boolean	false
 face_a_record_mic	boolean	true
@@ -839,7 +839,7 @@ face_b_focus_duration_ms	long	700
 face_b_focus_indicator	boolean	false
 face_b_focus_position	string	top_left
 face_b_focus_target	string	modal
-face_b_package	string	@refresh_rate
+face_b_package	string	@record_video
 face_b_record_duck	string	device
 face_b_record_indicator	boolean	false
 face_b_record_mic	boolean	true
@@ -859,7 +859,7 @@ face_x_focus_duration_ms	long	700
 face_x_focus_indicator	boolean	false
 face_x_focus_position	string	top_left
 face_x_focus_target	string	modal
-face_x_package	string	@screenshot
+face_x_package	string	@refresh_rate
 face_x_record_duck	string	device
 face_x_record_indicator	boolean	false
 face_x_record_mic	boolean	true
@@ -879,7 +879,7 @@ face_y_focus_duration_ms	long	700
 face_y_focus_indicator	boolean	false
 face_y_focus_position	string	top_left
 face_y_focus_target	string	modal
-face_y_package	string	@sound_settings
+face_y_package	string	@screenshot
 face_y_record_duck	string	device
 face_y_record_indicator	boolean	false
 face_y_record_mic	boolean	true
@@ -900,7 +900,7 @@ home_focus_duration_ms	long	700
 home_focus_indicator	boolean	false
 home_focus_position	string	top_left
 home_focus_target	string	modal
-home_package	string	@standby
+home_package	string	@sound_settings
 home_record_duck	string	device
 home_record_indicator	boolean	false
 home_record_mic	boolean	true
@@ -920,7 +920,7 @@ l1_focus_duration_ms	long	700
 l1_focus_indicator	boolean	false
 l1_focus_position	string	top_left
 l1_focus_target	string	modal
-l1_package	string	@status_overlay
+l1_package	string	@standby
 l1_record_duck	string	device
 l1_record_indicator	boolean	false
 l1_record_mic	boolean	true
@@ -940,7 +940,7 @@ l2_focus_duration_ms	long	700
 l2_focus_indicator	boolean	false
 l2_focus_position	string	top_left
 l2_focus_target	string	modal
-l2_package	string	@stick_light
+l2_package	string	@status_overlay
 l2_record_duck	string	device
 l2_record_indicator	boolean	false
 l2_record_mic	boolean	true
@@ -961,7 +961,7 @@ lstick_double_focus_indicator	boolean	false
 lstick_double_focus_position	string	top_left
 lstick_double_focus_target	string	modal
 lstick_double_ms	long	350
-lstick_double_package	string	@swap_apps
+lstick_double_package	string	@stick_light
 lstick_double_record_duck	string	device
 lstick_double_record_indicator	boolean	false
 lstick_double_record_mic	boolean	true
@@ -981,7 +981,7 @@ lstick_down_focus_duration_ms	long	700
 lstick_down_focus_indicator	boolean	false
 lstick_down_focus_position	string	top_left
 lstick_down_focus_target	string	modal
-lstick_down_package	string	@switch_active_app
+lstick_down_package	string	@swap_apps
 lstick_down_record_duck	string	device
 lstick_down_record_indicator	boolean	false
 lstick_down_record_mic	boolean	true
@@ -1001,7 +1001,7 @@ lstick_left_focus_duration_ms	long	700
 lstick_left_focus_indicator	boolean	false
 lstick_left_focus_position	string	top_left
 lstick_left_focus_target	string	modal
-lstick_left_package	string	@switcher
+lstick_left_package	string	@switch_active_app
 lstick_left_record_duck	string	device
 lstick_left_record_indicator	boolean	false
 lstick_left_record_mic	boolean	true
@@ -1021,7 +1021,7 @@ lstick_press_focus_duration_ms	long	700
 lstick_press_focus_indicator	boolean	false
 lstick_press_focus_position	string	top_left
 lstick_press_focus_target	string	modal
-lstick_press_package	string	@vibration
+lstick_press_package	string	@switcher
 lstick_press_record_duck	string	device
 lstick_press_record_indicator	boolean	false
 lstick_press_record_mic	boolean	true
@@ -1041,7 +1041,7 @@ lstick_right_focus_duration_ms	long	700
 lstick_right_focus_indicator	boolean	false
 lstick_right_focus_position	string	top_left
 lstick_right_focus_target	string	modal
-lstick_right_package	string	@virtual_mouse
+lstick_right_package	string	@vibration
 lstick_right_record_duck	string	device
 lstick_right_record_indicator	boolean	false
 lstick_right_record_mic	boolean	true
@@ -1062,7 +1062,7 @@ lstick_tap_hold_focus_indicator	boolean	false
 lstick_tap_hold_focus_position	string	top_left
 lstick_tap_hold_focus_target	string	modal
 lstick_tap_hold_ms	long	1100
-lstick_tap_hold_package	string	@volume_down
+lstick_tap_hold_package	string	@virtual_mouse
 lstick_tap_hold_record_duck	string	device
 lstick_tap_hold_record_indicator	boolean	false
 lstick_tap_hold_record_mic	boolean	true
@@ -1082,7 +1082,7 @@ lstick_up_focus_duration_ms	long	700
 lstick_up_focus_indicator	boolean	false
 lstick_up_focus_position	string	top_left
 lstick_up_focus_target	string	modal
-lstick_up_package	string	@volume_mute
+lstick_up_package	string	@volume_down
 lstick_up_record_duck	string	device
 lstick_up_record_indicator	boolean	false
 lstick_up_record_mic	boolean	true
@@ -1105,7 +1105,7 @@ r1_focus_duration_ms	long	700
 r1_focus_indicator	boolean	false
 r1_focus_position	string	top_left
 r1_focus_target	string	modal
-r1_package	string	@volume_up
+r1_package	string	@volume_mute
 r1_record_duck	string	device
 r1_record_indicator	boolean	false
 r1_record_mic	boolean	true
@@ -1125,7 +1125,7 @@ r2_focus_duration_ms	long	700
 r2_focus_indicator	boolean	false
 r2_focus_position	string	top_left
 r2_focus_target	string	modal
-r2_package	string	com.example.game
+r2_package	string	@volume_up
 r2_record_duck	string	device
 r2_record_indicator	boolean	false
 r2_record_mic	boolean	true
@@ -1146,7 +1146,7 @@ rstick_double_focus_indicator	boolean	false
 rstick_double_focus_position	string	top_left
 rstick_double_focus_target	string	modal
 rstick_double_ms	long	350
-rstick_double_package	string	@app_ask
+rstick_double_package	string	com.example.game
 rstick_double_record_duck	string	device
 rstick_double_record_indicator	boolean	false
 rstick_double_record_mic	boolean	true
@@ -1166,7 +1166,7 @@ rstick_down_focus_duration_ms	long	700
 rstick_down_focus_indicator	boolean	false
 rstick_down_focus_position	string	top_left
 rstick_down_focus_target	string	modal
-rstick_down_package	string	@app_control
+rstick_down_package	string	@app_ask
 rstick_down_record_duck	string	device
 rstick_down_record_indicator	boolean	false
 rstick_down_record_mic	boolean	true
@@ -1186,7 +1186,7 @@ rstick_left_focus_duration_ms	long	700
 rstick_left_focus_indicator	boolean	false
 rstick_left_focus_position	string	top_left
 rstick_left_focus_target	string	modal
-rstick_left_package	string	@app_favorites
+rstick_left_package	string	@app_control
 rstick_left_record_duck	string	device
 rstick_left_record_indicator	boolean	false
 rstick_left_record_mic	boolean	true
@@ -1206,7 +1206,7 @@ rstick_press_focus_duration_ms	long	700
 rstick_press_focus_indicator	boolean	false
 rstick_press_focus_position	string	top_left
 rstick_press_focus_target	string	modal
-rstick_press_package	string	@back
+rstick_press_package	string	@app_favorites
 rstick_press_record_duck	string	device
 rstick_press_record_indicator	boolean	false
 rstick_press_record_mic	boolean	true
@@ -1226,7 +1226,7 @@ rstick_right_focus_duration_ms	long	700
 rstick_right_focus_indicator	boolean	false
 rstick_right_focus_position	string	top_left
 rstick_right_focus_target	string	modal
-rstick_right_package	string	@battery_saver
+rstick_right_package	string	@back
 rstick_right_record_duck	string	device
 rstick_right_record_indicator	boolean	false
 rstick_right_record_mic	boolean	true
@@ -1247,7 +1247,7 @@ rstick_tap_hold_focus_indicator	boolean	false
 rstick_tap_hold_focus_position	string	top_left
 rstick_tap_hold_focus_target	string	modal
 rstick_tap_hold_ms	long	1100
-rstick_tap_hold_package	string	@bluetooth
+rstick_tap_hold_package	string	@battery_saver
 rstick_tap_hold_record_duck	string	device
 rstick_tap_hold_record_indicator	boolean	false
 rstick_tap_hold_record_mic	boolean	true
@@ -1267,7 +1267,7 @@ rstick_up_focus_duration_ms	long	700
 rstick_up_focus_indicator	boolean	false
 rstick_up_focus_position	string	top_left
 rstick_up_focus_target	string	modal
-rstick_up_package	string	@brightness_down
+rstick_up_package	string	@bluetooth
 rstick_up_record_duck	string	device
 rstick_up_record_indicator	boolean	false
 rstick_up_record_mic	boolean	true
@@ -1287,7 +1287,7 @@ select_focus_duration_ms	long	700
 select_focus_indicator	boolean	false
 select_focus_position	string	top_left
 select_focus_target	string	modal
-select_package	string	@brightness_up
+select_package	string	@brightness_down
 select_record_duck	string	device
 select_record_indicator	boolean	false
 select_record_mic	boolean	true
@@ -1308,7 +1308,7 @@ start_focus_duration_ms	long	700
 start_focus_indicator	boolean	false
 start_focus_position	string	top_left
 start_focus_target	string	modal
-start_package	string	@cast_settings
+start_package	string	@brightness_up
 start_record_duck	string	device
 start_record_indicator	boolean	false
 start_record_mic	boolean	true

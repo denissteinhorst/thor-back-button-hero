@@ -75,6 +75,8 @@ global 6
 global 5
 ## @recents
 global 3
+## @recents_focused
+global 3
 ## @record_video
 Notice: Recording failed
 ## @refresh_rate

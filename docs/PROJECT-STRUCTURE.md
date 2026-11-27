@@ -175,8 +175,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `VoiceLeveler.kt` | 115 | Brings the microphone up to speech level and limits the mix. |
 | `VoicePolish.kt` | 72 | The last voice step: pauses go down, a few samples ahead of the sound. |
 | `AppControl.kt` | 193 | The Active App Control action: `AppControl.targets` resolves the foreground apps of the chosen screen (top, bottom, both) without ever returning a launcher, system UI or this app, and `AppControlPrompt` is the small focusable overlay behind "Ask", the optional force-close confirmation and every other modal choice, with its confirm/cancel legend. |
-| `ControllerFocus.kt` | 97 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`. |
-| `FocusIndicatorOverlay.kt` | 133 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings. |
+| `ControllerFocus.kt` | 140 | Routes the controller to the top or bottom screen with the same `PService` sequence as AYN's own tool (property, setting, `keyevent 60` without `-d`), and resolves the toggle target from `Settings.System`; Auto hands it to AYN's Auto-lock, and a toggle out of Auto-lock first reads the driven screen and locks the other one. |
+| `FocusedScreen.kt` | 23 | Resolves the "focused" target: the fixed route's screen, or in Auto-lock the display of Android's focused input window (`dumpsys input`), top when unreadable. |
+| `FocusIndicatorOverlay.kt` | 178 | Brief top-screen accessibility overlay with a handheld pictogram showing which screen has the controller. Nine positions, configurable display time, optional tap-through to the settings; Auto-lock shows both screens lit with an AUTO label in the same square. |
 | `ButtonHints.kt` | 191 | `FaceButtonPictogram`, the face-button diamond of `ic_settings_face` drawn in code with one dot filled; `ButtonHints`, the pictogram-plus-label legends of the prompt and the switcher; and `ButtonHintOverlay`, the untouchable Confirm/Cancel window beside native top Recents. |
 | `TopOverlayWindow.kt` | 32 | Window context on the top display and the nine-point position grid shared by the notice, the focus pictogram and the recording dot. |
 | `SettingsBackup.kt` | 160 | The backup file: JSON writer, defensive reader (validates and clamps every value, ignores the unknown), file name and version comparison. |
@@ -218,7 +219,7 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `xml/accessibility_config.xml` | The accessibility-service declaration: requested event types and the capability flags the app depends on — key-event filtering, interactive-window retrieval, gesture performing and screenshot taking. |
 | `drawable/ic_clear_all.xml`, `ic_screenshot.xml` | Vector icons for the switcher's system-Recents-style actions. |
 | `drawable/ic_settings_*.xml` | Vector icons of the settings navigation and top bar (SVG sources in `art/settings-icons/`). |
-| `drawable-nodpi/focus_top_active.webp`, `focus_bottom_active.webp` | The two controller-focus pictograms (top or bottom screen active), with the area outside the handheld transparent. |
+| `drawable-nodpi/focus_top_active.webp`, `focus_bottom_active.webp`, `focus_both_active.webp` | The controller-focus pictograms (top, bottom or both screens active; both is Auto-lock, labelled in code), with the area outside the handheld transparent. |
 | `drawable-*/ic_launcher_foreground.png` | Launcher foreground at five densities; also reused as the notification icon. |
 | `mipmap-*/ic_launcher.png` | Launcher icon at five densities. |
 | `mipmap-anydpi-v26/ic_launcher.xml` | Adaptive-icon definition for API 26+. |
@@ -227,14 +228,14 @@ There are **no layout XML files** and no Compose: every view is constructed in K
 
 ### `app/src/test/` — JVM tests (Robolectric + JUnit)
 
-The automated safety net. 137 test classes, **880 tests**. Run by the gate. By area:
+The automated safety net. 140 test classes, **896 tests**. Run by the gate. By area:
 
 | Area | Files |
 |---|---|
 | Preferences | `PrefsDefaultsTest` (every default and typed accessor), `PrefsMigrationTest` (the one-time migrations, factory shoulder defaults and their update safety, reset and unbind — the highest-risk code for existing installs), `DpadPrefsTest`, `ActionSentinelContractTest` (every stored action sentinel frozen as a literal: Prefs and backup round trip, unknown values), `ActionCodecTest` (typed actions ↔ stored strings, byte exact against the storage and backup fixtures) |
 | Gestures and keys | `BackGestureMachineTest` (every branch, controlled clock and scheduler), `DoubleTapDetectorTest` (including the clock-at-zero sentinel), `CardTouchTest`, `PhysicalKeyTrackerTest`, `ServiceToggleGestureTest`, `KeyInterceptionGateTest`, `LevelStepsTest`, `InputPipelineCharacterizationTest` (the service's key path through `onKeyEvent`), `ComboRouterTest`, `DirectionalRouterTest`, `StickClickRouterTest` |
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
-| Shortcut actions | `AppControlTest`, `ControllerFocusTest` |
+| Shortcut actions | `AppControlTest`, `ControllerFocusTest`, `ControllerFocusAutoTest`, `FocusedScreenTest`, `ServiceFocusedScreenTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
 | Tasks, swap, frontends | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest` |

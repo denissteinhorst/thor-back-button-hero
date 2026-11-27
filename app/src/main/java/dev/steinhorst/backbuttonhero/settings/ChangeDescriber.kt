@@ -31,7 +31,13 @@ internal class ChangeDescriber(private val context: Context, private val describ
         }
         fun onOff(value: Boolean) = context.getString(if (value) R.string.settings_on else R.string.settings_off)
         fun ms(value: Long) = context.getString(R.string.focus_duration, value)
-        fun target(value: String) = describer.levelTargets().first { it.value == value }.label
+        // A value only another action of the row offers (the focused screen) reads as the row does: the last choice.
+        fun target(value: String, action: String) = describer.levelTargets(action).let { targets ->
+            (targets.firstOrNull { it.value == value } ?: targets.last()).label
+        }
+        // A stored value on its own, whichever action it is kept for.
+        fun target(value: String) = target(value, Prefs.SHOULDER_SCREENSHOT)
+        fun display(value: String) = describer.launchScreens().first { it.value == value }.label
         fun focus(value: String) = describer.focusTargets().first { it.value == value }.label
         fun appMode(value: String) = describer.appModes().first { it.value == value }.label
         fun appScreen(value: String) = describer.appScreens().first { it.value == value }.label
@@ -47,12 +53,12 @@ internal class ChangeDescriber(private val context: Context, private val describ
         fun binding(value: BindingSettings): String {
             val detail = when {
                 launches(value) -> describer.launchScreens().first { it.value == value.display }.label
-                value.action == Prefs.SHOULDER_SCREENSHOT -> target(value.screenshotTarget())
-                Prefs.isLevelAction(value.action) || value.action == Prefs.SHOULDER_RECORD_VIDEO -> target(value.levelTarget())
+                value.action == Prefs.SHOULDER_SCREENSHOT -> target(value.screenshotTarget(), value.action)
+                Prefs.isLevelAction(value.action) || value.action == Prefs.SHOULDER_RECORD_VIDEO -> target(value.levelTarget(), value.action)
                 value.action == Prefs.SHOULDER_CONTROLLER_FOCUS -> focus(value.focusTarget)
                 value.action == Prefs.SHOULDER_APP_CONTROL -> "${appMode(value.appMode)}, ${appScreen(value.appScreen)}"
                 Prefs.isCloseApps(value.action) || value.action == Prefs.SHOULDER_VOLUME_MUTE ->
-                    "${context.getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes)}, ${target(value.levelTarget())}"
+                    "${context.getString(checkNotNull(ActionGroups.groupOf(value.action)?.option(value.action)).labelRes)}, ${target(value.levelTarget(), value.action)}"
                 Ayn.groupOf(value.action) != null -> aynOption(value)
                 ActionGroups.groupOf(value.action) != null -> return context.getString(
                     R.string.settings_action_detail, describer.describeAction(value.action),
@@ -124,7 +130,7 @@ internal class ChangeDescriber(private val context: Context, private val describ
             val label = context.getString(layerRes, context.getString(labelRes))
             addChange(label, binding(old), binding(new))
             fun extra(res: Int, from: String, to: String) = addChange(context.getString(R.string.settings_property_label, label, context.getString(res)), from, to)
-            if (!(launches(old) && launches(new))) extra(R.string.level_target_title, target(old.display), target(new.display))
+            if (!(launches(old) && launches(new))) extra(R.string.level_target_title, display(old.display), display(new.display))
             if (!(old.action == Prefs.SHOULDER_SCREENSHOT && new.action == old.action))
                 extra(R.string.settings_screenshot_screen, target(old.screenshotTarget()), target(new.screenshotTarget()))
             fun screenTarget(action: String) =

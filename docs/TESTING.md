@@ -30,7 +30,7 @@ Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is 
 | Step | What it proves |
 |---|---|
 | `lintDebug` | No new lint findings (20 pre-existing ones are baselined; `warningsAsErrors = true`) |
-| `testDebugUnitTest` | All 880 JVM tests pass |
+| `testDebugUnitTest` | All 896 JVM tests pass |
 | `jacocoCoverageVerification` | Per-class line coverage has not dropped |
 | `assembleDebug` | The debug variant builds |
 | `assembleRelease` | The release variant builds (unsigned locally) |
@@ -100,7 +100,8 @@ Everything the gate can verify without hardware.
 | Backup file: round trip, robustness against invalid/unknown/hostile content, file name, version comparison, picker intents and the restore flow | `SettingsBackupTest`, `SettingsBackupUiTest` |
 | Stick detector thresholds and sweeps, stick buttons and prefs, stick change plans, repeater, helper `STICK` lines | `StickTest` (detector, click machine, repeat curve and repeater), `PadHelperLifecycleTest` |
 | D-pad defaults, level targets, focus target/indicator/position/duration, change listener | `DpadPrefsTest` |
-| Controller-focus target resolution and routing (toggle, fixed top/bottom) | `ControllerFocusTest` |
+| Controller-focus target resolution and routing (toggle, fixed top/bottom, Auto, toggle out of Auto-lock with presses queued behind its read) | `ControllerFocusTest`, `ControllerFocusAutoTest` |
+| The focused screen: route and `dumpsys input` resolution, and every action offering it acting on the resolved screen | `FocusedScreenTest`, `ServiceFocusedScreenTest` |
 | Top-Recents helper protocol and Quickstep state/TaskView geometry parsing | `PadNavigationModeTest`, `TopRecentsStateTest` |
 | Duplicate shoulder-key events from the two mirrored devices | `PhysicalKeyTrackerTest` |
 | Settings actions: the indicator-appearance popup (dots, switch, display-time slider, opening from the pictogram) | `SettingsActionsTest` |
@@ -141,7 +142,7 @@ Why text and not pixels: font rendering differs between macOS and the Linux CI r
 pixel goldens would make the gate unreliable. Text snapshots are platform-independent and
 still catch any change to layout, wording, sizing or color.
 
-The **110** goldens cover navigation across all pages across locale/theme/window sizes, the accessibility overlays, the bottom Recents overlay, the macro editor/library and the gyro setup,
+The **112** goldens cover navigation across all pages across locale/theme/window sizes, the accessibility overlays, the bottom Recents overlay, the macro editor/library and the gyro setup,
 button states, change previews and accessibility. The main groups are:
 
 | Golden | Scope |
@@ -217,13 +218,13 @@ a new baseline to record. Update these figures in the same change that legitimat
 
 | Check | Expected |
 |---|---|
-| JVM tests | 880 in 137 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
-| Host tests | 111, 0 failures |
+| JVM tests | 896 in 140 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
+| Host tests | 114, 0 failures |
 | Lint | 0 errors; exactly the 20 baselined warnings |
 | Coverage | All 98 ratchets pass; about 83 % total line coverage (11376/13727, from `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`) |
 | Release APK | About 4.28 MB (`app-release-unsigned.apk`), including the ~18 KB `lib/arm64-v8a/libpadhelper.so` |
 | Release classpath | Exactly `kotlin-stdlib` and, transitively, `org.jetbrains:annotations` |
-| Golden files | 110 in `app/src/test/resources/golden/` |
+| Golden files | 112 in `app/src/test/resources/golden/` |
 
 Check the release classpath with:
 

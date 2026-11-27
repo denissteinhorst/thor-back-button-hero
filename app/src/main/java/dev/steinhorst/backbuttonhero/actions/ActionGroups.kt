@@ -17,6 +17,7 @@ object ActionGroups {
             listOf(
                 Option(Prefs.SHOULDER_RECENTS, R.string.level_target_top),
                 Option(Prefs.SHOULDER_SWITCHER, R.string.level_target_bottom),
+                Option(Prefs.SHOULDER_RECENTS_FOCUSED, R.string.target_focused),
             ),
         ),
         VOLUME(

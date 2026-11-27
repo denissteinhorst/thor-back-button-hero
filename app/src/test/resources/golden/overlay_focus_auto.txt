@@ -1,0 +1,99 @@
+## auto top_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800033 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto top_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x31 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto top_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800035 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto center_left
+window type=2032 size=234x234 x=60 y=0 gravity=0x800013 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto center
+window type=2032 size=468x468 x=0 y=0 gravity=0x11 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[36,36,36,36] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[30,10,30,10] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=60.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=60.0 shape=0)
+## auto center_right
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto bottom_left
+window type=2032 size=234x234 x=60 y=60 gravity=0x800053 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto bottom_center
+window type=2032 size=234x234 x=0 y=60 gravity=0x51 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto bottom_right
+window type=2032 size=234x234 x=60 y=60 gravity=0x800055 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto tappable
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000328 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=true focusable=true contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)
+## auto after top
+window type=2032 size=234x234 x=60 y=0 gravity=0x800015 flags=0x01000338 format=-3 alpha=1.0 title=""
+  LinearLayout visibility=VISIBLE minHeight=0 padding=[18,18,18,18] clickable=false focusable=false contentDescription="Controller focus: Auto"
+    ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+    TextView visibility=VISIBLE minHeight=0 padding=[16,5,16,5] clickable=false focusable=false margin=[0,0,0,0] text="AUTO" textSizePx=33.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=0.0 rotation=0.0 elevation=0.0 background=none
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF000000 radius=33.0 shape=0)

@@ -149,13 +149,14 @@ class Prefs(context: Context) : GestureSettings {
         favoriteApps = if (favorite) favoriteApps + pkg else favoriteApps - pkg
     }
 
-    /** [DISPLAY_TOP], [DISPLAY_BOTTOM] or [APP_SCREEN_ASK] - which screen [button]'s app opens on. */
+    /** [DISPLAY_TOP], [DISPLAY_BOTTOM], [TARGET_FOCUSED] or [APP_SCREEN_ASK] - which screen [button]'s app or Home opens on. */
     fun shoulderDisplay(button: ComboButton): String = sp.getString("${button.prefKey}_display", DISPLAY_BOTTOM) ?: DISPLAY_BOTTOM
     fun setShoulderDisplay(button: ComboButton, display: String) { sp.edit().putString("${button.prefKey}_display", display).apply() }
 
     /** [TARGET_BOTH], [DISPLAY_TOP] or [DISPLAY_BOTTOM] - which screens [button]'s volume, brightness or
-     *  screenshot action applies to. Until chosen: both screens, except for the screenshot, which has
-     *  always been the system's top-screen screenshot and stays that way. */
+     *  screenshot action applies to; [TARGET_FOCUSED] where [offersFocusedTarget]. Until chosen: both
+     *  screens, except for the screenshot, which has always been the system's top-screen screenshot and
+     *  stays that way. */
     fun levelTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_target", null)
             ?: if (shoulderAction(button) == SHOULDER_SCREENSHOT) DISPLAY_TOP else TARGET_BOTH
@@ -166,7 +167,7 @@ class Prefs(context: Context) : GestureSettings {
         sp.getString("${button.prefKey}_app_mode", APP_MINIMIZE) ?: APP_MINIMIZE
     fun setAppMode(button: ComboButton, mode: String) { sp.edit().putString("${button.prefKey}_app_mode", mode).apply() }
 
-    /** [DISPLAY_TOP], [DISPLAY_BOTTOM], [TARGET_BOTH] or [APP_SCREEN_ASK] - whose foreground app the action hits. */
+    /** [DISPLAY_TOP], [DISPLAY_BOTTOM], [TARGET_BOTH], [TARGET_FOCUSED] or [APP_SCREEN_ASK] - whose foreground app the action hits. */
     fun appScreen(button: ComboButton): String =
         sp.getString("${button.prefKey}_app_screen", APP_SCREEN_ASK) ?: APP_SCREEN_ASK
     fun setAppScreen(button: ComboButton, screen: String) { sp.edit().putString("${button.prefKey}_app_screen", screen).apply() }
@@ -287,7 +288,7 @@ class Prefs(context: Context) : GestureSettings {
         get() = sp.getInt("bottom_volume_before_mute", 0)
         set(v) = sp.edit().putInt("bottom_volume_before_mute", v).apply()
 
-    /** [FOCUS_TOGGLE], [DISPLAY_TOP] or [DISPLAY_BOTTOM] for the controller-focus action. */
+    /** [FOCUS_TOGGLE], [DISPLAY_TOP], [DISPLAY_BOTTOM], [FOCUS_AUTO] or [FOCUS_MODAL] for the controller-focus action. */
     fun focusTarget(button: ComboButton): String =
         sp.getString("${button.prefKey}_focus_target", FOCUS_TOGGLE) ?: FOCUS_TOGGLE
     fun setFocusTarget(button: ComboButton, target: String) {
@@ -512,9 +513,13 @@ class Prefs(context: Context) : GestureSettings {
         const val DISPLAY_TOP = "top"
         const val DISPLAY_BOTTOM = "bottom"
         const val TARGET_BOTH = "both"
+        /** The screen the controller drives when the hotkey is pressed (`actions.FocusedScreen`). */
+        const val TARGET_FOCUSED = "focused"
         const val FOCUS_TOGGLE = "toggle"
         /** Asks which screen to focus instead of choosing it in advance. */
         const val FOCUS_MODAL = "modal"
+        /** AYN's Auto-lock, where the controller follows the screen last touched. */
+        const val FOCUS_AUTO = "auto"
         const val FOCUS_POS_CENTER = "center"
         const val DEFAULT_FOCUS_DURATION_MS = 500L
         const val MIN_FOCUS_DURATION_MS = 200L
@@ -539,6 +544,8 @@ class Prefs(context: Context) : GestureSettings {
         const val SHOULDER_SWITCHER = "@switcher"
         const val SHOULDER_SWAP_APPS = "@swap_apps"
         const val SHOULDER_RECENTS = "@recents"
+        /** Top Recents or the bottom switcher, whichever screen the controller drives. */
+        const val SHOULDER_RECENTS_FOCUSED = "@recents_focused"
         const val SHOULDER_SCREENSHOT = "@screenshot"
         const val SHOULDER_QUICK_SETTINGS = "@quick_settings"
         const val SHOULDER_NOTIFICATIONS = "@notifications"
@@ -596,7 +603,7 @@ class Prefs(context: Context) : GestureSettings {
             SHOULDER_CLOSE_APPS, SHOULDER_CLOSE_BACKGROUND_APPS, SHOULDER_POWER_MENU, SHOULDER_STANDBY, SHOULDER_VOLUME_MUTE,
             SHOULDER_RECORD_VIDEO, SHOULDER_MACRO, SHOULDER_MEDIA_PLAY_PAUSE, SHOULDER_MEDIA_NEXT, SHOULDER_MEDIA_PREVIOUS,
             SHOULDER_STATUS, SHOULDER_LAST_APP, SHOULDER_GYRO,
-            SHOULDER_GYRO_CALIBRATE, SHOULDER_APP_ASK, SHOULDER_APP_FAVORITES,
+            SHOULDER_GYRO_CALIBRATE, SHOULDER_APP_ASK, SHOULDER_APP_FAVORITES, SHOULDER_RECENTS_FOCUSED,
         ) + Ayn.ACTIONS
 
         /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
@@ -638,6 +645,10 @@ class Prefs(context: Context) : GestureSettings {
         fun hasScreenTarget(action: String): Boolean =
             isLevelAction(action) || action == SHOULDER_SCREENSHOT || action == SHOULDER_CONTROLLER_FOCUS ||
                 isCloseApps(action) || action == SHOULDER_VOLUME_MUTE || action == SHOULDER_RECORD_VIDEO
+
+        /** Screen actions that also offer [TARGET_FOCUSED]; volume, mute and closing apps keep their screens. */
+        fun offersFocusedTarget(action: String): Boolean = action == SHOULDER_SCREENSHOT || action == SHOULDER_BRIGHTNESS_UP ||
+            action == SHOULDER_BRIGHTNESS_DOWN || action == SHOULDER_RECORD_VIDEO
 
         fun isCloseApps(action: String): Boolean = action == SHOULDER_CLOSE_APPS || action == SHOULDER_CLOSE_BACKGROUND_APPS
     }

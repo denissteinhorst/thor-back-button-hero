@@ -177,6 +177,136 @@ def focus_indicator(d):
         d.focus(d.top)
 
 
+def _routes(d):
+    """Every way the controller can drive a screen: AYN's fixed route to it, and Auto-lock on it."""
+    return [("fixed", d.top), ("fixed", d.bottom), ("auto", d.top), ("auto", d.bottom)]
+
+
+def _where(d, mode, display):
+    return f"{mode} {'top' if display == d.top else 'bottom'}"
+
+
+def _app_on(d, display):
+    """The stand-in app _apps_on_both puts on [display]."""
+    return SETTINGS if display == d.top else GALLERY
+
+
+def _apps_on_both(d):
+    _clean(d)
+    d.start_app(SETTINGS, d.top)
+    d.start_app(GALLERY, d.bottom)
+
+
+def _drive(d, mode, display, component):
+    """Lets the controller drive [display]: AYN's fixed route there, or Auto-lock with Android's input
+    focus on it, which bringing [component] to the front there gives. Auto-lock keeps no screen in its
+    setting; the app reads the driven screen from Android's input focus, so the test proves that first."""
+    if mode == "fixed":
+        d.focus(display)
+        return
+    d.auto_route()
+    d.start_app(component, display)
+    d.eventually(lambda: d.input_display() == display, 4,
+                 f"Auto-lock: Android's input focus stayed on display {d.input_display()}, not {display}")
+    # The service learns about apps from window events; give it the moment it needs.
+    time.sleep(0.8)
+
+
+@test("windows", "Controller focus Auto hands the controller to AYN's Auto-lock")
+def controller_focus_auto(d):
+    d.probe_start()
+    try:
+        d.bind(KEY, "@controller_focus", focus_target="auto")
+        _press(d)
+        d.eventually(lambda: d.setting("screen_focus_lock") == "0" and d.sh("getprop persist.sys.input.dispaly") == "0", 4,
+                     f"the route is {d.setting('screen_focus_lock')} / {d.sh('getprop persist.sys.input.dispaly')}, not Auto-lock (0)")
+    finally:
+        d.probe_stop()
+        d.focus(d.top)
+
+
+@test("windows", "Toggle out of Auto-lock locks the screen the controller does not drive")
+def controller_focus_toggle_from_auto(d):
+    try:
+        d.bind(KEY, "@controller_focus", focus_target="toggle")
+        for display, other in ((d.top, d.bottom), (d.bottom, d.top)):
+            _apps_on_both(d)
+            _drive(d, "auto", display, _app_on(d, display))
+            d.wait_toasts_gone(2)
+            _press(d)
+            d.eventually(lambda: d.route() == other, 5,
+                         f"toggle from Auto-lock on display {display}: the route is {d.setting('screen_focus_lock')}, not display {other}")
+            time.sleep(0.8)
+    finally:
+        _clean(d)
+        d.focus(d.top)
+
+
+@test("windows", "Home on the focused screen goes Home where the controller is: fixed top, fixed bottom and Auto-lock")
+def home_focused(d):
+    try:
+        d.bind(KEY, "@home", display="focused")
+        for mode, display in _routes(d):
+            where = _where(d, mode, display)
+            other = d.bottom if display == d.top else d.top
+            _apps_on_both(d)
+            _drive(d, mode, display, _app_on(d, display))
+            _press(d)
+            d.eventually(lambda: d.resumed().get(display, "").startswith(LAUNCHERS), 5,
+                         f"{where}: Home left {d.resumed().get(display)} in front")
+            kept = _app_on(d, other).split("/")[0]
+            if not d.resumed().get(other, "").startswith(kept):
+                raise Fail(f"{where}: Home also changed the other screen: {d.resumed().get(other)}")
+    finally:
+        _clean(d)
+        d.focus(d.top)
+
+
+@test("windows", "Back + button launches an app on the focused screen: fixed top, fixed bottom and Auto-lock")
+def launch_focused(d):
+    try:
+        d.bind(KEY, "com.android.settings", display="focused")
+        for mode, display in _routes(d):
+            _clean(d)
+            _drive(d, mode, display, GALLERY)
+            _press(d)
+            try:
+                _front(d, display, "com.android.settings")
+            except Fail as e:
+                raise Fail(f"{_where(d, mode, display)}: {e}")
+            time.sleep(0.8)
+    finally:
+        _clean(d)
+        d.focus(d.top)
+
+
+@test("windows", "App Switcher on the focused screen opens top Recents or the bottom switcher: fixed top, fixed bottom and Auto-lock")
+def recents_focused(d):
+    try:
+        d.bind(KEY, "@recents_focused")
+        for mode, display in _routes(d):
+            where = _where(d, mode, display)
+            _apps_on_both(d)
+            _drive(d, mode, display, _app_on(d, display))
+            d.wait_toasts_gone(2)
+            _press(d)
+            if display == d.top:
+                d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5,
+                             f"{where}: top Recents did not open, front is {d.resumed().get(d.top)}")
+                if d.own_windows(d.bottom):
+                    raise Fail(f"{where}: the bottom switcher opened as well: {d.own_windows(d.bottom)}")
+                d.keyevent("KEYCODE_HOME", d.top)
+            else:
+                d.eventually(lambda: d.own_windows(d.bottom), 4, f"{where}: the bottom switcher did not open")
+                d.press(Seq().tap(pad.BACK))
+                d.eventually(lambda: not d.own_windows(d.bottom), 4, f"{where}: Back left the switcher open")
+            time.sleep(1.0)
+    finally:
+        d.keyevent("KEYCODE_HOME", d.top)
+        _clean(d)
+        d.focus(d.top)
+
+
 @test("windows", "Switch active app moves the controller to the other screen's app")
 def switch_app(d):
     _clean(d)
@@ -485,6 +615,35 @@ def last_app_per_screen(d):
         for comp in (calendar, clock):
             d.stop_app(comp.split("/")[0])
         _clean(d)
+
+
+@test("windows", "Switch to last app in Auto-lock works on the screen Android's input focus is on")
+def last_app_auto(d):
+    _clean(d)
+    calendar, clock = "com.android.calendar/.AllInOneActivity", "com.android.deskclock/.DeskClock"
+    try:
+        d.start_app(calendar, d.top)
+        d.start_app(SETTINGS, d.top)
+        d.start_app(clock, d.bottom)
+        d.start_app(GALLERY, d.bottom)
+        d.bind(KEY, "@last_app")
+        for display, front, want, other in ((d.top, SETTINGS, "com.android.calendar", d.bottom),
+                                            (d.bottom, GALLERY, "com.android.deskclock", d.top)):
+            _drive(d, "auto", display, front)
+            kept = d.resumed().get(other, "")
+            _press(d)
+            try:
+                _front(d, display, want, 6)
+            except Fail as e:
+                raise Fail(f"{_where(d, 'auto', display)}: {e}")
+            if d.resumed().get(other, "") != kept:
+                raise Fail(f"{_where(d, 'auto', display)}: the other screen changed to {d.resumed().get(other)}")
+            time.sleep(1.0)
+    finally:
+        for comp in (calendar, clock):
+            d.stop_app(comp.split("/")[0])
+        _clean(d)
+        d.focus(d.top)
 
 
 @test("windows", "Switch to last app flips fast between each screen's last two apps, also after a swap")

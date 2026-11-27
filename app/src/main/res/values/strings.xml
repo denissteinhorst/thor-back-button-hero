@@ -99,6 +99,7 @@
     <string name="search_keywords_app_switcher">recents, multitasking, task manager, task switcher, alt tab, overview, open apps</string>
     <string name="search_keywords_recents">upper, main screen, recents, multitasking</string>
     <string name="search_keywords_switcher">lower, second screen, recents, multitasking</string>
+    <string name="search_keywords_recents_focused">focused, active screen, controller, recents, multitasking</string>
     <string name="search_keywords_swap_apps">swap, flip, exchange, screen swap, swap screens, dual screen</string>
     <string name="search_keywords_last_app">alt tab, previous app, back and forth, quick switch, flip apps</string>
     <string name="search_keywords_screenshot">screen capture, screengrab, snapshot, capture, print screen, picture</string>
@@ -242,12 +243,16 @@
     <string name="level_target_both">Both screens</string>
     <string name="level_target_top">Top screen</string>
     <string name="level_target_bottom">Bottom screen</string>
+    <string name="target_focused">Focused screen</string>
     <string name="level_target_dialog_title">Apply to which screen?</string>
     <string name="level_target_accessibility">%1$s screen: %2$s. Double-tap to change.</string>
     <string name="focus_target_toggle">Toggle focus</string>
+    <string name="focus_target_auto">Auto (follow touch)</string>
     <string name="focus_target_dialog_title">Set controller focus</string>
     <string name="focus_overlay_top">Controller focus: Top screen</string>
     <string name="focus_overlay_bottom">Controller focus: Bottom screen</string>
+    <string name="focus_overlay_auto">Controller focus: Auto</string>
+    <string name="focus_overlay_auto_label" translatable="false">AUTO</string>
     <string name="focus_indicator_title">Show indicator</string>
     <string name="focus_position_title">Indicator appearance</string>
     <string name="focus_position_center">Center</string>
@@ -347,6 +352,7 @@
     <string name="overview_action_switch_app">Move active app</string>
     <string name="overview_action_recents_bottom">Recents bottom</string>
     <string name="overview_action_recents_top">Recents top</string>
+    <string name="overview_action_recents_focused">Recents focused</string>
     <string name="overview_action_back">Back</string>
     <string name="nav_basic">Android Buttons</string>
     <string name="nav_face">Face Buttons</string>

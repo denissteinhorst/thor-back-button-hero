@@ -25,7 +25,7 @@ class ActionSentinelContractTest {
         "@brightness_down", "@controller_focus", "@switch_active_app", "@app_control", "@close_apps",
         "@close_background_apps", "@power_menu", "@standby", "@volume_mute", "@record_video", "@macro",
         "@media_play_pause", "@media_next", "@media_previous", "@status_overlay", "@last_app", "@gyro",
-        "@gyro_calibrate", "@app_ask", "@app_favorites",
+        "@gyro_calibrate", "@app_ask", "@app_favorites", "@recents_focused",
         // AYN controls
         "@vibration", "@direct_power", "@force_landscape", "@virtual_mouse", "@do_not_disturb",
         "@mute_microphone", "@performance", "@fan", "@refresh_rate", "@stick_light", "@handle", "@display",

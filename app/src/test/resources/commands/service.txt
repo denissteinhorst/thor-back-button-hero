@@ -1,6 +1,8 @@
 ## native back
+code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 code=0 args=[0] input -d 0 keyevent 4 && echo OK
 ## native back, long press
+code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 code=0 args=[0] input -d 0 keyevent --longpress 4 && echo OK
 ## swipe-kill two apps
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
@@ -28,6 +30,7 @@ code=0 args=[0] sh '<cache>/pservice_<n>.sh'
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
 ## switch to last app
+code=0 args=[0] dumpsys input | grep -m1 'FocusedDisplayId:'
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.previous' '0' 'same-display' 2>&1 | grep -m1 -E '^(OK|ERR)'
 ## system screenshot top

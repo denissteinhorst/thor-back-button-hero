@@ -37,6 +37,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
             Action.Builtin.BACK -> R.string.overview_action_back
             Action.Builtin.RECENTS -> R.string.overview_action_recents_top
             Action.Builtin.SWITCHER -> R.string.overview_action_recents_bottom
+            Action.Builtin.RECENTS_FOCUSED -> R.string.overview_action_recents_focused
             Action.Builtin.SWITCH_ACTIVE_APP -> R.string.overview_action_switch_app
             Action.Builtin.LAST_APP -> R.string.overview_action_last_app
             Action.Builtin.SCREENSHOT -> R.string.overview_action_screenshot
@@ -170,6 +171,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
         ActionGroups.Group.APP_SWITCHER.entry -> R.string.search_keywords_app_switcher
         Prefs.SHOULDER_RECENTS -> R.string.search_keywords_recents
         Prefs.SHOULDER_SWITCHER -> R.string.search_keywords_switcher
+        Prefs.SHOULDER_RECENTS_FOCUSED -> R.string.search_keywords_recents_focused
         Prefs.SHOULDER_SWAP_APPS -> R.string.search_keywords_swap_apps
         Prefs.SHOULDER_LAST_APP -> R.string.search_keywords_last_app
         Prefs.SHOULDER_SCREENSHOT -> R.string.search_keywords_screenshot
@@ -298,7 +300,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
     )
 
     // The same screens as everywhere else, plus the prompt.
-    fun appScreens(): List<Choice> = levelTargets() + Choice(Prefs.APP_SCREEN_ASK, context.getString(R.string.ayn_modal))
+    fun appScreens(): List<Choice> = levelTargets() + focusedScreen() + Choice(Prefs.APP_SCREEN_ASK, context.getString(R.string.ayn_modal))
 
     fun describeAppMode(button: ComboButton): String =
         (appModes().firstOrNull { it.value == prefs.appMode(button) } ?: appModes().first()).label
@@ -312,14 +314,24 @@ internal class BindingDescriber(private val context: Context, private val prefs:
         Choice(Prefs.DISPLAY_BOTTOM, context.getString(R.string.level_target_bottom)),
     )
 
+    /** The screen the controller drives when the hotkey is pressed. */
+    fun focusedScreen(): Choice = Choice(Prefs.TARGET_FOCUSED, context.getString(R.string.target_focused))
+
     fun levelTargets(): List<Choice> = screenTargets() + Choice(Prefs.TARGET_BOTH, context.getString(R.string.level_target_both))
 
-    fun describeLevelTarget(button: ComboButton): String = levelTargets().let { targets ->
+    /** The screens [action] offers: the focused screen only where [Prefs.offersFocusedTarget]. */
+    fun levelTargets(action: String): List<Choice> =
+        if (Prefs.offersFocusedTarget(action)) levelTargets() + focusedScreen() else levelTargets()
+
+    fun describeLevelTarget(button: ComboButton): String = levelTargets(prefs.shoulderAction(button)).let { targets ->
         (targets.firstOrNull { it.value == prefs.levelTarget(button) } ?: targets.last()).label
     }
 
-    // Where an app opens: either screen, or asked when the hotkey is pressed.
-    fun launchScreens(): List<Choice> = screenTargets() + Choice(Prefs.APP_SCREEN_ASK, context.getString(R.string.ayn_modal))
+    // Where Home goes: either screen, or the one the controller drives.
+    fun homeScreens(): List<Choice> = screenTargets() + focusedScreen()
+
+    // Where an app opens: as Home, or asked when the hotkey is pressed.
+    fun launchScreens(): List<Choice> = homeScreens() + Choice(Prefs.APP_SCREEN_ASK, context.getString(R.string.ayn_modal))
 
     fun describeShoulderDisplay(button: ComboButton): String = launchScreens().let { targets ->
         (targets.firstOrNull { it.value == prefs.shoulderDisplay(button) } ?: targets.last()).label
@@ -327,6 +339,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
 
     fun focusTargets(): List<Choice> = screenTargets() + listOf(
         Choice(Prefs.FOCUS_TOGGLE, context.getString(R.string.focus_target_toggle)),
+        Choice(Prefs.FOCUS_AUTO, context.getString(R.string.focus_target_auto)),
         Choice(Prefs.FOCUS_MODAL, context.getString(R.string.ayn_modal)),
     )
 

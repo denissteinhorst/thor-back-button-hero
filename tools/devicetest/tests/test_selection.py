@@ -52,6 +52,9 @@ class ChangedTest(unittest.TestCase):
     def test_unmapped_resources_select_everything(self):
         self.assertIsNone(runner.areas_for(["app/src/main/res/values/strings.xml"]))
 
+    def test_the_focused_screen_selects_every_area_with_a_focused_target(self):
+        self.assertEqual(runner.areas_for(["app/src/main/java/x/FocusedScreen.kt"]), {"windows", "appcontrol", "capture", "levels"})
+
     def test_no_change_selects_nothing(self):
         self.assertEqual(runner.areas_for([]), set())
 

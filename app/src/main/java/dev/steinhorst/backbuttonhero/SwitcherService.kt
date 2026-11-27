@@ -32,6 +32,7 @@ import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
 import dev.steinhorst.backbuttonhero.actions.Ayn
 import dev.steinhorst.backbuttonhero.actions.AynControls
 import dev.steinhorst.backbuttonhero.actions.ControllerFocus
+import dev.steinhorst.backbuttonhero.actions.FocusedScreen
 import dev.steinhorst.backbuttonhero.actions.LastAppAction
 import dev.steinhorst.backbuttonhero.actions.PowerMenu
 import dev.steinhorst.backbuttonhero.actions.SystemActions
@@ -192,6 +193,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         })
     }
     private var repeatingButton: ComboButton? = null
+    // The focused screen a held brightness control steps on, read once when the repeat starts.
+    private var repeatingTarget: String? = null
     private val levelRepeater by lazy {
         LevelRepeater(gestureScheduler, gestureClock) {
             val button = repeatingButton
@@ -199,7 +202,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 repeatingButton = null
                 false
             } else {
-                levels.run(prefs.shoulderAction(button), prefs.levelTarget(button), repeating = true)
+                val action = prefs.shoulderAction(button)
+                val target = prefs.levelTarget(button)
+                // Until Auto-lock's screen is read, the step waits rather than reaching both screens.
+                if (target != Prefs.TARGET_FOCUSED || !Prefs.offersFocusedTarget(action)) levels.run(action, target, repeating = true)
+                else repeatingTarget?.let { levels.run(action, it, repeating = true) }
                 true
             }
         }
@@ -305,7 +312,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private val prefs by lazy { Prefs(this) }
     private val lastApp by lazy {
         LastAppAction(this, handler, notice, object : LastAppAction.Host {
-            override fun controllerDisplayId() = this@SwitcherService.controllerDisplayId()
+            override fun controllerDisplay(then: (Int) -> Unit) = withControllerDisplay(then)
             override fun appsOnDisplay(displayId: Int) = source.appsOnDisplay(displayId).map { it.packageName }
             override fun topApp(displayId: Int) = source.topApp(displayId)
             override fun forget(packageName: String) = source.forget(packageName)
@@ -340,7 +347,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun unavailable() = toastUnavailable()
             override fun focusRoute() = controllerFocus.currentTarget()
             override fun switchAppFollowFocus(button: ComboButton) = prefs.switchAppFollowFocus(button)
-            override fun runFocus(target: String, onComplete: (Boolean) -> Unit) = controllerFocus.run(target, onComplete)
+            override fun runFocus(target: String, onComplete: (Boolean) -> Unit) = controllerFocus.run(target, onComplete = onComplete)
             override fun runAutoFocus(displayId: Int, then: (Boolean) -> Unit) = autoControllerFocus.run(displayId, then)
             override fun dismissAutoFocus() = autoControllerFocus.dismiss()
         })
@@ -353,6 +360,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun forget(packageName: String) = source.forget(packageName)
             override fun prompt(title: String, options: List<AppControlPrompt.Option>, onChoice: (String) -> Unit) =
                 appControlPrompt.show(promptDisplay(), title, options, onChoice)
+            override fun focusedScreen(then: (String) -> Unit) = withFocusedScreen(then)
             override fun kill(packages: List<String>, displays: Set<Int>, reportMemory: Boolean, afterwards: (() -> Unit)?) =
                 killOnly(packages, displays, reportMemory, afterwards)
             override fun launchOn(packageName: String, displayId: Int) = this@SwitcherService.launchOn(packageName, displayId)
@@ -421,7 +429,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         homePressDual = false
         bridgeOwner = bridgeToken
         isConnected = true
-        previewFocusIndicator = { top, position, ms -> handler.post { focusIndicator.show(top, position, ms) } }
+        previewFocusIndicator = { top, position, ms, auto -> handler.post { focusIndicator.show(top, position, ms, auto = auto) } }
         if (::recording.isInitialized) endRecording()
         recordIndicator = RecordingIndicatorOverlay(this)
         recording = ScreenRecording(this, ::onRecordingChanged)
@@ -457,7 +465,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         )
         levels = LevelControl(this, { notice.show(it) }) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
-        controllerFocus = ControllerFocus(this, { notice.show(it) }, onFailed = focusIndicator::dismiss)
+        controllerFocus = ControllerFocus(this, { notice.show(it) }, onFailed = focusIndicator::dismiss, inputScreen = ::readInputScreen)
         aynControls = AynControls(this) { notice.show(it) }
         padHelper = PadHelper(
             this,
@@ -496,11 +504,68 @@ class SwitcherService : AccessibilityService(), GestureActions {
         }
     }
 
+    /**
+     * Runs [then] with the screen the controller drives ([Prefs.DISPLAY_TOP] or [Prefs.DISPLAY_BOTTOM]):
+     * at once for a fixed route, after a root read off the main thread in Auto-lock.
+     */
+    private fun withFocusedScreen(then: (String) -> Unit) {
+        val route = controllerFocus.currentTarget()
+        if (!FocusedScreen.needsInputDisplay(route)) return then(route)
+        val bottom = bottomDisplay()?.displayId
+        Thread {
+            val screen = FocusedScreen.resolve(route, bottom) { PService.exec(FocusedScreen.INPUT_FOCUS_COMMAND) }
+            handler.post { if (isConnected) then(screen) }
+        }.apply { isDaemon = true }.start()
+    }
+
+    /** [withFocusedScreen] for a stored [target] that may be [Prefs.TARGET_FOCUSED]; any other target runs as it is. */
+    private fun withTarget(target: String, then: (String) -> Unit) =
+        if (target == Prefs.TARGET_FOCUSED) withFocusedScreen(then) else then(target)
+
+    /** Auto-lock's driven screen, for a toggle out of it; blocks, so only for [ControllerFocus]'s worker. */
+    private fun readInputScreen(): String = FocusedScreen.resolve(ControllerFocus.AUTO_TARGET, bottomDisplay()?.displayId) {
+        PService.exec(FocusedScreen.INPUT_FOCUS_COMMAND)
+    }
+
+    private fun screenDisplayId(screen: String): Int =
+        if (screen == Prefs.DISPLAY_TOP) Display.DEFAULT_DISPLAY else bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY
+
     /** The display AYN routes the controller to, which is where a native Back would go. */
-    private fun controllerDisplayId(): Int =
-        if (Settings.System.getString(contentResolver, ControllerFocus.FOCUS_SETTING) == ControllerFocus.BOTTOM_VALUE) {
-            bottomDisplay()?.displayId ?: Display.DEFAULT_DISPLAY
-        } else Display.DEFAULT_DISPLAY
+    private fun controllerDisplayId(): Int = FocusedScreen.displayId(
+        Settings.System.getString(contentResolver, ControllerFocus.FOCUS_SETTING),
+        Display.DEFAULT_DISPLAY,
+        bottomDisplay()?.displayId,
+    ) {
+        windowsOnAllDisplays.let { all -> (0 until all.size()).firstOrNull { i -> all.valueAt(i).any { it.isActive } }?.let(all::keyAt) }
+    }
+
+    /**
+     * [controllerDisplayId] as Android's input focus has it: in Auto-lock a root read, as for the
+     * focused target, so the answer does not lag behind a launch. Returns a blocking reader that
+     * must run off the main thread; everything it needs from the service is captured here.
+     */
+    private fun controllerDisplayReader(): () -> Int {
+        val fallback = controllerDisplayId()
+        return autoDisplayReader(fallback) ?: { fallback }
+    }
+
+    /** The root read of [controllerDisplayReader], or null when the setting or a missing root decides at once. */
+    private fun autoDisplayReader(fallback: Int): (() -> Int)? {
+        val setting = Settings.System.getString(contentResolver, ControllerFocus.FOCUS_SETTING)
+        if (setting == ControllerFocus.TOP_VALUE || setting == ControllerFocus.BOTTOM_VALUE || !PService.cachedAvailable()) return null
+        val bottom = bottomDisplay()?.displayId
+        return { FocusedScreen.readDisplayId(setting, Display.DEFAULT_DISPLAY, bottom, fallback) { PService.exec(FocusedScreen.INPUT_FOCUS_COMMAND) } }
+    }
+
+    /** Runs [then] with [controllerDisplayReader]'s answer: at once for a fixed route, else after the read. */
+    private fun withControllerDisplay(then: (Int) -> Unit) {
+        val fallback = controllerDisplayId()
+        val read = autoDisplayReader(fallback) ?: return then(fallback)
+        Thread {
+            val display = read()
+            handler.post { if (isConnected) then(display) }
+        }.apply { isDaemon = true }.start()
+    }
 
     private fun currentException(): AppException? {
         val exceptions = prefs.appExceptions
@@ -539,9 +604,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun nativeBack(longPress: Boolean) {
-        val display = controllerDisplayId()
+        val readDisplay = controllerDisplayReader()
         nativeBackInjections++
         Thread {
+            val display = readDisplay()
             val sent = PService.cachedAvailable() && ControllerFocus.commandSucceeded(
                 PService.exec("input -d $display keyevent ${if (longPress) "--longpress " else ""}4 && echo OK"),
             )
@@ -908,6 +974,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun startLevelRepeat(button: ComboButton, action: String) {
         if (!Prefs.isLevelAction(action)) return
         repeatingButton = button
+        repeatingTarget = null
+        if (Prefs.offersFocusedTarget(action)) withTarget(prefs.levelTarget(button)) { if (repeatingButton == button) repeatingTarget = it }
         levelRepeater.start()
     }
 
@@ -930,6 +998,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     private fun stopLevelRepeat() {
         repeatingButton = null
+        repeatingTarget = null
         if (::padHelper.isInitialized) levelRepeater.stop()
     }
 
@@ -966,14 +1035,17 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     private fun showFocusIndicator(button: ComboButton, target: String = prefs.focusTarget(button)) {
-        // The modal has no target yet; the indicator follows once a screen is chosen.
-        if (target == Prefs.FOCUS_MODAL) return
+        // The modal has no target yet, and a toggle out of Auto-lock no screen until it has read the
+        // driven one; the indicator follows once the screen is known.
+        if (target == Prefs.FOCUS_MODAL || controllerFocus.needsInputScreen(target)) return
         val position = prefs.focusPosition(button).takeIf { prefs.focusIndicator(button) }
         focusIndicator.show(
             controllerFocus.targetIsTop(target),
             position,
             prefs.focusDuration(button),
-        ) { openIndicatorSettings(button) }
+            onTap = { openIndicatorSettings(button) },
+            auto = controllerFocus.targetIsAuto(target),
+        )
     }
 
     private fun openIndicatorSettings(button: ComboButton) {
@@ -989,12 +1061,14 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun runControllerFocus(button: ComboButton) {
         if (prefs.focusTarget(button) != Prefs.FOCUS_MODAL) {
             showFocusIndicator(button)
-            controllerFocus.run(prefs.focusTarget(button))
+            // A toggle out of Auto-lock shows the screen it locks once that is known.
+            controllerFocus.run(prefs.focusTarget(button), onResolved = { showFocusIndicator(button, it) })
             return
         }
         val options = listOf(
             AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
             AppControlPrompt.Option(Prefs.DISPLAY_BOTTOM, getString(R.string.level_target_bottom)),
+            AppControlPrompt.Option(Prefs.FOCUS_AUTO, getString(R.string.focus_target_auto)),
         )
         appControlPrompt.show(promptDisplay(), getString(R.string.focus_target_dialog_title), options) { chosen ->
             showFocusIndicator(button, chosen)
@@ -1036,8 +1110,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         when (ActionCodec.decode(action)) {
             Action.Builtin.FLICK_LEFT -> navigationFlick(left = true)
             Action.Builtin.FLICK_RIGHT -> navigationFlick(left = false)
-            Action.Builtin.VOLUME_UP, Action.Builtin.VOLUME_DOWN,
-            Action.Builtin.BRIGHTNESS_UP, Action.Builtin.BRIGHTNESS_DOWN -> levels.run(action, prefs.levelTarget(button))
+            Action.Builtin.VOLUME_UP, Action.Builtin.VOLUME_DOWN -> levels.run(action, prefs.levelTarget(button))
+            Action.Builtin.BRIGHTNESS_UP, Action.Builtin.BRIGHTNESS_DOWN -> withTarget(prefs.levelTarget(button)) { levels.run(action, it) }
             Action.Builtin.CONTROLLER_FOCUS -> runControllerFocus(button)
             Action.Builtin.SWITCH_ACTIVE_APP -> switchActiveApp(button)
             Action.Builtin.APP_CONTROL -> appControl.runAppControl(button)
@@ -1060,10 +1134,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.APP_FAVORITES -> chooseApp(button, favorites = true)
             Action.Builtin.RECENTS -> openTopRecentsNow()
             Action.Builtin.SWITCHER -> showSwitcherNow()
+            Action.Builtin.RECENTS_FOCUSED -> withFocusedScreen { if (it == Prefs.DISPLAY_TOP) openTopRecentsNow() else showSwitcherNow() }
             Action.Builtin.SWAP_APPS -> swapScreensNow()
             Action.Builtin.LAST_APP -> lastApp.run()
             Action.Builtin.BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
-            Action.Builtin.SCREENSHOT -> screenshot(prefs.levelTarget(button))
+            Action.Builtin.SCREENSHOT -> withTarget(prefs.levelTarget(button), ::screenshot)
             Action.Builtin.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             Action.Builtin.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
             Action.Builtin.INTERNET -> system.openSystemSettings(Settings.Panel.ACTION_INTERNET_CONNECTIVITY, Settings.ACTION_WIRELESS_SETTINGS)
@@ -1097,8 +1172,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
             .filter { !favorites || it.value in starred }
             .sortedBy { it.label }
         if (apps.isEmpty()) return notice.show(R.string.app_favorites_none)
+        fun launch(pkg: String, displayId: Int) = runCatching { launchOn(pkg, displayId) }.onFailure { toastUnavailable() }
+        // The list itself takes input focus, so the focused screen is read before it opens.
+        if (prefs.shoulderDisplay(button) == Prefs.TARGET_FOCUSED) return withFocusedScreen { screen ->
+            appControlPrompt.show(promptDisplay(), getString(R.string.shoulder_choose_app_title), apps) { launch(it, screenDisplayId(screen)) }
+        }
         appControlPrompt.show(promptDisplay(), getString(R.string.shoulder_choose_app_title), apps) { pkg ->
-            onLaunchScreen(button) { displayId -> runCatching { launchOn(pkg, displayId) }.onFailure { toastUnavailable() } }
+            onLaunchScreen(button) { displayId -> launch(pkg, displayId) }
         }
     }
 
@@ -1136,6 +1216,15 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Media keys go to whichever session plays, as a headset button would; no root needed. */
     private fun toggleRecording(button: ComboButton) {
+        val target = prefs.levelTarget(button)
+        // Only a start needs the screen; the read must not start a recording a second press already stopped.
+        if (target == Prefs.TARGET_FOCUSED && recording.state == ScreenRecording.State.IDLE) {
+            return withFocusedScreen { if (recording.state == ScreenRecording.State.IDLE) toggleRecording(button, it) }
+        }
+        toggleRecording(button, target)
+    }
+
+    private fun toggleRecording(button: ComboButton, target: String) {
         recording.toggle {
             recordPosition = prefs.recordPosition(button).takeIf { prefs.recordIndicator(button) }
             val mic = prefs.recordMic(button)
@@ -1143,7 +1232,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             val key = prefs.recordPttKey(button).takeIf { mic && prefs.recordPtt(button) && PushToTalk.isAllowed(it) }
             pendingPushToTalkKey = key
             ScreenRecording.Request(
-                prefs.levelTarget(button), Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId,
+                target, Display.DEFAULT_DISPLAY, bottomDisplay()?.displayId,
                 ScreenRecording.bitRate(prefs.recordQuality(button)), mic, key != null, prefs.recordDuck(button),
             )
         }
@@ -1292,6 +1381,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
     /** Runs [launch] on [button]'s screen, asking for the screen first when it is set to Ask. */
     private fun onLaunchScreen(button: ComboButton, launch: (Int) -> Unit) {
+        if (prefs.shoulderDisplay(button) == Prefs.TARGET_FOCUSED) return withFocusedScreen { launch(screenDisplayId(it)) }
         if (prefs.shoulderDisplay(button) != Prefs.APP_SCREEN_ASK) return launch(shoulderDisplayId(button))
         val options = listOf(
             AppControlPrompt.Option(Prefs.DISPLAY_TOP, getString(R.string.level_target_top)),
@@ -1810,7 +1900,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
 
         /** Lets the settings screen preview the focus pictogram, which only the service may draw. */
         @Volatile
-        var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long) -> Unit)? = null
+        var previewFocusIndicator: ((top: Boolean, position: String?, visibleMs: Long, auto: Boolean) -> Unit)? = null
         /** What the gyro does now, and who wants to know: the settings preview shows it live. */
         @Volatile var gyroStatus = GyroStatus()
         var gyroStatusListener: ((GyroStatus) -> Unit)? = null

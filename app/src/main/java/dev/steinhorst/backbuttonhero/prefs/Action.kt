@@ -62,6 +62,7 @@ sealed interface Action {
         GYRO_CALIBRATE(Prefs.SHOULDER_GYRO_CALIBRATE),
         APP_ASK(Prefs.SHOULDER_APP_ASK),
         APP_FAVORITES(Prefs.SHOULDER_APP_FAVORITES),
+        RECENTS_FOCUSED(Prefs.SHOULDER_RECENTS_FOCUSED),
     }
 
     /** One of AYN's tiles with a choice of values; the chosen value is stored separately. */

@@ -91,6 +91,33 @@ class OverlaySnapshotTest {
         Golden.verify("overlay_focus", out.toString())
     }
 
+    // Auto-lock's pictogram keeps the single-screen square at every grid position; only its content differs.
+    private fun autoPictogram(golden: String) {
+        val out = StringBuilder()
+        val focus = FocusIndicatorOverlay(context)
+        for (position in positions) {
+            out.append(added("auto $position") { focus.show(top = true, position = position, auto = true) })
+            focus.dismiss()
+        }
+        out.append(added("auto tappable") { focus.show(false, Prefs.FOCUS_POS_CENTER_RIGHT, onTap = {}, auto = true) })
+        focus.dismiss()
+        // Auto after a fixed screen at the same place replaces the pictogram instead of reusing it.
+        focus.show(true, Prefs.FOCUS_POS_CENTER_RIGHT)
+        focus.show(true, Prefs.FOCUS_POS_CENTER_RIGHT, auto = true)
+        assertEquals(1, OverlayTree.windows().size)
+        out.append("## auto after top\n").append(OverlayTree.describe(OverlayTree.windows()))
+        focus.dismiss()
+        assertEquals("dismiss removes the window", 0, OverlayTree.windows().size)
+        Golden.verify(golden, out.toString())
+    }
+
+    @Test
+    fun `controller-focus pictogram, auto`() = autoPictogram("overlay_focus_auto")
+
+    @Test
+    @Config(qualifiers = "de-xxhdpi")
+    fun `controller-focus pictogram, auto, German`() = autoPictogram("overlay_focus_auto_de")
+
     private fun appControl(golden: String, flipped: Boolean = false) {
         val prompt = AppControlPrompt(context) { flipped }
         val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)

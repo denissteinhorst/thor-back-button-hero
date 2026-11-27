@@ -59,6 +59,7 @@ FILE_AREAS = {
     "HomeAsBack.kt": ["gestures", "sources", "dual"], "AppExceptions.kt": ["exceptions"], "ExceptionGroups.kt": ["exceptions"],
     "Macro.kt": ["macro"], "Gyro.kt": ["gyro"], "GyroControl.kt": ["gyro"], "GyroFusion.kt": ["gyro"],
     "ControllerFocus.kt": ["windows"], "AutoControllerFocus.kt": ["windows"], "FocusIndicatorOverlay.kt": ["windows"],
+    "FocusedScreen.kt": ["windows", "appcontrol", "capture", "levels"],
     "AppControl.kt": ["appcontrol", "confirm"], "PromptKeys.kt": ["appcontrol", "windows", "confirm"],
     "ButtonHints.kt": ["appcontrol", "windows", "confirm"], "SwitcherOverlay.kt": ["confirm"], "CloseApps.kt": ["appcontrol"], "TaskRemover.kt": ["appcontrol"],
     "ScreenRecorder.kt": ["capture"], "ScreenRecording.kt": ["capture"], "SystemScreenshot.kt": ["capture"],

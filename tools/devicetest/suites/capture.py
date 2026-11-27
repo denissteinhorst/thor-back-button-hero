@@ -69,6 +69,38 @@ def screenshots(d):
         time.sleep(1.0)
 
 
+@test("capture", "Screenshot of the focused screen: fixed top, fixed bottom and Auto-lock")
+def screenshot_focused(d):
+    from .windows import GALLERY, _clean, _drive, _routes, _where
+    top_w, top_h = map(int, re.findall(r"(\d+)x(\d+)", d.sh("wm size"))[-1])
+    top = ((top_w, top_h), (top_h, top_w))
+    try:
+        d.bind(KEY, "@screenshot", target="focused")
+        for mode, display in _routes(d):
+            where = _where(d, mode, display)
+            _clean(d)
+            _drive(d, mode, display, GALLERY)
+            before = d.files(SHOTS)
+            d.wait_toasts_gone(3)
+            _press(d)
+            _new_files(d, SHOTS, before, 1)
+            time.sleep(1.5)
+            new = d.files(SHOTS) - before
+            try:
+                if len(new) != 1:
+                    raise Fail(f"{where}: expected one image, got {sorted(new)}")
+                size = _png_size(d, f"{SHOTS}/{next(iter(new))}")
+                # The screens differ in size, so the image tells which one it shows.
+                if (size in top) != (display == d.top):
+                    raise Fail(f"{where}: the screenshot is {size[0]}x{size[1]}, the top screen {top_w}x{top_h}")
+            finally:
+                _delete(d, SHOTS, new)
+            time.sleep(1.0)
+    finally:
+        _clean(d)
+        d.focus(d.top)
+
+
 @test("capture", "Screen recording starts and stops on the same hotkey and saves a playable video")
 def record(d):
     d.sh(f"mkdir -p {VIDEOS}")

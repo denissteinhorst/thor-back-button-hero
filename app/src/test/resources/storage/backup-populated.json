@@ -932,7 +932,7 @@
         "recordDuck": "device"
       },
       "face_a": {
-        "action": "@record_video",
+        "action": "@recents_focused",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -954,7 +954,7 @@
         "recordDuck": "device"
       },
       "face_b": {
-        "action": "@refresh_rate",
+        "action": "@record_video",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -976,7 +976,7 @@
         "recordDuck": "device"
       },
       "face_x": {
-        "action": "@screenshot",
+        "action": "@refresh_rate",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -998,7 +998,7 @@
         "recordDuck": "device"
       },
       "face_y": {
-        "action": "@sound_settings",
+        "action": "@screenshot",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1020,7 +1020,7 @@
         "recordDuck": "device"
       },
       "home": {
-        "action": "@standby",
+        "action": "@sound_settings",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1042,7 +1042,7 @@
         "recordDuck": "device"
       },
       "l1": {
-        "action": "@status_overlay",
+        "action": "@standby",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1064,7 +1064,7 @@
         "recordDuck": "device"
       },
       "l2": {
-        "action": "@stick_light",
+        "action": "@status_overlay",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1086,7 +1086,7 @@
         "recordDuck": "device"
       },
       "lstick_double": {
-        "action": "@swap_apps",
+        "action": "@stick_light",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1108,7 +1108,7 @@
         "recordDuck": "device"
       },
       "lstick_down": {
-        "action": "@switch_active_app",
+        "action": "@swap_apps",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1130,7 +1130,7 @@
         "recordDuck": "device"
       },
       "lstick_left": {
-        "action": "@switcher",
+        "action": "@switch_active_app",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1152,7 +1152,7 @@
         "recordDuck": "device"
       },
       "lstick_press": {
-        "action": "@vibration",
+        "action": "@switcher",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1174,7 +1174,7 @@
         "recordDuck": "device"
       },
       "lstick_right": {
-        "action": "@virtual_mouse",
+        "action": "@vibration",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1196,7 +1196,7 @@
         "recordDuck": "device"
       },
       "lstick_tap_hold": {
-        "action": "@volume_down",
+        "action": "@virtual_mouse",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1218,7 +1218,7 @@
         "recordDuck": "device"
       },
       "lstick_up": {
-        "action": "@volume_mute",
+        "action": "@volume_down",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1240,7 +1240,7 @@
         "recordDuck": "device"
       },
       "r1": {
-        "action": "@volume_up",
+        "action": "@volume_mute",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1262,7 +1262,7 @@
         "recordDuck": "device"
       },
       "r2": {
-        "action": "com.example.game",
+        "action": "@volume_up",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1284,7 +1284,7 @@
         "recordDuck": "device"
       },
       "rstick_double": {
-        "action": "@app_ask",
+        "action": "com.example.game",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1306,7 +1306,7 @@
         "recordDuck": "device"
       },
       "rstick_down": {
-        "action": "@app_control",
+        "action": "@app_ask",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1328,7 +1328,7 @@
         "recordDuck": "device"
       },
       "rstick_left": {
-        "action": "@app_favorites",
+        "action": "@app_control",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1350,7 +1350,7 @@
         "recordDuck": "device"
       },
       "rstick_press": {
-        "action": "@back",
+        "action": "@app_favorites",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1372,7 +1372,7 @@
         "recordDuck": "device"
       },
       "rstick_right": {
-        "action": "@battery_saver",
+        "action": "@back",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1394,7 +1394,7 @@
         "recordDuck": "device"
       },
       "rstick_tap_hold": {
-        "action": "@bluetooth",
+        "action": "@battery_saver",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1416,7 +1416,7 @@
         "recordDuck": "device"
       },
       "rstick_up": {
-        "action": "@brightness_down",
+        "action": "@bluetooth",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1438,7 +1438,7 @@
         "recordDuck": "device"
       },
       "select": {
-        "action": "@brightness_up",
+        "action": "@brightness_down",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
@@ -1460,7 +1460,7 @@
         "recordDuck": "device"
       },
       "start": {
-        "action": "@cast_settings",
+        "action": "@brightness_up",
         "display": "top",
         "target": "both",
         "focusTarget": "modal",
