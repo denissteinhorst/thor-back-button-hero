@@ -306,6 +306,26 @@ push-to-talk gate and lowers the video's game sound while a talk is open. The de
 lowered separately and always restored; the voice itself is never altered beyond the chain.
 `RecorderMixTest` freezes the mix bit for bit; encoder, muxer and compositor are device-only.
 
+Owner rules for push to talk: the owner must keep hearing the game on the device while talking
+(quieter is fine, muting was rejected), and the voice must sound unaltered; voice quality ranks
+above removing the last of the speaker's sound. The voice chain (`EchoTrim`, `VoiceLeveler`,
+`VoicePolish`) rests on these measurements on the Thor (raw microphone and playback dumps,
+2026-11-15); a new idea that needs other facts needs a new dump (a temporary raw dump into
+`Videos/BBH-Records/dump`, removed before committing):
+
+- The microphone hears the speaker at about -29 dBFS at normal volume, a voice at about -34 dBFS.
+  Nearly all of the speaker's sound at the microphone lies above 2 kHz; below 1 kHz it is under
+  -72 dBFS.
+- Linear echo cancellation with the captured playback removes only 6–11 dB (distorted path). Band
+  loudness follows the playback within ±1 dB per 50 ms at normal volume with a 60–75 ms lag; that
+  is what `EchoTrim` uses.
+- MIC, UNPROCESSED, VOICE_RECOGNITION and VOICE_COMMUNICATION deliver the same signal (the last
+  two 6 dB quieter); the platform `AcousticEchoCanceler` cannot be created.
+- A `VolumeShaper` at 0.1 lowers the speaker at the microphone by about 23 dB, at 0.25 by about
+  16 dB; it does not reach the captured copy. The microphone still hears the fade until about
+  300 ms after the press.
+- Leveled speech peaks 18–20 dB over its RMS.
+
 ### Hide pop-ups — `HidePopups` and the root `PopupGuard`
 
 Do Not Disturb's per-hotkey option "Try to hide all pop-ups" (`<button>_dnd_hide_popups`, on by

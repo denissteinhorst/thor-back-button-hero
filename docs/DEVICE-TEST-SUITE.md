@@ -213,6 +213,29 @@ That is printed A (right) and B (bottom) in Standard Style and the other way rou
 `Device.confirm_key()` and `Device.cancel_key()` return them. Android's `BUTTON_X` (evdev 307), which
 closes all apps in the switcher, is printed X (top) in Standard Style and printed Y (left) in Xbox Style.
 
+### Root and pad input by hand
+
+For a quick manual check outside the suite, use the same paths the harness uses instead of
+re-discovering them:
+
+- **Root from adb.** `service call PServerBinder` is refused for the shell user, but a tiny dex run
+  by `app_process` reaches pservice and runs as `uid=0`: `tools/devicetest/java/RootExec.java`, built
+  into `/data/local/tmp` on the suite's first use (`adb shell 'CLASSPATH=<dex> app_process
+  /system/bin RootExec "<cmd>"'`). pservice returns only the first output line and mangles commands
+  of 256 characters and more, so push a script and run `sh /data/local/tmp/<script>.sh`, writing
+  longer output to a readable file.
+- **Injecting pad input.** The helper unlinks AYN's pad node, so write as root into the helper's open
+  file descriptor of it: `/proc/$(pidof libpadhelper.so)/fd/<n>`, the fd whose link reads
+  `/dev/input/eventN (deleted)`; then `sendevent <fd> <type> <code> <value>` and `sendevent <fd> 0 0 0`.
+  Codes: Back `1 158`, A `1 304`, hat `3 16/17`, sticks `3 0/1` and `3 2/5` (±32767), L2/R2 keys
+  `1 312/313` plus axes BRAKE `3 10` / GAS `3 9` (0…32767).
+- **Observing the clone.** `/dev/input` nodes are readable by the shell: `getevent -lt <clone node>`
+  shows what the clone emits (the second "Xbox Wireless Controller", or "Odin Controller", in
+  `/proc/bus/input/devices`). Writing into the clone node injects into Android directly, past the
+  helper.
+- **Never run `uiautomator dump` while the service must stay up** (see
+  [BUILD-AND-RELEASE](BUILD-AND-RELEASE.md)): it unbinds the service and recreates the pad clone.
+
 ## Visual baseline (raw frames)
 
 `tools/devicetest/visual.py` captures the settings screen on the top display as raw frames and

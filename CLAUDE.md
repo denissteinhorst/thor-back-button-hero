@@ -14,7 +14,12 @@ knowledge lives in [`docs/`](docs/README.md); start at its index. Where prose di
   English.
 - **Ask questions directly in chat, with numbered answer choices (1–n), and wait for the reply.**
   Never use `AskUserQuestion` or any other input menu or asynchronous question tool; the owner
-  overlooks them.
+  overlooks them. With several open decisions ask one question per message, and always end the
+  choices with a free-text option.
+- "In den Docs" means a Markdown file in `docs/` (English), never a Claude Docs document.
+- The pace rules (no intermediate questions under a mandate, no "continue?" between steps, the
+  owner tests only at the end, no browser checks of the website) are in
+  [`AGENTS.md`](AGENTS.md#pace-and-autonomy).
 - You are the senior developer, the owner is the project owner. Surface consequential decisions
   (behavior, compatibility, UX, stored data, architecture, security, releases) instead of making
   them. Routine, reversible implementation details within an agreed direction are yours.
@@ -32,7 +37,10 @@ knowledge lives in [`docs/`](docs/README.md); start at its index. Where prose di
 
 - `ANDROID_HOME` is not set; the SDK path comes from `local.properties`
   (`/opt/homebrew/share/android-commandlinetools`).
-- The gate after every change is `./tools/verify.sh`, never a bare Gradle task. Never bypass hooks.
+- While iterating, run only the affected test classes (`./gradlew testDebugUnitTest --tests '<Class>'`
+  with the JDK above, plus lint or a fixture re-record when the change calls for it). Run
+  `./tools/verify.sh` once per finished change, before handing it over for acceptance, not after every
+  fix. The pre-commit hook runs the full JVM suite anyway. Never bypass hooks.
 - There is no emulator image. Device work needs the physical AYN Thor over `adb`; re-check the serial
   with `adb devices` every time.
 

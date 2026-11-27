@@ -24,7 +24,11 @@ quirks. A test asserting something awkward (the `0L` sentinel in `DoubleTapDetec
 ./tools/verify.sh
 ```
 
-Use this, never a bare `./gradlew`. The script resolves JDK 17 itself — it is not on
+Use this as the final check of a finished change, never a bare `./gradlew`. While iterating, run
+only the affected classes (`./gradlew testDebugUnitTest --tests '<Class>'` with JDK 17); the whole
+gate once before a change is handed over or committed, where the pre-commit hook runs the full JVM
+suite too. Repository-wide checks (coverage ratchets, frozen command and storage fixtures, lint)
+only fail here, so a change is not done before this gate is green. The script resolves JDK 17 itself — it is not on
 `PATH` on the author's machine — and runs the aggregate `verify` task, which depends on:
 
 | Step | What it proves |

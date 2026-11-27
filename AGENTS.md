@@ -71,6 +71,37 @@ they see first. Capture or inspect screenshots only when no better verification 
 available and after asking the owner; the owner may then explicitly request screenshot
 inspection.
 
+### Pace and autonomy
+
+- **An implementation mandate means no intermediate questions.** Once the owner has assigned
+  features or fixes, pick the best way within the agreed direction, implement, verify, and ask
+  only for the final acceptance. Decisions made along the way belong in the handover, not in a
+  question mid-way. Genuinely consequential product decisions outside the mandate still go to the
+  owner.
+- **In a multi-step plan (a refactoring, a batch of features) do not end each step with "continue?".**
+  Keep going; the owner announces pauses. Stop only for a real owner decision or a stop rule of the
+  plan.
+- **The owner tests once, at the very end.** Verify every phase yourself with the JVM gate and the
+  device suite (`tools/devicetest`). Every changed area a device check can cover must have one
+  (write new emulated-input checks where missing) and must have run green before the handover; a
+  checklist that still lists untested behavior is not a valid end state. Fix findings at once,
+  including pre-existing harness bugs and clear-cut review findings with an obvious minimal fix,
+  instead of turning them into questions.
+- **Scale every check to the change.** JVM tests: only the affected classes while iterating,
+  `./tools/verify.sh` once per finished change (see "Build and verification"). Device suite: only
+  the affected areas (`run.py --changed` or `--only`); `--full` only before a push or on request.
+  Manual checks follow the risk tier in `docs/MANUAL-TESTING.md`; a change without production code
+  needs no device pass.
+- **Do not verify website changes in a browser yourself** (`site/`, `docs/gesture-explainer.html`):
+  it costs many tokens. Make the change, say it is done, and let the owner check it on the dev
+  server, unless the owner explicitly asks for a browser check.
+- **Spare the GitHub API.** Unauthenticated calls are capped at 60 per hour per IP, and the app's
+  update check and the website share that budget. No ad-hoc `curl` loops against
+  `api.github.com`, few reloads of `site/` (it fetches the releases on every load); check
+  `/rate_limit` before blaming code for a 403.
+
+### Commits
+
 Once a feature or fix is genuinely complete and its applicable automated and owner
 verification has succeeded, create one clean, focused commit containing only that work.
 Never bypass hooks. Do not push the commit. The project owner will explicitly announce
@@ -206,7 +237,7 @@ must likewise be checked according to what is actually distributed in each artif
 
 ## Build and verification
 
-Use the wrapper, never a system Gradle. The canonical post-change gate is:
+Use the wrapper, never a system Gradle. The canonical gate for a finished change is:
 
 ```sh
 ./tools/verify.sh
@@ -214,10 +245,12 @@ Use the wrapper, never a system Gradle. The canonical post-change gate is:
 
 It resolves the local JDK 17 installation and runs lint, JVM tests, JaCoCo verification,
 debug/release builds, androidTest compilation and the device harness's host tests. It does
-not run device tests. Do not substitute a bare Gradle task for this final gate, and do not
-bypass git hooks.
+not run device tests. Run it once per finished change, before handing it over or committing,
+not after every intermediate fix: while iterating, run only the test classes the edit affects
+(`testDebugUnitTest --tests '<Class>'`). Do not substitute a bare Gradle task for this final
+gate, and do not bypass git hooks (the pre-commit hook runs the full JVM suite).
 
-For targeted investigation before the final gate, set JDK 17 explicitly on this machine:
+For targeted runs before the final gate, set JDK 17 explicitly on this machine:
 
 ```sh
 JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \

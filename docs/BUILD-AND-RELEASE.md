@@ -285,7 +285,16 @@ owner's machine; the SDK path comes from `local.properties`):
 ```
 
 The SHA-256 digest must equal that of earlier releases. A different digest means the wrong key;
-publishing with it would break updates for everyone.
+publishing with it would break updates for everyone. The release certificate (PKCS12, RSA 4096,
+alias `thor-back-button-hero`, created 2026-10-24) has these fingerprints:
+
+```
+SHA-256: 7f8ab05139a406a3d50ba6267c60228b90935f4c02f854c26d69cf1b275df3ee
+SHA-1:   3a119829715ba71603e12657dce45db10b98a632
+```
+
+The keystore and its password live only in the owner's backup; GitHub secrets are write-only and
+cannot be read back.
 
 ### The repo must stay public
 
