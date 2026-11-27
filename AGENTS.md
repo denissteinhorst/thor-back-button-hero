@@ -14,7 +14,7 @@ an app switcher, screen swapping, and configurable Back + shoulder/D-pad shortcu
 - UI: framework Views built in Kotlin; no Compose and no layout XML
 - Android entry points: `SettingsActivity` and `SwitcherService`
 - Build variants: `debug` and `release`
-- Toolchain: JDK 17, AGP 9.5.1, Kotlin 2.4.21, Gradle 9.9.2
+- Toolchain: JDK 17, AGP 9.5.3, Kotlin 2.4.21, Gradle 9.9.3
 - Android: min SDK 30, compile/target SDK 34, NDK 29.0.14206865
 - Tests: JUnit 4 + Robolectric; one physical-device instrumentation smoke test
 
