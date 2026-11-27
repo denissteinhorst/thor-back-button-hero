@@ -34,6 +34,10 @@ internal object HelperProtocol {
     }
     const val MACRO_STOP = "MSTOP\n"
 
+    /** Emitted through the clone at once, Back held or not; the helper remembers them for [UNPRESS]. */
+    fun press(events: List<MacroEvent>) = events.joinToString("") { "PRESS ${if (it.key) "K" else "A"} ${it.code} ${it.value}\n" }
+    const val UNPRESS = "UNPRESS\n"
+
     fun gyro(stick: Stick?, x: Int, y: Int): String {
         val wire = when (stick) { null -> 0; Stick.LEFT -> 1; Stick.RIGHT -> 2 }
         return "GYRO $wire $x $y\n"

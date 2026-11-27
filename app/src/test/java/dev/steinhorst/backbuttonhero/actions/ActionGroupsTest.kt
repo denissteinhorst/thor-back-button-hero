@@ -1,5 +1,6 @@
 package dev.steinhorst.backbuttonhero.actions
 
+import dev.steinhorst.backbuttonhero.pad.PadButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -22,6 +23,16 @@ class ActionGroupsTest {
         assertEquals(ActionGroups.Group.VOLUME, ActionGroups.groupOfEntry("@group_volume"))
         assertNull(ActionGroups.groupOf(Prefs.SHOULDER_HOME))
         assertNull(ActionGroups.groupOfEntry("@volume_up"))
+    }
+
+    @Test
+    fun `press button offers every pad button in the pad's order, each stored as its own action`() {
+        val group = ActionGroups.Group.PRESS_BUTTON
+        assertEquals("@group_press_button", group.entry)
+        assertEquals(PadButton.entries.map { it.action }, group.options.map { it.action })
+        assertEquals(PadButton.entries.map { it.labelRes }, group.options.map { it.labelRes })
+        assertEquals(Prefs.PAD_ACTIONS, group.options.map { it.action }.toSet())
+        Prefs.PAD_ACTIONS.forEach { assertEquals(group, ActionGroups.groupOf(it)) }
     }
 
     @Test

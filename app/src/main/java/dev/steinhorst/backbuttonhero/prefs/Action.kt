@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero.prefs
 
 import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.pad.PadButton
 
 /**
  * What a hotkey does, as a type instead of the stored string. Installs hold these as plain strings
@@ -70,6 +71,9 @@ sealed interface Action {
 
     /** One of AYN's on/off tiles. */
     data class AynSwitch(val toggle: Ayn.Toggle) : Action
+
+    /** Presses one of the pad's own buttons for as long as the hotkey is held. */
+    data class PressButton(val button: PadButton) : Action
 }
 
 /** The only mapping between stored action strings and [Action]; `encode(decode(s)) == s` for every string. */
@@ -77,7 +81,8 @@ object ActionCodec {
     private val bySentinel: Map<String, Action> by lazy {
         Action.Builtin.entries.associateBy { it.sentinel } +
             Ayn.Group.entries.associate { it.action to Action.AynChoice(it) } +
-            Ayn.Toggle.entries.associate { it.action to Action.AynSwitch(it) }
+            Ayn.Toggle.entries.associate { it.action to Action.AynSwitch(it) } +
+            PadButton.entries.associate { it.action to Action.PressButton(it) }
     }
 
     /** Mirrors [Prefs.isShoulderApp]: any non-empty value without the `@` prefix is a package name. */
@@ -94,5 +99,6 @@ object ActionCodec {
         is Action.Builtin -> action.sentinel
         is Action.AynChoice -> action.group.action
         is Action.AynSwitch -> action.toggle.action
+        is Action.PressButton -> action.button.action
     }
 }

@@ -6,4 +6,4 @@ shortcut, then everything that moves apps and windows, and last the checks that 
 the most (controller style, screens and standby).
 """
 
-from . import preflight, settings, ayn, levels, media, sources, gestures, toggle, windows, appcontrol, capture, macro, gyro, panels, exceptions, style, confirm, frontends  # noqa: F401
+from . import preflight, settings, ayn, levels, media, sources, gestures, toggle, windows, appcontrol, capture, macro, press, gyro, panels, exceptions, style, confirm, frontends  # noqa: F401

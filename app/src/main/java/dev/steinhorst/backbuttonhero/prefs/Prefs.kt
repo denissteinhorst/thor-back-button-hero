@@ -277,6 +277,9 @@ class Prefs(context: Context) : GestureSettings {
     /** Removes macro [id] from the library and from every hotkey that played it, in one write. */
     fun deleteMacro(id: String) = macros.delete(id)
 
+    /** Whether any hotkey presses a pad button - the helper's clone is the only way to press one. */
+    fun hasPadPressAction(): Boolean = withHomeLayer(ALL_BUTTONS).any { shoulderAction(it) in PAD_ACTIONS }
+
     /** Whether any hotkey plays a recorded macro - only then must the helper hold the pad for it. */
     fun hasMacroAction(): Boolean = withHomeLayer(MACRO_BUTTONS).any { shoulderAction(it) == SHOULDER_MACRO && macro(it) != null }
 
@@ -584,6 +587,24 @@ class Prefs(context: Context) : GestureSettings {
         const val SHOULDER_STATUS = "@status_overlay"
         const val SHOULDER_GYRO = "@gyro"
         const val SHOULDER_GYRO_CALIBRATE = "@gyro_calibrate"
+        // Presses one of the pad's own buttons through the helper's clone; see [PAD_ACTIONS].
+        const val SHOULDER_PAD_A = "@pad_a"
+        const val SHOULDER_PAD_B = "@pad_b"
+        const val SHOULDER_PAD_X = "@pad_x"
+        const val SHOULDER_PAD_Y = "@pad_y"
+        const val SHOULDER_PAD_L1 = "@pad_l1"
+        const val SHOULDER_PAD_R1 = "@pad_r1"
+        const val SHOULDER_PAD_L2 = "@pad_l2"
+        const val SHOULDER_PAD_R2 = "@pad_r2"
+        const val SHOULDER_PAD_L3 = "@pad_l3"
+        const val SHOULDER_PAD_R3 = "@pad_r3"
+        const val SHOULDER_PAD_START = "@pad_start"
+        const val SHOULDER_PAD_SELECT = "@pad_select"
+        const val SHOULDER_PAD_HOME = "@pad_home"
+        const val SHOULDER_PAD_UP = "@pad_up"
+        const val SHOULDER_PAD_DOWN = "@pad_down"
+        const val SHOULDER_PAD_LEFT = "@pad_left"
+        const val SHOULDER_PAD_RIGHT = "@pad_right"
         const val RECORD_SMALL = "small"
         const val RECORD_MEDIUM = "medium"
         const val RECORD_LARGE = "large"
@@ -591,6 +612,13 @@ class Prefs(context: Context) : GestureSettings {
         const val DUCK_OFF = "off"
         const val DUCK_VIDEO = "video"
         const val DUCK_DEVICE = "device"
+
+        /** The "Press button" actions, one per pad button the helper can press (see [dev.steinhorst.backbuttonhero.pad.PadButton]). */
+        val PAD_ACTIONS: Set<String> = setOf(
+            SHOULDER_PAD_A, SHOULDER_PAD_B, SHOULDER_PAD_X, SHOULDER_PAD_Y, SHOULDER_PAD_L1, SHOULDER_PAD_R1,
+            SHOULDER_PAD_L2, SHOULDER_PAD_R2, SHOULDER_PAD_L3, SHOULDER_PAD_R3, SHOULDER_PAD_START, SHOULDER_PAD_SELECT,
+            SHOULDER_PAD_HOME, SHOULDER_PAD_UP, SHOULDER_PAD_DOWN, SHOULDER_PAD_LEFT, SHOULDER_PAD_RIGHT,
+        )
 
         /** Every `@` action this build knows; a backup naming anything else is not applied. */
         val KNOWN_ACTIONS: Set<String> = setOf(
@@ -604,7 +632,7 @@ class Prefs(context: Context) : GestureSettings {
             SHOULDER_RECORD_VIDEO, SHOULDER_MACRO, SHOULDER_MEDIA_PLAY_PAUSE, SHOULDER_MEDIA_NEXT, SHOULDER_MEDIA_PREVIOUS,
             SHOULDER_STATUS, SHOULDER_LAST_APP, SHOULDER_GYRO,
             SHOULDER_GYRO_CALIBRATE, SHOULDER_APP_ASK, SHOULDER_APP_FAVORITES, SHOULDER_RECENTS_FOCUSED,
-        ) + Ayn.ACTIONS
+        ) + PAD_ACTIONS + Ayn.ACTIONS
 
         /** Every hotkey that can play a macro: all combos, but not Back's own gestures. */
         val MACRO_BUTTONS: List<ComboButton> by lazy {

@@ -67,6 +67,7 @@ import dev.steinhorst.backbuttonhero.input.StickButton
 import dev.steinhorst.backbuttonhero.input.StickClick
 import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.input.base
+import dev.steinhorst.backbuttonhero.macro.MacroEvent
 import dev.steinhorst.backbuttonhero.macro.MacroPlayback
 import dev.steinhorst.backbuttonhero.overlay.ButtonHintOverlay
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
@@ -79,6 +80,7 @@ import dev.steinhorst.backbuttonhero.pad.LevelControl
 import dev.steinhorst.backbuttonhero.pad.LevelRepeater
 import dev.steinhorst.backbuttonhero.pad.PadHelper
 import dev.steinhorst.backbuttonhero.pad.PadNavigationMode
+import dev.steinhorst.backbuttonhero.pad.PadPress
 import dev.steinhorst.backbuttonhero.panels.BottomPanels
 import dev.steinhorst.backbuttonhero.panels.PanelWindow
 import dev.steinhorst.backbuttonhero.prefs.Action
@@ -157,9 +159,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun allows(button: ComboButton) = allowsCombo(button)
         override fun markComboFired() = heldGesture.markComboFired()
         override fun log(message: String) = dlog(message)
-        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action)
+        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action, held = true)
         override fun showFocusIndicator(button: ComboButton) = this@SwitcherService.showFocusIndicator(button)
         override fun runReleased(button: ComboButton) = runReleasedCombo(button)
+        override fun released(button: ComboButton) = padPress.release(button)
     })
     private val directionalRouter = DirectionalRouter(object : DirectionalRouter.Host {
         override val modifierDown get() = this@SwitcherService.modifierDown
@@ -172,10 +175,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
         override fun markComboFired() = heldGesture.markComboFired()
         override fun log(message: String) = dlog(message)
         override fun showFocusIndicator(button: ComboButton) = this@SwitcherService.showFocusIndicator(button)
-        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action)
+        override fun runCombo(button: ComboButton, action: String) = runComboAction(button, action, held = true)
         override fun startLevelRepeat(button: ComboButton, action: String) = this@SwitcherService.startLevelRepeat(button, action)
         override fun stopLevelRepeat() = this@SwitcherService.stopLevelRepeat()
         override fun runReleased(button: ComboButton) = runReleasedCombo(button)
+        override fun released(button: ComboButton) = padPress.release(button)
     })
     private val stickClickRouter by lazy {
         StickClickRouter(gestureScheduler, gestureClock, object : StickClickRouter.Host {
@@ -190,6 +194,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun tapHoldMs(stick: Stick, home: Boolean) = prefs.stickTapHoldMs(stick, home)
             override fun action(button: ComboButton) = prefs.shoulderAction(button)
             override fun fire(button: ComboButton) = runStickClick(button)
+            override fun holdsWhilePressed(button: ComboButton) = ActionCodec.decode(prefs.shoulderAction(button)) is Action.PressButton
+            override fun press(button: ComboButton) = runStickClick(button, held = true)
+            override fun released(stick: Stick) = StickClickButton.entries.filter { it.stick == stick }.forEach(padPress::release)
+        })
+    }
+    /** The "Press button" actions; their buttons reach the game through the helper's pad clone. */
+    private val padPress by lazy {
+        PadPress(gestureScheduler, gestureClock, object : PadPress.Host {
+            override fun flipped() = controllerFlipped()
+            override fun send(events: List<MacroEvent>) = ::padHelper.isInitialized && padHelper.press(events)
+            override fun releaseEverything() { if (::padHelper.isInitialized) padHelper.unpress() }
+            override fun unavailable() = toastUnavailable()
         })
     }
     private var repeatingButton: ComboButton? = null
@@ -624,7 +640,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         // Controller-enabled switchers must be ready on their first frame; starting the helper only
         // after one opens would recreate the pad while the user is already trying to navigate.
         val needed = prefs.hasDpadAction() || prefs.hasStickAction() || prefs.switcherControllerEnabled ||
-            prefs.hasMacroAction() || macroRecordListener != null || prefs.hasGyroAction()
+            prefs.hasMacroAction() || macroRecordListener != null || prefs.hasGyroAction() || prefs.hasPadPressAction()
         if (needed) padHelper.start() else padHelper.stop()
         padHelper.setHomeMode(when {
             prefs.homeAsBack -> PadHelper.HOME_AS_BACK
@@ -675,6 +691,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
         recentsConfirmKeys.clear()
         nativeBackDevices.clear()
         gyroActions.releaseHold()
+        // Their releases will never arrive either; a button pressed for one must not stay down.
+        padPress.releaseAll()
     }
 
     private val standbyReceiver = object : BroadcastReceiver() {
@@ -689,6 +707,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        // A button a "Press button" hotkey pressed comes back through the pad clone, often while Back is
+        // still held. It is the game's: never a Back combo, an activation shortcut or Home-as-Back.
+        if (padPress.passes(event.keyCode, event.action, event.isFromSource(InputDevice.SOURCE_GAMEPAD),
+                comboRouter.isDown(event.keyCode) || stickClickRouter.isDown(event.keyCode))) {
+            dlog("PRESS  passthrough key=${event.keyCode} action=${event.action}")
+            return false
+        }
         // Ahead of the Home-as-Back routing, so Back + Home is seen as both keys whichever leads.
         if (toggleGesture.handle(event)) return true
         return dispatchKey(event)
@@ -982,17 +1007,18 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun handleStickClick(stick: Stick, event: KeyEvent): Boolean =
         stickClickRouter.handle(stick, event.action, event.keyCode, event.deviceId, event.repeatCount)
 
-    private fun runStickClick(button: ComboButton) {
+    /** [held]: the click is still down and its release will follow (a press held from the DOWN). */
+    private fun runStickClick(button: ComboButton, held: Boolean = false) {
         val action = prefs.shoulderAction(button)
         if (action.isEmpty() || !interceptionEnabled) return
         dlog("STICK  $button action=$action")
         if ((button.base as StickClickButton).click == StickClick.TAP_HOLD) {
             // Fires while still held, like Back's tap-and-hold; stepping actions keep repeating until release.
             stopLevelRepeat()
-            runComboAction(button, action)
+            runComboAction(button, action, held = true)
             startLevelRepeat(button, action)
         } else {
-            runComboAction(button, action)
+            runComboAction(button, action, held)
         }
     }
 
@@ -1106,8 +1132,10 @@ class SwitcherService : AccessibilityService(), GestureActions {
         appControlPrompt.show(promptDisplay(), getString(group.titleRes), options) { apply(it) }
     }
 
-    private fun runComboAction(button: ComboButton, action: String) {
-        when (ActionCodec.decode(action)) {
+    /** [held]: [button]'s trigger is still down and reports its release; otherwise a pressed pad button is only tapped. */
+    private fun runComboAction(button: ComboButton, action: String, held: Boolean = false) {
+        when (val decoded = ActionCodec.decode(action)) {
+            is Action.PressButton -> padPress.press(button, decoded.button, held)
             Action.Builtin.FLICK_LEFT -> navigationFlick(left = true)
             Action.Builtin.FLICK_RIGHT -> navigationFlick(left = false)
             Action.Builtin.VOLUME_UP, Action.Builtin.VOLUME_DOWN -> levels.run(action, prefs.levelTarget(button))
@@ -1482,6 +1510,9 @@ class SwitcherService : AccessibilityService(), GestureActions {
         topSession.retire()
         if (!::padHelper.isInitialized) return
         prefs.unregisterListener(prefsListener)
+        // Released while the helper still listens; the clone goes with it anyway, so nothing can stay pressed.
+        padPress.releaseAll()
+        padPress.forget()
         padHelper.dispose()
         dpadOverlay.detach()
     }
@@ -1800,6 +1831,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun onPadHelperActiveChanged(active: Boolean) {
         if (!active) {
             macroPlayback.padLost()
+            // The clone, and every button pressed through it, is gone with the helper.
+            padPress.forget()
         }
         if (!interceptionEnabled || !::overlay.isInitialized || !prefs.switcherControllerEnabled ||
             (!overlay.isShowing && !topRecentsControllerActive)

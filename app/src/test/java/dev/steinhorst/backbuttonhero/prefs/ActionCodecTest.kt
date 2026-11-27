@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero.prefs
 
 import dev.steinhorst.backbuttonhero.actions.Ayn
+import dev.steinhorst.backbuttonhero.pad.PadButton
 import java.io.File
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -44,6 +45,15 @@ class ActionCodecTest {
         Action.AynSwitch(Ayn.Toggle.VIRTUAL_MOUSE) to "@virtual_mouse",
         Action.AynSwitch(Ayn.Toggle.DO_NOT_DISTURB) to "@do_not_disturb",
         Action.AynSwitch(Ayn.Toggle.MUTE_MICROPHONE) to "@mute_microphone",
+        Action.PressButton(PadButton.A) to "@pad_a", Action.PressButton(PadButton.B) to "@pad_b",
+        Action.PressButton(PadButton.X) to "@pad_x", Action.PressButton(PadButton.Y) to "@pad_y",
+        Action.PressButton(PadButton.L1) to "@pad_l1", Action.PressButton(PadButton.R1) to "@pad_r1",
+        Action.PressButton(PadButton.L2) to "@pad_l2", Action.PressButton(PadButton.R2) to "@pad_r2",
+        Action.PressButton(PadButton.L3) to "@pad_l3", Action.PressButton(PadButton.R3) to "@pad_r3",
+        Action.PressButton(PadButton.START) to "@pad_start", Action.PressButton(PadButton.SELECT) to "@pad_select",
+        Action.PressButton(PadButton.HOME) to "@pad_home", Action.PressButton(PadButton.UP) to "@pad_up",
+        Action.PressButton(PadButton.DOWN) to "@pad_down", Action.PressButton(PadButton.LEFT) to "@pad_left",
+        Action.PressButton(PadButton.RIGHT) to "@pad_right",
     )
 
     @Test
@@ -54,7 +64,7 @@ class ActionCodecTest {
             assertEquals(raw, ActionCodec.encode(action))
             assertEquals(action, ActionCodec.decode(raw))
         }
-        val typed = Action.Builtin.entries.size + Ayn.Group.entries.size + Ayn.Toggle.entries.size
+        val typed = Action.Builtin.entries.size + Ayn.Group.entries.size + Ayn.Toggle.entries.size + PadButton.entries.size
         assertEquals(typed, table.size)
     }
 
@@ -66,6 +76,8 @@ class ActionCodecTest {
         assertEquals(Action.LaunchApp("not a package"), ActionCodec.decode("not a package"))
         assertEquals(Action.Unknown("@swap_screens"), ActionCodec.decode("@swap_screens"))
         assertEquals(Action.Unknown("@"), ActionCodec.decode("@"))
+        // A button a later build adds stays verbatim here, like any other unknown sentinel.
+        assertEquals(Action.Unknown("@pad_c"), ActionCodec.decode("@pad_c"))
         for (raw in listOf("", "com.example.game", "not a package", "@swap_screens", "@", "@Home", " @home")) {
             assertEquals(raw, ActionCodec.encode(ActionCodec.decode(raw)))
             assertEquals(Prefs.isShoulderApp(raw), ActionCodec.decode(raw) is Action.LaunchApp)

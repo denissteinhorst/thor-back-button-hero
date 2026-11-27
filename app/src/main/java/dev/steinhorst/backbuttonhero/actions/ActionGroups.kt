@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero.actions
 
 import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.pad.PadButton
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 
 /**
@@ -64,6 +65,10 @@ object ActionGroups {
                 Option(Prefs.SHOULDER_QUICK_SETTINGS, R.string.shoulder_quick_settings),
                 Option(Prefs.SHOULDER_NOTIFICATIONS, R.string.shoulder_notifications),
             ),
+        ),
+        PRESS_BUTTON(
+            "press_button", R.string.group_press_button,
+            PadButton.entries.map { Option(it.action, it.labelRes) },
         ),
         SETTINGS(
             "settings", R.string.group_settings,

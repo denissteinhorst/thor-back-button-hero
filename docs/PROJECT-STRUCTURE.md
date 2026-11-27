@@ -184,8 +184,9 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `StickButton.kt` | 70 | The two sticks, their eight direction buttons and `StickDetector`, the engage/neutral state machine shared with the overlay fallback. |
 | `StickClickMachine.kt` | 60 | Press, double press and tap-and-hold decisions for a stick's L3/R3 while Back is held. |
 | `LevelRepeater.kt` | 60 | `RepeatCurve` and the repeater that steps a held volume/brightness shortcut faster over time. |
-| `HelperProtocol.kt` | 52 | Every command line the service sends to the root helper, with the direction and stick bit masks it expects. |
-| `PadHelper.kt` | 233 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
+| `HelperProtocol.kt` | 53 | Every command line the service sends to the root helper, with the direction and stick bit masks it expects. |
+| `PadPress.kt` | 176 | The *Press button* actions: `PadButton` (the pressable pad buttons and the events that press them) and `PadPress`, which holds a button through the helper's clone while its trigger is held, releases it on every exit and lets the pressed key pass to the game. |
+| `PadHelper.kt` | 347 | Starts the native root helper through `PService`, accepts only a uid-0 peer on its abstract socket, and turns its reports into D-pad presses, navigation modes and the exception mask. See [`HELPER.md`](HELPER.md). |
 | `Macro.kt` | 501 | Pure macro model: steps, buttons and eight-way directions, the checked stored form, the named library entry `SavedMacro`, the editor's list operations `MacroEdits`, the playback timeline for the helper, and `MacroRecorder`, which turns the helper's raw recording into steps. |
 | `MacroEditor.kt` | 1253 | The full-screen macro editor: step cards with live recording, two-column step and pause sheets, the input palette, drag to move or delete, undo, preview, naming and loading. |
 | `MacroIconView.kt` | 99 | One macro input as a 40 dp glyph: a lettered key, a D-pad with the pressed arm lit, or a stick ring. |
@@ -238,7 +239,7 @@ The automated safety net. 140 test classes, **896 tests**. Run by the gate. By a
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest`, `ControllerFocusAutoTest`, `FocusedScreenTest`, `ServiceFocusedScreenTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
 | Tasks, swap, frontends | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
-| Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest` |
+| Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest`, `PadHelperProtocolTest`, `PadPressTest`, `ServicePadPressTest` |
 | Other | `ShellTest`, `UpdateCheckerParseTest` (release parsing, semver ordering, legacy tags, rejected inputs), `ResourceIntegrityTest` (EN/DE string parity), `SmokeTest` |
 | Support | `support/ViewTree.kt` renders a View hierarchy to deterministic text — the snapshot format, platform-independent unlike pixel screenshots. `support/Golden.kt` compares against a golden file, or rewrites it when `UPDATE_GOLDENS=1` (see the golden rule in [`TESTING.md`](TESTING.md)). `support/ViewTreeSmokeTest.kt` verifies the renderer itself. |
 

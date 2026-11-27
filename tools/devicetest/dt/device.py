@@ -31,6 +31,14 @@ EMPTY = '""'
 ZEN_TO_DND = {"0": "off", "1": "priority", "2": "none", "3": "alarms"}
 
 
+def getevent_events(text, timed=False):
+    """getevent's lines as (type, code, value), or with [timed] (`getevent -t`) as (seconds, type, code, value)."""
+    if not timed:
+        return [tuple(int(x, 16) for x in m) for m in re.findall(r"([0-9a-f]{4}) ([0-9a-f]{4}) ([0-9a-f]{8})", text)]
+    return [(float(t), int(a, 16), int(b, 16), int(c, 16))
+            for t, a, b, c in re.findall(r"\[\s*(\d+\.\d+)\]\s+([0-9a-f]{4}) ([0-9a-f]{4}) ([0-9a-f]{8})", text)]
+
+
 class Fail(AssertionError):
     pass
 
@@ -522,12 +530,14 @@ class Device:
             thread.join(3)
         return seen
 
-    def press_watching(self, seq: Seq, settle=0.6):
-        """Presses [seq] and returns (type, code, value) of every event the game-facing pad emitted.
-        getevent runs on a terminal so its output is line-buffered rather than lost when it is stopped."""
+    def press_watching(self, seq: Seq, settle=0.6, timed=False):
+        """Presses [seq] and returns (type, code, value) of every event the game-facing pad emitted, with
+        [timed] (seconds, type, code, value). getevent runs on a terminal so its output is line-buffered
+        rather than lost when it is stopped."""
         import subprocess
         import threading
-        proc = subprocess.Popen(["adb", "-s", self.adb.serial, "shell", "-tt", "getevent", self.clone_node()],
+        proc = subprocess.Popen(["adb", "-s", self.adb.serial, "shell", "-tt", "getevent", *(["-t"] if timed else []),
+                                 self.clone_node()],
                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         lines = []
         reader = threading.Thread(target=lambda: lines.extend(iter(proc.stdout.readline, "")), daemon=True)
@@ -539,7 +549,7 @@ class Device:
         finally:
             proc.terminate()
             reader.join(2)
-        return [tuple(int(x, 16) for x in m) for m in re.findall(r"([0-9a-f]{4}) ([0-9a-f]{4}) ([0-9a-f]{8})", "".join(lines))]
+        return getevent_events("".join(lines), timed)
 
     def face(self, letter):
         """The evdev code of the face button printed [letter]; Xbox Style swaps A/B and X/Y."""

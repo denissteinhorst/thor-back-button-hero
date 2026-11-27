@@ -1,0 +1,85 @@
+## presses without a helper are dropped
+  press=false
+## connected, but no pad taken over yet
+  press=false
+  > PAD 1
+  -> active true
+## A pressed and released
+  press=true release=true
+  <- PRESS K 304 1
+  <- PRESS K 304 0
+## B pressed and released
+  press=true release=true
+  <- PRESS K 305 1
+  <- PRESS K 305 0
+## X pressed and released
+  press=true release=true
+  <- PRESS K 307 1
+  <- PRESS K 307 0
+## Y pressed and released
+  press=true release=true
+  <- PRESS K 308 1
+  <- PRESS K 308 0
+## L1 pressed and released
+  press=true release=true
+  <- PRESS K 310 1
+  <- PRESS K 310 0
+## R1 pressed and released
+  press=true release=true
+  <- PRESS K 311 1
+  <- PRESS K 311 0
+## L2 pressed and released
+  press=true release=true
+  <- PRESS K 312 1
+  <- PRESS A 10 1000
+  <- PRESS K 312 0
+  <- PRESS A 10 0
+## R2 pressed and released
+  press=true release=true
+  <- PRESS K 313 1
+  <- PRESS A 9 1000
+  <- PRESS K 313 0
+  <- PRESS A 9 0
+## L3 pressed and released
+  press=true release=true
+  <- PRESS K 317 1
+  <- PRESS K 317 0
+## R3 pressed and released
+  press=true release=true
+  <- PRESS K 318 1
+  <- PRESS K 318 0
+## START pressed and released
+  press=true release=true
+  <- PRESS K 315 1
+  <- PRESS K 315 0
+## SELECT pressed and released
+  press=true release=true
+  <- PRESS K 314 1
+  <- PRESS K 314 0
+## HOME pressed and released
+  press=true release=true
+  <- PRESS K 102 1
+  <- PRESS K 102 0
+## UP pressed and released
+  press=true release=true
+  <- PRESS A 17 -1000
+  <- PRESS A 17 0
+## DOWN pressed and released
+  press=true release=true
+  <- PRESS A 17 1000
+  <- PRESS A 17 0
+## LEFT pressed and released
+  press=true release=true
+  <- PRESS A 16 -1000
+  <- PRESS A 16 0
+## RIGHT pressed and released
+  press=true release=true
+  <- PRESS A 16 1000
+  <- PRESS A 16 0
+## face buttons in the other controller style
+  <- PRESS K 305 1
+  <- PRESS K 304 1
+  <- PRESS K 308 1
+  <- PRESS K 307 1
+## release everything
+  <- UNPRESS

@@ -67,6 +67,40 @@ Notice: Mute Microphone: On
 activity action=android.settings.NIGHT_DISPLAY_SETTINGS component=null data=null categories=null flags=0x10000000 extras=null display=null
 ## @notifications
 global 4
+## @pad_a
+Notice: This system action is not available on this device.
+## @pad_b
+Notice: This system action is not available on this device.
+## @pad_down
+Notice: This system action is not available on this device.
+## @pad_home
+Notice: This system action is not available on this device.
+## @pad_l1
+Notice: This system action is not available on this device.
+## @pad_l2
+Notice: This system action is not available on this device.
+## @pad_l3
+Notice: This system action is not available on this device.
+## @pad_left
+Notice: This system action is not available on this device.
+## @pad_r1
+Notice: This system action is not available on this device.
+## @pad_r2
+Notice: This system action is not available on this device.
+## @pad_r3
+Notice: This system action is not available on this device.
+## @pad_right
+Notice: This system action is not available on this device.
+## @pad_select
+Notice: This system action is not available on this device.
+## @pad_start
+Notice: This system action is not available on this device.
+## @pad_up
+Notice: This system action is not available on this device.
+## @pad_x
+Notice: This system action is not available on this device.
+## @pad_y
+Notice: This system action is not available on this device.
 ## @performance
 prompt [Performance Mode, Standard Performance, Medium Performance, High Performance, Cancel]
 ## @power_menu

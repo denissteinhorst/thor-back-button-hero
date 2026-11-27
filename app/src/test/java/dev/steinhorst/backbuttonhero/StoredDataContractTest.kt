@@ -81,9 +81,13 @@ class StoredDataContractTest {
 
     private val macro = Macro(listOf(MacroStep(listOf(MacroInput.Button(MacroButton.A)), 80, 120)))
 
-    /** Every binding assigned, cycling through every stored action and an app, with non-default options. */
+    /**
+     * Every binding assigned, cycling through every stored action and an app, with non-default options.
+     * The "Press button" actions came after these fixtures were recorded; they have their own fixture
+     * ([pressButtonFixture]), so this cycle stays exactly as frozen.
+     */
     private fun populated(base: SettingsState): SettingsState {
-        val actions = (Prefs.KNOWN_ACTIONS.sorted() + "com.example.game")
+        val actions = ((Prefs.KNOWN_ACTIONS - Prefs.PAD_ACTIONS).sorted() + "com.example.game")
         val bindings = base.bindings.toSortedMap().entries.mapIndexed { i, (key, old) ->
             key to old.copy(
                 action = actions[i % actions.size],
@@ -225,6 +229,26 @@ class StoredDataContractTest {
         val text = SettingsBackup.write(after, "2.0.0", 11L, now)
         verify("backup-populated.json", text)
         assertEquals("back-button-hero-backup_v2.0.0_2026-01-02.json", SettingsBackup.fileName("2.0.0", LocalDate.of(2026, 1, 2)))
+        val read = SettingsBackup.read(text)
+        assertTrue("the backup must be accepted: $read", read is SettingsBackup.Result.Loaded)
+        assertEquals(after, (read as SettingsBackup.Result.Loaded).state)
+    }
+
+    @Test
+    fun `press button actions store exactly their sentinels and travel in a backup`() = pressButtonFixture()
+
+    private fun pressButtonFixture() {
+        val prefs = Prefs(context)
+        val before = prefs.snapshot()
+        val pads = Prefs.PAD_ACTIONS.sorted()
+        val bindings = before.bindings.toSortedMap().entries.mapIndexed { i, (key, old) ->
+            key to (if (i < pads.size) old.copy(action = pads[i]) else old)
+        }.toMap()
+        val after = before.copy(bindings = bindings)
+        assertTrue(prefs.applySettings(before, after))
+        verify("press-button.txt", dump())
+        val text = SettingsBackup.write(after, "2.0.0", 11L, Instant.parse("2026-01-02T03:04:05Z"))
+        verify("backup-press-button.json", text)
         val read = SettingsBackup.read(text)
         assertTrue("the backup must be accepted: $read", read is SettingsBackup.Result.Loaded)
         assertEquals(after, (read as SettingsBackup.Result.Loaded).state)

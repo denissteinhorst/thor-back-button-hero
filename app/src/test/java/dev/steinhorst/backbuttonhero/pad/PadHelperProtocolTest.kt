@@ -126,4 +126,33 @@ class PadHelperProtocolTest {
         if (!file.exists()) fail("Protocol fixture $file is missing; it is frozen evidence and is never regenerated to pass.")
         assertEquals("pad helper protocol differs from the frozen fixture", file.readText(), trace.toString())
     }
+
+    /** The "Press button" lines, frozen apart so the original protocol fixture stays byte for byte. */
+    @Test
+    fun `pad press lines are unchanged`() {
+        step("presses without a helper are dropped") {
+            trace.append("  press=").append(helper.press(PadButton.A.events(flipped = false, down = true))).append('\n')
+        }
+        connect()
+        step("connected, but no pad taken over yet") {
+            trace.append("  press=").append(helper.press(PadButton.A.events(flipped = false, down = true))).append('\n')
+        }
+        line("PAD 1")
+        for (button in PadButton.entries) step("$button pressed and released") {
+            trace.append("  press=").append(helper.press(button.events(flipped = false, down = true)))
+                .append(" release=").append(helper.press(button.events(flipped = false, down = false))).append('\n')
+        }
+        step("face buttons in the other controller style") {
+            listOf(PadButton.A, PadButton.B, PadButton.X, PadButton.Y).forEach { helper.press(it.events(flipped = true, down = true)) }
+        }
+        step("release everything") { helper.unpress() }
+        val file = File("src/test/resources/commands/padpress.txt")
+        if (System.getenv("UPDATE_COMMAND_FIXTURES") == "1") {
+            file.parentFile?.mkdirs()
+            file.writeText(trace.toString())
+            return
+        }
+        if (!file.exists()) fail("Protocol fixture $file is missing; it is frozen evidence and is never regenerated to pass.")
+        assertEquals("pad press protocol differs from the frozen fixture", file.readText(), trace.toString())
+    }
 }

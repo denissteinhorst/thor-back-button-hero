@@ -187,6 +187,21 @@ class PadHelper(
         runCatching { client?.outputStream?.write(HelperProtocol.MACRO_STOP.toByteArray()) }
     }
 
+    /**
+     * Presses or releases pad buttons through the clone right away, unlike a macro even while Back is held.
+     * False when no helper holds the pad.
+     */
+    fun press(events: List<MacroEvent>): Boolean {
+        val out = client?.outputStream ?: return false
+        if (!active) return false
+        return runCatching { out.write(HelperProtocol.press(events).toByteArray()) }.isSuccess
+    }
+
+    /** Releases everything [press] holds. */
+    fun unpress() {
+        runCatching { client?.outputStream?.write(HelperProtocol.UNPRESS.toByteArray()) }
+    }
+
     /** Adds a gyro deflection in per mille to [stick]; a null stick ends it. Sent as it comes, about 100 times a second. */
     fun setGyro(stick: Stick?, x: Int, y: Int) {
         runCatching { client?.outputStream?.write(HelperProtocol.gyro(stick, x, y).toByteArray()) }

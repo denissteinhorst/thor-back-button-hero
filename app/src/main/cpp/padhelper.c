@@ -28,6 +28,9 @@
 //     and start a macro, which the clone plays once Back is released; pressing Back again, "MSTOP" or
 //     a lost pad stops it and releases everything it held. "MACRO_DONE <id>" reports the end, and
 //     "MACRO_STOPPED <id>" a stop the app did not ask for.
+//   * Pressing buttons: "PRESS <K|A> <code> <value>" emits one key (0/1) or axis (per mille) through the
+//     clone at once, also while Back is held, for the app's "Press button" hotkeys. "UNPRESS", a new
+//     recording, a lost pad or the app going away releases everything PRESS still holds.
 //   * Gyro: "GYRO <1|2> <x> <y>" adds the app's gyro deflection (per mille) to the left (1) or right (2)
 //     stick, so the game sees the real stick and the gyro as one stick; "GYRO 0 0 0" ends it. While a
 //     deflection of that stick is withheld, the game sees the gyro alone.
@@ -116,6 +119,11 @@ static struct macro_event macro[MACRO_MAX];
 static int macro_len = 0, macro_next = 0, macro_state = 0, macro_id = 0;
 static long macro_start = 0;
 static int recording = 0;
+
+// What "PRESS" holds down: the pad's gamepad keys, its house key (last slot) and axes up to the hat.
+#define PRESS_HOME_SLOT (BTN_THUMBR - BTN_GAMEPAD + 1)
+static int pressed_keys[PRESS_HOME_SLOT + 1];
+static int pressed_axes[ABS_HAT0Y + 1];
 
 static long now_ms(void) {
     struct timespec ts;
@@ -531,6 +539,43 @@ static void macro_add(long at, char kind, int code, int value) {
         macro[macro_len++] = (struct macro_event){ at, 0, code, value };
 }
 
+static int press_slot(int code) {
+    if (code >= BTN_GAMEPAD && code <= BTN_THUMBR) return code - BTN_GAMEPAD;
+    return code == KEY_HOME ? PRESS_HOME_SLOT : -1;
+}
+
+// One press or release from the app, as its own frame. Unlike a macro it does not wait for Back: the
+// app keeps the button held exactly as long as the hotkey and never reads it as a Back combo.
+static void press(char kind, int code, int value) {
+    if (ufd < 0 || recording) return;
+    if (kind == 'K' && press_slot(code) >= 0 && (value == 0 || value == 1)) {
+        pressed_keys[press_slot(code)] = value;
+        emit(EV_KEY, code, value);
+    } else if (kind == 'A' && code >= 0 && code <= ABS_HAT0Y && value >= -1000 && value <= 1000) {
+        pressed_axes[code] = value != 0;
+        emit(EV_ABS, code, axis_raw(code, value));
+    } else {
+        return;
+    }
+    emit(EV_SYN, SYN_REPORT, 0);
+}
+
+// Everything PRESS still holds goes back to rest in one frame; without a clone there is nothing to release.
+static void unpress(void) {
+    int any = 0;
+    for (int i = 0; i <= PRESS_HOME_SLOT; i++) {
+        if (!pressed_keys[i]) continue;
+        pressed_keys[i] = 0;
+        if (ufd >= 0) { emit(EV_KEY, i == PRESS_HOME_SLOT ? KEY_HOME : BTN_GAMEPAD + i, 0); any = 1; }
+    }
+    for (int c = 0; c <= ABS_HAT0Y; c++) {
+        if (!pressed_axes[c]) continue;
+        pressed_axes[c] = 0;
+        if (ufd >= 0) { emit(EV_ABS, c, axis_raw(c, 0)); any = 1; }
+    }
+    if (any) emit(EV_SYN, SYN_REPORT, 0);
+}
+
 // Keys that keep their system role while a macro is recorded; everything else is the macro's.
 static int system_key(int code) {
     return code == KEY_BACK || code == KEY_HOME || code == KEY_VOLUMEDOWN || code == KEY_VOLUMEUP || code == KEY_APPSELECT;
@@ -588,6 +633,7 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         // Stops the app asks for are not reported back; it already knows.
         if (sscanf(line, "RECORD %d", &mode) == 1 && (mode == 0 || mode == 1) && mode != recording) {
             macro_stop(0);
+            if (mode) unpress();
             recording = mode;
             if (recording) rest_axes();
         }
@@ -596,6 +642,8 @@ static int read_switcher_mode(char *buffer, size_t *used, int current) {
         if (sscanf(line, "MPLAY %d", &value) == 1 && macro_len > 0 && !recording) { macro_stop(0); macro_id = value; macro_state = 1; }
         if (strcmp(line, "MSTOP") == 0) macro_stop(0);
         if (sscanf(line, "GYRO %d %d %d", &mode, &code, &value) == 3) set_gyro(mode, code, value);
+        if (sscanf(line, "PRESS %c %d %d", &kind, &code, &value) == 3) press(kind, code, value);
+        if (strcmp(line, "UNPRESS") == 0) unpress();
         line = newline + 1;
     }
     size_t remaining = *used - (size_t)(line - buffer);
@@ -701,12 +749,14 @@ int main(int argc, char **argv) {
 
     pad_gone:
         macro_stop(1);
+        unpress();
         destroy_clone();
         release_pad(0);
         dprintf(sock, "PAD_GONE\n");
     }
 
     macro_stop(0);
+    unpress();
     destroy_clone(); // before the node returns, so the pad gets controller number 1 back
     release_pad(1);
     if (emergency) dprintf(sock, "RELEASED\n");

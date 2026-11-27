@@ -213,16 +213,16 @@ is **not** part of the gate. Usage, the areas and the restore guarantees are in
 
 ## Expected results — what green looks like
 
-Measured on 2026-11-24 (commit `845dd5a`). Treat a deviation as a regression to investigate, not
+Measured on 2026-11-26 (the *Press button* change on top of `b68b7fa`). Treat a deviation as a regression to investigate, not
 a new baseline to record. Update these figures in the same change that legitimately moves them.
 
 | Check | Expected |
 |---|---|
-| JVM tests | 896 in 140 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
-| Host tests | 114, 0 failures |
+| JVM tests | 911 in 139 classes, 0 failed, 0 skipped (count from `app/build/test-results/testDebugUnitTest/*.xml`) |
+| Host tests | 118, 0 failures |
 | Lint | 0 errors; exactly the 20 baselined warnings |
-| Coverage | All 98 ratchets pass; about 83 % total line coverage (11376/13727, from `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`) |
-| Release APK | About 4.28 MB (`app-release-unsigned.apk`), including the ~18 KB `lib/arm64-v8a/libpadhelper.so` |
+| Coverage | All 98 ratchets pass; about 83 % total line coverage (11520/13887, from `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`) |
+| Release APK | About 4.30 MB (`app-release-unsigned.apk`), including the ~18 KB `lib/arm64-v8a/libpadhelper.so` |
 | Release classpath | Exactly `kotlin-stdlib` and, transitively, `org.jetbrains:annotations` |
 | Golden files | 112 in `app/src/test/resources/golden/` |
 

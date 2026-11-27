@@ -467,6 +467,22 @@ same hotkey in that press only cancels. The helper's `MACRO_STOPPED` can arrive 
 the service, so a stop the service did not request also counts as cancelled by the next Back press. Face buttons are stored by printed label and mapped through
 `flip_button_layout` at recording and playback. While any macro is bound, the helper is kept running.
 
+**Press button** (`Action.PressButton`, sentinels `@pad_a` … `@pad_right` in `Prefs.PAD_ACTIONS`, group
+`ActionGroups.Group.PRESS_BUTTON`) presses one of the pad's own buttons through the helper's clone for as long
+as the hotkey's trigger is held. `pad/PadPress` owns it: `PadButton` maps each button to its clone events (face
+buttons by printed label through `flip_button_layout`, read when the press starts and fixed until its release;
+L2/R2 move their trigger axis with the key; Home is the pad's house key; the D-pad is the hat axis). Unlike a
+macro it cannot wait for Back's release, so it uses the helper's `PRESS`/`UNPRESS` lines ([HELPER.md](HELPER.md#pressing-buttons)).
+The routers report the trigger's release: `ComboRouter` on the last mirrored UP, `DirectionalRouter` when the
+D-pad axis or the stick returns to neutral (or jumps to the other end), `StickClickRouter` on the click's UP.
+A stick click whose press runs *Press button* and that has no double press or tap-and-hold fires at its DOWN.
+Back's own gestures and the other stick-click gestures have no hold and tap the button for 80 ms. Pause,
+standby (`forgetHeldKeys`) and the session's release send `UNPRESS`; a lost helper takes the clone and its
+presses with it. The pressed key comes back to the service through the clone, usually while Back is still
+held; `PadPress.passes` hands it to the game ahead of every routing (combos, toggle gesture, Home as Back)
+while it is held and up to one second after its release, unless a router tracks a physical press of the
+same key. Without a helper the hotkey shows the "unavailable" notice. Any bound *Press button* keeps the helper running.
+
 ### `SettingsActivity` + `SettingsUiKit`
 
 Eight hand-built pages share framework Views; no `PreferenceFragment` or layout XML.

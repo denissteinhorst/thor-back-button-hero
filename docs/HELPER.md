@@ -132,6 +132,27 @@ gamepad keys (`BTN_GAMEPAD`..`BTN_THUMBR`) and axes up to the hat are accepted. 
 Back press, `MSTOP`, a new recording or a lost pad stops it and releases every key and axis it touched.
 `MACRO_DONE <id>` reports the end, `MACRO_STOPPED <id>` a stop the app did not ask for.
 
+### Pressing buttons
+
+The *Press button* hotkeys (`PadPress`) need the button to go down while Back is still held and to stay
+down exactly as long as the trigger, which macro playback cannot do: it waits for Back's release and a
+new Back press stops it. `PRESS <K|A> <code> <value>` therefore emits one key (`0`/`1`) or axis (per mille,
+like `MEV`) through the clone at once, as its own frame. Accepted are the gamepad keys
+(`BTN_GAMEPAD`..`BTN_THUMBR`), the pad's house key `KEY_HOME` (102) and the axes up to the hat; anything
+else, a line while recording and a line without a clone are ignored. The helper remembers what is held,
+and `UNPRESS` releases all of it in one frame. A new recording (`RECORD 1`), a lost pad and the helper
+exiting release it too, before the clone is torn down.
+
+The app sends the release itself when the trigger comes up, and `UNPRESS` when it forgets held keys
+(standby, pause) or stops the session; a lost helper needs nothing, the clone goes with it. The clone's
+own events never come back to the helper, so a pressed button is never withheld or captured as a Back
+combo there. In the service a guard lets the pressed key pass to the game while it is held and until
+its release came back (at most one second).
+
+These two commands were added after 2.0.0. An older helper ignores unknown lines, and the helper always ships
+in the same APK as the app, so the change is backward compatible. Their wire form is frozen in
+`app/src/test/resources/commands/padpress.txt`.
+
 ### Gyro
 
 `GYRO <1|2> <x> <y>` adds a deflection (per mille, x right, y down) to the left (1) or right (2) stick; `GYRO 0 0 0`

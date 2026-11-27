@@ -34,6 +34,23 @@ action @power_menu | Ein/Aus | option=Ein/Aus-Menü | function=Ein/Aus | overvie
 action @standby | Ein/Aus | option=Standby | function=Ein/Aus | overview=Standby
 action @quick_settings | System-Leisten | option=Schnelleinstellungen öffnen | function=System-Leisten | overview=Schnelleinstellungen
 action @notifications | System-Leisten | option=Benachrichtigungen öffnen | function=System-Leisten | overview=Benachrichtigungen
+action @pad_a | Taste drücken | option=A | function=Taste drücken | overview=A drücken
+action @pad_b | Taste drücken | option=B | function=Taste drücken | overview=B drücken
+action @pad_x | Taste drücken | option=X | function=Taste drücken | overview=X drücken
+action @pad_y | Taste drücken | option=Y | function=Taste drücken | overview=Y drücken
+action @pad_l1 | Taste drücken | option=L1 | function=Taste drücken | overview=L1 drücken
+action @pad_r1 | Taste drücken | option=R1 | function=Taste drücken | overview=R1 drücken
+action @pad_l2 | Taste drücken | option=L2 | function=Taste drücken | overview=L2 drücken
+action @pad_r2 | Taste drücken | option=R2 | function=Taste drücken | overview=R2 drücken
+action @pad_l3 | Taste drücken | option=L3 | function=Taste drücken | overview=L3 drücken
+action @pad_r3 | Taste drücken | option=R3 | function=Taste drücken | overview=R3 drücken
+action @pad_start | Taste drücken | option=Start | function=Taste drücken | overview=Start drücken
+action @pad_select | Taste drücken | option=Select | function=Taste drücken | overview=Select drücken
+action @pad_home | Taste drücken | option=Home | function=Taste drücken | overview=Home drücken
+action @pad_up | Taste drücken | option=D-Pad hoch | function=Taste drücken | overview=D-Pad hoch drücken
+action @pad_down | Taste drücken | option=D-Pad runter | function=Taste drücken | overview=D-Pad runter drücken
+action @pad_left | Taste drücken | option=D-Pad links | function=Taste drücken | overview=D-Pad links drücken
+action @pad_right | Taste drücken | option=D-Pad rechts | function=Taste drücken | overview=D-Pad rechts drücken
 action @internet | System-Einstellungen | option=WLAN- und Internet-Steuerung | function=System-Einstellungen | overview=WLAN & Internet
 action @bluetooth | System-Einstellungen | option=Bluetooth-Einstellungen | function=System-Einstellungen | overview=Bluetooth
 action @night_light | System-Einstellungen | option=Nachtlicht-Einstellungen | function=System-Einstellungen | overview=Nachtlicht
@@ -172,6 +189,23 @@ action @power_menu | Ein/Aus | option=Ein/Aus-Menü | function=Ein/Aus | overvie
 action @standby | Ein/Aus | option=Standby | function=Ein/Aus | overview=Standby
 action @quick_settings | System-Leisten | option=Schnelleinstellungen öffnen | function=System-Leisten | overview=Schnelleinstellungen
 action @notifications | System-Leisten | option=Benachrichtigungen öffnen | function=System-Leisten | overview=Benachrichtigungen
+action @pad_a | Taste drücken | option=A | function=Taste drücken | overview=A drücken
+action @pad_b | Taste drücken | option=B | function=Taste drücken | overview=B drücken
+action @pad_x | Taste drücken | option=X | function=Taste drücken | overview=X drücken
+action @pad_y | Taste drücken | option=Y | function=Taste drücken | overview=Y drücken
+action @pad_l1 | Taste drücken | option=L1 | function=Taste drücken | overview=L1 drücken
+action @pad_r1 | Taste drücken | option=R1 | function=Taste drücken | overview=R1 drücken
+action @pad_l2 | Taste drücken | option=L2 | function=Taste drücken | overview=L2 drücken
+action @pad_r2 | Taste drücken | option=R2 | function=Taste drücken | overview=R2 drücken
+action @pad_l3 | Taste drücken | option=L3 | function=Taste drücken | overview=L3 drücken
+action @pad_r3 | Taste drücken | option=R3 | function=Taste drücken | overview=R3 drücken
+action @pad_start | Taste drücken | option=Start | function=Taste drücken | overview=Start drücken
+action @pad_select | Taste drücken | option=Select | function=Taste drücken | overview=Select drücken
+action @pad_home | Taste drücken | option=Home | function=Taste drücken | overview=Home drücken
+action @pad_up | Taste drücken | option=D-Pad hoch | function=Taste drücken | overview=D-Pad hoch drücken
+action @pad_down | Taste drücken | option=D-Pad runter | function=Taste drücken | overview=D-Pad runter drücken
+action @pad_left | Taste drücken | option=D-Pad links | function=Taste drücken | overview=D-Pad links drücken
+action @pad_right | Taste drücken | option=D-Pad rechts | function=Taste drücken | overview=D-Pad rechts drücken
 action @internet | System-Einstellungen | option=WLAN- und Internet-Steuerung | function=System-Einstellungen | overview=WLAN & Internet
 action @bluetooth | System-Einstellungen | option=Bluetooth-Einstellungen | function=System-Einstellungen | overview=Bluetooth
 action @night_light | System-Einstellungen | option=Nachtlicht-Einstellungen | function=System-Einstellungen | overview=Nachtlicht

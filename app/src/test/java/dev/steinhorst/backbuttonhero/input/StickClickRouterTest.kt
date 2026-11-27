@@ -36,6 +36,11 @@ class StickClickRouterTest {
         override fun tapHoldMs(stick: Stick, home: Boolean) = 400L.also { timings += "tapHold $stick $home" }
         override fun action(button: ComboButton) = actions[button].orEmpty()
         override fun fire(button: ComboButton) { calls += "fire $button" }
+        var holds = false
+        override fun holdsWhilePressed(button: ComboButton) = holds
+        override fun press(button: ComboButton) { calls += "press $button" }
+        var recordReleases = false
+        override fun released(stick: Stick) { if (recordReleases) calls += "up $stick" }
     }
 
     private val host = FakeHost()
@@ -46,6 +51,43 @@ class StickClickRouterTest {
 
     private fun down(device: Int = 7, repeat: Int = 0) = router.handle(Stick.LEFT, KeyEvent.ACTION_DOWN, code, device, repeat)
     private fun up(device: Int = 7) = router.handle(Stick.LEFT, KeyEvent.ACTION_UP, code, device, 0)
+
+    @Test
+    fun `a held press runs at the DOWN, once across mirrored devices, and hears the last release`() {
+        host.holds = true
+        host.recordReleases = true
+        host.actions[press] = Prefs.SHOULDER_PAD_START
+        assertTrue(down(7)); assertTrue(down(8))
+        assertEquals(listOf("fired", "press $press"), host.calls)
+        assertTrue(router.isDown(code))
+        assertTrue(up(7))
+        assertTrue(up(8))
+        assertFalse(router.isDown(code))
+        assertEquals(listOf("fired", "press $press", "up LEFT"), host.calls)
+        // Nothing waits in the gesture machine: the release did not also fire a press.
+        assertTrue(scheduler.pending.isEmpty())
+    }
+
+    @Test
+    fun `with a double press or tap-and-hold bound the press waits for the gesture, and each release is still heard first`() {
+        host.holds = true
+        host.recordReleases = true
+        host.actions[press] = Prefs.SHOULDER_PAD_START
+        host.actions[StickClickButton.of(Stick.LEFT, StickClick.TAP_HOLD)] = Prefs.SHOULDER_QUICK_SETTINGS
+        down(); up()
+        assertEquals(listOf("fired", "up LEFT", "fire $press"), host.calls)
+        host.calls.clear()
+        router.reset()
+        host.actions.remove(StickClickButton.of(Stick.LEFT, StickClick.TAP_HOLD))
+        host.actions[StickClickButton.of(Stick.LEFT, StickClick.DOUBLE)] = Prefs.SHOULDER_QUICK_SETTINGS
+        down(); up()
+        assertEquals(listOf("fired", "up LEFT"), host.calls)
+        router.reset()
+        host.actions.remove(StickClickButton.of(Stick.LEFT, StickClick.DOUBLE))
+        down()
+        router.reset()
+        assertFalse(up())
+    }
 
     @Test
     fun `paused, without the modifier, excepted or unbound the click is the game's`() {

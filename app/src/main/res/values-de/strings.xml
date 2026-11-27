@@ -60,6 +60,8 @@
     <string name="button_b">B</string>
     <string name="button_x">X</string>
     <string name="button_y">Y</string>
+    <string name="button_l3">L3</string>
+    <string name="button_r3">R3</string>
     <string name="shoulder_none">Nicht belegt</string>
     <string name="shoulder_launch_app">App starten…</string>
     <string name="shoulder_launch_app_named">App starten: %1$s</string>
@@ -104,6 +106,7 @@
     <string name="search_keywords_screenshot">Bildschirmfoto, Screeni, Foto, Snapshot, Capture, Bild speichern, Druck</string>
     <string name="search_keywords_record_video">Bildschirmaufnahme, aufzeichnen, Clip, Gameplay, Recording, Let\'s Play, Capture, Kommentar</string>
     <string name="search_keywords_macro">Makro, Combo, Kombo, Tastenfolge, Autofire, Turbo, Rapid Fire, Dauerfeuer, Script, automatisieren</string>
+    <string name="search_keywords_press_button">Belegung, umbelegen, Tastenbelegung, Taste zuweisen, Remap, Controller-Taste, Gamepad, halten</string>
     <string name="search_keywords_gyro">Gyroskop, Bewegungssteuerung, Motion Controls, Zielen, Aiming, neigen, kippen, Sensor</string>
     <string name="search_keywords_gyro_calibrate">Gyroskop, Drift, nullen, zentrieren, Reset, justieren, Kalibrierung</string>
     <string name="search_keywords_flick">wischen, Swipe, blättern, Geste, Seite</string>
@@ -343,6 +346,7 @@
     <string name="overview_action_notifications">Benachrichtigungen</string>
     <string name="overview_action_quick_settings">Schnelleinstellungen</string>
     <string name="overview_action_gyro_calibrate">Gyro kalibrieren</string>
+    <string name="overview_action_press_button">%1$s drücken</string>
     <string name="overview_action_gyro">Gyro an/aus</string>
     <string name="overview_action_controller_focus">Controller-Fokus</string>
     <string name="overview_action_screenshot">Screenshot</string>
@@ -668,6 +672,7 @@
     </plurals>
     <!-- Hotkey actions added for gaming: media, status, AYN tiles, Android switches -->
     <string name="group_media">Mediensteuerung</string>
+    <string name="group_press_button">Taste drücken</string>
     <string name="media_play_pause">Wiedergabe / Pause</string>
     <string name="media_next">Nächster Titel</string>
     <string name="media_previous">Vorheriger Titel</string>
@@ -704,6 +709,7 @@
     <string name="action_desc_screenshot">Speichert einen Screenshot.</string>
     <string name="action_desc_record_video">Nimmt den Bildschirm auf, mit Push-to-Talk-Stimme.</string>
     <string name="action_desc_macro">Spielt eine aufgezeichnete Tastenfolge ab.</string>
+    <string name="action_desc_press_button">Drückt eine Controller-Taste, solange der Hotkey gehalten wird, als würdest du sie selbst drücken. Die eigenen Gesten der Zurück-Taste tippen sie nur kurz an. Nur solange AYNs Root-Dienst erreichbar ist.</string>
     <string name="action_desc_flick">Blättert zwischen Android-Seiten.</string>
     <string name="action_desc_volume">Ändert die Lautstärke oder schaltet stumm.</string>
     <string name="action_desc_brightness">Ändert die Bildschirmhelligkeit.</string>

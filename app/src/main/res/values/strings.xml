@@ -61,6 +61,8 @@
     <string name="button_b">B</string>
     <string name="button_x">X</string>
     <string name="button_y">Y</string>
+    <string name="button_l3">L3</string>
+    <string name="button_r3">R3</string>
     <string name="shoulder_none">Not set</string>
     <string name="shoulder_launch_app">Launch app…</string>
     <string name="shoulder_launch_app_named">Launch app: %1$s</string>
@@ -105,6 +107,7 @@
     <string name="search_keywords_screenshot">screen capture, screengrab, snapshot, capture, print screen, picture</string>
     <string name="search_keywords_record_video">screen recording, clip, gameplay, capture, record, let\'s play, commentary</string>
     <string name="search_keywords_macro">combo, button sequence, autofire, turbo, rapid fire, script, automation</string>
+    <string name="search_keywords_press_button">remap, button mapping, map button, key mapping, controller button, gamepad, hold</string>
     <string name="search_keywords_gyro">gyroscope, motion controls, motion aiming, aim, tilt, sensor</string>
     <string name="search_keywords_gyro_calibrate">gyroscope, drift, recenter, zero, reset, calibration</string>
     <string name="search_keywords_flick">swipe, gesture, page, scroll</string>
@@ -345,6 +348,7 @@
     <string name="overview_action_notifications">Notifications</string>
     <string name="overview_action_quick_settings">Quick Settings</string>
     <string name="overview_action_gyro_calibrate">Calibrate gyro</string>
+    <string name="overview_action_press_button">Press %1$s</string>
     <string name="overview_action_gyro">Gyro on/off</string>
     <string name="overview_action_controller_focus">Controller focus</string>
     <string name="overview_action_screenshot">Screenshot</string>
@@ -670,6 +674,7 @@
     </plurals>
     <!-- Hotkey actions added for gaming: media, status, AYN tiles, Android switches -->
     <string name="group_media">Media Control</string>
+    <string name="group_press_button">Press button</string>
     <string name="media_play_pause">Play / Pause</string>
     <string name="media_next">Next Track</string>
     <string name="media_previous">Previous Track</string>
@@ -706,6 +711,7 @@
     <string name="action_desc_screenshot">Saves a screenshot.</string>
     <string name="action_desc_record_video">Records the screen, with push-to-talk voice.</string>
     <string name="action_desc_macro">Plays a recorded button sequence.</string>
+    <string name="action_desc_press_button">Presses a controller button for as long as the hotkey is held, as if you pressed it yourself. Back\'s own gestures tap it. Only while AYN\'s root service is reachable.</string>
     <string name="action_desc_flick">Flicks between Android pages.</string>
     <string name="action_desc_volume">Changes or mutes the volume.</string>
     <string name="action_desc_brightness">Changes screen brightness.</string>

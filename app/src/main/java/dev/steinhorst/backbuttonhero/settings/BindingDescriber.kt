@@ -75,6 +75,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
             else -> null
         }
         if (res != null) return context.getString(res)
+        if (decoded is Action.PressButton) return context.getString(R.string.overview_action_press_button, context.getString(decoded.button.labelRes))
         if (decoded is Action.LaunchApp) {
             return runCatching { context.getString(R.string.overview_action_open_app, context.packageManager.getApplicationInfo(decoded.pkg, 0).loadLabel(context.packageManager)) }
                 .getOrDefault(context.getString(R.string.shoulder_launch_app))
@@ -98,6 +99,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
             Choice(Prefs.SHOULDER_SCREENSHOT, context.getString(R.string.shoulder_screenshot)),
             Choice(Prefs.SHOULDER_RECORD_VIDEO, context.getString(R.string.shoulder_record_video)),
             Choice(Prefs.SHOULDER_MACRO, context.getString(R.string.shoulder_macro)).takeIf { macro },
+            group(ActionGroups.Group.PRESS_BUTTON),
             Choice(Prefs.SHOULDER_GYRO, context.getString(R.string.shoulder_gyro)),
             Choice(Prefs.SHOULDER_GYRO_CALIBRATE, context.getString(R.string.shoulder_gyro_calibrate)),
             group(ActionGroups.Group.FLICK),
@@ -128,6 +130,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
         Prefs.SHOULDER_SCREENSHOT -> R.string.action_desc_screenshot
         Prefs.SHOULDER_RECORD_VIDEO -> R.string.action_desc_record_video
         Prefs.SHOULDER_MACRO -> R.string.action_desc_macro
+        ActionGroups.Group.PRESS_BUTTON.entry -> R.string.action_desc_press_button
         Prefs.SHOULDER_GYRO -> R.string.action_desc_gyro
         Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.action_desc_gyro_calibrate
         ActionGroups.Group.FLICK.entry -> R.string.action_desc_flick
@@ -177,6 +180,7 @@ internal class BindingDescriber(private val context: Context, private val prefs:
         Prefs.SHOULDER_SCREENSHOT -> R.string.search_keywords_screenshot
         Prefs.SHOULDER_RECORD_VIDEO -> R.string.search_keywords_record_video
         Prefs.SHOULDER_MACRO -> R.string.search_keywords_macro
+        ActionGroups.Group.PRESS_BUTTON.entry -> R.string.search_keywords_press_button
         Prefs.SHOULDER_GYRO -> R.string.search_keywords_gyro
         Prefs.SHOULDER_GYRO_CALIBRATE -> R.string.search_keywords_gyro_calibrate
         ActionGroups.Group.FLICK.entry -> R.string.search_keywords_flick

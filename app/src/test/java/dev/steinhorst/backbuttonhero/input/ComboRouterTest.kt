@@ -20,6 +20,8 @@ class ComboRouterTest {
         override fun runCombo(button: ComboButton, action: String) { calls += "run $button $action" }
         override fun showFocusIndicator(button: ComboButton) { calls += "indicator $button" }
         override fun runReleased(button: ComboButton) { calls += "released $button" }
+        var recordReleases = false
+        override fun released(button: ComboButton) { if (recordReleases) calls += "up $button" }
     }
 
     private val host = FakeHost()
@@ -89,6 +91,34 @@ class ComboRouterTest {
         assertEquals(listOf("fired"), host.calls)
         down(); up()
         assertEquals(listOf("fired", "fired", "released L1"), host.calls)
+    }
+
+    @Test
+    fun `a combo that ran at its press hears its release after the last mirrored device, with its own binding`() {
+        host.recordReleases = true
+        host.actions[l1] = Prefs.SHOULDER_PAD_A
+        down(7); down(8)
+        up(7)
+        assertEquals(listOf("fired", "run L1 ${Prefs.SHOULDER_PAD_A}"), host.calls)
+        // The layer may change while held; the release still names the binding that ran.
+        router.handle(KeyEvent.ACTION_UP, code, 8, 0, HomeLayerButton.of(l1))
+        assertEquals(listOf("fired", "run L1 ${Prefs.SHOULDER_PAD_A}", "up L1"), host.calls)
+        assertFalse(up(8))
+        assertEquals(3, host.calls.size)
+    }
+
+    @Test
+    fun `armed presses and cleared ones report no release`() {
+        host.recordReleases = true
+        host.actions[l1] = Prefs.SHOULDER_CONTROLLER_FOCUS
+        down(); up()
+        assertEquals(listOf("fired", "indicator L1", "released L1"), host.calls)
+        host.calls.clear()
+        host.actions[l1] = Prefs.SHOULDER_PAD_A
+        down()
+        router.clear()
+        down(); router.clear(); up()
+        assertEquals(listOf("fired", "run L1 ${Prefs.SHOULDER_PAD_A}", "fired", "run L1 ${Prefs.SHOULDER_PAD_A}"), host.calls)
     }
 
     @Test

@@ -24,6 +24,8 @@ class DirectionalRouterTest {
         override fun startLevelRepeat(button: ComboButton, action: String) { calls += "repeat $button" }
         override fun stopLevelRepeat() { calls += "stop" }
         override fun runReleased(button: ComboButton) { calls += "released $button" }
+        var recordReleases = false
+        override fun released(button: ComboButton) { if (recordReleases) calls += "up $button" }
     }
 
     private val host = FakeHost()
@@ -110,6 +112,47 @@ class DirectionalRouterTest {
         router.stick(Stick.RIGHT, null)
         router.stick(Stick.LEFT, null)
         assertEquals(listOf("fired", "stop", "indicator $leftUp", "released $leftUp"), host.calls)
+    }
+
+    @Test
+    fun `a direction that ran hears its own axis' release, also after jumping across without neutral`() {
+        host.recordReleases = true
+        host.actions[DpadDirection.LEFT] = Prefs.SHOULDER_PAD_R1
+        host.actions[DpadDirection.RIGHT] = Prefs.SHOULDER_PAD_L1
+        host.actions[DpadDirection.UP] = Prefs.SHOULDER_PAD_A
+        router.press(DpadDirection.LEFT)
+        router.press(DpadDirection.UP)
+        router.release(horizontal = false)
+        router.press(DpadDirection.RIGHT)
+        router.release(horizontal = true)
+        router.release(horizontal = true)
+        assertEquals(listOf(
+            "run LEFT ${Prefs.SHOULDER_PAD_R1}", "run UP ${Prefs.SHOULDER_PAD_A}", "up UP",
+            "up LEFT", "run RIGHT ${Prefs.SHOULDER_PAD_L1}", "up RIGHT",
+        ), host.calls.filter { it.startsWith("run") || it.startsWith("up") })
+    }
+
+    @Test
+    fun `a stick that ran hears its neutral, a new deflection releases the old one, forgetting drops both`() {
+        host.recordReleases = true
+        val leftDown = StickButton.of(Stick.LEFT, DpadDirection.DOWN)
+        host.actions[leftUp] = Prefs.SHOULDER_PAD_A
+        host.actions[leftDown] = Prefs.SHOULDER_PAD_B
+        router.stick(Stick.LEFT, DpadDirection.UP)
+        router.stick(Stick.LEFT, DpadDirection.DOWN)
+        router.stick(Stick.RIGHT, null)
+        router.stick(Stick.LEFT, null)
+        router.stick(Stick.LEFT, null)
+        router.stick(Stick.LEFT, DpadDirection.UP)
+        host.actions[DpadDirection.UP] = Prefs.SHOULDER_PAD_X
+        router.press(DpadDirection.UP)
+        router.forgetArmed()
+        router.stick(Stick.LEFT, null)
+        router.release(horizontal = false)
+        assertEquals(listOf(
+            "run $leftUp ${Prefs.SHOULDER_PAD_A}", "up $leftUp", "run $leftDown ${Prefs.SHOULDER_PAD_B}", "up $leftDown",
+            "run $leftUp ${Prefs.SHOULDER_PAD_A}", "run UP ${Prefs.SHOULDER_PAD_X}",
+        ), host.calls.filter { it.startsWith("run") || it.startsWith("up") })
     }
 
     @Test

@@ -126,6 +126,7 @@ Every stored action value, derived from `Prefs.KNOWN_ACTIONS` + `Ayn.ACTIONS` (5
 | F-ACT-23 | Quick settings / notifications open the shade; 10 settings shortcuts open their page or fall back | T | ActionGroups | panels: shade; settings shortcuts | C16 | —/— | R5 | L | DEV |
 | F-ACT-24 | "Not set" stores an empty binding that does nothing | — | UnassignedRow | gestures: unassigned | C17o | —/— | R2 | M | JVM+DEV |
 | F-ACT-25 | The focused screen (`focused`, `@recents_focused`) acts on the screen the controller drives: fixed route, or Android's input display in Auto-lock, top when unreadable; for Home, app launch/list/favorites, Active App Control, screenshot, brightness, record video and the App Switcher | TB | FocusedScreen, ServiceFocusedScreenTest, BindingTextTable | windows: Home/launch/App Switcher focused; appcontrol: minimize focused; capture: screenshot focused | — | —/S6 | R5 | H | JVM+DEV |
+| F-ACT-26 | `@pad_*` (Press button) holds a pad button through the clone while the trigger is held, taps it for Back's own gestures, releases it on every exit; the pressed key reaches the game and never runs a combo; needs pservice | — | PadPressTest, ServicePadPressTest, PadHelperProtocolTest, ComboRouter/DirectionalRouter/StickClickRouterTest | press: ×4 | C17pb1–C17pb3, C17h | —/— | R5, R11 | H | JVM+DEV+MAN |
 
 ## Bottom switcher (SWI)
 

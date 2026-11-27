@@ -34,6 +34,23 @@ action @power_menu | Power | option=Power Menu | function=Power | overview=Power
 action @standby | Power | option=Standby | function=Power | overview=Standby
 action @quick_settings | System panels | option=Open Quick Settings | function=System panels | overview=Quick Settings
 action @notifications | System panels | option=Open notifications | function=System panels | overview=Notifications
+action @pad_a | Press button | option=A | function=Press button | overview=Press A
+action @pad_b | Press button | option=B | function=Press button | overview=Press B
+action @pad_x | Press button | option=X | function=Press button | overview=Press X
+action @pad_y | Press button | option=Y | function=Press button | overview=Press Y
+action @pad_l1 | Press button | option=L1 | function=Press button | overview=Press L1
+action @pad_r1 | Press button | option=R1 | function=Press button | overview=Press R1
+action @pad_l2 | Press button | option=L2 | function=Press button | overview=Press L2
+action @pad_r2 | Press button | option=R2 | function=Press button | overview=Press R2
+action @pad_l3 | Press button | option=L3 | function=Press button | overview=Press L3
+action @pad_r3 | Press button | option=R3 | function=Press button | overview=Press R3
+action @pad_start | Press button | option=Start | function=Press button | overview=Press Start
+action @pad_select | Press button | option=Select | function=Press button | overview=Press Select
+action @pad_home | Press button | option=Home | function=Press button | overview=Press Home
+action @pad_up | Press button | option=D-pad up | function=Press button | overview=Press D-pad up
+action @pad_down | Press button | option=D-pad down | function=Press button | overview=Press D-pad down
+action @pad_left | Press button | option=D-pad left | function=Press button | overview=Press D-pad left
+action @pad_right | Press button | option=D-pad right | function=Press button | overview=Press D-pad right
 action @internet | System settings | option=Wi-Fi and internet controls | function=System settings | overview=Wi-Fi & internet
 action @bluetooth | System settings | option=Bluetooth settings | function=System settings | overview=Bluetooth
 action @night_light | System settings | option=Night Light settings | function=System settings | overview=Night Light
@@ -172,6 +189,23 @@ action @power_menu | Power | option=Power Menu | function=Power | overview=Power
 action @standby | Power | option=Standby | function=Power | overview=Standby
 action @quick_settings | System panels | option=Open Quick Settings | function=System panels | overview=Quick Settings
 action @notifications | System panels | option=Open notifications | function=System panels | overview=Notifications
+action @pad_a | Press button | option=A | function=Press button | overview=Press A
+action @pad_b | Press button | option=B | function=Press button | overview=Press B
+action @pad_x | Press button | option=X | function=Press button | overview=Press X
+action @pad_y | Press button | option=Y | function=Press button | overview=Press Y
+action @pad_l1 | Press button | option=L1 | function=Press button | overview=Press L1
+action @pad_r1 | Press button | option=R1 | function=Press button | overview=Press R1
+action @pad_l2 | Press button | option=L2 | function=Press button | overview=Press L2
+action @pad_r2 | Press button | option=R2 | function=Press button | overview=Press R2
+action @pad_l3 | Press button | option=L3 | function=Press button | overview=Press L3
+action @pad_r3 | Press button | option=R3 | function=Press button | overview=Press R3
+action @pad_start | Press button | option=Start | function=Press button | overview=Press Start
+action @pad_select | Press button | option=Select | function=Press button | overview=Press Select
+action @pad_home | Press button | option=Home | function=Press button | overview=Press Home
+action @pad_up | Press button | option=D-pad up | function=Press button | overview=Press D-pad up
+action @pad_down | Press button | option=D-pad down | function=Press button | overview=Press D-pad down
+action @pad_left | Press button | option=D-pad left | function=Press button | overview=Press D-pad left
+action @pad_right | Press button | option=D-pad right | function=Press button | overview=Press D-pad right
 action @internet | System settings | option=Wi-Fi and internet controls | function=System settings | overview=Wi-Fi & internet
 action @bluetooth | System settings | option=Bluetooth settings | function=System settings | overview=Bluetooth
 action @night_light | System settings | option=Night Light settings | function=System settings | overview=Night Light

@@ -21,16 +21,21 @@ class ComboRouter(private val host: Host) {
         fun runCombo(button: ComboButton, action: String)
         fun showFocusIndicator(button: ComboButton)
         fun runReleased(button: ComboButton)
+        /** The trigger of a combo that ran at its press is released on every mirrored device. */
+        fun released(button: ComboButton) {}
     }
 
     private val keys = PhysicalKeyTracker()
     private val pendingFocusTargets = mutableMapOf<Int, ComboButton>()
+    /** The combo each held key ran at its press, so its release reaches the same binding. */
+    private val ran = mutableMapOf<Int, ComboButton>()
 
     fun isDown(keyCode: Int): Boolean = keys.isDown(keyCode)
 
     fun clear() {
         keys.clear()
         pendingFocusTargets.clear()
+        ran.clear()
     }
 
     fun handle(action: Int, keyCode: Int, deviceId: Int, repeatCount: Int, button: ComboButton): Boolean {
@@ -56,6 +61,7 @@ class ComboRouter(private val host: Host) {
                         pendingFocusTargets[keyCode] = button
                         if (bound == Prefs.SHOULDER_CONTROLLER_FOCUS) host.showFocusIndicator(button)
                     } else {
+                        ran[keyCode] = button
                         host.runCombo(button, bound)
                     }
                 }
@@ -67,6 +73,7 @@ class ComboRouter(private val host: Host) {
                 val tracked = keys.up(keyCode, deviceId)
                 if (tracked && !keys.isDown(keyCode)) {
                     pendingFocusTargets.remove(keyCode)?.let(host::runReleased)
+                    ran.remove(keyCode)?.let(host::released)
                 }
                 tracked
             }

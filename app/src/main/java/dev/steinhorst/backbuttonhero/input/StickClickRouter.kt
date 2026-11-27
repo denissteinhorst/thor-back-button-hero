@@ -24,11 +24,22 @@ class StickClickRouter(scheduler: GestureScheduler, clock: GestureClock, private
         fun tapHoldMs(stick: Stick, home: Boolean): Long
         fun action(button: ComboButton): String
         fun fire(button: ComboButton)
+        /** Whether [button]'s action holds something for as long as the click is held (a pad button press). */
+        fun holdsWhilePressed(button: ComboButton): Boolean = false
+        /** Runs [button] at the click's DOWN, held until [released]. */
+        fun press(button: ComboButton) {}
+        /** [stick]'s click is released on every mirrored device. */
+        fun released(stick: Stick) {}
     }
 
     private val keys = PhysicalKeyTracker()
     /** Per stick: whether its click gesture began under Home in dual mode, so it runs the Home layer. */
     private val home = mutableMapOf<Stick, Boolean>()
+    /**
+     * Sticks whose click runs its press action from the DOWN and holds it: with neither a double press
+     * nor tap-and-hold to tell apart, the press need not wait for the release.
+     */
+    private val holding = mutableSetOf<Stick>()
     private val machines = Stick.entries.associateWith { stick ->
         StickClickMachine(
             scheduler,
@@ -42,6 +53,12 @@ class StickClickRouter(scheduler: GestureScheduler, clock: GestureClock, private
     private fun button(stick: Stick, click: StickClick): ComboButton =
         StickClickButton.of(stick, click).let { if (home[stick] == true) HomeLayerButton.of(it) else it }
 
+    fun isDown(keyCode: Int): Boolean = keys.isDown(keyCode)
+
+    private fun holdsFromDown(stick: Stick): Boolean =
+        host.holdsWhilePressed(button(stick, StickClick.PRESS)) &&
+            host.action(button(stick, StickClick.DOUBLE)).isEmpty() && host.action(button(stick, StickClick.TAP_HOLD)).isEmpty()
+
     fun handle(stick: Stick, action: Int, keyCode: Int, deviceId: Int, repeatCount: Int): Boolean {
         val machine = machines.getValue(stick)
         return when (action) {
@@ -50,6 +67,12 @@ class StickClickRouter(scheduler: GestureScheduler, clock: GestureClock, private
                 val first = keys.down(keyCode, deviceId)
                 if (first && repeatCount == 0) {
                     home[stick] = host.homeDown
+                    if (holdsFromDown(stick)) {
+                        holding += stick
+                        host.markComboFired()
+                        host.press(button(stick, StickClick.PRESS))
+                        return true
+                    }
                     if (!machine.down()) { keys.up(keyCode, deviceId); return false }
                     host.markComboFired()
                 }
@@ -59,7 +82,9 @@ class StickClickRouter(scheduler: GestureScheduler, clock: GestureClock, private
                 val tracked = keys.up(keyCode, deviceId)
                 if (tracked && !keys.isDown(keyCode)) {
                     if ((host.repeatingButton?.base as? StickClickButton)?.stick == stick) host.stopLevelRepeat()
-                    machine.up()
+                    // First, so a press the release itself fires (a tap) is not cut short.
+                    host.released(stick)
+                    if (!holding.remove(stick)) machine.up()
                 }
                 tracked
             }
@@ -73,5 +98,6 @@ class StickClickRouter(scheduler: GestureScheduler, clock: GestureClock, private
     fun reset() {
         machines.values.forEach(StickClickMachine::reset)
         keys.clear()
+        holding.clear()
     }
 }

@@ -26,10 +26,15 @@ class DirectionalRouter(private val host: Host) {
         fun startLevelRepeat(button: ComboButton, action: String)
         fun stopLevelRepeat()
         fun runReleased(button: ComboButton)
+        /** A direction whose combo ran at its press is released: the D-pad axis or the stick is neutral again. */
+        fun released(button: ComboButton) {}
     }
 
     private var pendingFocus: ComboButton? = null
     private var pendingReleased = false
+    /** The combo that ran at the press of each D-pad axis (true: horizontal) and of each stick, until its release. */
+    private val ranDpad = mutableMapOf<Boolean, ComboButton>()
+    private val ranStick = mutableMapOf<Stick, ComboButton>()
 
     /** A D-pad press while no switcher takes the D-pad. */
     fun press(direction: DpadDirection) {
@@ -53,6 +58,10 @@ class DirectionalRouter(private val host: Host) {
             if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) host.showFocusIndicator(button)
         } else {
             host.stopLevelRepeat()
+            // A hat can jump from one end to the other without passing neutral.
+            val horizontal = direction == DpadDirection.LEFT || direction == DpadDirection.RIGHT
+            ranDpad.remove(horizontal)?.let(host::released)
+            ranDpad[horizontal] = button
             host.runCombo(button, action)
             host.startLevelRepeat(button, action)
         }
@@ -61,6 +70,7 @@ class DirectionalRouter(private val host: Host) {
     /** A null [direction] is the stick returning to neutral. */
     fun stick(stick: Stick, direction: DpadDirection?) {
         if (direction == null) {
+            ranStick.remove(stick)?.let(host::released)
             if ((host.repeatingButton?.base as? StickButton)?.stick == stick) host.stopLevelRepeat()
             if ((pendingFocus?.base as? StickButton)?.stick == stick) {
                 pendingReleased = true
@@ -82,12 +92,15 @@ class DirectionalRouter(private val host: Host) {
             if (action == Prefs.SHOULDER_CONTROLLER_FOCUS) host.showFocusIndicator(button)
         } else {
             host.log("STICK  $button action=$action")
+            ranStick.remove(stick)?.let(host::released)
+            ranStick[stick] = button
             host.runCombo(button, action)
             host.startLevelRepeat(button, action)
         }
     }
 
     fun release(horizontal: Boolean) {
+        ranDpad.remove(horizontal)?.let(host::released)
         (host.repeatingButton?.base as? DpadDirection)?.let {
             if ((it == DpadDirection.LEFT || it == DpadDirection.RIGHT) == horizontal) host.stopLevelRepeat()
         }
@@ -106,6 +119,8 @@ class DirectionalRouter(private val host: Host) {
 
     fun forgetArmed() {
         pendingFocus = null
+        ranDpad.clear()
+        ranStick.clear()
     }
 
     private fun commit() {

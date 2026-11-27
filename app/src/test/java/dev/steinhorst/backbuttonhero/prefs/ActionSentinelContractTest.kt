@@ -26,6 +26,9 @@ class ActionSentinelContractTest {
         "@close_background_apps", "@power_menu", "@standby", "@volume_mute", "@record_video", "@macro",
         "@media_play_pause", "@media_next", "@media_previous", "@status_overlay", "@last_app", "@gyro",
         "@gyro_calibrate", "@app_ask", "@app_favorites", "@recents_focused",
+        // Press button
+        "@pad_a", "@pad_b", "@pad_x", "@pad_y", "@pad_l1", "@pad_r1", "@pad_l2", "@pad_r2", "@pad_l3", "@pad_r3",
+        "@pad_start", "@pad_select", "@pad_home", "@pad_up", "@pad_down", "@pad_left", "@pad_right",
         // AYN controls
         "@vibration", "@direct_power", "@force_landscape", "@virtual_mouse", "@do_not_disturb",
         "@mute_microphone", "@performance", "@fan", "@refresh_rate", "@stick_light", "@handle", "@display",
