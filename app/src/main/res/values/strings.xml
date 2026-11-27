@@ -194,6 +194,11 @@
     <string name="app_control_prompt_close_title">Force-Close %1$s?</string>
     <string name="app_control_prompt_close_yes">Force-Close</string>
     <string name="app_control_prompt_cancel">Cancel</string>
+    <string name="button_hint_confirm">Confirm</string>
+    <string name="face_position_left">Left button</string>
+    <string name="face_position_top">Top button</string>
+    <string name="face_position_right">Right button</string>
+    <string name="face_position_bottom">Bottom button</string>
     <string name="app_control_no_app">No app to control on that screen.</string>
     <string name="shoulder_close_apps">Close Apps</string>
     <string name="close_apps_all">Close all apps</string>

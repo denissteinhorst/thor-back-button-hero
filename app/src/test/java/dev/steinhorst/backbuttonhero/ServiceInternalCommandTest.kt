@@ -146,7 +146,7 @@ class ServiceInternalCommandTest {
         run("prime top Recents focus", out) {
             ReflectionHelpers.callInstanceMethod<Any?>(ReflectionHelpers.callInstanceMethod<Any>(it, "getTopSession"), "primeFocus")
         }
-        run("close top Recents", out) { call(it, "closeTopRecents") }
+        run("close top Recents", out) { ReflectionHelpers.callInstanceMethod<Any?>(ReflectionHelpers.callInstanceMethod<Any>(it, "getTopSession"), "close") }
         run("refresh bottom task states", out) { call(it, "refreshBottomTaskStates") }
         run("show bottom Recents", out) { call(it, "showSwitcherNow") }
         verify(out.toString())

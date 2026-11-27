@@ -17,6 +17,8 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import dev.steinhorst.backbuttonhero.R
+import dev.steinhorst.backbuttonhero.input.PromptKeys
+import dev.steinhorst.backbuttonhero.overlay.ButtonHints
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.settings.dp
@@ -46,11 +48,13 @@ object AppControl {
  * scrolls; a red Cancel row below a rule closes it, reached like any other row, so a controller
  * never needs a hidden button to back out. It takes window focus on the display the controller drives, because joystick and
  * hat events only reach the focused window - the same reason [DpadOverlay] exists. The app behind it
- * is untouched until a choice is made, and it is resolved before this opens.
+ * is untouched until a choice is made, and it is resolved before this opens. The controller keys follow
+ * [PromptKeys]; a legend at the bottom shows which physical buttons they are, read from [flipped]
+ * (the Thor's style switch) each time the prompt opens.
  */
 class AppControlPrompt(
     private val context: Context,
-    private val isConfirmKey: (Int) -> Boolean,
+    private val flipped: () -> Boolean,
 ) {
     class Option(val value: String, val label: String)
 
@@ -131,8 +135,8 @@ class AppControlPrompt(
                     when {
                         event.keyCode == KeyEvent.KEYCODE_DPAD_UP -> move(-1)
                         event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN -> move(1)
-                        isConfirmKey(event.keyCode) || event.keyCode == KeyEvent.KEYCODE_ENTER -> finish(selected)
-                        event.keyCode == KeyEvent.KEYCODE_BUTTON_A || event.keyCode == KeyEvent.KEYCODE_BUTTON_B -> finish(null)
+                        event.keyCode == PromptKeys.CONFIRM || event.keyCode == KeyEvent.KEYCODE_ENTER -> finish(selected)
+                        event.keyCode == PromptKeys.CANCEL -> finish(null)
                     }
                 }
                 return true
@@ -156,6 +160,9 @@ class AppControlPrompt(
             addView(View(ctx).apply { setBackgroundColor(if (dark) 0x33FFFFFF else 0x22000000) },
                 LinearLayout.LayoutParams(full, dp(1)).apply { setMargins(dp(8), dp(6), dp(8), dp(6)) })
             addView(cancel, LinearLayout.LayoutParams(full, wrap))
+            addView(ButtonHints.legend(ctx, ButtonHints.confirmAndCancel(ctx), flipped(),
+                if (dark) 0xB3FFFFFF.toInt() else 0x8A000000.toInt(), 13f, 16),
+                LinearLayout.LayoutParams(full, wrap).apply { topMargin = dp(8) })
         }
         paint()
         val params = WindowManager.LayoutParams(

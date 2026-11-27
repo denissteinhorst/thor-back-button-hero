@@ -7,6 +7,7 @@ import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
+import dev.steinhorst.backbuttonhero.recents.TopRecentsSession
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File
 import java.time.Duration
@@ -193,8 +194,8 @@ class ServiceTopRecentsTest {
         }
         scenario("controller, closed with Back", controller = true, back = "ERR", dumps = listOf(overview)) { s ->
             open(s); drain(); advance(40)
-            ReflectionHelpers.callInstanceMethod<Unit>(s, "closeTopRecents"); drain()
-            ReflectionHelpers.callInstanceMethod<Unit>(s, "closeTopRecents"); drain()
+            ReflectionHelpers.callInstanceMethod<TopRecentsSession>(s, "getTopSession").close(); drain()
+            ReflectionHelpers.callInstanceMethod<TopRecentsSession>(s, "getTopSession").close(); drain()
         }
         val file = File("src/test/resources/commands/toprecents.txt")
         if (System.getenv("UPDATE_COMMAND_FIXTURES") == "1") {

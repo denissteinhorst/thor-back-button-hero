@@ -23,10 +23,16 @@ import android.widget.TextView
 import dev.steinhorst.backbuttonhero.R
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.input.PromptKeys
+import dev.steinhorst.backbuttonhero.overlay.ButtonHints
 import dev.steinhorst.backbuttonhero.settings.dp
 import kotlin.math.roundToInt
 
-/** Android 13 style recents on one display: preview cards, sideways scroll, tap to open, swipe up to close. */
+/**
+ * Android 13 style recents on one display: preview cards, sideways scroll, tap to open, swipe up to close.
+ * [controllerHints] is null while the controller does not drive the switcher; otherwise it is the
+ * Thor's style switch, read on every open for the legend of the controller keys under the actions.
+ */
 class SwitcherOverlay(
     private val service: AccessibilityService,
     private val source: AppSource,
@@ -39,6 +45,7 @@ class SwitcherOverlay(
     private val onDismissed: () -> Unit,
     private val onPanelLaunch: (Int) -> Unit = {},
     private val onCoveringClose: () -> Unit = {},
+    private val controllerHints: () -> Boolean? = { null },
 ) {
     private var root: View? = null
     private var recentsTheme = RecentsTheme(0, Color.WHITE, Color.WHITE, 0)
@@ -55,6 +62,7 @@ class SwitcherOverlay(
     private var selected = 0
     private var closeAllButton: View? = null
     private var screenshotButton: View? = null
+    private var legend: View? = null
     private var closeAllSelected = false
     private var screenshotSelected = false
 
@@ -73,6 +81,7 @@ class SwitcherOverlay(
         emptyView = null
         closeAllButton = null
         screenshotButton = null
+        legend = null
         bulkClosing = false
         onDismissed()
     }
@@ -83,6 +92,7 @@ class SwitcherOverlay(
         frame.setBackgroundColor(recentsTheme.background)
         memoryLabel?.setTextColor(recentsTheme.memory)
         emptyView?.refreshTheme()
+        legend?.let { ButtonHints.recolor(it, recentsTheme.memory) }
         listOfNotNull(screenshotButton, closeAllButton).forEach { action ->
             (action as ViewGroup).let {
                 val glyph = if (action === screenshotButton) R.drawable.ic_screenshot else R.drawable.ic_clear_all
@@ -244,6 +254,7 @@ class SwitcherOverlay(
         val wm = ctx.getSystemService(WindowManager::class.java)
         val bounds = wm.currentWindowMetrics.bounds
         val showingAllApps = showAppsFromAllDisplays()
+        val hintsFlipped = controllerHints()
         val regularApps = if (showingAllApps) {
             (source.appsOnDisplay(display.displayId) + source.appsOnDisplay(Display.DEFAULT_DISPLAY))
                 .distinctBy { it.packageName }
@@ -266,7 +277,8 @@ class SwitcherOverlay(
         badgeViews.clear()
         // Quickstep on the Thor uses a 58.125% display-sized snapshot. Reserve the icon,
         // footer and screen margins as well, so shorter displays never clip the actions.
-        val availableHeight = (bounds.height() - style.iconSize - style.iconGap - dp(ctx, 132)).coerceAtLeast(1)
+        val footer = dp(ctx, 132) + if (hintsFlipped != null) dp(ctx, LEGEND_DP) else 0
+        val availableHeight = (bounds.height() - style.iconSize - style.iconGap - footer).coerceAtLeast(1)
         val scale = minOf(0.58125f, availableHeight / bounds.height().toFloat())
         val cardW = (bounds.width() * scale).roundToInt().coerceAtLeast(1)
         val thumbH = (bounds.height() * scale).roundToInt().coerceAtLeast(1)
@@ -316,6 +328,14 @@ class SwitcherOverlay(
             addView(label(ctx, memoryText(ctx), 15f, recentsTheme.memory).apply { gravity = Gravity.CENTER; memoryLabel = this },
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(ctx, 24)).apply { topMargin = dp(ctx, 12) })
             addView(buttonRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+        if (hintsFlipped != null) {
+            val hints = ButtonHints.confirmAndCancel(ctx) +
+                if (apps.isEmpty()) emptyList() else listOf(ButtonHints.Hint(PromptKeys.CLOSE_ALL, ctx.getString(R.string.close_all)))
+            legend = ButtonHints.legend(ctx, hints, hintsFlipped, recentsTheme.memory, 13f, 16).also {
+                column.addView(it, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    .apply { topMargin = dp(ctx, 4) })
+            }
         }
         val frame = FrameLayout(ctx).apply {
             setBackgroundColor(recentsTheme.background)
@@ -500,6 +520,11 @@ class SwitcherOverlay(
 
     private fun dp(ctx: Context, v: Int) =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).roundToInt()
+
+    private companion object {
+        /** The height the controller legend adds below the actions, kept free of the cards. */
+        const val LEGEND_DP = 28
+    }
 }
 
 /** One displayed Recents card: its app or panel, the card view and its thumbnail view (null only in tests). */

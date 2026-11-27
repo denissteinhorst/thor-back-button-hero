@@ -234,7 +234,7 @@ def switcher_open(d):
         _press(d)
         d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
         time.sleep(0.8)
-        d.press(Seq().tap(d.face("b")))
+        d.press(Seq().tap(d.confirm_key()))
         d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(("com.android.gallery3d", "com.android.settings")), 6,
                      f"confirm opened nothing on the bottom screen: {d.resumed().get(d.bottom)}")
         d.eventually(lambda: not d.own_windows(d.bottom), 3, "the switcher stayed open after opening an app")
@@ -256,7 +256,8 @@ def switcher_close_all(d):
         d.eventually(lambda: d.own_windows(d.bottom), 4, "the switcher did not open")
         time.sleep(0.8)
         gallery = d.pid("com.android.gallery3d")
-        # The switcher listens for what Android calls BUTTON_X: the left face button, evdev 307 in both styles.
+        # The switcher listens for what Android calls BUTTON_X, evdev 307 in both styles: printed X (top)
+        # in Standard Style, printed Y (left) in Xbox Style.
         d.press(Seq().tap(pad.X))
         expect_closed(d, "com.android.gallery3d", gallery)
         d.eventually(lambda: not d.own_windows(d.bottom), 3, "Close all left the switcher open")
@@ -269,6 +270,31 @@ def switcher_close_all(d):
 def _dpad(d, direction):
     """While either Recents holds the controller, the D-pad alone navigates; Back would close them."""
     d.press(Seq().hat(direction))
+
+
+def _quickstep_state(d):
+    """Quickstep's launcher state, such as Overview or Normal."""
+    m = re.search(r"mState:(\w+)", d.sh("dumpsys activity com.android.launcher3 | grep -m1 mState:"))
+    return m.group(1) if m else ""
+
+
+def _focused_card(d):
+    """Index of the task card with input focus in top Recents, 0 for the newest (rightmost), or None."""
+    cards = [line for line in d.sh("dumpsys activity com.android.launcher3").splitlines() if "TaskView{" in line]
+    return next((i for i, line in enumerate(cards) if " .F" in line), None)
+
+
+def _select_card(d, index):
+    """Moves the focus to card [index] with the D-pad, checking every step. Where Overview starts depends on
+    how Quickstep opened it: over an app it may focus that app or already the one before it."""
+    d.eventually(lambda: _focused_card(d) is not None, 5, "no card took the focus in top Recents")
+    for _ in range(6):
+        current = _focused_card(d)
+        if current == index:
+            return
+        _dpad(d, "right" if current is not None and current > index else "left")
+        time.sleep(0.5)
+    raise Fail(f"the D-pad did not reach card {index}: focus on {_focused_card(d)}")
 
 
 def _bottom_home(d):
@@ -302,7 +328,7 @@ def switcher_select_close(d):
             _switcher_up(d)
             for _ in range(steps):
                 _dpad(d, "left")
-            d.press(Seq().tap(d.face("b")))
+            d.press(Seq().tap(d.confirm_key()))
             d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(apps), 6,
                          f"confirm opened nothing on the bottom screen: {d.resumed().get(d.bottom)}")
             opened.append(next(a for a in apps if d.resumed().get(d.bottom, "").startswith(a)))
@@ -320,7 +346,7 @@ def switcher_select_close(d):
             raise Fail(f"Up also closed {other}")
         if not d.own_windows(d.bottom):
             raise Fail("closing one card closed the switcher")
-        d.press(Seq().tap(d.face("b")))
+        d.press(Seq().tap(d.confirm_key()))
         d.eventually(lambda: d.resumed().get(d.bottom, "").startswith(other), 6,
                      f"after the close, confirm did not open {other}: {d.resumed().get(d.bottom)}")
     finally:
@@ -331,7 +357,7 @@ def switcher_select_close(d):
 
 @test("windows", "The D-pad moves through top Recents, Up removes one task and Back closes Overview")
 def recents_navigate(d):
-    """Overview centres the app it opened over; the app used before it is the card one step left."""
+    """Settings is the newest card and Gallery the one left of it; the D-pad walks there from wherever Overview starts."""
     _clean(d)
     try:
         d.start_app(GALLERY, d.top)
@@ -342,8 +368,11 @@ def recents_navigate(d):
         _press(d)
         d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not open")
         time.sleep(1.5)
+        # Settings is the newest card, Gallery the one left of it.
+        _select_card(d, 0)
         _dpad(d, "left")
-        d.press(Seq().tap(d.face("b")))
+        d.eventually(lambda: _focused_card(d) == 1, 3, f"Left did not move to the previous card: {_focused_card(d)}")
+        d.press(Seq().tap(d.confirm_key()))
         _front(d, d.top, "com.android.gallery3d", 6)
 
         _press(d)
@@ -351,6 +380,7 @@ def recents_navigate(d):
         time.sleep(1.5)
         if not d.task_ids("com.android.gallery3d"):
             raise Fail("Gallery had no task before the dismissal")
+        _select_card(d, 0)
         _dpad(d, "up")
         d.eventually(lambda: not d.task_ids("com.android.gallery3d"), 5,
                      f"Up left Gallery's task: {d.task_ids('com.android.gallery3d')}")
@@ -358,6 +388,10 @@ def recents_navigate(d):
         if not d.task_ids("com.android.settings.root"):
             raise Fail("Up also removed Settings' task")
         d.press(Seq().tap(pad.BACK))
+        # Back closes Overview itself, not only the controller session (with the app it was opened over gone,
+        # Quickstep goes Home).
+        d.eventually(lambda: _quickstep_state(d) not in ("Overview", ""), 6,
+                     f"Back left Overview open: {_quickstep_state(d)}")
         d.eventually(lambda: not d.own_windows(d.top), 5, f"Back left the Recents session open: {d.own_windows(d.top)}")
         if d.route() != d.top:
             raise Fail(f"the controller left the top screen: {d.route()}")
@@ -377,7 +411,7 @@ def recents_open(d):
         _press(d)
         d.eventually(lambda: d.resumed().get(d.top, "").startswith(LAUNCHERS), 5, "Recents did not open")
         time.sleep(1.5)
-        d.press(Seq().tap(d.face("b")))
+        d.press(Seq().tap(d.confirm_key()))
         d.eventually(lambda: d.resumed().get(d.top, "").startswith(("com.android.gallery3d", "com.android.settings")), 6,
                      f"confirm opened nothing on top: {d.resumed().get(d.top)}")
         if d.resumed().get(d.bottom, "").startswith(("com.android.gallery3d", "com.android.settings")):
@@ -535,8 +569,8 @@ def choose_app(d):
         d.bind(KEY, "@app_ask", display="top")
         _press(d)
         d.eventually(lambda: d.own_windows(d.route() or d.top), 4, "no app list appeared")
-        # The prompt's cancel is the face button that is not confirm: printed A on the Thor.
-        d.press(Seq().tap(d.face("a")))
+        # The prompt's cancel is whichever button reports BUTTON_B.
+        d.press(Seq().tap(d.cancel_key()))
         d.eventually(lambda: not d.own_windows(d.route() or d.top), 3, "Cancel left the app list open")
         time.sleep(0.8)
         if d.resumed() != before:

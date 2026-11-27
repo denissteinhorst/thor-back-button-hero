@@ -58,6 +58,7 @@ import dev.steinhorst.backbuttonhero.input.GestureScheduler
 import dev.steinhorst.backbuttonhero.input.HomeAsBack
 import dev.steinhorst.backbuttonhero.input.HomeLayerButton
 import dev.steinhorst.backbuttonhero.input.KeyInterceptionGate
+import dev.steinhorst.backbuttonhero.input.PromptKeys
 import dev.steinhorst.backbuttonhero.input.ServiceToggleGesture
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.input.Stick
@@ -66,6 +67,7 @@ import dev.steinhorst.backbuttonhero.input.StickClick
 import dev.steinhorst.backbuttonhero.input.StickClickButton
 import dev.steinhorst.backbuttonhero.input.base
 import dev.steinhorst.backbuttonhero.macro.MacroPlayback
+import dev.steinhorst.backbuttonhero.overlay.ButtonHintOverlay
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
@@ -124,6 +126,8 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private lateinit var controllerFocus: ControllerFocus
     private lateinit var aynControls: AynControls
     private lateinit var focusIndicator: FocusIndicatorOverlay
+    /** Confirm and Cancel beside native top Recents while the controller drives it. */
+    private val topRecentsHint by lazy { ButtonHintOverlay(this) }
     private lateinit var recording: ScreenRecording
     private lateinit var recordIndicator: RecordingIndicatorOverlay
     /** The dot's place for the running recording; null when its button shows none. */
@@ -449,6 +453,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             ::onBottomSwitcherDismissed,
             ::restorePanel,
             ::closeAynPanel,
+            controllerHints = { if (prefs.switcherControllerEnabled) controllerFlipped() else null },
         )
         levels = LevelControl(this, { notice.show(it) }) { bottomDisplay()?.displayId }
         focusIndicator = FocusIndicatorOverlay(this)
@@ -467,7 +472,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         gyroRecenter = { gyro.recenter() }
         gyroCalibrate = { gyroActions.calibrate() }
         dpadOverlay = DpadOverlay(this, ::handleDpad, ::handleDpadRelease, ::handleStick)
-        appControlPrompt = AppControlPrompt(this) { it == confirmKeyCode() }
+        appControlPrompt = AppControlPrompt(this, ::controllerFlipped)
         prefs.registerListener(prefsListener)
         runCatching { unregisterReceiver(standbyReceiver) }
         registerReceiver(standbyReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF).apply { addAction(Intent.ACTION_SCREEN_ON) })
@@ -577,6 +582,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             dpadOverlay.detach()
             appControlPrompt.dismiss()
             focusIndicator.dismiss()
+            topRecentsHint.dismiss()
             cancelActiveAppSwitch()
             // Paused, Bottom Recents cannot bring a parked frontend back; return it now.
             bottomDisplay()?.let { parking.restore(it.displayId) {} }
@@ -732,7 +738,13 @@ class SwitcherService : AccessibilityService(), GestureActions {
     private fun handleActiveKeyEvent(event: KeyEvent): Boolean {
         val confirmKey = event.deviceId to event.keyCode
         if (confirmKey in recentsConfirmKeys) {
-            if (event.action == KeyEvent.ACTION_UP) recentsConfirmKeys.remove(confirmKey)
+            if (event.action == KeyEvent.ACTION_UP) {
+                recentsConfirmKeys.remove(confirmKey)
+                // Cancel over top Recents closes it like Back: only once every mirrored device released it.
+                if (event.keyCode == PromptKeys.CANCEL && recentsConfirmKeys.none { it.second == PromptKeys.CANCEL }) {
+                    topSession.backReleased()
+                }
+            }
             return true
         }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {
@@ -817,29 +829,33 @@ class SwitcherService : AccessibilityService(), GestureActions {
         return false
     }
 
-    /** The Thor's style switch swaps the confirm face button at runtime. */
-    private fun isRecentsConfirm(event: KeyEvent): Boolean = event.keyCode == confirmKeyCode()
-
-    private fun confirmKeyCode(): Int = if (controllerFlipped())
-        KeyEvent.KEYCODE_BUTTON_A else KeyEvent.KEYCODE_BUTTON_B
-
     private fun handleRecentsControllerKey(event: KeyEvent): Boolean? {
         if (!prefs.switcherControllerEnabled) return null
         if (overlay.isShowing) {
-            if (event.action == KeyEvent.ACTION_UP &&
-                (isRecentsConfirm(event) || event.keyCode == KeyEvent.KEYCODE_BUTTON_X)
-            ) return true
-            if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return null
-            return when {
-                isRecentsConfirm(event) -> { overlay.activateSelection(); true }
-                event.keyCode == KeyEvent.KEYCODE_BUTTON_X -> { overlay.closeAllFromController(); true }
-                else -> null
+            val ours = event.keyCode == PromptKeys.CONFIRM || event.keyCode == PromptKeys.CANCEL ||
+                event.keyCode == PromptKeys.CLOSE_ALL
+            if (event.action == KeyEvent.ACTION_UP && ours) return true
+            if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0 || !ours) return null
+            // Each of these can close the switcher; the release must not reach the app it reveals.
+            recentsConfirmKeys += event.deviceId to event.keyCode
+            when (event.keyCode) {
+                PromptKeys.CONFIRM -> overlay.activateSelection()
+                PromptKeys.CANCEL -> overlay.dismiss()
+                else -> overlay.closeAllFromController()
             }
+            return true
         }
         if (!topRecentsControllerActive) return null
         if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return null
-        return when {
-            isRecentsConfirm(event) -> {
+        return when (event.keyCode) {
+            PromptKeys.CANCEL -> {
+                // Closes Overview the way Back does: Quickstep ignores the injected Back while a pad key
+                // is still held, so the close waits for the release (see backPressed/backReleased).
+                recentsConfirmKeys += event.deviceId to event.keyCode
+                topSession.backPressed()
+                true
+            }
+            PromptKeys.CONFIRM -> {
                 val card = windowsOnAllDisplays.get(Display.DEFAULT_DISPLAY).orEmpty()
                     .mapNotNull { it.root }.firstOrNull { it.packageName == "com.android.launcher3" }
                     ?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
@@ -1318,6 +1334,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.dismiss()
         if (::focusIndicator.isInitialized) focusIndicator.dismiss()
+        topRecentsHint.dismiss()
         if (bridgeOwner === bridgeToken) bridgeOwner = null
         super.onDestroy()
     }
@@ -1630,6 +1647,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (prefs.switcherControllerEnabled && PService.cachedAvailable()) {
             recentsFocusRestore = controllerFocus.currentTarget()
             showSwitcherFocusIndicator(top = true)
+            topRecentsHint.show(controllerFlipped())
             topSession.start()
             dlog("TOP_RECENTS session started")
             updatePadHelper()
@@ -1721,6 +1739,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         recentsFocusRestore = null
         topSession.reset()
         focusIndicator.dismiss()
+        topRecentsHint.dismiss()
         padHelper.setSwitcherNavigation(PadNavigationMode.OFF)
         if (overlay.isShowing) {
             padHelper.setSwitcherNavigation(PadNavigationMode.CAPTURE)
@@ -1746,8 +1765,6 @@ class SwitcherService : AccessibilityService(), GestureActions {
                 kotlin.math.abs(bounds.centerX() - size.x / 2)
             }
     }
-
-    private fun closeTopRecents() = topSession.close()
 
     private fun showSwitcherFocusIndicator(top: Boolean) {
         focusIndicator.showPersistent(top, Prefs.DEFAULT_FOCUS_POSITION)

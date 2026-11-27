@@ -193,6 +193,11 @@
     <string name="app_control_prompt_close_title">%1$s per Force-Close beenden?</string>
     <string name="app_control_prompt_close_yes">Force-Close</string>
     <string name="app_control_prompt_cancel">Abbrechen</string>
+    <string name="button_hint_confirm">Bestätigen</string>
+    <string name="face_position_left">Linke Taste</string>
+    <string name="face_position_top">Obere Taste</string>
+    <string name="face_position_right">Rechte Taste</string>
+    <string name="face_position_bottom">Untere Taste</string>
     <string name="app_control_no_app">Auf diesem Bildschirm gibt es keine App zu steuern.</string>
     <string name="shoulder_close_apps">Apps beenden</string>
     <string name="close_apps_all">Alle Apps schließen</string>

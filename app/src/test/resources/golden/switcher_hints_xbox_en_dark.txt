@@ -1,0 +1,71 @@
+## shown
+window type=2032 size=-1x-1 x=0 y=0 gravity=0x0 flags=0x01000308 format=-3 alpha=1.0 title=""
+  FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=true focusable=true
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,72,0,0]
+      RecentsCarousel visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=true margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[205,0,205,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,24,0] contentDescription="Emulator"
+            FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              ImageView visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,24,0] contentDescription="Game"
+            FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              ImageView visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,0,24,0] contentDescription="Mail"
+            FrameLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+              ImageView visibility=VISIBLE minHeight=0 padding=[6,6,6,6] clickable=false focusable=false margin=[0,0,0,0]
+            ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+      TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,36,0,0] text="0 B available | 0 B" textSizePx=45.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0]
+          ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Screenshot" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=144 padding=[36,0,36,0] clickable=true focusable=true margin=[108,0,0,0]
+          ImageView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,24,0]
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Close all" textSizePx=42.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,12,0,0]
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+          FaceButtonPictogram visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] contentDescription="Bottom button"
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Confirm" textSizePx=39.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[60,0,0,0]
+          FaceButtonPictogram visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] contentDescription="Right button"
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Cancel" textSizePx=39.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+        LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[60,0,0,0]
+          FaceButtonPictogram visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] contentDescription="Left button"
+          TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Close all" textSizePx=39.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
+  extras
+    #0 alpha=1.0 rotation=0.0 elevation=0.0 background=color#FF525252 size=960x1410 scroll=0,0 focused=true selected=false
+    #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=960x1242 scroll=0,0 focused=false selected=false
+    #2 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=960x930 scroll=1100,0 focused=false selected=false
+    #3 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=2060x930 scroll=0,0 focused=false selected=false
+    #4 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x930 scroll=0,0 focused=false selected=false
+    #5 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x192 scroll=0,0 focused=false selected=false
+    #6 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=144x144 scroll=0,0 focused=false selected=false
+    #7 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF28282C radius=60.0 shape=0) size=502x738 scroll=0,0 focused=false selected=false
+    #8 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x930 scroll=0,0 focused=false selected=false
+    #9 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x192 scroll=0,0 focused=false selected=false
+    #10 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=144x144 scroll=0,0 focused=false selected=false
+    #11 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF28282C radius=60.0 shape=0) size=502x738 scroll=0,0 focused=false selected=false
+    #12 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x930 scroll=0,0 focused=false selected=false
+    #13 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=502x192 scroll=0,0 focused=false selected=false
+    #14 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=144x144 scroll=0,0 focused=false selected=false
+    #15 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF28282C radius=60.0 shape=0) size=502x738 scroll=0,0 focused=false selected=false
+    #16 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=960x72 scroll=0,0 focused=false selected=false
+    #17 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=439x144 scroll=0,0 focused=false selected=false
+    #18 alpha=1.0 rotation=0.0 elevation=0.0 background=color#00000000 size=166x144 scroll=0,0 focused=false selected=false
+    #19 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=60x60 scroll=0,0 focused=false selected=false
+    #20 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=10x41 scroll=0,0 focused=false selected=false
+    #21 alpha=1.0 rotation=0.0 elevation=0.0 background=color#00000000 size=165x144 scroll=0,0 focused=false selected=false
+    #22 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=60x60 scroll=0,0 focused=false selected=false
+    #23 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=9x41 scroll=0,0 focused=false selected=false
+    #24 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=340x48 scroll=0,0 focused=false selected=false
+    #25 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=73x48 scroll=0,0 focused=false selected=false
+    #26 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=48x48 scroll=0,0 focused=false selected=false
+    #27 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=7x41 scroll=0,0 focused=false selected=false
+    #28 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=72x48 scroll=0,0 focused=false selected=false
+    #29 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=48x48 scroll=0,0 focused=false selected=false
+    #30 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=6x41 scroll=0,0 focused=false selected=false
+    #31 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=75x48 scroll=0,0 focused=false selected=false
+    #32 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=48x48 scroll=0,0 focused=false selected=false
+    #33 alpha=1.0 rotation=0.0 elevation=0.0 background=none size=9x41 scroll=0,0 focused=false selected=false

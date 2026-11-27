@@ -303,8 +303,12 @@ saves anything for the app, which the settings say plainly.
 
 `AppControlPrompt` is a focusable accessibility overlay on the display the controller currently
 drives (`controllerDisplayId`). Joystick and hat events reach only the focused window, so it takes
-focus like `DpadOverlay`; D-pad or stick moves the choice, the confirm key (which follows the Thor's
-A/B flip setting) accepts it and the other face button cancels. It is dismissed with the service.
+focus like `DpadOverlay`; D-pad or stick moves the choice. Confirm and cancel follow Android's
+convention (`input/PromptKeys`): whichever button reports `BUTTON_A` accepts, `BUTTON_B` cancels. The
+Thor's style switch (`flip_button_layout`) only decides which physical button that is, so a legend under
+the rows (`overlay/ButtonHints`) shows the face-button diamond with that dot filled, read from the
+setting each time the prompt opens. The bottom switcher (where `BUTTON_X` closes all) and the controller
+session over native top Recents use the same keys and legend. It is dismissed with the service.
 
 ### `Prefs` — storage and migrations
 
@@ -746,10 +750,16 @@ remain a fallback; reselecting an already visible bottom task need not emit such
 or close native Overview. Ambiguous labels are not forcibly assigned to a task. Without the
 privileged bridge, the previous launch-intent behavior remains available.
 
-Controller confirmation of an identified native card is consumed before Quickstep handles
-the key. The service moves and activates that task directly on the top display, consuming
+Controller confirmation (`BUTTON_A`) of an identified native card is consumed before Quickstep
+handles the key. The service moves and activates that task directly on the top display, consuming
 the matching key release too. Action buttons and unidentified cards keep their native key
-handling. Touch clicks are reported after the native launch, so this observation path can
+handling. Cancel (`BUTTON_B`) closes Overview through the session's own close, like Back, and its
+release is consumed as well; both inject their Back only after the key's release. Quickstep's Back opens
+the app Overview was opened over only while that app's card is fully in view, and otherwise just scrolls
+the card into view, so the close checks Quickstep's state and sends up to two more Backs while Overview
+still holds focus 700 ms after the last one (`TopRecentsSession.CLOSE_RETRY_MS`). SystemUI's window is not ours to draw into, so `ButtonHintOverlay` shows
+the Confirm/Cancel legend as a small untouchable, unfocusable window of our own in the top screen's
+bottom-right corner, beside the cards, for exactly as long as the session runs. Touch clicks are reported after the native launch, so this observation path can
 still briefly expose an app on its former display before moving it.
 
 Hold-to-swap captures both foreground packages and resolves both task IDs before moving

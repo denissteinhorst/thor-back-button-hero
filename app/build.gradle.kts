@@ -281,6 +281,7 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
             "pad.GyroCalibration" to "1.00", "pad.GyroCalibration\$Companion" to "1.00",
             "pad.GyroControl" to "1.00", "pad.GyroTilt" to "1.00", "pad.GyroPosture" to "1.00", "settings.GyroPreview" to "1.00", "settings.GyroSettingsDialog" to "1.00",
             "settings.WelcomeSheet" to "1.00", "settings.WelcomeSheetKt" to "1.00",
+            "input.PromptKeys" to "1.00", "input.FacePosition" to "1.00", "overlay.FaceButtonPictogram" to "1.00", "overlay.ButtonHintOverlay" to "1.00",
         ).forEach { (name, minimum) ->
             rule {
                 element = "CLASS"

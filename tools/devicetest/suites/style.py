@@ -43,7 +43,7 @@ def modal(d):
     combo(d, pad.L1)
     d.eventually(lambda: d.own_windows(d.top) or d.own_windows(d.bottom), 4, "the choice prompt did not appear")
     # High, Medium, Standard: one down is Medium.
-    d.press(Seq().hat("down").tap(d.face("b")))
+    d.press(Seq().hat("down").tap(d.confirm_key()))
     d.eventually(lambda: d.setting("performance_mode") == "1", 4,
                  f"the prompt did not apply Medium: {d.setting('performance_mode')}")
 

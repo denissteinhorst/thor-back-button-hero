@@ -94,7 +94,7 @@ def standby(d):
     d.eventually(lambda: d.own_windows(d.top) or d.own_windows(d.bottom), 4,
                  "the first Back + Y after waking from standby was lost (the button that locked is still counted as held)")
     # Cancel is the second entry.
-    d.press(Seq().hat("down").tap(d.face("b")))
+    d.press(Seq().hat("down").tap(d.confirm_key()))
     time.sleep(1.0)
     if not d.awake():
         _wake(d)

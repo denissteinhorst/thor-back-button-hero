@@ -33,6 +33,11 @@ class ChangedTest(unittest.TestCase):
     def test_mapped_files_select_their_areas(self):
         self.assertEqual(runner.areas_for(["app/src/main/java/x/Gyro.kt"]), {"gyro"})
 
+    def test_confirm_keys_select_the_both_styles_area(self):
+        self.assertEqual(runner.areas_for(["app/src/main/java/x/PromptKeys.kt"]), {"appcontrol", "windows", "confirm"})
+        self.assertEqual(runner.areas_for(["app/src/main/java/x/SwitcherOverlay.kt"]), {"windows", "confirm"})
+        self.assertIn("confirm", runner.registered_areas())
+
     def test_window_prefixes_select_windows(self):
         self.assertEqual(runner.areas_for(["app/src/main/java/x/TopRecentsFocus.kt"]), {"windows"})
 

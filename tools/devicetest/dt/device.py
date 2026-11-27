@@ -217,8 +217,10 @@ class Device:
         key = self.layered(key)
         # Every duration the app stores is a Long; reading an Int there would crash the service.
         kind = ("bool" if isinstance(value, bool) else "long" if isinstance(value, int) and key.endswith("_ms")
-                else "int" if isinstance(value, int) else "float" if isinstance(value, float) else "string")
-        self.app("put", key=key, type=kind, value=str(value).lower() if kind == "bool" else value)
+                else "int" if isinstance(value, int) else "float" if isinstance(value, float)
+                else "set" if isinstance(value, (set, frozenset)) else "string")
+        text = str(value).lower() if kind == "bool" else ",".join(sorted(value)) if kind == "set" else value
+        self.app("put", key=key, type=kind, value=text)
 
     def bind(self, pref, action, **options):
         """Assigns [action] to the hotkey with preference key [pref]; options are its sub-settings."""
@@ -537,6 +539,15 @@ class Device:
         """The evdev code of the face button printed [letter]; Xbox Style swaps A/B and X/Y."""
         flipped = self.setting("flip_button_layout") == "1"
         return {"a": 305, "b": 304, "x": 308, "y": 307}[letter] if flipped else {"a": 304, "b": 305, "x": 307, "y": 308}[letter]
+
+    def confirm_key(self):
+        """The evdev code that confirms the app's prompts and switchers: Android's convention, the button
+        reporting BUTTON_A (BTN_SOUTH). That is printed A (right) in Standard Style, printed B (bottom) in Xbox."""
+        return self.face("b" if self.setting("flip_button_layout") == "1" else "a")
+
+    def cancel_key(self):
+        """The evdev code that cancels them: the button reporting BUTTON_B, printed B in Standard, A in Xbox."""
+        return self.face("a" if self.setting("flip_button_layout") == "1" else "b")
 
     def keyevent(self, code, display=None):
         self.sh(f"input {'-d ' + str(display) + ' ' if display is not None else ''}keyevent {code}")

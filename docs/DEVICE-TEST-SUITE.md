@@ -157,7 +157,7 @@ Side effects to know about:
   that existed before the run are never touched.
 - A test media session briefly becomes the media button session, so no real player receives the
   media keys.
-- The controller-style test recreates the pad. A running RetroArch then needs a pause and resume
+- The controller-style test and the `confirm` area recreate the pad. A running RetroArch then needs a pause and resume
   (see `CLAUDE.md`). Run full suites without a game open.
 - Standby switches the screens off and wakes the device again. A secure lock screen would stop the
   run there. The Thor has none by default.
@@ -183,6 +183,7 @@ The order keeps related checks together and the most disruptive ones last.
 | `macro` | A library macro plays buttons, D-pad and stick into the game in order |
 | `gyro` | Gyro on/off and its notices; a gyro deflection reaches the game's right stick only while on, and with a hold button only while it is held ; tilting holds the stick until calibration starts, then a real stable sensor window must succeed (aiming rates are replaced, since a test cannot turn the device; calibration always uses physical readings) |
 | `panels` | Quick settings, notifications, all ten settings shortcuts, power menu, standby with and without prompt, the first hotkey after waking |
+| `confirm` | In Standard and in Xbox Style (switched with the style hotkey, the original style restored afterwards): the favorites list launches with the confirm button, force-close (ask) closes the chosen app, the bottom switcher opens the selected app and top Recents opens the selected card; in each, the cancel button first closes without confirming |
 | `frontends` | A real frontend's bottom panel (NeoStation's Presentation; the app must be installed): hidden for a bottom launch and restored from its own switcher card, never hidden by cancelling the switcher, restored on service restart and when its root host is killed, still hidden but restorable after pause and standby, and hold-to-swap refused while it is shown or hidden. Parked frontend activities (Cocoon) stay manual (C8-series) |
 | `exceptions` | An app exception blocks only its combos; with all Back gestures excluded, Back reaches the app natively; hold-to-swap leaves an app whose Hold is unchecked in place and moves only the other one |
 | `service` | After the service is switched off and on, or the app process is killed, the helper restarts and hotkeys work; Home + Back held 5 s releases the pad (clone gone, native input reaches the game, Back + D-pad via the overlay) until the next restart |
@@ -202,8 +203,11 @@ The order keeps related checks together and the most disruptive ones last.
 | Recordings | The MP4 is read over `exec-out` and its tracks parsed by `dt/mp4.py` (no dependency): video plus, with the microphone, a 48 kHz stereo AAC track of about the same length |
 
 Face buttons are named by their print. In Xbox Style the Thor swaps their codes, which `Device.face()`
-accounts for. The confirm button in the app's prompts and the switcher is the bottom one, printed B.
-Android's `BUTTON_X` is always the left button (evdev 307).
+accounts for. Confirm and cancel in the app's prompts, the bottom switcher and top Recents follow
+Android's convention: the button reporting `BUTTON_A` (evdev 304) confirms, `BUTTON_B` (305) cancels.
+That is printed A (right) and B (bottom) in Standard Style and the other way round in Xbox Style;
+`Device.confirm_key()` and `Device.cancel_key()` return them. Android's `BUTTON_X` (evdev 307), which
+closes all apps in the switcher, is printed X (top) in Standard Style and printed Y (left) in Xbox Style.
 
 ## Visual baseline (raw frames)
 

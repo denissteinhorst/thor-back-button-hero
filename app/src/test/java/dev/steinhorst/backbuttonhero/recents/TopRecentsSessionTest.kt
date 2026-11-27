@@ -27,6 +27,7 @@ class TopRecentsSessionTest {
     private var ends = 0
     private val navigated = mutableListOf<DpadDirection>()
     private val swipes = mutableListOf<() -> Unit>()
+    @Volatile private var backs = 0
 
     @Suppress("DEPRECATION")
     private val card = AccessibilityNodeInfo.obtain().apply { isFocused = true }
@@ -39,7 +40,7 @@ class TopRecentsSessionTest {
         override fun lostFocus() = false
         override fun swipeUp(bounds: TopRecentsState.CardBounds, done: () -> Unit): Boolean { swipes += done; return true }
         override fun navigate(direction: DpadDirection) { navigated += direction }
-        override fun injectBack() = true
+        override fun injectBack(): Boolean { backs++; return true }
         override fun globalBack() = Unit
         override fun cancelLaunch() = Unit
         override fun end() { ends++ }
@@ -135,6 +136,53 @@ class TopRecentsSessionTest {
         assertTrue(navigated.isEmpty())
         assertEquals(0, ends)
         assertFalse(session.active)
+    }
+
+    /** Answers every state query with [state] until [done], within a generous number of queries. */
+    private fun answerUntil(state: String, done: () -> Boolean) {
+        repeat(20) {
+            if (done()) return
+            startQuery()
+            states.put(state)
+            pump { done() }
+        }
+    }
+
+    @Test
+    fun `a Back that only scrolled Overview is followed by another once the scroll had time`() {
+        readySession()
+        session.close()
+        answerUntil(FOCUSED) { backs == 2 }
+        assertEquals("Quickstep kept Overview, so the close sends a second Back", 2, backs)
+        answerUntil(CLOSED) { ends > 0 }
+        assertEquals(1, ends)
+        assertEquals("closed: no further Back", 2, backs)
+    }
+
+    @Test
+    fun `a check brought forward right after a Back never repeats it early`() {
+        readySession()
+        session.close()
+        pump { backs == 1 }
+        // A window event right after the Back: Overview is still drawn while the app opens.
+        session.scheduleStateCheck(0L)
+        startQuery()
+        states.put(FOCUSED)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TopRecentsSession.CLOSE_RETRY_MS / 2))
+        assertEquals(1, backs)
+    }
+
+    @Test
+    fun `the close gives up after a few Backs and Overview stays usable`() {
+        readySession()
+        session.close()
+        answerUntil(FOCUSED) { backs == TopRecentsSession.CLOSE_BACKS }
+        // The check after the last Back still finds Overview focused.
+        startQuery()
+        states.put(FOCUSED)
+        pump()
+        assertEquals(TopRecentsSession.CLOSE_BACKS, backs)
+        assertEquals(0, ends)
     }
 
     private companion object {

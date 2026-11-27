@@ -65,15 +65,24 @@ enum class AndroidButton(override val prefKey: String, val keyCode: Int) : Combo
     }
 }
 
+/** Where a face button sits on the Thor's diamond. */
+enum class FacePosition { LEFT, TOP, RIGHT, BOTTOM }
+
 /**
  * The four face buttons, named and stored by their printed label. The Thor's style switch swaps the
- * keys the pad reports (A with B, X with Y), so the key code behind a label depends on it.
+ * keys the pad reports (A with B, X with Y), so the key code behind a label depends on it. The
+ * labels themselves never move: Y left, X top, A right, B bottom.
  */
-enum class FaceButton(override val prefKey: String, private val keyCode: Int, private val flippedKeyCode: Int) : ComboButton {
-    A("face_a", KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B),
-    B("face_b", KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_A),
-    X("face_x", KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y),
-    Y("face_y", KeyEvent.KEYCODE_BUTTON_Y, KeyEvent.KEYCODE_BUTTON_X);
+enum class FaceButton(
+    override val prefKey: String,
+    private val keyCode: Int,
+    private val flippedKeyCode: Int,
+    val position: FacePosition,
+) : ComboButton {
+    A("face_a", KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B, FacePosition.RIGHT),
+    B("face_b", KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_A, FacePosition.BOTTOM),
+    X("face_x", KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y, FacePosition.TOP),
+    Y("face_y", KeyEvent.KEYCODE_BUTTON_Y, KeyEvent.KEYCODE_BUTTON_X, FacePosition.LEFT);
 
     override val defaultAction: String get() = ""
 

@@ -1,6 +1,7 @@
 package dev.steinhorst.backbuttonhero.recents
 
 import android.os.Handler
+import android.os.SystemClock
 import android.view.accessibility.AccessibilityNodeInfo
 import dev.steinhorst.backbuttonhero.input.DpadDirection
 
@@ -56,6 +57,9 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
     private var cardBounds: TopRecentsState.CardBounds? = null
     private var pendingDismissals = 0
     private var closing = false
+    private var closeBacks = 0
+    private var closeBackRunning = false
+    private var closeBackAt = 0L
     private val navigation = TopRecentsNavigation(host::navigate) { queueDismissal() }
     private val stateRunnable = Runnable { requestStateCheck() }
 
@@ -74,6 +78,8 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
         cardBounds = null
         pendingDismissals = 0
         closing = false
+        closeBacks = 0
+        closeBackRunning = false
     }
 
     /** Quickstep was asked to open; wait briefly for its first state. */
@@ -100,6 +106,8 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
         cardBounds = null
         pendingDismissals = 0
         closing = false
+        closeBacks = 0
+        closeBackRunning = false
         handler.removeCallbacks(stateRunnable)
     }
 
@@ -156,11 +164,25 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
         if (exitRequested) return
         exitRequested = true
         navigation.reset()
+        injectCloseBack()
+    }
+
+    /**
+     * Quickstep's Back opens the app Overview was opened over only while that app's card is fully in view;
+     * otherwise it merely scrolls the card into view (after a D-pad move, or when Overview opened scrolled).
+     * So while Overview still holds focus [CLOSE_RETRY_MS] after a Back, the state check sends another, up to
+     * [CLOSE_BACKS]. The wait covers the scroll; once the app opens, Quickstep loses focus well within it.
+     */
+    private fun injectCloseBack() {
+        closeBacks++
+        closeBackRunning = true
         val session = token
         Thread {
             val injected = host.injectBack()
             handler.post {
                 if (session != token) return@post
+                closeBackRunning = false
+                closeBackAt = SystemClock.uptimeMillis()
                 if (!injected) host.globalBack()
                 scheduleStateCheck(TopRecentsLauncher.EVENT_SETTLE_MS)
             }
@@ -228,7 +250,18 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
                 val snapshot = TopRecentsState.parse(state)
                 snapshot.cardBounds?.let { cardBounds = it }
                 val overview = state?.let { snapshot.overview }
+                // Window events bring checks forward; a Back is repeated only after the full wait.
+                val closeWait = CLOSE_RETRY_MS - (SystemClock.uptimeMillis() - closeBackAt)
                 when {
+                    overview == true && exitRequested && snapshot.windowFocused && !closing && pendingDismissals == 0 &&
+                        closeBacks < CLOSE_BACKS -> {
+                        confirmed = true
+                        when {
+                            closeBackRunning -> Unit // Its end schedules the next check.
+                            closeWait > 0 -> scheduleStateCheck(closeWait)
+                            else -> injectCloseBack()
+                        }
+                    }
                     overview == true -> {
                         confirmed = true
                         if (cardBounds != null) {
@@ -319,5 +352,7 @@ class TopRecentsSession(private val handler: Handler, private val host: Host) {
     companion object {
         const val READY_RETRY_MS = 40L
         const val DELETE_SETTLE_MS = 260L
+        const val CLOSE_RETRY_MS = 700L
+        const val CLOSE_BACKS = 3
     }
 }

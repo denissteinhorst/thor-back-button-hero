@@ -40,12 +40,11 @@ def _prompt(d, timeout=4):
 
 def _choose(d, moves_down=0):
     """Picks a prompt entry the way a player does: D-pad down [moves_down] times, then confirm.
-    The confirm button is the bottom one in both styles, printed B on the Thor (the app asks Android
-    for BUTTON_A in Xbox Style and BUTTON_B otherwise, and the style swaps the codes to match)."""
+    Confirm follows Android's convention: whichever button reports BUTTON_A (see Device.confirm_key)."""
     seq = Seq()
     for _ in range(moves_down):
         seq.hat("down")
-    d.press(seq.tap(d.face("b")))
+    d.press(seq.tap(d.confirm_key()))
 
 
 @test("appcontrol", "Minimize sends the top app to the background and keeps it running")

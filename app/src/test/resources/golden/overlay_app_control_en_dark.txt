@@ -9,6 +9,13 @@ window type=2032 size=960x-2 x=0 y=0 gravity=0x11 flags=0x01020020 format=-3 alp
         TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Both screens" textSizePx=51.0 textColor=#FFFFFFFF maxLines=2147483647 bold=false
     View visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[24,18,24,18]
     TextView visibility=VISIBLE minHeight=0 padding=[36,0,36,0] clickable=true focusable=true margin=[0,0,0,0] text="Cancel" textSizePx=51.0 textColor=#FFFF8A80 maxLines=2147483647 bold=false
+    LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,24,0,0]
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0]
+        FaceButtonPictogram visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] contentDescription="Right button"
+        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Confirm" textSizePx=39.0 textColor=#B3FFFFFF maxLines=2147483647 bold=false
+      LinearLayout visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[60,0,0,0]
+        FaceButtonPictogram visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,18,0] contentDescription="Bottom button"
+        TextView visibility=VISIBLE minHeight=0 padding=[0,0,0,0] clickable=false focusable=false margin=[0,0,0,0] text="Cancel" textSizePx=39.0 textColor=#B3FFFFFF maxLines=2147483647 bold=false
   extras
     #0 alpha=1.0 rotation=0.0 elevation=0.0 background=gradient(color=#FF303034 radius=60.0 shape=0)
     #1 alpha=1.0 rotation=0.0 elevation=0.0 background=none
@@ -19,3 +26,10 @@ window type=2032 size=960x-2 x=0 y=0 gravity=0x11 flags=0x01020020 format=-3 alp
     #6 alpha=1.0 rotation=0.0 elevation=0.0 background=none
     #7 alpha=1.0 rotation=0.0 elevation=0.0 background=color#33FFFFFF
     #8 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #9 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #10 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #11 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #12 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #13 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #14 alpha=1.0 rotation=0.0 elevation=0.0 background=none
+    #15 alpha=1.0 rotation=0.0 elevation=0.0 background=none

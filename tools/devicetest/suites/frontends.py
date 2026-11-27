@@ -74,7 +74,7 @@ def panel_card(d):
         _open_switcher(d)
         if _panel(d) != HIDDEN:
             raise Fail("opening the switcher showed the panel again")
-        d.press(Seq().tap(d.face("b")))
+        d.press(Seq().tap(d.confirm_key()))
         _expect_panel(d, SHOWN, 6, "confirming the panel card")
         d.eventually(lambda: not d.own_windows(d.bottom), 3, "the switcher stayed open")
         if not d.resumed().get(d.top, "").startswith(NEO + "/"):
@@ -136,7 +136,7 @@ def panel_pause_standby(d):
         if _panel(d) != HIDDEN:
             raise Fail(f"standby changed the hidden panel: {_panel(d)}")
         _open_switcher(d)
-        d.press(Seq().tap(d.face("b")))
+        d.press(Seq().tap(d.confirm_key()))
         _expect_panel(d, SHOWN, 6, "confirming the panel card after pause and standby")
     finally:
         _end_neo(d)

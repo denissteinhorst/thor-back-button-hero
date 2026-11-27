@@ -87,7 +87,7 @@ to turn a failing check green. These tools do not run in `./tools/verify.sh` or 
 
 ## The pyramid
 
-### Base — JVM tests (Robolectric + JUnit), 137 classes, 880 tests
+### Base — JVM tests (Robolectric + JUnit), 139 classes, 899 tests
 
 Everything the gate can verify without hardware.
 
@@ -112,6 +112,7 @@ Everything the gate can verify without hardware.
 | Activation shortcut (pause/resume) and its interception gate | `ServiceToggleGestureTest`, `ServiceToggleSettingsTest`, `KeyInterceptionGateTest` |
 | Per-app exceptions: rules, storage, settings page | `AppExceptionTest`, `ExceptionSettingsPageTest` |
 | Active App Control: target resolution, defaults, snapshots | `AppControlTest` |
+| Controller confirm/cancel after Android's convention in both styles: the keys, where each sits physically, the prompt's and the bottom switcher's key handling (wrong keys do nothing, releases swallowed), cancel in top Recents, the pictograms | `PromptKeysTest`, `ControllerConfirmTest`, `FaceButtonTest` |
 | Bottom Recents: cards, carousel, theme, style, badges, memory, empty state, selection, thumbnail cache, task state and query | `PanelCardsTest`, `RecentsCarouselTest`, `RecentsThemeTest`, `RecentsCardStyleTest`, `RecentsBadgesTest`, `RecentsDisplayBadgeTest`, `RecentsMemoryTest`, `RecentsEmptyViewTest`, `RecentsSelectionTest`, `RecentsThumbnailCacheTest`, `RecentsTaskStateTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `SwitcherCardListTest` |
 | Top Recents navigation, state parsing and the controller session (stale worker results by session and focus version, retirement) | `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest`, `TopRecentsSessionTest` |
 | Task moves, frontend parking and bottom panels | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
@@ -149,6 +150,7 @@ button states, change previews and accessibility. The main groups are:
 | `shoulder_all_unassigned`, `shoulder_defaults_flick_no_toggle`, `shoulder_l1_sentinel_with_toggle`, `shoulder_l2_app_with_toggle`, `shoulder_l2_volume_with_target`, `shoulder_r1_screenshot_no_toggle`, `dpad_all_unassigned` | Every shoulder-row state, including whether the screen toggle shows. All but `shoulder_defaults_flick_no_toggle` start from L2/R2 explicitly unassigned; that one constructs `Prefs` on empty storage, the real fresh-install state |
 | `dialog_single_action_chooser`, `dialog_reset_settings_confirm`, `dialog_repair_service` | Three dialog flows |
 | `a11y_inventory` | Accessibility properties of every clickable row |
+| `overlay_app_control_*`, `switcher_hints_*`, `overlay_button_hints` | The confirm/cancel legends of the prompt, the bottom switcher and top Recents in Standard and Xbox Style, light and dark |
 
 These genuinely bite: a single visible top-bar change touches **38** of them at once
 (verified when the app icon was added to the top bar).

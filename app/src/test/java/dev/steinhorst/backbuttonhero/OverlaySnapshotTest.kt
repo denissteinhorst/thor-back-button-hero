@@ -3,11 +3,11 @@ package dev.steinhorst.backbuttonhero
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.view.Display
-import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
 import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
 import dev.steinhorst.backbuttonhero.actions.AutoControllerFocus
 import dev.steinhorst.backbuttonhero.capture.RecordingIndicatorOverlay
+import dev.steinhorst.backbuttonhero.overlay.ButtonHintOverlay
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.overlay.NoticeOverlay
 import dev.steinhorst.backbuttonhero.pad.DpadOverlay
@@ -91,8 +91,8 @@ class OverlaySnapshotTest {
         Golden.verify("overlay_focus", out.toString())
     }
 
-    private fun appControl(golden: String) {
-        val prompt = AppControlPrompt(context) { it == KeyEvent.KEYCODE_BUTTON_A }
+    private fun appControl(golden: String, flipped: Boolean = false) {
+        val prompt = AppControlPrompt(context) { flipped }
         val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
         val options = listOf(
             AppControlPrompt.Option("top", "Top screen"),
@@ -116,6 +116,27 @@ class OverlaySnapshotTest {
     @Test
     @Config(qualifiers = "de-xxhdpi")
     fun `app-control prompt, German`() = appControl("overlay_app_control_de_light")
+
+    @Test
+    fun `app-control prompt, Xbox style`() = appControl("overlay_app_control_xbox_en_light", flipped = true)
+
+    @Test
+    @Config(qualifiers = "en-night-xxhdpi")
+    fun `app-control prompt, Xbox style, dark`() = appControl("overlay_app_control_xbox_en_dark", flipped = true)
+
+    @Test
+    fun `top Recents button hints`() {
+        val hint = ButtonHintOverlay(context)
+        val standard = added("Standard style") { hint.show(flipped = false) }
+        hint.show(flipped = true)
+        assertEquals("showing again replaces the window", 1, OverlayTree.windows().size)
+        hint.dismiss()
+        val out = standard + added("Xbox style") { hint.show(flipped = true) }
+        assertTrue(hint.showing)
+        hint.dismiss()
+        assertEquals("dismiss removes the window", 0, OverlayTree.windows().size)
+        Golden.verify("overlay_button_hints", out)
+    }
 
     @Test
     fun `auto controller-focus window`() {

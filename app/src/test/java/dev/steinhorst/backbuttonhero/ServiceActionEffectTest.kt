@@ -13,6 +13,7 @@ import dev.steinhorst.backbuttonhero.actions.AppControlPrompt
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
 import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.overlay.FaceButtonPictogram
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.prefs.Prefs
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
@@ -98,7 +99,8 @@ class ServiceActionEffectTest {
 
     private fun texts(view: View): List<String> = when (view) {
         is TextView -> listOf(view.text.toString())
-        is ViewGroup -> (0 until view.childCount).flatMap { texts(view.getChildAt(it)) }
+        // The controller legend under the rows is a hint, not something the prompt offers.
+        is ViewGroup -> if (view.getChildAt(0) is FaceButtonPictogram) emptyList() else (0 until view.childCount).flatMap { texts(view.getChildAt(it)) }
         else -> emptyList()
     }
 

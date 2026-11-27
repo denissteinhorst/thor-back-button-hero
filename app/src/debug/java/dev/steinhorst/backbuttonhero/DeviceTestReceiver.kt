@@ -145,6 +145,8 @@ class DeviceTestReceiver : BroadcastReceiver() {
             "long" -> editor.putLong(key, value.toLong())
             "bool" -> editor.putBoolean(key, value.toBooleanStrict())
             "float" -> editor.putFloat(key, value.toFloat())
+            // A string set, comma-separated (package names never contain a comma).
+            "set" -> editor.putStringSet(key, value.split(',').filter { it.isNotEmpty() }.toSet())
             else -> editor.putString(key, value)
         }
     }
