@@ -8,6 +8,8 @@ import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.PService
 import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
+import dev.steinhorst.backbuttonhero.input.ComboButton
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
 import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
@@ -93,6 +95,8 @@ class ServiceInternalCommandTest {
         text.replace(service.cacheDir.absolutePath, "<cache>").replace(service.applicationInfo.sourceDir, "<apk>"), "pservice_<n>.sh")
         .replace("'$bottomId'", "'<bottom>'").replace("-d $bottomId ", "-d <bottom> ")
 
+    private val hold = ClassParameter.from(ComboButton::class.java, BackGestureButton.HOLD)
+
     private fun call(service: SwitcherService, name: String, vararg args: ClassParameter<*>) {
         ReflectionHelpers.callInstanceMethod<Any?>(service, name, *args)
     }
@@ -120,17 +124,17 @@ class ServiceInternalCommandTest {
             call(it, "launchTask", ClassParameter.from(String::class.java, "com.example.a"), ClassParameter.from(Int::class.javaPrimitiveType, 0),
                 ClassParameter.from(Int::class.javaObjectType, null), ClassParameter.from(Boolean::class.javaPrimitiveType, false))
         }
-        run("hold-to-swap without apps", out) { call(it, "swapScreensNow") }
+        run("hold-to-swap without apps", out) { call(it, "swapScreensNow", hold) }
         val both = mapOf(true to "com.example.top", false to "com.example.bottom")
         val tasks: (Int) -> String = { bottom ->
             "OK [{\"package\":\"com.example.top\",\"display\":0,\"locked\":false,\"task\":11}," +
                 "{\"package\":\"com.example.bottom\",\"display\":$bottom,\"locked\":false,\"task\":22}]"
         }
-        run("hold-to-swap moves both known tasks", out, both, tasks) { call(it, "swapScreensNow") }
+        run("hold-to-swap moves both known tasks", out, both, tasks) { call(it, "swapScreensNow", hold) }
         run("hold-to-swap with an unmovable task", out, both, { bottom ->
             "OK [{\"package\":\"com.example.top\",\"display\":0,\"locked\":false,\"task\":11,\"movable\":false}," +
                 "{\"package\":\"com.example.bottom\",\"display\":$bottom,\"locked\":false,\"task\":22}]"
-        }) { call(it, "swapScreensNow") }
+        }) { call(it, "swapScreensNow", hold) }
         run("switch to last app", out) { service ->
             val source = ReflectionHelpers.getField<AccessibilityAppSource>(service, "source")
             for (pkg in listOf("com.example.previous", "com.example.top")) {

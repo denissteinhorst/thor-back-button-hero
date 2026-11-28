@@ -120,4 +120,31 @@ class TaskMovePolicyTest {
         assertNull(TaskMovePolicy.sourceFallback(10, 10, listOf(10)))
         assertNull(TaskMovePolicy.sourceFallback(10, null, emptyList()))
     }
+    @Test
+    fun `a frontend that rebuilds its own layout after the swap took the moved tasks back`() {
+        // Measured with IISU: task 5215 moved down was finished, 5217 stayed on top but was refilled, 5219 is new.
+        val moves = listOf(TaskMovePolicy.Move("com.iisulauncher", 4, 5215), TaskMovePolicy.Move("com.iisulauncher", 0, 5217))
+        val after = listOf(RecentsTaskState("com.iisulauncher", 4, false, 5219), RecentsTaskState("com.iisulauncher", 0, false, 5217),
+            RecentsTaskState("com.iisulauncher", 4, false, 5218))
+        val front = mapOf(0 to "com.iisulauncher", 4 to "com.iisulauncher")
+        assertEquals(listOf(moves[0]), TaskMovePolicy.takenBack(moves, after, front))
+        // A task that went back to its old screen counts as taken back too.
+        assertEquals(moves, TaskMovePolicy.takenBack(moves, listOf(RecentsTaskState("com.iisulauncher", 0, false, 5215),
+            RecentsTaskState("com.iisulauncher", 4, false, 5217)), front))
+    }
+
+    @Test
+    fun `apps closed right after the swap, tasks that stay and relaunches without a task are never taken back`() {
+        val moves = listOf(TaskMovePolicy.Move("dev.example.game", 17, 55), TaskMovePolicy.Move("dev.example.launcher", 0, 56))
+        // Both force-stopped: their tasks are gone, and neither is in front anywhere.
+        assertEquals(emptyList<TaskMovePolicy.Move>(), TaskMovePolicy.takenBack(moves, emptyList(),
+            mapOf(0 to "com.android.launcher3", 17 to "com.android.launcher3")))
+        // Only in front where it was moved to: the move held even though the task list no longer shows it.
+        assertEquals(emptyList<TaskMovePolicy.Move>(), TaskMovePolicy.takenBack(moves.take(1), emptyList(), mapOf(17 to "dev.example.game")))
+        assertEquals(emptyList<TaskMovePolicy.Move>(), TaskMovePolicy.takenBack(
+            listOf(TaskMovePolicy.Move("dev.example.game", 17, null)), emptyList(), mapOf(0 to "dev.example.game")))
+        assertEquals(emptyList<TaskMovePolicy.Move>(), TaskMovePolicy.takenBack(moves,
+            listOf(RecentsTaskState("dev.example.game", 17, false, 55), RecentsTaskState("dev.example.launcher", 0, false, 56)),
+            mapOf(0 to "dev.example.launcher", 17 to "dev.example.game")))
+    }
 }

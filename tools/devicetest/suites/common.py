@@ -84,6 +84,9 @@ def expect_closed(d, pkg, previous_pid, timeout=6):
 
 # The frontend whose bottom panel the frontends area uses as its fixture.
 NEO = "com.neogamelab.neostation"
+IISU = "com.iisulauncher"
+# Frontends an owner runs one at a time; two at once fight over the screens, a state no user has.
+FRONTENDS = (NEO, IISU, "org.es_de.frontend", "com.esde.companion", "rip.moth.cocoonshell")
 
 
 def frontend_panel(d):
@@ -124,3 +127,16 @@ def end_frontend_panel(d):
 def _neo_service_bound(d):
     bound = d.sh("dumpsys accessibility").partition("Bound services:")[2].partition("Enabled services:")[0]
     return "Service[label=NeoStation," in bound
+
+
+def only_frontend(d, keep=None):
+    """Stops every running frontend but [keep], so a test meets the one-frontend state users have."""
+    for pkg in FRONTENDS:
+        if pkg == keep or not d.pid(pkg):
+            continue
+        if pkg == NEO:
+            # The panel needs its root kill; afterwards the force-stop must wait until the service is bound again.
+            end_frontend_panel(d)
+            if d.pid(NEO) and not _neo_service_bound(d):
+                continue
+        d.stop_app(pkg)

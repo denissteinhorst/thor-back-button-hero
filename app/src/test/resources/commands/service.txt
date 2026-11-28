@@ -26,6 +26,8 @@ code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.top' '<bottom>' '11' 2>&1 | grep -m1 -E '^(OK|ERR)'
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsTaskLauncher 'com.example.bottom' '0' '22' 2>&1 | grep -m1 -E '^(OK|ERR)'
+code=0 args=[0] sh '<cache>/pservice_<n>.sh'
+  script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'
 ## hold-to-swap with an unmovable task
 code=0 args=[0] sh '<cache>/pservice_<n>.sh'
   script: CLASSPATH='<apk>' app_process /system/bin dev.steinhorst.backbuttonhero.RecentsStateReader 'include-excluded' 2>&1 | grep -m1 -E '^(OK|ERR)'

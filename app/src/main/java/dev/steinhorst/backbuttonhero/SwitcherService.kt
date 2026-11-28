@@ -79,6 +79,7 @@ import dev.steinhorst.backbuttonhero.pad.GyroControl
 import dev.steinhorst.backbuttonhero.pad.GyroStatus
 import dev.steinhorst.backbuttonhero.pad.LevelControl
 import dev.steinhorst.backbuttonhero.pad.LevelRepeater
+import dev.steinhorst.backbuttonhero.pad.PadButton
 import dev.steinhorst.backbuttonhero.pad.PadHelper
 import dev.steinhorst.backbuttonhero.pad.PadNavigationMode
 import dev.steinhorst.backbuttonhero.pad.PadPress
@@ -360,6 +361,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun prepareBottomLaunch(displayId: Int, then: () -> Unit) = this@SwitcherService.prepareBottomLaunch(displayId, then)
             override fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean) =
                 this@SwitcherService.launchTask(pkg, displayId, taskId, allowRelaunch)
+            override fun swapTask(pkg: String, displayId: Int, taskId: Int?) = taskOps.launchOutcome(pkg, displayId, taskId, allowRelaunch = true)
             override fun canRelaunch(pkg: String) = this@SwitcherService.canRelaunch(pkg)
             override fun holdSwapBlocked() = this@SwitcherService.holdSwapBlocked()
             override fun unavailable() = toastUnavailable()
@@ -368,6 +370,11 @@ class SwitcherService : AccessibilityService(), GestureActions {
             override fun runFocus(target: String, onComplete: (Boolean) -> Unit) = controllerFocus.run(target, onComplete = onComplete)
             override fun runAutoFocus(displayId: Int, then: (Boolean) -> Unit) = autoControllerFocus.run(displayId, then)
             override fun dismissAutoFocus() = autoControllerFocus.dismiss()
+            override fun pressForApp(trigger: ComboButton, keyCode: Int) {
+                val flipped = controllerFlipped()
+                PadButton.entries.firstOrNull { it.keyCode(flipped) == keyCode }?.let { padPress.press(trigger, it, hold = false) }
+                    ?: toastUnavailable()
+            }
         })
     }
     private val appControl by lazy {
@@ -1175,7 +1182,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
             Action.Builtin.RECENTS -> openTopRecentsNow()
             Action.Builtin.SWITCHER -> showSwitcherNow()
             Action.Builtin.RECENTS_FOCUSED -> withFocusedScreen { if (it == Prefs.DISPLAY_TOP) openTopRecentsNow() else showSwitcherNow() }
-            Action.Builtin.SWAP_APPS -> swapScreensNow()
+            Action.Builtin.SWAP_APPS -> swapScreensNow(button)
             Action.Builtin.LAST_APP -> lastApp.run()
             Action.Builtin.BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
             Action.Builtin.SCREENSHOT -> withTarget(prefs.levelTarget(button), ::screenshot)
@@ -1760,7 +1767,7 @@ class SwitcherService : AccessibilityService(), GestureActions {
         if (action.isNotEmpty()) runComboAction(gesture, action)
     }
 
-    private fun swapScreensNow() = swap.swapScreens()
+    private fun swapScreensNow(trigger: ComboButton) = swap.swapScreens(trigger)
 
     private fun launchOn(pkg: String, displayId: Int) {
         val intent = packageManager.getLaunchIntentForPackage(pkg)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) ?: return

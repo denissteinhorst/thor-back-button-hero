@@ -10,7 +10,7 @@ from dt import pad
 from dt.device import Fail
 from dt.pad import Seq
 from dt.runner import test
-from .common import end_frontend_panel, expect_closed
+from .common import end_frontend_panel, expect_closed, only_frontend
 
 SETTINGS = "com.android.settings/.Settings"
 GALLERY = "com.android.gallery3d/.app.GalleryActivity"
@@ -27,8 +27,9 @@ def _clean(d):
     for comp in (SETTINGS, GALLERY):
         d.stop_app(comp.split("/")[0])
     # A frontend panel left on the bottom screen (by the frontends area or the owner's own use) would be the
-    # bottom switcher's card instead of the stand-in apps.
+    # bottom switcher's card instead of the stand-in apps. Another running frontend would claim a screen back.
     end_frontend_panel(d)
+    only_frontend(d)
 
 
 def _front(d, display, pkg, timeout=6):
@@ -142,6 +143,19 @@ def hold_swap(d):
         _front(d, d.bottom, "com.android.settings", 8)
     finally:
         _clean(d)
+
+
+@test("windows", "Hold Back with only the launchers on both screens says nothing can be swapped")
+def hold_swap_nothing(d):
+    _clean(d)
+    d.keyevent("KEYCODE_HOME", d.top)
+    d.sh(f"am start --display {d.bottom} -a android.intent.action.MAIN -c android.intent.category.SECONDARY_HOME")
+    time.sleep(1.0)
+    d.bind("back_hold", "@swap_apps")
+    d.put("hold_ms", 600)
+    d.wait_toasts_gone()
+    d.press(Seq().key(pad.BACK, True).wait(900).key(pad.BACK, False))
+    d.expect_toast(d.text("swap_unavailable"), timeout=5)
 
 
 @test("windows", "Controller focus switches the route between the screens and shows its pictogram")

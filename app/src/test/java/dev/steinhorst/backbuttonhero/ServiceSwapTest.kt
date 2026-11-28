@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityWindowInfo
 import dev.steinhorst.backbuttonhero.core.AccessibilityAppSource
 import dev.steinhorst.backbuttonhero.core.AppSource
 import dev.steinhorst.backbuttonhero.core.RunningApp
+import dev.steinhorst.backbuttonhero.input.BackGestureButton
 import dev.steinhorst.backbuttonhero.input.ComboButton
 import dev.steinhorst.backbuttonhero.input.ShoulderButton
 import dev.steinhorst.backbuttonhero.overlay.FocusIndicatorOverlay
@@ -17,6 +18,7 @@ import dev.steinhorst.backbuttonhero.recents.SwitcherOverlay
 import dev.steinhorst.backbuttonhero.support.FakePService
 import java.io.File
 import java.time.Duration
+import org.json.JSONArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -31,7 +33,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter
 
 /**
  * Hold-to-swap and the "switch active app" action beyond the success paths service.txt freezes:
- * Hold exceptions on one or both partners, an unreadable task list, and the active-app switch for
+ * Hold exceptions on one or both partners, an unreadable task list, IISU's own swap (pressed, or switched
+ * off), Cocoon's own swap, apps that take their swapped tasks back and are refused afterwards, and the active-app switch for
  * every controller route (fixed top/bottom, Auto with a known or unknown focused display), with
  * and without focus following, a refused move, a second press while one runs, and no root.
  * Frozen in `src/test/resources/commands/swap.txt`, recorded once on the pre-R1 baseline;
@@ -53,14 +56,21 @@ class ServiceSwapTest {
         tasks: (Int) -> String? = { "OK []" },
         launch: String = "OK launched",
         focused: String = "  FocusedDisplayId: 0\n",
+        iisuButton: String = "",
         block: (SwitcherService) -> Unit,
     ) {
+        // Like Android, later task reads show a task the launcher moved on its new screen.
+        val moved = mutableMapOf<Int, Int>()
         val fake = FakePService { command ->
             val script = Regex("^sh '([^']+)'$").find(command)?.let { File(it.groupValues[1]).takeIf(File::exists)?.readText() }.orEmpty()
             when {
-                "RecentsStateReader" in script -> tasks(bottomId) ?: ""
-                "RecentsTaskLauncher" in script -> launch
+                "RecentsStateReader" in script -> tasks(bottomId)?.let { movedTasks(it, moved) } ?: ""
+                "RecentsTaskLauncher" in script -> launch.also {
+                    val move = Regex("RecentsTaskLauncher '[^']+' '(\\d+)' '(\\d+)'").find(script)
+                    if (it.startsWith("OK ") && move != null) moved[move.groupValues[2].toInt()] = move.groupValues[1].toInt()
+                }
                 command.startsWith("dumpsys input") -> focused
+                "screen_swap_shortcut_button" in command -> iisuButton
                 else -> "OK"
             }
         }
@@ -117,11 +127,26 @@ class ServiceSwapTest {
         .replace(Regex("'/[^']*'"), "'<path>'").replace("'$bottomId'", "'<bottom>'").replace("-d $bottomId ", "-d <bottom> ")
         .replace(Regex("BBHAutoFocus-[0-9a-f-]+"), "BBHAutoFocus-<id>").replace("'${android.os.Process.myUid()}'", "'<uid>'")
 
-    private fun swap(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<Unit>(service, "swapScreensNow")
+    private fun movedTasks(state: String, moved: Map<Int, Int>): String {
+        if (!state.startsWith("OK ") || moved.isEmpty()) return state
+        val tasks = JSONArray(state.removePrefix("OK "))
+        for (i in 0 until tasks.length()) tasks.getJSONObject(i).let { task ->
+            moved[task.optInt("task", -1)]?.let { task.put("display", it) }
+        }
+        return "OK $tasks"
+    }
+
+    private fun swap(service: SwitcherService) = ReflectionHelpers.callInstanceMethod<Unit>(service, "swapScreensNow",
+        ClassParameter.from(ComboButton::class.java, BackGestureButton.HOLD))
 
     private fun switch(service: SwitcherService, follow: Boolean = true) {
         Prefs(service).setSwitchAppFollowFocus(ShoulderButton.L1, follow)
         ReflectionHelpers.callInstanceMethod<Unit>(service, "switchActiveApp", ClassParameter.from(ComboButton::class.java, ShoulderButton.L1))
+    }
+
+    private companion object {
+        const val IISU = "com.iisulauncher"
+        const val COCOON = "rip.moth.cocoonshell"
     }
 
     private fun tasks(vararg entries: Pair<String, Boolean>): (Int) -> String = { bottom ->
@@ -141,6 +166,16 @@ class ServiceSwapTest {
         scenario("swap, task list unreadable", out, top = "com.example.top", bottom = "com.example.bottom", tasks = { null }) { swap(it) }
         scenario("swap, launcher refuses the first move", out, top = "com.example.top", bottom = "com.example.bottom",
             tasks = both, launch = "ERR other display") { swap(it) }
+        scenario("swap, IISU on both screens presses its own swap button", out, top = IISU, bottom = IISU) { swap(it) }
+        scenario("swap, IISU's own swap switched off", out, top = IISU, bottom = IISU, iisuButton = "Off") { swap(it) }
+        scenario("swap, Cocoon on both screens presses its own swap button", out, top = COCOON, bottom = COCOON) { swap(it) }
+        var reads = 0
+        scenario("swap, both apps take their tasks back and are refused afterwards", out, top = "com.example.top",
+            bottom = "com.example.bottom", tasks = { if (reads++ == 0) both(it) else "OK []" }) {
+            swap(it)
+            settle()
+            swap(it)
+        }
         scenario("switch, top route, nothing on top", out, route = "1") { switch(it) }
         scenario("switch, top route, no movable task", out, route = "1", top = "com.example.top") { switch(it) }
         scenario("switch, top route, focus follows", out, route = "1", top = "com.example.top", tasks = both) { switch(it) }

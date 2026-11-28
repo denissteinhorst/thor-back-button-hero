@@ -123,15 +123,16 @@ collaborate. Files that run as root `app_process` entry points are marked *(root
 | `RecentsStateReader.kt` | 124 | *(root)* Reads system task/status data and exports task snapshots into private cache files. |
 | `RecentTaskQuery.kt` | 23 | Recent-task query that includes tasks excluded from native Recents, such as companion apps. |
 | `RecentsTaskLauncher.kt` | 114 | *(root)* Resumes an existing task on the requested screen without relaunching it. |
-| `TaskMovePolicy.kt` | 34 | Rules for task moves: protected tasks and which app stays in front. |
+| `TaskMovePolicy.kt` | 55 | Rules for task moves: protected tasks and which app stays in front, swaps an app took back. |
 | `TopRecentsFocus.kt` | 46 | *(root)* Completes AYN's paused Overview handoff so native controller navigation works in the top Recents. |
 | `TopRecentsSession.kt` | 323 | The top Recents controller session: its flags, Quickstep state checks, focus priming, dismissal queue and closing Back, with stale worker results dropped by session token and focus version. |
 | `TopRecentsNavigation.kt` | 45 | Buffers D-pad presses while top Recents initializes, then releases them. |
 | `TopRecentsState.kt` | 48 | The small subset of AYN Launcher3's dump needed to know the Overview state and card geometry. |
 | `TaskRemover.kt` | 57 | *(root)* Removes recent tasks like Recents' "Clear all". |
 | `WindowTracker.kt` | 49 | The service's window-change handling: records both screens and debounces panel refresh, front-app capture and the parked reclaim. |
-| `TaskOps.kt` | 99 | Closing apps with root or the unprivileged fallback, the memory report, and launching existing tasks. |
-| `SwapCoordinator.kt` | 166 | Hold-to-swap and moving the app with controller focus to the other screen. |
+| `TaskOps.kt` | 112 | Closing apps with root or the unprivileged fallback, the memory report, and launching existing tasks. |
+| `SwapCoordinator.kt` | 228 | Hold-to-swap (IISU's and Cocoon's own swap, swaps taken back) and moving the app with controller focus to the other screen. |
+| `SwapDelegation.kt` | 41 | IISU's and Cocoon's own screen swap: when Hold presses the frontend's swap button instead of moving its tasks. |
 | `BottomSwitcherController.kt` | 150 | The bottom switcher's open state, its task-state poll and task snapshots. |
 | `TopRecentsLauncher.kt` | 150 | The launch phase of native top Recents: baseline, Quickstep poll and selection. |
 
@@ -241,7 +242,7 @@ The automated safety net. 140 test classes, **896 tests**. Run by the gate. By a
 | Settings UI and changes | `SettingsActivitySnapshotTest`, `ShoulderRowSnapshotTest`, `SettingsDialogSnapshotTest`, `AccessibilityInventoryTest` (View-tree snapshots against the goldens), `SettingsNavigationTest`, `SettingsUiKitTest`, `SettingsActionsTest`, `SettingsChangesTest`, `SettingsChangeDialogTest`, `ServiceToggleSettingsTest`, `ExceptionSettingsPageTest`, `AppExceptionTest` |
 | Shortcut actions | `AppControlTest`, `ControllerFocusTest`, `ControllerFocusAutoTest`, `FocusedScreenTest`, `ServiceFocusedScreenTest` |
 | Recent apps and Recents | `AccessibilityAppSourceTest`, `PanelCardsTest`, `RecentsBadgesTest`, `RecentsCardStyleTest`, `RecentsCarouselTest`, `RecentsDisplayBadgeTest`, `RecentsEmptyViewTest`, `RecentsMemoryTest`, `RecentsSelectionTest`, `RecentsTaskStateTest`, `RecentsThemeTest`, `RecentsThumbnailCacheTest`, `RecentTaskQueryTest`, `SwitcherPreviewTest`, `SwitcherCloseAllTest`, `SwitcherTaskSyncTest`, `TopRecentsNavigationTest`, `TopRecentsStateTest`, `TopRecentsBackTest` |
-| Tasks, swap, frontends | `TaskMovePolicyTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
+| Tasks, swap, frontends | `TaskMovePolicyTest`, `SwapDelegationTest`, `ParkingPolicyTest`, `BottomPanelsTest`, `PanelWindowsTest` |
 | Pad helper | `PadHelperLifecycleTest`, `PadNavigationModeTest`, `PadHelperProtocolTest`, `PadPressTest`, `ServicePadPressTest` |
 | Other | `ShellTest`, `UpdateCheckerParseTest` (release parsing, semver ordering, legacy tags, rejected inputs), `ResourceIntegrityTest` (EN/DE string parity), `SmokeTest` |
 | Support | `support/ViewTree.kt` renders a View hierarchy to deterministic text — the snapshot format, platform-independent unlike pixel screenshots. `support/Golden.kt` compares against a golden file, or rewrites it when `UPDATE_GOLDENS=1` (see the golden rule in [`TESTING.md`](TESTING.md)). `support/ViewTreeSmokeTest.kt` verifies the renderer itself. |

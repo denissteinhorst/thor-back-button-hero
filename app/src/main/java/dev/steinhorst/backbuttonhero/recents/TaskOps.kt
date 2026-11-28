@@ -33,19 +33,23 @@ class TaskOps(private val context: Context, private val handler: Handler, privat
      * relaunch was posted. False: refused or no transport, and the message is already posted.
      * Callers that act on a real move (auto-focus after a switch) pass `allowRelaunch = false`.
      */
-    fun launch(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean): Boolean {
+    fun launch(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean): Boolean =
+        launchOutcome(pkg, displayId, taskId, allowRelaunch) != Outcome.FAILED
+
+    /** How [launch] went: the task moved, only a relaunch was posted, or nothing happened. */
+    enum class Outcome { MOVED, RELAUNCHED, FAILED }
+
+    fun launchOutcome(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean): Outcome {
         val args = listOfNotNull(pkg, displayId.toString(), taskId?.toString()).toTypedArray()
         val result = PService.runEntryPoint(context, "RecentsTaskLauncher", *args)
         Log.d(TAG, "Recents launch: $result")
-        val launched = result?.startsWith("OK ") == true
-        if (!launched) {
-            if (allowRelaunch && TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
-                handler.post { runCatching { host.launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
-                return true
-            }
-            handler.post { notice.show(R.string.swap_unavailable, long = true) }
+        if (result?.startsWith("OK ") == true) return Outcome.MOVED
+        if (allowRelaunch && TaskMovePolicy.mayRelaunch(result, canRelaunch(pkg))) {
+            handler.post { runCatching { host.launchOn(pkg, displayId) }.onFailure { Log.e(TAG, "Recents launch failed", it) } }
+            return Outcome.RELAUNCHED
         }
-        return launched
+        handler.post { notice.show(R.string.swap_unavailable, long = true) }
+        return Outcome.FAILED
     }
 
     /** A normal app can only kill background processes, so leave the app first. With AYN's root

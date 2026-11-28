@@ -127,7 +127,9 @@ Notice: Battery -2147483648 %
 ## @stick_light
 Notice: Stick Lighting (Both Sticks): On
 ## @swap_apps
+Notice: This system action is not available on this device.
 ## @switch_active_app
+Notice: This system action is not available on this device.
 ## @switcher
 ## @vibration
 Notice: Vibration: On

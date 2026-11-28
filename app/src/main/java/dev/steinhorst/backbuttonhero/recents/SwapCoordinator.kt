@@ -30,6 +30,8 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
         fun panelsPreventSwap(topPackage: String?, bottomPackage: String?): Boolean
         fun prepareBottomLaunch(displayId: Int, then: () -> Unit)
         fun launchTask(pkg: String, displayId: Int, taskId: Int?, allowRelaunch: Boolean): Boolean
+        /** A swap's move, which may fall back to a relaunch; only [TaskOps.Outcome.MOVED] moved the task. */
+        fun swapTask(pkg: String, displayId: Int, taskId: Int?): TaskOps.Outcome
         fun canRelaunch(pkg: String): Boolean
         fun holdSwapBlocked()
         fun unavailable()
@@ -38,11 +40,18 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
         fun runFocus(target: String, onComplete: (Boolean) -> Unit)
         fun runAutoFocus(displayId: Int, then: (Boolean) -> Unit)
         fun dismissAutoFocus()
+        /** Taps the pad button that reports [keyCode] to the foreground app, on [trigger]'s behalf. */
+        fun pressForApp(trigger: ComboButton, keyCode: Int)
     }
 
     // Main thread only; the session retires workers of a switch that was cancelled or replaced.
     private var switching = false
     @Volatile private var session = 0
+    // Main thread only: packages that took a swapped task back in this service session are not moved again.
+    private val selfArranging = mutableSetOf<String>()
+    // Main thread only: a later swap (or switch) retires the take-back check of an earlier one, which would
+    // otherwise see the second swap's result as its apps going back.
+    private var swapGeneration = 0
 
     fun cancel() {
         session++
@@ -50,10 +59,14 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
         host.dismissAutoFocus()
     }
 
-    /** Move the two captured foreground tasks; the first move must not change the second target. */
-    fun swapScreens() {
+    /**
+     * Move the two captured foreground tasks; the first move must not change the second target. An app
+     * that takes a moved task back is remembered and refused afterwards, so it is not rebuilt on every Hold.
+     */
+    fun swapScreens(trigger: ComboButton) {
+        val generation = ++swapGeneration
         host.cancelSwitcherOpen()
-        val display = host.bottomDisplay() ?: return
+        val display = host.bottomDisplay() ?: return host.unavailable()
         val bottom = display.displayId
         val top = Display.DEFAULT_DISPLAY
         host.dismissSwitcher()
@@ -73,6 +86,14 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
                 notice.show(R.string.panel_swap_unavailable, long = true)
                 return@refreshPanels
             }
+            when (SwapDelegation.delegate(topApp, bottomApp)) {
+                SwapDelegation.IISU -> return@refreshPanels delegateToIisu(trigger)
+                SwapDelegation.COCOON -> return@refreshPanels host.pressForApp(trigger, SwapDelegation.COCOON_KEY)
+            }
+            if (listOfNotNull(topApp, bottomApp).any { it in selfArranging }) {
+                notice.show(R.string.panel_swap_unavailable, long = true)
+                return@refreshPanels
+            }
             Thread {
                 val states = RecentsTaskState.parse(PService.runEntryPoint(context, "RecentsStateReader", "include-excluded"))
                 val moves = TaskMovePolicy.planSwap(topApp, bottomApp, top, bottom, states, host::canRelaunch)
@@ -80,22 +101,58 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
                     handler.post { notice.show(R.string.swap_unavailable, long = true) }
                     return@Thread
                 }
+                val outcomes = mutableListOf<TaskOps.Outcome>()
                 for (move in moves) {
-                    if (!host.launchTask(move.packageName, move.targetDisplay, move.taskId, true)) break
+                    outcomes += host.swapTask(move.packageName, move.targetDisplay, move.taskId)
+                    if (outcomes.last() == TaskOps.Outcome.FAILED) break
+                }
+                // Only real moves can be taken back; a relaunch leaves the tasks where they were.
+                if (moves.any { it.taskId != null } && outcomes.size == moves.size && outcomes.all { it == TaskOps.Outcome.MOVED }) {
+                    handler.postDelayed({ checkTakenBack(moves, generation) }, TAKE_BACK_CHECK_MS)
                 }
             }.apply { isDaemon = true }.start()
         }
     }
 
+    /** A frontend that lays out both screens itself rebuilds its own arrangement right after the moves. */
+    private fun checkTakenBack(moves: List<TaskMovePolicy.Move>, generation: Int) {
+        if (!host.connected || generation != swapGeneration) return
+        Thread {
+            val after = RecentsTaskState.parse(PService.runEntryPoint(context, "RecentsStateReader", "include-excluded")) ?: return@Thread
+            handler.post {
+                if (!host.connected || generation != swapGeneration) return@post
+                val bottom = host.bottomDisplay()?.displayId ?: return@post
+                val front = listOf(Display.DEFAULT_DISPLAY, bottom).associateWith(host::topApp)
+                val rejected = TaskMovePolicy.takenBack(moves, after, front)
+                if (rejected.isEmpty()) return@post
+                selfArranging += rejected.map { it.packageName }
+                notice.show(R.string.panel_swap_unavailable, long = true)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    /** IISU swaps its own screens on a button of its settings; with its swap switched off nothing can swap it. */
+    private fun delegateToIisu(trigger: ComboButton) {
+        Thread {
+            val keyCode = SwapDelegation.iisuKeyCode(PService.exec(SwapDelegation.iisuButtonCommand(context.applicationInfo.dataDir)))
+            handler.post {
+                if (!host.connected) return@post
+                if (keyCode == null) notice.show(R.string.panel_swap_unavailable, long = true)
+                else host.pressForApp(trigger, keyCode)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
     fun switchActiveApp(button: ComboButton) {
         if (switching) return
-        val display = host.bottomDisplay() ?: return
+        val display = host.bottomDisplay() ?: return host.unavailable()
         val top = Display.DEFAULT_DISPLAY
         val bottom = display.displayId
         val route = host.focusRoute()
         val follow = host.switchAppFollowFocus(button)
         val foreground = mapOf(top to host.topApp(top), bottom to host.topApp(bottom))
         switching = true
+        swapGeneration++
         val session = ++this.session
         fun active() = host.connected && host.interceptionEnabled && session == this.session
         Thread {
@@ -162,5 +219,10 @@ class SwapCoordinator(private val context: Context, private val handler: Handler
                 }
             }
         }.apply { isDaemon = true }.start()
+    }
+
+    private companion object {
+        /** IISU had rebuilt both screens about 0.4 s after the second move; the check waits well past that. */
+        const val TAKE_BACK_CHECK_MS = 1500L
     }
 }

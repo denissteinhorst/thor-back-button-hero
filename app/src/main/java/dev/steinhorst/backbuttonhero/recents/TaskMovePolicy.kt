@@ -35,6 +35,17 @@ object TaskMovePolicy {
         }
     }
 
+    /**
+     * Moved tasks their app took back: the task is gone or off the screen it was moved to, and the app is in
+     * front on another screen ([front], display to foreground package). An app closed right after the swap
+     * is in front nowhere, so closing it never counts.
+     */
+    fun takenBack(moves: List<Move>, after: List<RecentsTaskState>, front: Map<Int, String?>): List<Move> =
+        moves.filter { move ->
+            move.taskId != null && after.none { it.taskId == move.taskId && it.displayId == move.targetDisplay } &&
+                front.any { (display, pkg) -> display != move.targetDisplay && pkg == move.packageName }
+        }
+
     fun mayRelaunch(result: String?, packageCanRelaunch: Boolean): Boolean =
         packageCanRelaunch && result != PROTECTED_TASK
 

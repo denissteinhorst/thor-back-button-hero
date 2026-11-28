@@ -116,7 +116,7 @@ The game keeps running and never sees a D-pad shortcut. Normal apps cannot read 
 
 Full explanation: [`docs/HELPER.md`](docs/HELPER.md)
 
-**What else uses AYN's root service?** Everything that needs more than an ordinary app may do: brightness and bottom-screen volume, setting the controller focus, moving apps between the screens (hold-to-swap and picking an app in Recents), force-closing apps, the real Back for apps with exceptions, the frontend compatibility for ES-DE Companion, NeoStation and Cocoon, controller navigation in Recents, and the native screenshots of the bottom screen. It works while the Thor's SELinux is permissive, which is AYN's factory default. Where it is unavailable, the app falls back to a simpler method where one exists (for example closing an app through Android's normal background kill) and otherwise reports the action as unavailable.
+**What else uses AYN's root service?** Everything that needs more than an ordinary app may do: brightness and bottom-screen volume, setting the controller focus, moving apps between the screens (hold-to-swap and picking an app in Recents), force-closing apps, the real Back for apps with exceptions, the frontend compatibility for ES-DE Companion, NeoStation, Cocoon and IISU (hold-to-swap presses IISU's and Cocoon's own screen swap button), controller navigation in Recents, and the native screenshots of the bottom screen. It works while the Thor's SELinux is permissive, which is AYN's factory default. Where it is unavailable, the app falls back to a simpler method where one exists (for example closing an app through Android's normal background kill) and otherwise reports the action as unavailable.
 
 ## Screenshots of the app's settings
 

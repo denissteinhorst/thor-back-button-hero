@@ -152,7 +152,7 @@ Recents, windows and task moves sit in `recents/`, each behind a host for the se
   debounces the panel refresh (400 ms), the front-app capture (800 ms) and the parked reclaim.
 - `TaskOps` — closing apps (root removal and force-stop, else `killBackgroundProcesses`), the
   memory report, and launching an existing task with the relaunch fallback where allowed.
-- `SwapCoordinator` — hold-to-swap and moving the app with controller focus to the other screen;
+- `SwapCoordinator` — hold-to-swap (with IISU's and Cocoon's own swap and the take-back check, see below) and moving the app with controller focus to the other screen;
   Hold exceptions and captured panels refuse the move before anything leaves its screen.
 - `BottomSwitcherController` — the bottom switcher's open state: task list first, then the
   overlay; while it shows, a task-state poll every second and at most three snapshot requests
@@ -851,6 +851,31 @@ still briefly expose an app on its former display before moving it.
 Hold-to-swap captures both foreground packages and resolves both task IDs before moving
 either one, then uses this same move entry point sequentially. This preserves task identity
 and lets Android notify the launcher about display changes.
+
+Some frontends lay out both screens themselves and undo a swap at once: IISU, for one, restarts its
+home activity on its configured home screen and opens a new task for its other screen. About 1.5 s after
+the moves, `SwapCoordinator` reads the tasks again; a moved task that is gone or off its target screen,
+while its app is in front on another screen, was taken back (`TaskMovePolicy.takenBack`). An app closed
+right after the swap is in front nowhere and never counts. Only swaps whose tasks the launcher really
+moved are checked (`TaskOps.Outcome.MOVED`; a relaunch fallback leaves the tasks where they were), and a
+later swap or active-app switch retires the pending check, which would otherwise read the second swap's
+result as the apps going back. The app is told it cannot be swapped
+(`panel_swap_unavailable`) and, for the rest of the service session, is refused before anything moves,
+so it is not rebuilt on every Hold. Whether IISU takes a swap back depends on its own home location:
+with `ThorExternal` it accepts IISU's top screen moving under another app.
+
+IISU and Cocoon have a screen swap of their own, and those are the agreed package-specific exceptions
+(`SwapDelegation`): while one of them fills both screens, the swap action taps that frontend's swap button
+through the helper's pad clone (`PadPress`, so the key reaches it even while Back is held) instead of
+moving tasks. Cocoon (3.12) swaps on X, fixed in the app and handled by the activities of both of its
+screens, so it works whichever screen has focus; it toggles Cocoon's own `swap_screens` layout setting.
+A task swap of Cocoon works too, but Cocoon then restarts its bottom activity, and after a bottom launch
+(Home, Recents) that can leave its windows rebuilt on the wrong screens. With IISU, the button is read as root from IISU's settings store beside our own data directory, for the same user
+(`<user data>/com.iisulauncher/files/datastore/launcher_settings.preferences_pb`, key `screen_swap_shortcut_button`, values
+Off/B/X/Y); no value means IISU's default, Y, and Off refuses the swap with the same message. The key is
+picked by the code IISU receives, independent of the Thor's controller style. IISU's own A/B and X/Y
+swap is not taken into account. Nothing of either frontend's is written. NeoStation (1.0.0-rc.2) has no
+swap of its own (only hiding its bottom screen); its bottom panel keeps refusing the swap.
 
 **The app never moves windows between the screens on the user's behalf.** A task changes
 screens only through a user action: hold-to-swap or picking a card in Recents. Closing,
