@@ -283,20 +283,21 @@
       <h2>Changelog</h2>
     </div>
     <div class="changelog">
-      <article class="release" id="release-2-1-0">
-        <h3>v2.1.0 <time datetime="2026-11-27">Nov 27, 2026</time></h3>
-        <p>Thanks for your feedback since 2.0! 2.1 makes shortcuts follow the screen you’re using and adds a few long-requested controls.</p>
+      <article class="release" id="release-2-1-1">
+        <h3>v2.1.1 <time datetime="2026-11-28">Nov 28, 2026</time></h3>
+        <p>2.1.1 makes hold-to-swap work with iiSU and Cocoon.</p>
         <ul>
-          <li><strong>Shortcuts that follow your focus.</strong> Choose “Focused screen” as the target, and Home, app launch, your app list and favorites, Active App Control, screenshots, brightness, video recording and a new App Switcher option all act on the screen your controller is driving.</li>
-          <li><strong>Controller focus: Auto.</strong> Hand the controller back to AYN’s Auto mode from a shortcut or the Ask prompt. In Auto, switching to your last app and Back act on the screen you last touched.</li>
-          <li><strong>Confirm and cancel like Android.</strong> A confirms and B cancels in every prompt, the bottom switcher and top Recents, in Standard and Xbox style. Each one now shows its button on screen.</li>
-          <li><strong>Press a pad button from a shortcut.</strong> Map any of the Thor’s own buttons, from A/B/X/Y and the shoulders to Start, Select, Home and the D-pad, to a combo. It stays held for as long as you hold the shortcut.</li>
-          <li><strong>Do Not Disturb hides pop-ups too.</strong> With “Try to hide all pop-ups” (on by default), Do Not Disturb also hides toasts, notification banners and this app’s own messages. Turning Do Not Disturb off brings them all back.</li>
+          <li><strong>Hold-to-swap in iiSU and Cocoon.</strong> While iiSU or Cocoon fills both screens, holding Back now uses the frontend’s own screen swap, so the two screens trade places. In iiSU it follows the “Screen swap” button set in iiSU’s settings; with iiSU’s swap turned off, you get a short message instead.</li>
+          <li><strong>Apps that undo a swap are recognized.</strong> If an app moves itself straight back after a swap, you get a message that it can’t be swapped, and it isn’t moved again on every hold.</li>
+          <li><strong>A message when nothing can be swapped.</strong> Hold-to-swap and “Switch active app” now say so instead of doing nothing silently, for example when the second screen isn’t available.</li>
         </ul>
-        <p>Cancel now closes top Recents reliably, even right after moving between cards.</p>
         <p><strong>Updating keeps your customized bindings.</strong></p>
       </article>
       <div id="releases">
+        <article class="release">
+          <h3>v2.1.0 <time datetime="2026-11-27">Nov 27, 2026</time></h3>
+          <p>Shortcuts that follow the focused screen, controller focus Auto, A to confirm and B to cancel everywhere, pad-button presses from a shortcut, and Do Not Disturb that hides pop-ups too. Cancel now closes top Recents reliably.</p>
+        </article>
         <article class="release">
           <h3>v2.0.0 <time datetime="2026-11-21">Nov 21, 2026</time></h3>
           <p>Hotkeys on A/B/X/Y, Home, Start and Select, Home as Back or its own Dual-mode layer, video recording with optional push-to-talk, editable macros and beta gyro aiming. A bindings overview, action search and a welcome setup make configuration easier, and new shortcuts jump to your last app, close background apps, control music, mute sound or put your Thor to sleep.</p>
@@ -378,6 +379,7 @@
           <div><h3>Cocoon</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
         <p>Cocoon's bottom screen keeps running out of sight while you use another app there, so its top screen stays in the dual-screen layout. Its card in bottom Recents brings it back. If Cocoon reopens its bottom screen by itself, after standby or a game, it's moved away again.</p>
+        <p><span class="ver new">New in 2.1.1</span> While Cocoon fills both screens, hold-to-swap uses Cocoon's own screen swap, so Cocoon trades its two screens itself.</p>
       </article>
       <article class="fe-card">
         <div class="fe-top">
@@ -396,9 +398,10 @@
       <article class="fe-card">
         <div class="fe-top">
 
-          <div><h3>iiSU</h3><span class="ver no">Not supported yet</span></div>
+          <div><h3>iiSU</h3><span class="ver ok">Works <small class="ver-ext">public testing</small></span></div>
         </div>
-        <p>iiSU reopens its bottom screen the moment any other app appears there, covering whatever you just opened. Back Button Hero notices this and leaves iiSU alone instead of fighting it in a loop. A proper solution is planned.</p>
+        <p><span class="ver new">New in 2.1.1</span> While iiSU fills both screens, hold-to-swap uses iiSU's own screen swap and follows the "Screen swap" button set in iiSU's settings. With iiSU's swap turned off, you get a short message instead.</p>
+        <p>Still open: iiSU reopens its bottom screen the moment any other app appears there, covering whatever you just opened. Back Button Hero notices this and leaves iiSU alone instead of fighting it in a loop. A proper solution is planned.</p>
       </article>
     </div>
     <aside class="fe-help" aria-labelledby="fe-help-title">
@@ -463,7 +466,7 @@
         <details><summary>Does it interfere with my games or emulator bindings?</summary>
           <p>Hotkeys run while their modifier is held: Back, or optionally Home. Unassigned combo inputs reach your game as usual. For an emulator that needs Back for its own menu, set a per-app exception or use the optional pause shortcut. During recording, a chosen push-to-talk button is reserved for the microphone and does not reach the game.</p></details>
         <details><summary>Does it work with ES-DE, NeoStation, Cocoon, RetroArch or iiSU?</summary>
-          <p>ES-DE with Companion, NeoStation, Cocoon and RetroArch work and are in public testing. iiSU isn't supported yet. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
+          <p>ES-DE with Companion, NeoStation, Cocoon, RetroArch and iiSU work and are in public testing; with iiSU, other apps on its bottom screen are still covered by it. See <a href="#frontends">Frontend compatibility</a> for what works with each frontend and how to report a problem.</p></details>
         <details><summary>An app is missing from the switcher.</summary>
           <p>Android gives no way to read another app's task history, so the list is rebuilt from windows the service has seen since it started. Open the app on that screen once and it will appear.</p></details>
         <details><summary>Can I save my setup?</summary>
